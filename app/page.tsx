@@ -4,8 +4,8 @@ import { prisma } from "@/lib/prisma";
 
 export default async function Page() {
     const users = await prisma.user.findMany();
-    const spUsers = await executePgFunction("fn_get_all_users");
-    const fnUsers = await executePgFunction("get_users_except_id", [1]);
+    const spUsers = await executePgFunction("get_all_users");
+    const fnUsers = await executePgFunction("get_users_except_id", [5]);
 
     return (
         <>
