@@ -1,14 +1,33 @@
-export default async function Page() {
-    const res = await fetch("http://localhost:3000/api/hello");
-    const data = await res.json();
+// Source - https://stackoverflow.com/a/78012182
+// Posted by Ahmed Abdelbaset
+// Retrieved 2025-12-14, License - CC BY-SA 4.0
+
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Drawer, DrawerContent, DrawerDescription, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { useState } from "react";
+
+export default function Page() {
+    const [isOpen, setIsOpen] = useState(false);
+
+    console.log("isOpen", isOpen);
 
     return (
-        <div className="p-6">
-            <h1 className="text-xl font-bold">Mahesh Chavda</h1>
-            <p className="mt-4 text-green-600">{data.message}</p>
-            {data?.data?.map(user => (
-                <h4 key={user.id}>{user.name}</h4>
-            ))}
-        </div>
+        <>
+            <Button variant="secondary" onClick={() =>
+                setIsOpen(true)
+            }>
+                Another Button
+            </Button>
+            <Drawer open={isOpen} onOpenChange={setIsOpen}>
+                <DrawerTrigger>Open Drawer</DrawerTrigger>
+                <DrawerContent>
+                    <DrawerTitle>Hello</DrawerTitle>
+                    <DrawerDescription>HHH</DrawerDescription>
+                    Drawer Content
+                </DrawerContent>
+            </Drawer>
+        </>
     );
 }
