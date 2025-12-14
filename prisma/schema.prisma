@@ -13,18 +13,67 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
+enum PaymentMode {
+  CASH
+  ONLINE
 }
 
-model Post {
-  id        Int     @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean @default(false)
-  authorId  Int
-  author    User    @relation(fields: [authorId], references: [id])
+enum TransactionDirection {
+  IN
+  OUT
+}
+
+model User {
+  id                   Int                   @id @default(autoincrement())
+  name                 String
+  email                String                @unique
+  password             String
+  contactNo            String
+  address              String?
+  createdAt            DateTime              @default(now())
+  sentTransactions     Transaction[]         @relation("Sender")
+  receivedTransactions Transaction[]         @relation("Receiver")
+  createdBusinesses    Business[]
+  documents            TransactionDocument[]
+}
+
+model Business {
+  id        Int      @id @default(autoincrement())
+  name      String
+  ownerId   Int
+  owner     User     @relation(fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id          Int                   @id @default(autoincrement())
+  senderId    Int
+  sender      User                  @relation("Sender", fields: [senderId], references: [id])
+  receiverId  Int
+  receiver    User                  @relation("Receiver", fields: [receiverId], references: [id])
+  amount      Decimal               @db.Decimal(12, 2)
+  date        DateTime
+  description String?
+  mode        PaymentMode
+  direction   TransactionDirection
+  createdAt   DateTime              @default(now())
+  documents   TransactionDocument[]
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([date])
+}
+
+model TransactionDocument {
+  id            Int         @id @default(autoincrement())
+  name          String
+  extension     String
+  transactionId Int
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  createdById   Int
+  createdBy     User        @relation(fields: [createdById], references: [id])
+  createdAt     DateTime    @default(now())
+
+  @@index([transactionId])
 }
