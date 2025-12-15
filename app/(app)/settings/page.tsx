@@ -3,9 +3,8 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import {
-    User,
     ChevronRight,
-    Crown,
+    PaintbrushIcon,
     DollarSign,
     Calendar,
     CreditCard,
@@ -34,7 +33,7 @@ export default function SettingsPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <Header title="Settings" />
+            <Header title="Settings" isProfile={false} />
 
             <div className="mx-auto max-w-4xl pb-32">
                 <div className="mt-6 space-y-8 px-4">
@@ -84,13 +83,13 @@ export default function SettingsPage() {
                         </Row>
 
                         <Row icon={CreditCard} label="Default Payment">
-                            <Select defaultValue="cash">
+                            <Select defaultValue="Cash">
                                 <SelectTrigger className="w-30">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="cash">Cash</SelectItem>
-                                    <SelectItem value="online">Online</SelectItem>
+                                    <SelectItem value="Cash">Cash</SelectItem>
+                                    <SelectItem value="Online">Online</SelectItem>
                                 </SelectContent>
                             </Select>
                         </Row>
@@ -105,7 +104,7 @@ export default function SettingsPage() {
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                                        <CreditCard size={16} />
+                                        <PaintbrushIcon size={16} />
                                     </div>
                                     <p className="flex-1 font-semibold">Theme</p>
                                 </div>
@@ -115,19 +114,19 @@ export default function SettingsPage() {
                                         active={theme === "auto"}
                                         onClick={() => setTheme("auto")}
                                     >
-                                        <Laptop size={14} /> Auto
+                                        <Laptop size={20} /> Auto
                                     </ThemeButton>
                                     <ThemeButton
                                         active={theme === "light"}
                                         onClick={() => setTheme("light")}
                                     >
-                                        <Sun size={14} /> Light
+                                        <Sun size={20} /> Light
                                     </ThemeButton>
                                     <ThemeButton
                                         active={theme === "dark"}
                                         onClick={() => setTheme("dark")}
                                     >
-                                        <Moon size={14} /> Dark
+                                        <Moon size={20} /> Dark
                                     </ThemeButton>
                                 </div>
                             </motion.div>

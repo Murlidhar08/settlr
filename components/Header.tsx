@@ -1,7 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Wallet } from "lucide-react";
 
-export default function Heaader({ title }: any) {
+export default function Heaader({ title, isProfile }: any) {
+    isProfile = isProfile ?? true;
+
     return (
         <header className="sticky top-0 z-20 flex items-center justify-between bg-slate-200/80 dark:bg-slate-950/90 backdrop-blur px-6 py-4 mb-4">
             <div className="flex">
@@ -16,10 +18,14 @@ export default function Heaader({ title }: any) {
                     <h1 className="text-2xl font-bold">{title}</h1>
                 </div>
             </div>
-            <Avatar size="lg">
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
+
+            {/* Profile */}
+            {isProfile && (
+                <Avatar size="lg">
+                    <AvatarImage src="https://github.com/shadcn.png" />
+                    <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+            )}
         </header>
     )
 }

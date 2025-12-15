@@ -29,6 +29,12 @@ enum ThemeMode {
   DARK
 }
 
+enum PartyType {
+  CUSTOMER
+  SUPPLIER
+  BOTH
+}
+
 model User {
   id                   Int                   @id @default(autoincrement())
   name                 String
@@ -60,9 +66,10 @@ model Business {
   ownerId          Int
   owner            User              @relation(fields: [ownerId], references: [id])
   createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  updatedAt        DateTime          @default(now()) @updatedAt
   transactions     Transaction[]
   businessSettings BusinessSettings?
+  parties          Party[]
 }
 
 model BusinessSettings {
@@ -75,6 +82,23 @@ model BusinessSettings {
   openingBalance     Decimal     @default(0) @db.Decimal(12, 2)
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
+}
+
+model Party {
+  id             Int       @id @default(autoincrement())
+  businessId     Int
+  name           String
+  phone          String?
+  email          String?
+  type           PartyType
+  openingBalance Decimal   @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  business     Business      @relation(fields: [businessId], references: [id])
+  transactions Transaction[]
+
+  @@index([businessId])
 }
 
 model Transaction {
@@ -97,6 +121,8 @@ model Transaction {
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
   documents   TransactionDocument[]
+  party       Party?                @relation(fields: [partyId], references: [id])
+  partyId     Int?
 
   @@index([businessId])
   @@index([senderId])
