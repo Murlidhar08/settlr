@@ -143,16 +143,6 @@ export default function CashbookScreen() {
             >
                 <Plus className="h-6 w-6" />
             </Button>
-
-            {/* Bottom Navigation */}
-            <nav className="fixed bottom-0 left-0 right-0 border-t bg-background/90 backdrop-blur">
-                <ul className="flex justify-around px-6 py-3">
-                    <NavItem icon={<Wallet />} label="Cashbook" active />
-                    <NavItem icon={<BarChart3 />} label="Reports" />
-                    <NavItem icon={<LayoutGrid />} label="Tools" />
-                    <NavItem icon={<Settings />} label="Settings" />
-                </ul>
-            </nav>
         </div>
     );
 }
