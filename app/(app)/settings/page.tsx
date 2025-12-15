@@ -34,10 +34,9 @@ export default function SettingsPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <div className="mx-auto max-w-4xl pb-32">
-                {/* Header */}
-                <Header title="Settings" />
+            <Header title="Settings" />
 
+            <div className="mx-auto max-w-4xl pb-32">
                 <div className="mt-6 space-y-8 px-4">
                     {/* USER */}
                     <motion.div
