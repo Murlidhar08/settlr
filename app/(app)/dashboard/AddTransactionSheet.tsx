@@ -23,6 +23,7 @@ import {
 
 export function AddTransactionSheet() {
     const [isAddTranOpen, setIsAddTranOpen] = useState(false);
+
     return (
         <Sheet open={isAddTranOpen} onOpenChange={setIsAddTranOpen}>
             <SheetContent
