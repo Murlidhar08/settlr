@@ -1,19 +1,21 @@
 "use client";
+
+// Packages
 import Header from "@/components/Header";
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-    Search,
-    ArrowDown,
-    ChevronRight,
-    ArrowUp,
-} from "lucide-react"
+import { Search, ArrowDown, ChevronRight, ArrowUp } from "lucide-react"
+import { PartyType } from "@/lib/generated/prisma/enums";
+
+// Components
 import AddPartiesModal from "./components/AddPartiesModal";
 import PartyItem from "./components/PartyItem";
+import CustomerList from "./components/CustomerList";
+import SupplierList from "./components/SupplierList";
 
 export default function Parties() {
-    const [tab, setTab] = useState("customers")
+    const [tab, setTab] = useState("customers");
 
     return (
         <div className="w-full bg-background pb-28">
@@ -86,7 +88,9 @@ export default function Parties() {
                                     Recently Active
                                 </p>
 
-                                <PartyItem
+                                <CustomerList />
+
+                                {/* <PartyItem
                                     name="Alice Hue"
                                     subtitle="Last payment: Today, 10:30 AM"
                                     amount="+$500.00"
@@ -98,7 +102,7 @@ export default function Parties() {
                                     name="John Doe"
                                     subtitle="Settled up • 2 days ago"
                                     amount="$0.00"
-                                    initials="JD"
+                                    status="Settled"
                                     neutral
                                     avatarUrl="https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250"
                                 />
@@ -109,14 +113,13 @@ export default function Parties() {
                                     amount="-$120.50"
                                     status="Return"
                                     negative
-                                    initials="DC"
                                     avatarUrl="https://robohash.org/mail@ashallendesign.co.uk"
-                                />
+                                /> */}
 
                                 <div className="h-24" />
                             </main>
 
-                            <AddPartiesModal title="Add Customer" />
+                            <AddPartiesModal title="Add Customer" type={PartyType.CUSTOMER} />
                         </TabsContent>
 
                         <TabsContent value="suppliers">
@@ -151,12 +154,14 @@ export default function Parties() {
                                     Recently Active
                                 </p>
 
-                                <PartyItem
+                                <SupplierList />
+
+                                {/* <PartyItem
                                     name="Alice's Bakery"
                                     subtitle="Last payment: Today, 10:30 AM"
                                     amount="+$500.00"
                                     status="Due"
-                                    avatarUrl="https://lh3.googleusercontent.com/aida-public/AB6AXuD4DdMKqJjqYb5PNJidzuzlmiZnOVFTARfADzGlbcqhk2nEWVxHupN5AXvKdv_p_txKVdoqMn8WM1p3neHoubGpTqhEUU5uSTU_s1un4GFTUSPQ_BHLuqxk0qITI7DkWiXJzUnDW4L5XJ5nF2m5kax7WBdSGlRvT1HMetXGAGHh-AMoDYCKamlqaA4gxpbR2ldF-lYeRgkGgM1X0RhClevdNBDc97q2hDjwOQgADuDKLT6k64nbJxw1_HRr5fSsArUxSKu9gjlMpV-Q"
+                                    avatarUrl=""
                                 />
 
                                 <PartyItem
@@ -164,7 +169,6 @@ export default function Parties() {
                                     subtitle="Invoice #1024 Pending"
                                     amount="+$1,250.00"
                                     status="Due"
-                                    initials="UC"
                                 />
 
                                 <PartyItem
@@ -173,13 +177,12 @@ export default function Parties() {
                                     amount="-$120.50"
                                     status="Return"
                                     negative
-                                    initials="DC"
-                                />
+                                /> */}
 
                                 <div className="h-24" />
                             </main>
 
-                            <AddPartiesModal title="Add Supplier" />
+                            <AddPartiesModal title="Add Supplier" type={PartyType.SUPPLIER} />
                         </TabsContent>
                     </div>
                 </Tabs>

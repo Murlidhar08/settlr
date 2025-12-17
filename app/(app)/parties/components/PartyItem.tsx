@@ -1,23 +1,52 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
+
+const getInitials = function (userName: string): string {
+    const names = userName.split(' ');
+    let initials = names[0].substring(0, 1).toUpperCase();
+
+    if (names.length > 1) {
+        initials += names[names.length - 1].substring(0, 1).toUpperCase();
+    }
+    return initials;
+};
+
+interface partyItemProp {
+    id: number,
+    name: string,
+    amount: string,
+    subtitle?: string,
+    status?: string,
+    avatarUrl?: string,
+    neutral?: boolean,
+    negative?: boolean,
+}
 
 export default function PartyItem({
+    id,
     name,
     subtitle,
     amount,
     status,
     avatarUrl,
-    initials,
     neutral,
     negative,
-}: any) {
+}: partyItemProp) {
+    const router = useRouter();
+
     return (
-        <div className="flex items-center gap-4 rounded-2xl border bg-card p-4 active:scale-[0.98] transition">
+        <div
+            onClick={() => router.push(`/parties/${id}`)}
+            className="flex items-center gap-4 rounded-2xl border bg-card p-4 active:scale-[0.98] transition"
+        >
 
             <Avatar className="h-12 w-12">
                 {avatarUrl ? (
                     <AvatarImage src={avatarUrl} />
                 ) : (
-                    <AvatarFallback>{initials}</AvatarFallback>
+                    <AvatarFallback>{getInitials(name)}</AvatarFallback>
                 )}
             </Avatar>
 
@@ -41,11 +70,15 @@ export default function PartyItem({
                     {amount}
                 </p>
                 {status && (
-                    <span className="mt-1 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-600">
+                    <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${neutral
+                        ? "bg-gray-100"
+                        : negative
+                            ? "bg-red-100 text-rose-500"
+                            : "bg-emerald-100 text-emerald-600"}`} >
                         {status}
                     </span>
                 )}
             </div>
-        </div>
+        </div >
     )
 }

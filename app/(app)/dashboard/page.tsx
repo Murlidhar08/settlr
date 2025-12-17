@@ -18,9 +18,8 @@ import { prisma } from "@/lib/prisma";
 /* ========================================================= */
 /* PAGE */
 /* ========================================================= */
-
 export default async function Page() {
-    const businessList: any = await prisma.business.findMany({ select: { id: true, name: true } });
+    const businessList: any = await prisma.business?.findMany({ select: { id: true, name: true } });
     const selectedBusinessId = businessList?.[0]?.id;
 
     return (

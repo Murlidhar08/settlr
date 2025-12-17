@@ -1,10 +1,7 @@
 "use client"
 
-import { Briefcase, Building2, Check, ChevronDown, Globe, Plus } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Building2, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import { useState } from "react"
 import { Sheet, SheetContent, SheetFooter, SheetHeader } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
@@ -13,19 +10,26 @@ import { Label } from "@/components/ui/label"
 /* ========================================================= */
 /* TYPES */
 /* ========================================================= */
+import { addParties } from "@/actions/parties.actions"
+import { partyData } from "@/types/party/partyData"
+import { PartyType } from "@/lib/generated/prisma/enums"
+
 interface ParitesProps {
-    title: string
+    title: string,
+    type: PartyType
 }
 
 /* ========================================================= */
 /* COMPONENT */
 /* ========================================================= */
 
-export default function AddPartiesModal({ title }: ParitesProps) {
+export default function AddPartiesModal({ title, type }: ParitesProps) {
     const [popOpen, setPopOpen] = useState(false);
+    const [data, setData] = useState<partyData>({ businessId: 1, contactNo: "", name: "", type: type })
 
     const handleAddBusiness = async () => {
-        console.log("Add Parties")
+        await addParties(data);
+        setPopOpen(false)
     }
 
     return (
@@ -55,9 +59,20 @@ export default function AddPartiesModal({ title }: ParitesProps) {
                             <Input
                                 id="name"
                                 placeholder="Party name"
-                                value={""}
-                                onChange={(e: any) => { }} // PENDING
+                                value={data.name}
+                                onChange={e => { setData(pre => ({ ...pre, name: e.target.value })) }}
                                 autoFocus
+                            />
+                        </div>
+
+                        {/* Party Name */}
+                        <div className="space-y-2">
+                            <Label htmlFor="name">Contact No</Label>
+                            <Input
+                                id="conatactNo"
+                                placeholder="Contact No"
+                                value={data.contactNo}
+                                onChange={e => { setData(pre => ({ ...pre, contactNo: e.target.value })) }}
                             />
                         </div>
                     </div>
@@ -80,7 +95,11 @@ export default function AddPartiesModal({ title }: ParitesProps) {
                                 className="flex-1"
                                 disabled={false} // PENDING
                             >
-                                Create Business
+                                Add {type == PartyType.CUSTOMER
+                                    ? "Customer"
+                                    : type == PartyType.SUPPLIER
+                                        ? "Supplier"
+                                        : "Party"}
                             </Button>
                         </div>
                     </SheetFooter>
