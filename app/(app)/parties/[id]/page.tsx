@@ -8,20 +8,22 @@ import { Separator } from '@/components/ui/separator'
 import TransactionItem from './components/TransactionItem'
 import AddTransactionModal from './components/AddTransactionModal'
 import { prisma } from '@/lib/prisma'
-import { TransactionDirection } from '@/lib/generated/prisma/client'
+import { Transaction, TransactionDirection } from '@/lib/generated/prisma/client'
 
-export default async function PartyDetailsPage() {
+export default async function PartyDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+    const id = (await params).id;
     const partyName = 'Party Name';
     const type = "Supplier";
 
     const transactionList = await prisma.transaction.findMany({
         where: {
-            businessId: 1
+            partyId: Number(id),
+            businessId: 1,
         },
         orderBy: {
-            createdAt: 'desc'
-        }
-    })
+            createdAt: "desc",
+        },
+    });
 
     return (
         <div className="relative mx-auto min-h-screen max-w-full bg-background pb-28 lg:pb-16">
@@ -35,7 +37,7 @@ export default async function PartyDetailsPage() {
 
                     <div className="flex flex-1 flex-col items-center">
                         <h2 className="text-lg font-bold tracking-tight lg:text-2xl">
-                            {partyName}
+                            {id} - {partyName}
                         </h2>
                         <Badge
                             variant="secondary"
@@ -113,7 +115,7 @@ export default async function PartyDetailsPage() {
                         <div className="flex flex-col gap-3">
                             {/* Transaction List */}
                             {
-                                transactionList.map(transaction => {
+                                transactionList.map((transaction: Transaction) => {
                                     return (
                                         <TransactionItem
                                             key={transaction.id}
