@@ -9,9 +9,10 @@ import { useState, useEffect, ReactNode } from "react"
 import { PaymentMode, TransactionDirection } from "@/lib/generated/prisma/enums"
 import { addTransaction } from "@/actions/transaction.actions"
 import { Transaction } from "@/lib/generated/prisma/client"
+import { TransactionData } from "../../../../../types/transaction/TransactionData"
 
 interface TransactionProps {
-    transactionData?: Transaction
+    transactionData?: TransactionData
     title: string
     partyId: number
     children: ReactNode
@@ -52,8 +53,10 @@ export default function AddTransactionModal({ title, partyId, transactionData, c
     const handleAddTransaction = async () => {
         await addTransaction({
             ...data,
-            amount: data.amount,
+            amount: Number(data.amount),
             date: new Date(data.date),
+            createdAt: undefined,
+            updatedAt: undefined
         });
 
         setPopOpen(false);

@@ -8,28 +8,34 @@ import { Separator } from '@/components/ui/separator'
 import TransactionItem from './components/TransactionItem'
 import AddTransactionModal from './components/AddTransactionModal'
 import { prisma } from '@/lib/prisma'
-import { Transaction, TransactionDirection } from '@/lib/generated/prisma/client'
+import { TransactionDirection } from '@/lib/generated/prisma/client'
+import { TransactionData } from '../../../../types/transaction/TransactionData'
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: number }> }) {
     const partyId = (await params).partyId;
 
-    const partyDetails = await prisma.party.findFirst({
+    const rawPartyDetails = await prisma.party.findFirst({
         select: {
             id: true,
             name: true,
+            type: true,
             transactions: {
-                where: {
-                    businessId: 1
-                }
+                where: { businessId: 1 }
             }
         },
-        where: {
-            id: Number(partyId),
-        }
-    })
+        where: { id: Number(partyId) }
+    });
 
-
-    console.log(partyDetails)
+    let partyDetails = null;
+    if (rawPartyDetails) {
+        partyDetails = {
+            ...rawPartyDetails,
+            transactions: rawPartyDetails.transactions?.map(tra => ({
+                ...tra,
+                amount: tra.amount.toNumber(),
+            })) ?? []
+        };
+    }
 
     // const transactionList = await prisma.transaction.findMany({
     //     where: {
@@ -44,7 +50,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
     let totalIn = 0,
         totalOut = 0;
 
-    partyDetails?.transactions?.forEach((tra: Transaction) => {
+    partyDetails?.transactions?.forEach((tra: TransactionData) => {
         if (tra.direction == TransactionDirection.IN)
             totalIn += Number(tra.amount);
         else if (tra.direction == TransactionDirection.OUT) {
@@ -80,11 +86,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
                 <main className="flex-1 overflow-y-auto pb-24 lg:py-8">
                     {/* Balance Card */}
                     <section className="px-4 py-2 lg:px-0">
-                        <div
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.35 }}
-                        >
+                        <div>
                             <Card className="relative rounded-2xl p-6 lg:p-8 lg:grid lg:grid-cols-3 lg:gap-8">
                                 <div className="absolute left-0 top-0 h-full w-1.5 bg-primary rounded-l-2xl" />
 
@@ -143,7 +145,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
                         <div className="flex flex-col gap-3">
                             {/* Transaction List */}
                             {
-                                partyDetails?.transactions?.map((transaction: Transaction) => {
+                                partyDetails?.transactions?.map((transaction: TransactionData) => {
                                     return (
                                         <AddTransactionModal
                                             key={transaction.id}

@@ -2,9 +2,9 @@
 
 // Package
 import { prisma } from "@/lib/prisma";
-import { Transaction } from "@/lib/generated/prisma/client";
+import { TransactionData } from "@/types/transaction/TransactionData";
 
-export async function addTransaction(transactionData: Transaction) {
+export async function addTransaction(transactionData: TransactionData) {
     // If id exists and not zero -> update
     if (transactionData.id && transactionData.id !== 0) {
         return await prisma.transaction.update({
