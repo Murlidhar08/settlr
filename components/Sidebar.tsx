@@ -24,7 +24,12 @@ const NAV_ITEMS: NavItem[] = [
     { label: "Settings", icon: <Settings />, href: "/settings" },
 ];
 
-export default function Sidebar({ collapsed, onCollapse }: any) {
+interface sidebarProps {
+    collapsed: boolean;
+    onCollapse: (status: boolean) => VoidFunction;
+}
+
+export default function Sidebar({ collapsed, onCollapse }: sidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
 

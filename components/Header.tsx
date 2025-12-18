@@ -1,7 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Wallet } from "lucide-react";
 
-export default function Heaader({ title, isProfile }: any) {
+interface HeaderProps {
+    title: string,
+    isProfile?: boolean
+}
+
+export default function Heaader({ title, isProfile }: HeaderProps) {
     isProfile = isProfile ?? true;
 
     return (
@@ -22,7 +27,7 @@ export default function Heaader({ title, isProfile }: any) {
             {/* Profile */}
             {isProfile && (
                 <Avatar size="lg">
-                    <AvatarImage src="https://github.com/shadcn.png" />
+                    <AvatarImage src="https://i.pravatar.cc/300" />
                     <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
             )}
