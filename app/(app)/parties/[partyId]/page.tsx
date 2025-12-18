@@ -1,4 +1,4 @@
-import { ArrowLeft, Search, Phone, Share2 } from 'lucide-react'
+import { ArrowLeft, Search, Phone, Share2, Plus } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -10,20 +10,48 @@ import AddTransactionModal from './components/AddTransactionModal'
 import { prisma } from '@/lib/prisma'
 import { Transaction, TransactionDirection } from '@/lib/generated/prisma/client'
 
-export default async function PartyDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-    const id = (await params).id;
-    const partyName = 'Party Name';
-    const type = "Supplier";
+export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: number }> }) {
+    const partyId = (await params).partyId;
 
-    const transactionList = await prisma.transaction.findMany({
+    const partyDetails = await prisma.party.findFirst({
+        select: {
+            id: true,
+            name: true,
+            transactions: {
+                where: {
+                    businessId: 1
+                }
+            }
+        },
         where: {
-            partyId: Number(id),
-            businessId: 1,
-        },
-        orderBy: {
-            createdAt: "desc",
-        },
-    });
+            id: Number(partyId),
+        }
+    })
+
+
+    console.log(partyDetails)
+
+    // const transactionList = await prisma.transaction.findMany({
+    //     where: {
+    //         partyId: Number(partyId),
+    //         businessId: 1,
+    //     },
+    //     orderBy: {
+    //         createdAt: "desc",
+    //     },
+    // });
+
+    let totalIn = 0,
+        totalOut = 0;
+
+    partyDetails?.transactions?.forEach((tra: Transaction) => {
+        if (tra.direction == TransactionDirection.IN)
+            totalIn += Number(tra.amount);
+        else if (tra.direction == TransactionDirection.OUT) {
+            totalOut += Number(tra.amount);
+        }
+    })
+
 
     return (
         <div className="relative mx-auto min-h-screen max-w-full bg-background pb-28 lg:pb-16">
@@ -37,13 +65,13 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ i
 
                     <div className="flex flex-1 flex-col items-center">
                         <h2 className="text-lg font-bold tracking-tight lg:text-2xl">
-                            {id} - {partyName}
+                            {partyDetails?.id} - {partyDetails?.name}
                         </h2>
                         <Badge
                             variant="secondary"
                             className="mt-0.5 text-[10px] uppercase tracking-wider lg:text-xs"
                         >
-                            {type}
+                            {partyDetails?.type}
                         </Badge>
                     </div>
                 </header>
@@ -64,18 +92,18 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ i
                                     <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
                                         Net Balance to Pay
                                     </p>
-                                    <h1 className="mt-1 text-4xl font-bold lg:text-5xl">$1,250.00</h1>
+                                    <h1 className="mt-1 text-4xl font-bold lg:text-5xl">${totalIn - totalOut}</h1>
 
                                     <Separator className="lg:hidden" />
 
                                     <div className="flex gap-6 pt-2">
                                         <div className="flex flex-col">
                                             <span className="text-xs text-muted-foreground">Total In</span>
-                                            <span className="font-semibold text-emerald-600">+$4,500.00</span>
+                                            <span className="font-semibold text-emerald-600">+${totalIn}</span>
                                         </div>
                                         <div className="flex flex-col">
                                             <span className="text-xs text-muted-foreground">Total Out</span>
-                                            <span className="font-semibold text-rose-500">-$3,250.00</span>
+                                            <span className="font-semibold text-rose-500">-${totalOut}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -115,20 +143,26 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ i
                         <div className="flex flex-col gap-3">
                             {/* Transaction List */}
                             {
-                                transactionList.map((transaction: Transaction) => {
+                                partyDetails?.transactions?.map((transaction: Transaction) => {
                                     return (
-                                        <TransactionItem
+                                        <AddTransactionModal
                                             key={transaction.id}
-                                            title={transaction.description ?? ""}
-                                            subtitle={transaction.date.toString()}
-                                            amount={transaction.amount}
-                                            type={transaction.direction}
-                                        />
+                                            title="Add Transaction"
+                                            partyId={partyId}
+                                            transactionData={transaction}
+                                        >
+                                            <TransactionItem
+                                                title={transaction.description ?? ""}
+                                                subtitle={transaction.date.toString()}
+                                                amount={String(transaction.amount)}
+                                                type={transaction.direction}
+                                            />
+                                        </AddTransactionModal>
                                     )
                                 })
                             }
 
-                            <TransactionItem
+                            {/* <TransactionItem
                                 title="Invoice #1023"
                                 subtitle="Oct 24, 2023 • Payment Sent"
                                 amount="-$500.00"
@@ -157,7 +191,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ i
                                 subtitle="Oct 10, 2023 • Hourly"
                                 amount="+$450.00"
                                 type={TransactionDirection.OUT}
-                            />
+                            /> */}
                         </div>
                     </section>
                 </main>
@@ -165,16 +199,23 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ i
 
             {/* Bottom Gradient */}
             <footer className='fixed bottom-0 w-full'>
-                {/* Floating Action Button */}
-                <div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35 }}
-                    className="pointer-events-none absolute bottom-6 left-0 right-0 z-20 flex justify-center"
-                >
-                    <AddTransactionModal title="Add Transaction" />
+                <div className="flex flex-row w-full justify-center mx-auto">
+                    <AddTransactionModal title="Add Transaction" partyId={partyId}>
+                        <Button className="pointer-events-auto h-14 w-full max-w-sm rounded-md gap-3 shadow-xl hover:scale-[1.03] transition-transform bg-rose-800" size="lg">
+                            <Plus className="h-5 w-5" />
+                            YOU GAVE
+                        </Button>
+                    </AddTransactionModal>
+
+                    <AddTransactionModal title="Add Transaction" partyId={partyId}>
+                        <Button className="pointer-events-auto h-14 w-full max-w-sm rounded-md gap-3 shadow-xl hover:scale-[1.03] transition-transform bg-green-900" size="lg">
+                            <Plus className="h-5 w-5" />
+                            YOU GOT
+                        </Button>
+                    </AddTransactionModal>
                 </div>
-                <div className="pointer-events-none absolute bottom-0 left-0 h-24 w-full bg-linear-to-t from-background to-transparent" />
+
+                {/* <div className="pointer-events-none absolute bottom-0 left-0 h-24 w-full bg-linear-to-t from-background to-transparent" /> */}
             </footer>
         </div>
     )

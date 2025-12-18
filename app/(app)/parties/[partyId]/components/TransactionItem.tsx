@@ -13,12 +13,7 @@ export default function TransactionItem({ title, subtitle, amount, type, }: Tran
     const isIn = type === TransactionDirection.IN;
 
     return (
-        <div className="p-1"
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.25 }}
-        >
+        <div className="p-1">
             <Card className="flex flex-row items-center p-3 hover:scale-[1.01] transition">
                 <div
                     className={`mr-4 flex h-12 w-12 items-center justify-center rounded-full ${isIn

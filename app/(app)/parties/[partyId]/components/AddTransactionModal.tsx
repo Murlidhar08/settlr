@@ -1,63 +1,83 @@
 "use client"
 
-import { Building2, Plus } from "lucide-react"
+import { Building2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
 import { Sheet, SheetContent, SheetFooter, SheetHeader } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
+import { useState, useEffect, ReactNode } from "react"
 import { PaymentMode, TransactionDirection } from "@/lib/generated/prisma/enums"
 import { addTransaction } from "@/actions/transaction.actions"
+import { Transaction } from "@/lib/generated/prisma/client"
 
 interface TransactionProps {
+    transactionData?: Transaction
     title: string
+    partyId: number
+    children: ReactNode
 }
 
-export default function AddTransactionModal({ title }: TransactionProps) {
-
+export default function AddTransactionModal({ title, partyId, transactionData, children }: TransactionProps) {
     const [popOpen, setPopOpen] = useState(false);
 
     const [data, setData] = useState({
         businessId: 1,
         amount: "",
-        date: new Date().toISOString().substring(0, 10), // YYYY-MM-DD for date input
+        date: new Date().toISOString().substring(0, 10),
         description: "",
         mode: PaymentMode.CASH,
         direction: TransactionDirection.IN,
-        partyId: 1,
+        partyId: Number(partyId),
         userId: 1,
         id: 0,
-        createdAt: undefined,
-        updatedAt: undefined
     });
+
+    // Prefill when editing
+    useEffect(() => {
+        if (transactionData) {
+            setData({
+                businessId: transactionData.businessId,
+                amount: transactionData.amount.toString(),
+                date: transactionData.date.toISOString().substring(0, 10),
+                description: transactionData.description ?? "",
+                mode: transactionData.mode,
+                direction: transactionData.direction,
+                partyId: transactionData.partyId,
+                userId: transactionData.userId,
+                id: transactionData.id,
+            });
+        }
+    }, [transactionData]);
 
     const handleAddTransaction = async () => {
         await addTransaction({
             ...data,
             amount: data.amount,
-            date: new Date(),
+            date: new Date(data.date),
         });
 
         setPopOpen(false);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const target = e.target;
-
+        const { name, value } = e.target;
         setData(prev => ({
             ...prev,
-            [target.name]: target.value
-        }))
-    }
+            [name]: value
+        }));
+    };
 
     return (
         <>
+            {/* Trigger Button */}
+            <div onClick={() => setPopOpen(true)} className="inline-block cursor-pointer">
+                {children}
+            </div>
+
+            {/* Sheet */}
             <Sheet open={popOpen} onOpenChange={setPopOpen}>
-                <SheetContent
-                    side="right"
-                    className="flex h-full w-full max-w-full flex-col p-0 sm:max-w-xl"
-                >
+                <SheetContent side="right" className="flex h-full w-full max-w-full flex-col p-0 sm:max-w-xl">
+
                     <SheetHeader className="sticky top-0 z-10 flex-row items-center justify-between border-b bg-background px-6 py-4">
                         <div className="flex items-center gap-2">
                             <Building2 className="h-5 w-5 text-primary" />
@@ -75,13 +95,6 @@ export default function AddTransactionModal({ title }: TransactionProps) {
                                 placeholder="Amount"
                                 value={data.amount}
                                 onChange={handleChange}
-                                // onChange={e => {
-                                //     setData(prev => ({
-                                //         ...prev,
-                                //         amount: e.target.value // keep as string
-                                //     }))
-                                // }}
-                                autoFocus
                             />
                         </div>
 
@@ -111,33 +124,16 @@ export default function AddTransactionModal({ title }: TransactionProps) {
 
                     <SheetFooter className="sticky bottom-0 border-t bg-background px-6 py-4">
                         <div className="flex w-full gap-3">
-                            <Button
-                                variant="outline"
-                                className="flex-1"
-                                onClick={() => setPopOpen(false)}
-                            >
-                                Cancel
-                            </Button>
+                            <Button variant="outline" className="flex-1" onClick={() => setPopOpen(false)}>Cancel</Button>
 
-                            <Button
-                                onClick={handleAddTransaction}
-                                className="flex-1"
-                            >
-                                Add Transaction
+                            <Button className="flex-1" onClick={handleAddTransaction}>
+                                {data.id && data.id !== 0 ? "Update" : "Add"} Transaction
                             </Button>
                         </div>
                     </SheetFooter>
+
                 </SheetContent>
             </Sheet>
-
-            <Button
-                onClick={() => { setPopOpen(true) }}
-                className="pointer-events-auto h-14 w-full max-w-sm rounded-full gap-3 shadow-xl hover:scale-[1.03] transition-transform"
-                size="lg"
-            >
-                <Plus className="h-5 w-5" />
-                Add Transaction
-            </Button>
         </>
-    )
+    );
 }
