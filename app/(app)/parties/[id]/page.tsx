@@ -1,7 +1,4 @@
-'use client'
-
-import { motion } from 'framer-motion'
-import { ArrowLeft, Plus, Search, Phone, Share2 } from 'lucide-react'
+import { ArrowLeft, Search, Phone, Share2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -9,10 +6,22 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import TransactionItem from './components/TransactionItem'
+import AddTransactionModal from './components/AddTransactionModal'
+import { prisma } from '@/lib/prisma'
+import { TransactionDirection } from '@/lib/generated/prisma/client'
 
-export default function PartyDetailsPage() {
+export default async function PartyDetailsPage() {
     const partyName = 'Party Name';
     const type = "Supplier";
+
+    const transactionList = await prisma.transaction.findMany({
+        where: {
+            businessId: 1
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    })
 
     return (
         <div className="relative mx-auto min-h-screen max-w-full bg-background pb-28 lg:pb-16">
@@ -41,7 +50,7 @@ export default function PartyDetailsPage() {
                 <main className="flex-1 overflow-y-auto pb-24 lg:py-8">
                     {/* Balance Card */}
                     <section className="px-4 py-2 lg:px-0">
-                        <motion.div
+                        <div
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.35 }}
@@ -69,7 +78,7 @@ export default function PartyDetailsPage() {
                                     </div>
                                 </div>
                             </Card>
-                        </motion.div>
+                        </div>
                     </section>
 
                     {/* Quick Actions */}
@@ -102,35 +111,50 @@ export default function PartyDetailsPage() {
                         <h3 className="mb-3 text-sm font-bold lg:text-base">Recent Transactions</h3>
 
                         <div className="flex flex-col gap-3">
+                            {/* Transaction List */}
+                            {
+                                transactionList.map(transaction => {
+                                    return (
+                                        <TransactionItem
+                                            key={transaction.id}
+                                            title={transaction.description ?? ""}
+                                            subtitle={transaction.date.toString()}
+                                            amount={transaction.amount}
+                                            type={transaction.direction}
+                                        />
+                                    )
+                                })
+                            }
+
                             <TransactionItem
                                 title="Invoice #1023"
                                 subtitle="Oct 24, 2023 • Payment Sent"
                                 amount="-$500.00"
-                                type="out"
+                                type={TransactionDirection.IN}
                             />
                             <TransactionItem
                                 title="Refund Processed"
                                 subtitle="Oct 22, 2023 • Credit Note"
                                 amount="+$120.00"
-                                type="in"
+                                type={TransactionDirection.IN}
                             />
                             <TransactionItem
                                 title="Material Purchase"
                                 subtitle="Oct 18, 2023 • Bulk Order"
                                 amount="-$2,100.00"
-                                type="out"
+                                type={TransactionDirection.OUT}
                             />
                             <TransactionItem
                                 title="Advance Payment"
                                 subtitle="Oct 15, 2023 • Project A"
                                 amount="+$1,500.00"
-                                type="in"
+                                type={TransactionDirection.IN}
                             />
                             <TransactionItem
                                 title="Consulting Fee"
                                 subtitle="Oct 10, 2023 • Hourly"
                                 amount="+$450.00"
-                                type="in"
+                                type={TransactionDirection.OUT}
                             />
                         </div>
                     </section>
@@ -140,17 +164,14 @@ export default function PartyDetailsPage() {
             {/* Bottom Gradient */}
             <footer className='fixed bottom-0 w-full'>
                 {/* Floating Action Button */}
-                <motion.div
+                <div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35 }}
                     className="pointer-events-none absolute bottom-6 left-0 right-0 z-20 flex justify-center"
                 >
-                    <Button className="pointer-events-auto h-14 w-full max-w-sm rounded-full gap-3 shadow-xl hover:scale-[1.03] transition-transform" size="lg">
-                        <Plus className="h-5 w-5" />
-                        Add Transaction
-                    </Button>
-                </motion.div>
+                    <AddTransactionModal title="Add Transaction" />
+                </div>
                 <div className="pointer-events-none absolute bottom-0 left-0 h-24 w-full bg-linear-to-t from-background to-transparent" />
             </footer>
         </div>

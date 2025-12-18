@@ -1,13 +1,19 @@
 import { Card } from "@/components/ui/card"
-import { motion } from "framer-motion"
+import { TransactionDirection } from "@/lib/generated/prisma/enums"
 import { ArrowDown, ArrowUpRight } from "lucide-react"
 
-export default function TransactionItem({ title, subtitle, amount, type, }: { title: string, subtitle: string, amount: string, type: 'in' | 'out' }) {
-    const isIn = type === 'in'
+interface TransactionProp {
+    title: string,
+    subtitle: string,
+    amount: string,
+    type: TransactionDirection
+}
+
+export default function TransactionItem({ title, subtitle, amount, type, }: TransactionProp) {
+    const isIn = type === TransactionDirection.IN;
 
     return (
-        <motion.div
-            className="p-1"
+        <div className="p-1"
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -29,14 +35,11 @@ export default function TransactionItem({ title, subtitle, amount, type, }: { ti
                 </div>
 
                 <div className="shrink-0 text-right">
-                    <p
-                        className={`text-base font-bold lg:text-lg ${isIn ? 'text-emerald-600' : 'text-rose-600'
-                            }`}
-                    >
-                        {amount}
+                    <p className={`text-base font-bold lg:text-lg ${isIn ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {`${isIn ? "+" : "-"}$${amount}`}
                     </p>
                 </div>
             </Card>
-        </motion.div>
+        </div>
     )
 }

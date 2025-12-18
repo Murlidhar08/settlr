@@ -60,7 +60,7 @@ export default function Sidebar({ collapsed, onCollapse }: sidebarProps) {
                 {/* Nav */}
                 <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
                     {NAV_ITEMS.map((item) => {
-                        const active = pathname === item.href;
+                        const active = !!pathname?.includes(item.href);
 
                         return (
                             <DesktopNavItem
@@ -90,7 +90,7 @@ export default function Sidebar({ collapsed, onCollapse }: sidebarProps) {
             <nav className="fixed bottom-0 z-50 w-full border-t bg-white dark:bg-slate-900 pb-safe lg:hidden">
                 <div className="flex h-20 items-center justify-around">
                     {NAV_ITEMS.map((item) => {
-                        const active = pathname === item.href;
+                        const active = !!pathname?.includes(item.href);
 
                         return (
                             <MobileNavItem
@@ -108,20 +108,15 @@ export default function Sidebar({ collapsed, onCollapse }: sidebarProps) {
 }
 
 /* ================= Desktop Item ================= */
-
-function DesktopNavItem({
-    icon,
-    label,
-    active,
-    collapsed,
-    onClick,
-}: {
+interface desktopNavProps {
     icon: React.ReactNode;
     label: string;
     active: boolean;
     collapsed: boolean;
     onClick: () => void;
-}) {
+}
+
+function DesktopNavItem({ icon, label, active, collapsed, onClick }: desktopNavProps) {
     return (
         <button
             onClick={onClick}
@@ -155,18 +150,14 @@ function DesktopNavItem({
 }
 
 /* ================= Mobile Item ================= */
-
-function MobileNavItem({
-    icon,
-    label,
-    active,
-    onClick,
-}: {
+interface MobileNavItemProps {
     icon: React.ReactNode;
     label: string;
     active: boolean;
     onClick: () => void;
-}) {
+}
+
+function MobileNavItem({ icon, label, active, onClick }: MobileNavItemProps) {
     return (
         <button
             onClick={onClick}
