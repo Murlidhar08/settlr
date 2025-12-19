@@ -15,7 +15,7 @@ export default function CashTransactionItem({
         <motion.div
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
-            className="flex items-center justify-between rounded-2xl bg-background p-4 shadow-sm border"
+            className="flex items-center justify-between rounded-2xl bg-background p-4 shadow-sm border cursor-pointer user"
         >
             <div className="flex items-center gap-3">
                 <div

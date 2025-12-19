@@ -20,22 +20,13 @@ export default function CashbookPage() {
 
             {/* Container */}
             <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
-
-                {/* Header */}
-
-                {/* Summary */}
                 <CashSummary />
 
                 {/* Filters */}
                 <CashFilters />
 
                 {/* Transactions */}
-                <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="mt-4 space-y-6"
-                >
+                <div>
                     <section>
                         <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground mb-3">
                             <span>Today, 12 Oct</span>
@@ -43,6 +34,7 @@ export default function CashbookPage() {
                         </div>
 
                         <div className="space-y-3">
+
                             <CashTransactionItem
                                 name="Sarah Mitchell"
                                 time="10:42 AM"
@@ -116,18 +108,16 @@ export default function CashbookPage() {
                             />
                         </div>
                     </section>
-                </motion.div>
+                </div>
             </div>
 
             {/* Floating Action Button */}
-            <motion.button
-                whileTap={{ scale: 0.9 }}
-                whileHover={{ scale: 1.05 }}
+            <button
                 onClick={() => setOpen(true)}
                 className="fixed bottom-24 right-5 z-40 h-14 w-14 rounded-full bg-primary text-white shadow-xl flex items-center justify-center"
             >
                 <Plus className="h-6 w-6" />
-            </motion.button>
+            </button>
 
             {/* Add Transaction Sheet */}
             <AddTransactionSheet open={open} onOpenChange={setOpen} />
