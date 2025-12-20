@@ -24,7 +24,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={nunitoSans.variable}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
-      </body >
-    </html >
+      </body>
+    </html>
   );
 }
