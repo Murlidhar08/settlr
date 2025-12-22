@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { signIn, signInWithGoogle } from "@/lib/auth-client";
+import { signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Wallet, Mail, EyeOff, Eye, ShieldCheck } from "lucide-react";
@@ -37,6 +37,10 @@ export default function LoginPage() {
   const handleGoogle = async () => {
     await signInWithGoogle();
   };
+
+  const handleDiscordLogin = async () => {
+    await signInWithDiscord();
+  }
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-background select-none">
@@ -78,11 +82,7 @@ export default function LoginPage() {
               <Input
                 type="email"
                 placeholder="Email"
-                className="
-                  h-12 rounded-xl pl-4 pr-10
-                  transition-all duration-200
-                  focus:ring-2 focus:ring-primary/50 active:scale-[0.99]
-                "
+                className="h-12 rounded-xl pl-4 pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/50 active:scale-[0.99]"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -95,11 +95,7 @@ export default function LoginPage() {
               <Input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                className="
-                  h-12 rounded-xl pl-4 pr-10
-                  transition-all duration-200
-                  focus:ring-2 focus:ring-primary/50 active:scale-[0.99]
-                "
+                className="h-12 rounded-xl pl-4 pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/50 active:scale-[0.99]"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -128,10 +124,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="
-                rounded-full h-12 w-full text-base font-semibold
-                hover:scale-[1.02] active:scale-[0.97] transition-all duration-150
-              "
+              className="rounded-full h-12 w-full text-base font-semibold hover:scale-[1.02] active:scale-[0.97] transition-all duration-150"
             >
               {loading ? "Signing in..." : "Sign In"}
             </Button>
@@ -151,23 +144,16 @@ export default function LoginPage() {
             <Button
               onClick={handleGoogle}
               variant="outline"
-              className="
-                rounded-full h-12 px-6
-                flex items-center gap-2
-                hover:scale-[1.03] active:scale-[0.97] transition
-              "
+              className="rounded-full h-12 px-6 flex items-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition"
             >
               <Image src="/google.svg" alt="Google" width={20} height={20} />
               <span className="hidden md:block">Sign in with Google</span>
             </Button>
 
             <Button
+              onClick={handleDiscordLogin}
               variant="outline"
-              disabled
-              className="
-                rounded-full h-12 px-6
-                flex items-center gap-2 opacity-50 cursor-not-allowed
-              "
+              className="rounded-full h-12 px-6 flex items-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition"
             >
               <Image src="/discord.svg" alt="Discord" width={20} height={20} />
               <span className="hidden md:block">Sign in with Discord</span>

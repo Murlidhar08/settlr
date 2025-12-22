@@ -13,3 +13,11 @@ export const signInWithGoogle = async () => {
         callbackURL: "/dashboard"
     });
 };
+
+// Discord
+export const signInWithDiscord = async () => {
+    return await authClient.signIn.social({
+        provider: "discord",
+        callbackURL: "/dashboard"
+    })
+}
