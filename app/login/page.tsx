@@ -1,21 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { signIn, signInWithGoogle } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Wallet, Mail, EyeOff, Eye, ArrowRight } from "lucide-react";
-
+import { Wallet, Mail, EyeOff, Eye, ShieldCheck } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,248 +23,184 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const result = await signIn.email({
-        email,
-        password,
-      });
-
-      if (result.error) {
-        setError(result.error.message || "Signin failed");
-      } else {
-        router.push("/dashboard");
-      }
+      const result = await signIn.email({ email, password });
+      if (result.error) setError(result.error.message || "Sign in failed");
+      else router.push("/dashboard");
     } catch (err) {
-      setError("An error occurred during signin");
-      console.error(err);
+      setError("An error occurred during sign in");
+      console.error(err)
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogle = async () => {
     await signInWithGoogle();
-  }
-
-  const handleDiscordLogin = async () => {
-    console.log("Pending Discord login");
-  }
+  };
 
   return (
-    <>
-      {/* <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Login</CardTitle>
-            <CardDescription>
-              Enter your credentials to access your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              {error && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                  {error}
-                </div>
-              )}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Logging in..." : "Login"}
-              </Button>
-              <Button onClick={handleGoogleLogin} className="w-full">
-                Login With Google
-              </Button>
-            </form>
-          </CardContent>
-          <div className="mt-4 space-y-2 text-center text-sm">
-            <Link
-              href="/forgot-password"
-              className="text-primary hover:underline"
-            >
-              Forgot your password?
-            </Link>
-            <div>
-              Don&apos;t have an account?{" "}
-              <Link href="/signup" className="text-primary hover:underline">
-                Sign up
-              </Link>
-            </div>
+    <div className="min-h-screen flex flex-col lg:flex-row bg-background select-none">
+
+      {/* LEFT SIDE */}
+      <div className="flex flex-col justify-between w-full lg:w-1/2 px-6 sm:px-12 lg:px-20 py-8">
+
+        {/* LOGO + BRAND – Always at top */}
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-11 h-11 rounded-xl bg-primary text-white flex items-center justify-center shadow-sm">
+            <Wallet className="w-6 h-6" />
           </div>
-        </Card>
-      </div> */}
+          <h1 className="text-3xl font-bold tracking-tight">Settlr</h1>
+        </div>
 
-      {/* Here is the updated code */}
-      <div className="flex flex-col min-h-screen bg-background">
-        {/* Top Header */}
-        <header className="flex-none p-4 pb-0">
-          <div className="flex items-center justify-between mb-8">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full bg-white dark:bg-gray-800 hover:bg-gray-100 transition"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+        {/* CENTER FORM AREA */}
+        <div className="flex flex-col justify-center max-w-md mx-auto w-full">
 
-            <div className="text-sm font-medium text-primary cursor-pointer hover:underline">
-              Need help?
-            </div>
-          </div>
+          <div className="mb-8 md:mb-4">
+            <h2 className="text-2xl font-bold tracking-tight mb-2">
+              Login to your account
+            </h2>
 
-          <div className="flex flex-col items-center justify-center mt-4">
-            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 text-primary animate-pulse">
-              <Wallet className="w-10 h-10" />
-            </div>
-          </div>
-        </header>
-
-        {/* Main */}
-        <main className="flex-1 flex flex-col justify-end w-full max-w-md mx-auto px-4 pb-8">
-          {/* Title */}
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome Back</h1>
-            <p className="text-gray-500 dark:text-gray-400 text-base">
-              Manage your cash flow simply.
+            <p className="text-muted-foreground hidden sm:block">
+              Welcome back! Select a method to sign in:
             </p>
           </div>
 
-          {/* Form Card */}
-          <div className="rounded-lg p-1 shadow-sm border bg-card">
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in">
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20">
                 {error}
               </div>
             )}
-            <form className="flex flex-col gap-4 p-4">
-              {/* Email */}
-              <div>
-                <label className="text-sm font-medium mb-1.5 ml-1 block">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Input
-                    type="email"
-                    placeholder="name@example.com"
-                    className="h-14 pl-4 pr-12 rounded-xl"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                  <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                </div>
-              </div>
 
-              {/* Password */}
-              <div>
-                <label className="text-sm font-medium mb-1.5 ml-1 block">
-                  Password
-                </label>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    className="h-14 pl-4 pr-12 rounded-xl"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
-                  >
-                    {showPassword ? (
-                      <Eye className="w-5 h-5" />
-                    ) : (
-                      <EyeOff className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Forgot Password */}
-              <div className="flex justify-end pt-1">
-                <Link
-                  href="/forgot-password"
-                  className="text-sm font-medium text-primary hover:underline"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-
-              {/* Sign In */}
-              <Button
-                className="mt-4 h-14 rounded-full text-lg font-semibold gap-2 active:scale-[0.98] transition-all"
-                disabled={loading}
-              >
-                {loading ? "Logging in..." : "Sign In"}
-                {/* <ArrowRight className="w-5 h-5" /> */}
-              </Button>
-            </form>
-          </div>
-
-          {/* Social Section */}
-          <div className="mt-8 flex flex-col items-center gap-6">
-            <div className="flex gap-4 w-full justify-center">
-              <Button
-                onClick={handleGoogleLogin}
-                variant="outline"
-                className="flex-1 max-w-40 h-12 rounded-full gap-2"
-              >
-                <img
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuADxaxlW3Zvs5yU9wgTWrV1DNSdwumtOyJ90BSoq4xYElsS8VuHrbq5BkqHmdNXhgd0iEuqjbgDEcTKHLUytZtiPNUTchu1qevb_48Fkt9HbsQg2g-5-gX5gsF5UXjVgtxMYtyrZAXUujx7d-BmnGaVQi2ccJs7PU5cGcHc_VDYOKFATD3hmP8R1nHac_rhcxfBySjq_QqVik7lvFdCbVFBlFcaza9Kl75qCjIJumxV5kOf3-4swK26azcSnA4NQf55SVfl2_Nv5K8R"
-                  alt="Google"
-                  width={20}
-                  height={20}
-                />
-                <span className="text-sm font-medium">Google</span>
-              </Button>
-
-              <Button
-                onClick={handleDiscordLogin}
-                variant="outline"
-                className="flex-1 max-w-40 h-12 rounded-full gap-2"
-              >
-                <svg
-                  className="w-5 h-5 text-[#5865F2]"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20.317..." />
-                </svg>
-                <span className="text-sm font-medium">Discord</span>
-              </Button>
+            {/* Email */}
+            <div className="relative">
+              <Input
+                type="email"
+                placeholder="name@example.com"
+                className="
+                  h-12 rounded-xl pl-4 pr-10
+                  transition-all duration-200
+                  focus:ring-2 focus:ring-primary/50 active:scale-[0.99]
+                "
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             </div>
 
-            <p className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
-              <Link href="/signup" className="font-semibold text-primary hover:underline">
-                Sign Up
+            {/* Password */}
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                className="
+                  h-12 rounded-xl pl-4 pr-10
+                  transition-all duration-200
+                  focus:ring-2 focus:ring-primary/50 active:scale-[0.99]
+                "
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition"
+              >
+                {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+              </button>
+            </div>
+
+            {/* Forgot */}
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="text-sm font-medium text-primary hover:underline hover:opacity-90 transition"
+              >
+                Forgot Password?
               </Link>
-            </p>
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              disabled={loading}
+              className="
+                rounded-full h-12 w-full text-base font-semibold
+                hover:scale-[1.02] active:scale-[0.97] transition-all duration-150
+              "
+            >
+              {loading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-6">
+            <div className="flex-1 h-px bg-linear-to-r from-transparent via-muted-foreground/40 to-transparent" />
+            <span className="text-sm text-muted-foreground whitespace-nowrap">
+              or sign in with
+            </span>
+            <div className="flex-1 h-px bg-linear-to-r from-transparent via-muted-foreground/40 to-transparent" />
           </div>
-        </main>
+
+          {/* Social Buttons */}
+          <div className="flex justify-center gap-4">
+            <Button
+              onClick={handleGoogle}
+              variant="outline"
+              className="
+                rounded-full h-12 px-6
+                flex items-center gap-2
+                hover:scale-[1.03] active:scale-[0.97] transition
+              "
+            >
+              <Image src="/google.svg" alt="Google" width={20} height={20} />
+              <span className="hidden md:block">Sign in with Google</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              disabled
+              className="
+                rounded-full h-12 px-6
+                flex items-center gap-2 opacity-50 cursor-not-allowed
+              "
+            >
+              <Image src="/discord.svg" alt="Discord" width={20} height={20} />
+              <span className="hidden md:block">Sign in with Discord</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* SIGN UP — Always at bottom */}
+        <p className="text-center text-sm mt-10">
+          Don&apos;t have an account?{" "}
+          <Link href="/signup" className="font-semibold text-primary hover:underline">
+            Sign Up
+          </Link>
+        </p>
       </div>
-    </>
+
+      {/* RIGHT PANEL */}
+      <div className="
+        hidden lg:flex w-1/2 p-10 items-center justify-center
+        bg-linear-to-br from-primary to-primary/80 text-white relative overflow-hidden
+        rounded-l-[3rem]
+      ">
+        <div className="absolute inset-0 bg-primary/20 backdrop-blur-sm animate-pulse" />
+        <div className="relative z-10 text-center px-10">
+          <div className="w-40 h-48 bg-white/10 backdrop-blur-lg rounded-3xl flex flex-col items-center justify-center border border-white/20 shadow-xl mx-auto mb-6 hover:scale-[1.03] transition-transform duration-200">
+            <ShieldCheck className="w-14 h-14 text-white" />
+          </div>
+          <h2 className="text-3xl font-bold mb-3">Secure. Reliable. Simple.</h2>
+          <p className="text-white/80 leading-relaxed text-sm max-w-md mx-auto">
+            Settlr ensures enterprise-grade identity protection while keeping your bookkeeping experience intuitive.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
