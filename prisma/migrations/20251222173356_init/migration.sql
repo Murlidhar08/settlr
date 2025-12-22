@@ -22,7 +22,7 @@ CREATE TABLE "user" (
     "image" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "contactNo" TEXT NOT NULL,
+    "contactNo" TEXT,
     "address" TEXT,
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
@@ -74,43 +74,43 @@ CREATE TABLE "verification" (
 );
 
 -- CreateTable
-CREATE TABLE "UserSettings" (
+CREATE TABLE "userSettings" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "theme" "ThemeMode" NOT NULL DEFAULT 'AUTO',
     "dateFormat" TEXT NOT NULL DEFAULT 'DD/MM/YYYY',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "UserSettings_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "userSettings_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Business" (
-    "id" SERIAL NOT NULL,
+CREATE TABLE "business" (
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "ownerId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Business_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "business_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "BusinessSettings" (
-    "id" SERIAL NOT NULL,
-    "businessId" INTEGER NOT NULL,
+CREATE TABLE "businessSettings" (
+    "id" TEXT NOT NULL,
+    "businessId" TEXT NOT NULL,
     "currency" "Currency" NOT NULL DEFAULT 'INR',
     "defaultPaymentMode" "PaymentMode" NOT NULL DEFAULT 'CASH',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "BusinessSettings_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "businessSettings_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Party" (
-    "id" SERIAL NOT NULL,
-    "businessId" INTEGER NOT NULL,
+CREATE TABLE "party" (
+    "id" TEXT NOT NULL,
+    "businessId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "contactNo" TEXT,
     "type" "PartyType" NOT NULL,
@@ -118,13 +118,13 @@ CREATE TABLE "Party" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Party_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "party_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Transaction" (
-    "id" SERIAL NOT NULL,
-    "businessId" INTEGER NOT NULL,
+CREATE TABLE "transaction" (
+    "id" TEXT NOT NULL,
+    "businessId" TEXT NOT NULL,
     "amount" DECIMAL(12,2) NOT NULL,
     "mode" "PaymentMode" NOT NULL,
     "direction" "TransactionDirection" NOT NULL,
@@ -133,21 +133,21 @@ CREATE TABLE "Transaction" (
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "partyId" INTEGER,
+    "partyId" TEXT,
 
-    CONSTRAINT "Transaction_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "transaction_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "TransactionDocument" (
+CREATE TABLE "transactionDocument" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "extension" TEXT NOT NULL,
-    "transactionId" INTEGER NOT NULL,
+    "transactionId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "TransactionDocument_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "transactionDocument_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -157,25 +157,25 @@ CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 CREATE UNIQUE INDEX "session_token_key" ON "session"("token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserSettings_userId_key" ON "UserSettings"("userId");
+CREATE UNIQUE INDEX "userSettings_userId_key" ON "userSettings"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BusinessSettings_businessId_key" ON "BusinessSettings"("businessId");
+CREATE UNIQUE INDEX "businessSettings_businessId_key" ON "businessSettings"("businessId");
 
 -- CreateIndex
-CREATE INDEX "Party_businessId_idx" ON "Party"("businessId");
+CREATE INDEX "party_businessId_idx" ON "party"("businessId");
 
 -- CreateIndex
-CREATE INDEX "Transaction_businessId_idx" ON "Transaction"("businessId");
+CREATE INDEX "transaction_businessId_idx" ON "transaction"("businessId");
 
 -- CreateIndex
-CREATE INDEX "Transaction_date_idx" ON "Transaction"("date");
+CREATE INDEX "transaction_date_idx" ON "transaction"("date");
 
 -- CreateIndex
-CREATE INDEX "Transaction_businessId_mode_idx" ON "Transaction"("businessId", "mode");
+CREATE INDEX "transaction_businessId_mode_idx" ON "transaction"("businessId", "mode");
 
 -- CreateIndex
-CREATE INDEX "TransactionDocument_transactionId_idx" ON "TransactionDocument"("transactionId");
+CREATE INDEX "transactionDocument_transactionId_idx" ON "transactionDocument"("transactionId");
 
 -- AddForeignKey
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -184,28 +184,28 @@ ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserSettings" ADD CONSTRAINT "UserSettings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "userSettings" ADD CONSTRAINT "userSettings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Business" ADD CONSTRAINT "Business_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "business" ADD CONSTRAINT "business_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "BusinessSettings" ADD CONSTRAINT "BusinessSettings_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "Business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "businessSettings" ADD CONSTRAINT "businessSettings_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Party" ADD CONSTRAINT "Party_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "Business"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "party" ADD CONSTRAINT "party_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "business"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "Business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_partyId_fkey" FOREIGN KEY ("partyId") REFERENCES "Party"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_partyId_fkey" FOREIGN KEY ("partyId") REFERENCES "party"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TransactionDocument" ADD CONSTRAINT "TransactionDocument_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "Transaction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "transactionDocument" ADD CONSTRAINT "transactionDocument_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "transaction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TransactionDocument" ADD CONSTRAINT "TransactionDocument_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "transactionDocument" ADD CONSTRAINT "transactionDocument_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

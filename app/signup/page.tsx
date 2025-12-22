@@ -108,7 +108,7 @@ export default function SignupPage() {
             <div className="relative">
               <Input
                 type="email"
-                placeholder="name@example.com"
+                placeholder="Email"
                 className="h-12 rounded-xl pl-4 pr-10"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

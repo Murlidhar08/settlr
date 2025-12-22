@@ -10,6 +10,10 @@ import { FROM_EMAIL, resend } from "./resend";
 // Template
 import { getResetPasswordEmailHtml } from "./templates/email-reset-password";
 import { getVerificationEmailHtml } from "./templates/email-verification";
+import { getPasswordResetSuccessEmailHtml } from "./templates/email-password-reseted";
+
+// Const
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -51,20 +55,27 @@ export const auth = betterAuth({
 
     // Send password reset successfully mail
     onPasswordReset: async ({ user }) => {
-      const { data, error } = await resend.emails.send({
-        from: FROM_EMAIL,
-        to: user.email,
-        subject: "Reset Your Password",
-        html: "<h1>PASSOWORD RESET.</h1>",
-      });
+      try {
+        const emailHtml = getPasswordResetSuccessEmailHtml(user.email, appUrl);
 
-      if (error) {
-        console.error("Failed to send reset password email:", error)
-        throw new Error("Failed to send reset password email")
+        const { data, error } = await resend.emails.send({
+          from: FROM_EMAIL,
+          to: user.email,
+          subject: "Password Reset Successful",
+          html: emailHtml,
+        });
+
+        if (error) {
+          console.error("Failed to send password reset success email:", error);
+          throw new Error("Failed to send password reset success email");
+        }
+
+        console.log("Password reset success email sent to:", user.email);
+        console.log("Email ID:", data?.id);
+      } catch (err) {
+        console.error("Error in onPasswordReset:", err);
+        throw err;
       }
-
-      console.log("Reset password email sent successfully to:", user.email)
-      console.log("Email ID:", data?.id)
     }
   },
   emailVerification: {

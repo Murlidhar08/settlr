@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
                 <div className="relative">
                   <Input
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder="Email"
                     className="
                       h-12 rounded-xl pl-4 pr-10
                       transition-all duration-200

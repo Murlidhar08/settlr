@@ -90,7 +90,6 @@ export default function ResetPasswordPage() {
         </button>
 
         <div className="max-w-md mx-auto w-full mt-10">
-
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">
             Reset Your Password
           </h2>

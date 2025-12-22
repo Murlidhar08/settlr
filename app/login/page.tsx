@@ -77,7 +77,7 @@ export default function LoginPage() {
             <div className="relative">
               <Input
                 type="email"
-                placeholder="name@example.com"
+                placeholder="Email"
                 className="
                   h-12 rounded-xl pl-4 pr-10
                   transition-all duration-200
