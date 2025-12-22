@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signUp } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -42,11 +42,12 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const result = await signUp.email({
+      const result = await authClient.signUp.email({
         email,
         name,
         password,
       });
+
       if (result.error) {
         console.log(result)
         setError(result.error.message || "Signup failed");
