@@ -1,4 +1,4 @@
-export function getResetPasswordEmailHtml(
+export function getVerificationEmailHtml(
   email: string,
   resetUrl: string
 ): string {
@@ -8,7 +8,7 @@ export function getResetPasswordEmailHtml(
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Reset Your Password</title>
+      <title>Varification</title>
     </head>
     <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5;">
       <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f5; padding: 40px 0;">
@@ -18,7 +18,7 @@ export function getResetPasswordEmailHtml(
               <!-- Header -->
               <tr>
                 <td style="padding: 40px 40px 20px 40px; text-align: center;">
-                  <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #18181b;">Reset Your Password</h1>
+                  <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #18181b;">Verify Your Email</h1>
                 </td>
               </tr>
               
@@ -32,14 +32,14 @@ export function getResetPasswordEmailHtml(
                     We received a request to reset the password for your account (<strong>${email}</strong>).
                   </p>
                   <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 24px; color: #52525b;">
-                    Click the button below to reset your password:
+                    Click the button below to Varification:
                   </p>
                   
                   <!-- Button -->
                   <table width="100%" cellpadding="0" cellspacing="0">
                     <tr>
                       <td align="center" style="padding: 0 0 30px 0;">
-                        <a href="${resetUrl}" style="display: inline-block; padding: 14px 32px; background-color: #18181b; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 500;">Reset Password</a>
+                        <a href="${resetUrl}" style="display: inline-block; padding: 14px 32px; background-color: #18181b; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 500;">Verify Email</a>
                       </td>
                     </tr>
                   </table>

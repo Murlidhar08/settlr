@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// import { forgetPassword } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 
 import { useState } from "react";
@@ -28,24 +28,24 @@ export default function ForgotPasswordPage() {
     setSuccess(false);
     setLoading(true);
 
-    // try {
-    //   const result = await forgetPassword({
-    //     email,
-    //     redirectTo: "/reset-password",
-    //   });
+    try {
+      const result = await authClient.requestPasswordReset({
+        email,
+        redirectTo: "/reset-password",
+      });
 
-    //   if (result.error) {
-    //     setError(result.error.message || "Failed to send reset email");
-    //   } else {
-    //     setSuccess(true);
-    //     console.log("Password reset email sent to:", email);
-    //   }
-    // } catch (err) {
-    //   setError("An error occurred. Please try again.");
-    //   console.error("Forgot password error:", err);
-    // } finally {
-    //   setLoading(false);
-    // }
+      if (result.error) {
+        setError(result.error.message || "Failed to send reset email");
+      } else {
+        setSuccess(true);
+        console.log("Password reset email sent to:", email);
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+      console.error("Forgot password error:", err);
+    } finally {
+      setLoading(false);
+    }
 
     setLoading(false);
     console.error("TODO: PENDING FORGET PASSWORD");

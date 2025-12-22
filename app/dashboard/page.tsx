@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
   const router = useRouter();
