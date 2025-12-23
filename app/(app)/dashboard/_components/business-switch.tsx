@@ -1,6 +1,6 @@
 "use client"
 
-import { Briefcase, Building2, Check, ChevronDown, Globe, Plus } from "lucide-react"
+import { Building2, Check, ChevronDown, Plus } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,6 @@ import { useState } from "react"
 import { Sheet, SheetContent, SheetFooter, SheetHeader } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { prisma } from "@/lib/prisma"
 import { addBusiness } from "@/actions/business.actions"
 
 /* ========================================================= */
@@ -38,12 +37,12 @@ export default function SwitchBusiness({ businesses }: SwitchBusinessProps) {
     const activeBusiness = businesses.find((b) => b.id === activeBusinessId)
 
     const handleAddBusiness = async () => {
-        await addBusiness(businessName, 1)
+        await addBusiness(businessName)
         setPopOpen(false);
         setOpen(false);
     }
 
-    const onChangeBusinessId = (businessId: any) => {
+    const onChangeBusinessId = (businessId: string) => {
         setActiveBusinessId(businessId);
         setPopOpen(false);
     }
@@ -145,7 +144,7 @@ export default function SwitchBusiness({ businesses }: SwitchBusinessProps) {
                                 id="name"
                                 placeholder="Business name"
                                 value={businessName}
-                                onChange={(e: any) => setBusinessName(e.target.value)}
+                                onChange={e => setBusinessName(e.target.value)}
                                 autoFocus
                             />
                         </div>

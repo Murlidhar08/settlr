@@ -27,9 +27,30 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Header from "@/components/Header";
+import { signOut } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
+    const router = useRouter();
     const [theme, setTheme] = React.useState<"auto" | "light" | "dark">("auto");
+
+    // -------------
+    // Handle Logout
+    const handleLogout = async () => {
+        try {
+            await signOut();
+
+            toast.success("Logged out successfully");
+
+            // small delay so toast is visible before navigation
+            setTimeout(() => {
+                router.replace("/login");
+            }, 300);
+        } catch (error) {
+            toast.error("Failed to logout");
+        }
+    };
 
     return (
         <div className="min-h-screen bg-background">
@@ -46,7 +67,11 @@ export default function SettingsPage() {
                     >
                         <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
                             {/* <User size={28} /> */}
-                            <img className="rounded-full" src="https://github.com/shadcn.png" alt="image" />
+                            <img
+                                className="rounded-full"
+                                src="https://github.com/shadcn.png"
+                                alt="image"
+                            />
                         </div>
                         <div className="flex-1">
                             <p className="font-bold text-lg">Alex Sterling</p>
@@ -148,6 +173,7 @@ export default function SettingsPage() {
                     {/* LOGOUT */}
                     <motion.div whileTap={{ scale: 0.97 }}>
                         <Button
+                            onClick={handleLogout}
                             variant="destructive"
                             className="w-full h-12 rounded-xl gap-2"
                         >

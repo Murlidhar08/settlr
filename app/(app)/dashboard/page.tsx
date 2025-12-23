@@ -9,17 +9,22 @@ import {
 } from "lucide-react";
 
 // Component
-import TransactionItem from "./components/TransactionItem";
-import StatCard from "./components/StatCard";
+import TransactionItem from "./_components/transaction-item";
+import StatCard from "./_components/stat-card";
 import Header from "@/components/Header";
-import SwitchBusiness from "./components/BusinessSwitch";
+import SwitchBusiness from "./_components/business-switch";
 import { prisma } from "@/lib/prisma";
 
 /* ========================================================= */
 /* PAGE */
 /* ========================================================= */
 export default async function Page() {
-    const businessList: any = await prisma.business?.findMany({ select: { id: true, name: true } });
+    const businessList: any = await prisma.business?.findMany({
+        select: {
+            id: true,
+            name: true
+        }
+    });
     const selectedBusinessId = businessList?.[0]?.id;
 
     console.log("Selected BusinessId is:", selectedBusinessId);

@@ -1,5 +1,9 @@
+// Packages
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner"
+
+// Style
 import "./globals.css";
 
 const nunitoSans = Nunito_Sans({ variable: '--font-sans' });
@@ -24,6 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={nunitoSans.variable}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
+        <Toaster />
       </body>
     </html>
   );

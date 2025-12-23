@@ -10,6 +10,7 @@ import {
     ChevronRight,
 } from "lucide-react";
 import clsx from "clsx";
+import { useState } from "react";
 
 type NavItem = {
     label: string;
@@ -24,12 +25,8 @@ const NAV_ITEMS: NavItem[] = [
     { label: "Settings", icon: <Settings />, href: "/settings" },
 ];
 
-interface sidebarProps {
-    collapsed: boolean;
-    onCollapse: (status: boolean) => VoidFunction;
-}
-
-export default function Sidebar({ collapsed, onCollapse }: sidebarProps) {
+export default function Sidebar() {
+    const [collapsed, setCollapsed] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
 
@@ -77,7 +74,7 @@ export default function Sidebar({ collapsed, onCollapse }: sidebarProps) {
                 {/* Collapse Toggle */}
                 <div className="border-t p-3">
                     <button
-                        onClick={() => onCollapse(!collapsed)}
+                        onClick={() => setCollapsed(!collapsed)}
                         className="flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                     >
                         {collapsed ? <ChevronRight /> : <ChevronLeft />}
@@ -103,6 +100,8 @@ export default function Sidebar({ collapsed, onCollapse }: sidebarProps) {
                     })}
                 </div>
             </nav>
+
+            <div className={`hidden lg:block shrink-0 ${collapsed ? "w-20" : "w-64"}`} />
         </>
     );
 }

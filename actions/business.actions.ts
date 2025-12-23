@@ -4,34 +4,32 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-
-import { cookies, headers } from "next/headers";
-
-export async function setActiveBusiness(businessId: string) {
-    (await cookies())?.set("businessId", businessId, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 30 // 30 days
-    })
-}
+import { headers } from "next/headers";
 
 export async function addBusiness(name: string) {
     if (!name) {
         throw new Error("Business name is required");
     }
 
-    const session = await auth.api.getSession({ headers: await headers() });
-    console.log("Session: ", session);
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+
+    // no session → user not logged in
+    if (!session) {
+        console.error("User is not logged in.")
+        return null;
+    }
+
+    console.log("Session :-", session.user)
 
     await prisma.business.create({
         data: {
-            id: `${Math.random()}`,
-            name,
-            ownerId: session?.user.id ?? "PENDING",
-        },
-    });
+            name: name,
+            ownerId: session.user.id
+        }
+    })
 
     revalidatePath("/dashboard")
+    return true;
 }
