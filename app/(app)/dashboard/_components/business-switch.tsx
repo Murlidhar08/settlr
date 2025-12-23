@@ -9,7 +9,7 @@ import { useState } from "react"
 import { Sheet, SheetContent, SheetFooter, SheetHeader } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { addBusiness } from "@/actions/business.actions"
+import { addBusiness, switchBusiness } from "@/actions/business.actions"
 
 /* ========================================================= */
 /* TYPES */
@@ -42,8 +42,9 @@ export default function SwitchBusiness({ businesses }: SwitchBusinessProps) {
         setOpen(false);
     }
 
-    const onChangeBusinessId = (businessId: string) => {
+    const onChangeBusinessId = async (businessId: string) => {
         setActiveBusinessId(businessId);
+        await switchBusiness(businessId);
         setPopOpen(false);
     }
 

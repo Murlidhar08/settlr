@@ -22,10 +22,13 @@ export const auth = betterAuth({
     provider: "postgresql", // or "mysql", "postgresql", ...etc
   }),
   user: {
-    modelName: "users",
-    fields: {
-      email: "emailAddress",
-      name: "fullName"
+    additionalFields: {
+      contactNo: {
+        type: "string",
+      },
+      address: {
+        type: "string",
+      },
     },
   },
   emailAndPassword: {
@@ -133,6 +136,9 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true,
       maxAge: 60 // 1 Minute
+    },
+    additionalFields: {
+      activeBusinessId: { type: "string", required: false }
     }
   },
   plugins: [nextCookies()]

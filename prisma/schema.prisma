@@ -42,10 +42,10 @@ enum PartyType {
 }
 
 // TABLES
-model Users {
+model User {
   id                String                @id
-  fullName          String
-  emailAddress      String
+  name              String
+  email             String
   emailVerified     Boolean               @default(false)
   image             String?
   createdAt         DateTime              @default(now())
@@ -59,20 +59,21 @@ model Users {
   userSettings      UserSettings?
   transactions      Transaction[]
 
-  @@unique([emailAddress])
-  @@map("users")
+  @@unique([email])
+  @@map("user")
 }
 
 model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  users     Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String   @id
+  expiresAt        DateTime
+  token            String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  ipAddress        String?
+  userAgent        String?
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeBusinessId String?
 
   @@unique([token])
   @@index([userId])
@@ -84,7 +85,7 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  users                 Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -114,7 +115,7 @@ model Verification {
 model UserSettings {
   id         String    @id
   userId     String    @unique
-  user       Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   theme      ThemeMode @default(AUTO)
   dateFormat String    @default("DD/MM/YYYY")
   createdAt  DateTime  @default(now())
@@ -126,7 +127,7 @@ model Business {
   id               String            @id @default(cuid())
   name             String
   ownerId          String
-  owner            Users             @relation(fields: [ownerId], references: [id])
+  owner            User              @relation(fields: [ownerId], references: [id])
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @default(now()) @updatedAt
   transactions     Transaction[]
@@ -174,7 +175,7 @@ model Transaction {
   date        DateTime              @default(now())
   description String?
   userId      String
-  user        Users                 @relation(fields: [userId], references: [id])
+  user        User                  @relation(fields: [userId], references: [id])
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @default(now()) @updatedAt
   documents   TransactionDocument[]
@@ -194,7 +195,7 @@ model TransactionDocument {
   transactionId String
   transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
   userId        String
-  user          Users       @relation(fields: [userId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
   createdAt     DateTime    @default(now())
 
   @@index([transactionId])
