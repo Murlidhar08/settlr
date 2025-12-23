@@ -16,9 +16,17 @@ import { getPasswordResetSuccessEmailHtml } from "./templates/email-password-res
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
 
 export const auth = betterAuth({
+  appName: "Settlr",
   database: prismaAdapter(prisma, {
     provider: "postgresql", // or "mysql", "postgresql", ...etc
   }),
+  user: {
+    modelName: "users",
+    fields: {
+      email: "emailAddress",
+      name: "fullName"
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -119,9 +127,6 @@ export const auth = betterAuth({
       clientId: process.env.DISCORD_CLIENT_ID as string,
       clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
     },
-  },
-  rateLimit: {
-    storage: "database"
   },
   session: {
     cookieCache: {

@@ -22,6 +22,8 @@ export default async function Page() {
     const businessList: any = await prisma.business?.findMany({ select: { id: true, name: true } });
     const selectedBusinessId = businessList?.[0]?.id;
 
+    console.log("Selected BusinessId is:", selectedBusinessId);
+
     return (
         <div className="w-full">
             {/* Header */}
