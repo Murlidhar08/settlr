@@ -11,6 +11,7 @@ import { FROM_EMAIL, resend } from "./resend";
 import { getResetPasswordEmailHtml } from "./templates/email-reset-password";
 import { getVerificationEmailHtml } from "./templates/email-verification";
 import { getPasswordResetSuccessEmailHtml } from "./templates/email-password-reseted";
+import { headers } from "next/headers";
 
 // Const
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
@@ -136,3 +137,9 @@ export const auth = betterAuth({
   },
   plugins: [nextCookies()]
 });
+
+export const getUserSession = async () => {
+  return await auth.api.getSession({
+    headers: await headers(),
+  });
+};

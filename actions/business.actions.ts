@@ -1,7 +1,7 @@
 "use server";
 
 // Package
-import { auth } from "@/lib/auth";
+import { auth, getUserSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
@@ -11,9 +11,7 @@ export async function addBusiness(name: string) {
         throw new Error("Business name is required");
     }
 
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+    const session = await getUserSession()
 
     // no session → user not logged in
     if (!session) {
