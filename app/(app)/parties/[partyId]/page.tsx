@@ -1,5 +1,5 @@
 import { ArrowLeft, Search, Phone, Share2, Plus } from 'lucide-react'
-
+import { format } from "date-fns";
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -8,11 +8,12 @@ import { Separator } from '@/components/ui/separator'
 import TransactionItem from './components/TransactionItem'
 import AddTransactionModal from './components/AddTransactionModal'
 import { prisma } from '@/lib/prisma'
-import { TransactionDirection } from '@/lib/generated/prisma/client'
-import { TransactionData } from '../../../../types/transaction/TransactionData'
+import { Transaction, TransactionDirection } from '@/lib/generated/prisma/client'
+import { getUserSession } from '@/lib/auth'
 
-export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: number }> }) {
+export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
     const partyId = (await params).partyId;
+    const session = await getUserSession();
 
     const rawPartyDetails = await prisma.party.findFirst({
         select: {
@@ -20,10 +21,13 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
             name: true,
             type: true,
             transactions: {
-                where: { businessId: 1 }
+                where: {
+                    businessId: session?.session.activeBusinessId || "",
+                    partyId: partyId,
+                }
             }
         },
-        where: { id: Number(partyId) }
+        where: { id: partyId }
     });
 
     let partyDetails = null;
@@ -37,20 +41,10 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
         };
     }
 
-    // const transactionList = await prisma.transaction.findMany({
-    //     where: {
-    //         partyId: Number(partyId),
-    //         businessId: 1,
-    //     },
-    //     orderBy: {
-    //         createdAt: "desc",
-    //     },
-    // });
-
     let totalIn = 0,
         totalOut = 0;
 
-    partyDetails?.transactions?.forEach((tra: TransactionData) => {
+    partyDetails?.transactions?.forEach((tra) => {
         if (tra.direction == TransactionDirection.IN)
             totalIn += Number(tra.amount);
         else if (tra.direction == TransactionDirection.OUT) {
@@ -145,7 +139,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
                         <div className="flex flex-col gap-3">
                             {/* Transaction List */}
                             {
-                                partyDetails?.transactions?.map((transaction: TransactionData) => {
+                                partyDetails?.transactions?.map((transaction) => {
                                     return (
                                         <AddTransactionModal
                                             key={transaction.id}
@@ -155,7 +149,8 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
                                         >
                                             <TransactionItem
                                                 title={transaction.description ?? ""}
-                                                subtitle={transaction.date.toString()}
+                                                // subtitle={transaction.date.toString()}
+                                                subtitle={format(transaction.date, "dd, MMM, yyyy")}
                                                 amount={String(transaction.amount)}
                                                 type={transaction.direction}
                                             />
@@ -202,14 +197,14 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
             {/* Bottom Gradient */}
             <footer className='fixed bottom-0 w-full'>
                 <div className="flex flex-row w-full justify-center mx-auto">
-                    <AddTransactionModal title="Add Transaction" partyId={partyId}>
+                    <AddTransactionModal title="Add Transaction" partyId={partyId} direction={TransactionDirection.OUT}>
                         <Button className="pointer-events-auto h-14 w-full max-w-sm rounded-md gap-3 shadow-xl hover:scale-[1.03] transition-transform bg-rose-800" size="lg">
                             <Plus className="h-5 w-5" />
                             YOU GAVE
                         </Button>
                     </AddTransactionModal>
 
-                    <AddTransactionModal title="Add Transaction" partyId={partyId}>
+                    <AddTransactionModal title="Add Transaction" partyId={partyId} direction={TransactionDirection.OUT}>
                         <Button className="pointer-events-auto h-14 w-full max-w-sm rounded-md gap-3 shadow-xl hover:scale-[1.03] transition-transform bg-green-900" size="lg">
                             <Plus className="h-5 w-5" />
                             YOU GOT

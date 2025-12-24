@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { addParties } from "@/actions/parties.actions"
 import { partyData } from "@/types/party/partyData"
 import { PartyType } from "@/lib/generated/prisma/enums"
+import { Party } from "@/lib/generated/prisma/client"
 
 interface ParitesProps {
     title: string,
@@ -25,7 +26,13 @@ interface ParitesProps {
 
 export default function AddPartiesModal({ title, type }: ParitesProps) {
     const [popOpen, setPopOpen] = useState(false);
-    const [data, setData] = useState<partyData>({ businessId: 1, contactNo: "", name: "", type: type })
+    const [data, setData] = useState<Party>({
+        type: type,
+        name: "",
+        businessId: "",
+        contactNo: null,
+        profileUrl: null
+    })
 
     const handleAddBusiness = async () => {
         await addParties(data);
@@ -71,7 +78,7 @@ export default function AddPartiesModal({ title, type }: ParitesProps) {
                             <Input
                                 id="conatactNo"
                                 placeholder="Contact No"
-                                value={data.contactNo}
+                                value={data.contactNo || ""}
                                 onChange={e => { setData(pre => ({ ...pre, contactNo: e.target.value })) }}
                             />
                         </div>

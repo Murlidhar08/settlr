@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Sheet, SheetContent, SheetFooter, SheetHeader } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,12 +29,16 @@ interface SwitchBusinessProps {
 /* COMPONENT */
 /* ========================================================= */
 
-export default function SwitchBusiness({ businesses }: SwitchBusinessProps) {
+export default function SwitchBusiness({ businesses, activeBusinessId }: SwitchBusinessProps) {
+    const [selectBusiness, setSelectBusiness] = useState<Business>();
     const [popOpen, setPopOpen] = useState(false);
     const [open, setOpen] = useState(false);
     const [businessName, setBusinessName] = useState("");
-    const [activeBusinessId, setActiveBusinessId] = useState(businesses?.[0]?.id);
-    const activeBusiness = businesses.find((b) => b.id === activeBusinessId)
+
+    useEffect(() => {
+        const activeBus = businesses.find((b) => b.id === activeBusinessId);
+        setSelectBusiness(activeBus);
+    }, [activeBusinessId, businesses])
 
     const handleAddBusiness = async () => {
         await addBusiness(businessName)
@@ -42,9 +46,9 @@ export default function SwitchBusiness({ businesses }: SwitchBusinessProps) {
         setOpen(false);
     }
 
-    const onChangeBusinessId = async (businessId: string) => {
-        setActiveBusinessId(businessId);
-        await switchBusiness(businessId);
+    const onChangeBusinessId = async (business: Business) => {
+        setSelectBusiness(business);
+        await switchBusiness(business.id, true);
         setPopOpen(false);
     }
 
@@ -54,7 +58,7 @@ export default function SwitchBusiness({ businesses }: SwitchBusinessProps) {
                 <PopoverTrigger className="group flex min-w-0 items-center gap-2">
                     <span>Business -</span>
                     <span className="truncate text-xl font-semibold tracking-tight text-foreground">
-                        {activeBusiness?.name ?? "Select Business"}
+                        {selectBusiness?.name ?? "Select Business"}
                     </span>
 
                     <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
@@ -73,12 +77,12 @@ export default function SwitchBusiness({ businesses }: SwitchBusinessProps) {
                         >
                             {/* Business List */}
                             {businesses.map((business) => {
-                                const isActive = business.id === activeBusinessId
+                                const isActive = business.id === selectBusiness?.id
 
                                 return (
                                     <button
                                         key={business.id}
-                                        onClick={() => { onChangeBusinessId(business.id) }}
+                                        onClick={() => { onChangeBusinessId(business) }}
                                         className={cn(
                                             "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm transition",
                                             isActive

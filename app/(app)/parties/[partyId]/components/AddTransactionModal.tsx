@@ -9,28 +9,27 @@ import { useState, useEffect, ReactNode } from "react"
 import { PaymentMode, TransactionDirection } from "@/lib/generated/prisma/enums"
 import { addTransaction } from "@/actions/transaction.actions"
 import { Transaction } from "@/lib/generated/prisma/client"
-import { TransactionData } from "../../../../../types/transaction/TransactionData"
 
 interface TransactionProps {
-    transactionData?: TransactionData
+    transactionData?: Transaction
     title: string
-    partyId: number
+    partyId: string
+    direction?: TransactionDirection
     children: ReactNode
 }
 
-export default function AddTransactionModal({ title, partyId, transactionData, children }: TransactionProps) {
+export default function AddTransactionModal({ title, partyId, transactionData, direction, children }: TransactionProps) {
     const [popOpen, setPopOpen] = useState(false);
 
     const [data, setData] = useState({
-        businessId: 1,
+        businessId: "",
         amount: "",
         date: new Date().toISOString().substring(0, 10),
         description: "",
         mode: PaymentMode.CASH,
-        direction: TransactionDirection.IN,
-        partyId: Number(partyId),
-        userId: 1,
-        id: 0,
+        direction: direction,
+        partyId: partyId,
+        userId: "",
     });
 
     // Prefill when editing
@@ -54,9 +53,7 @@ export default function AddTransactionModal({ title, partyId, transactionData, c
         await addTransaction({
             ...data,
             amount: Number(data.amount),
-            date: new Date(data.date),
-            createdAt: undefined,
-            updatedAt: undefined
+            date: new Date(data.date)
         });
 
         setPopOpen(false);
@@ -130,7 +127,7 @@ export default function AddTransactionModal({ title, partyId, transactionData, c
                             <Button variant="outline" className="flex-1" onClick={() => setPopOpen(false)}>Cancel</Button>
 
                             <Button className="flex-1" onClick={handleAddTransaction}>
-                                {data.id && data.id !== 0 ? "Update" : "Add"} Transaction
+                                {data.id ? "Update" : "Add"} Transaction
                             </Button>
                         </div>
                     </SheetFooter>

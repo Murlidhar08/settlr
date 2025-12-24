@@ -14,7 +14,7 @@ const getInitials = function (userName: string): string {
 };
 
 interface partyItemProp {
-    id: number,
+    id: string,
     name: string,
     amount: string,
     subtitle?: string,
@@ -39,7 +39,7 @@ export default function PartyItem({
     return (
         <div
             onClick={() => router.push(`/parties/${id}`)}
-            className="flex items-center gap-4 rounded-2xl border bg-card p-4 active:scale-[0.98] transition"
+            className="flex items-center gap-4 rounded-2xl border bg-card p-4 active:scale-[0.98] transition cursor-pointer"
         >
 
             <Avatar className="h-12 w-12">

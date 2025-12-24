@@ -10,7 +10,6 @@ import { PartyType } from "@/lib/generated/prisma/enums";
 
 // Components
 import AddPartiesModal from "./components/AddPartiesModal";
-import PartyItem from "./components/PartyItem";
 import CustomerList from "./components/CustomerList";
 import SupplierList from "./components/SupplierList";
 

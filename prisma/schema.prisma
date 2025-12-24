@@ -113,7 +113,7 @@ model Verification {
 }
 
 model UserSettings {
-  id         String    @id
+  id         String    @id @default(cuid())
   userId     String    @unique
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   theme      ThemeMode @default(AUTO)
@@ -138,7 +138,7 @@ model Business {
 }
 
 model BusinessSettings {
-  id                 String      @id
+  id                 String      @id @default(cuid())
   businessId         String      @unique
   business           Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
   currency           Currency    @default(INR)
@@ -150,7 +150,7 @@ model BusinessSettings {
 }
 
 model Party {
-  id           String        @id
+  id           String        @id @default(cuid())
   businessId   String
   business     Business      @relation(fields: [businessId], references: [id])
   name         String
@@ -166,7 +166,7 @@ model Party {
 }
 
 model Transaction {
-  id          String                @id
+  id          String                @id @default(cuid())
   businessId  String
   business    Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
   amount      Decimal               @db.Decimal(12, 2)
@@ -189,7 +189,7 @@ model Transaction {
 }
 
 model TransactionDocument {
-  id            Int         @id @default(autoincrement())
+  id            String      @id @default(cuid())
   name          String
   extension     String
   transactionId String

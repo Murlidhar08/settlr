@@ -141,7 +141,7 @@ CREATE TABLE "transaction" (
 
 -- CreateTable
 CREATE TABLE "transactionDocument" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "extension" TEXT NOT NULL,
     "transactionId" TEXT NOT NULL,

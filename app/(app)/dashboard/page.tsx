@@ -14,20 +14,32 @@ import StatCard from "./_components/stat-card";
 import Header from "@/components/Header";
 import SwitchBusiness from "./_components/business-switch";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { switchBusiness } from "@/actions/business.actions";
 
 /* ========================================================= */
 /* PAGE */
 /* ========================================================= */
 export default async function Page() {
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+
+    if (!session?.user)
+        redirect("/login");
+
     const businessList: any = await prisma.business?.findMany({
         select: {
             id: true,
             name: true
-        }
+        },
+        where: { ownerId: session?.user.id }
     });
-    const selectedBusinessId = businessList?.[0]?.id;
 
-    console.log("Selected BusinessId is:", selectedBusinessId);
+    const selectedBusinessId = session.session.activeBusinessId || businessList?.[0]?.id;
+    await switchBusiness(selectedBusinessId);
 
     return (
         <div className="w-full">

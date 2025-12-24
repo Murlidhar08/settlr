@@ -20,7 +20,7 @@ export default function CustomerList() {
                         <PartyItem
                             key={idx}
                             id={item.id}
-                            name={`${item.id} - ${item.name}`}
+                            name={item.name}
                             subtitle={item.name}
                             amount="+$500.00"
                             status="Return"

@@ -27,18 +27,22 @@ export async function addBusiness(name: string) {
     return true;
 }
 
-export async function switchBusiness(businessId: string) {
+export async function switchBusiness(businessId: string, isRevalidate: boolean = false) {
     const session = await getUserSession();
     if (!session) {
         console.error("User is not logged in.")
         return null;
     }
 
+    if (session.session.activeBusinessId == businessId)
+        return true;
+
     await prisma.session.update({
         where: { id: session.session.id, },
         data: { activeBusinessId: businessId },
     });
 
-    revalidatePath("/dashboard")
+    if (isRevalidate) revalidatePath("/dashboard")
+
     return true;
 }

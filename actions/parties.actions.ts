@@ -3,14 +3,20 @@
 // Package
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { partyData } from "@/types/party/partyData";
 import { PartyType } from "@/lib/generated/prisma/enums";
 import { Party } from "@/lib/generated/prisma/client";
+import { getUserSession } from "@/lib/auth";
 
-export async function addParties(partyData: partyData) {
+export async function addParties(partyData: Party) {
+    const session = await getUserSession();
+    if (!session) {
+        console.error("User is not logged in.")
+        return null;
+    }
+
     await prisma.party.create({
         data: {
-            businessId: partyData.businessId,
+            businessId: session.session.activeBusinessId || undefined,
             contactNo: partyData.contactNo,
             name: partyData.name,
             type: partyData.type,
@@ -21,9 +27,11 @@ export async function addParties(partyData: partyData) {
 }
 
 export async function getCustomerList() {
+    const session = await getUserSession();
     const customerList = await prisma.party.findMany({
         where: {
-            type: PartyType.CUSTOMER
+            type: PartyType.CUSTOMER,
+            businessId: session?.session.activeBusinessId || ""
         }
     });
 
