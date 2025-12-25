@@ -15,7 +15,7 @@ import { redirect } from "next/navigation";
 // Component
 import TransactionItem from "./components/transaction-item";
 import StatCard from "./components/stat-card";
-import Header from "@/components/Header";
+import { Header } from "@/components/header";
 import SwitchBusiness from "./components/business-switch";
 
 // Actions
