@@ -36,9 +36,9 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts",
     "components/Sidebar.tsx",
-    "app/(app)/dashboard/_components/BottomNav.tsx",
-    "app/(app)/dashboard/_components/stat-card.tsx",
-    "app/(app)/dashboard/_components/transaction-item.tsx"
+    "app/(app)/dashboard/components/BottomNav.tsx",
+    "app/(app)/dashboard/components/stat-card.tsx",
+    "app/(app)/dashboard/components/transaction-item.tsx"
   ],
   "exclude": [
     "node_modules"
