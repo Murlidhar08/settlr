@@ -40,11 +40,14 @@ export async function getCustomerList() {
 }
 
 export async function getSupplierList() {
+    const session = await getUserSession();
     const supplierList = await prisma.party.findMany({
         where: {
-            type: PartyType.SUPPLIER
+            type: PartyType.SUPPLIER,
+            businessId: session?.session.activeBusinessId || ""
         }
     });
+
     revalidatePath("/parties")
     return supplierList;
 }

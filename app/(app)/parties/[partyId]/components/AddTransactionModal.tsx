@@ -11,11 +11,11 @@ import { addTransaction } from "@/actions/transaction.actions"
 import { Transaction } from "@/lib/generated/prisma/client"
 
 interface TransactionProps {
-    transactionData?: Transaction
     title: string
     partyId: string
-    direction?: TransactionDirection
     children: ReactNode
+    transactionData?: Transaction
+    direction?: TransactionDirection
 }
 
 export default function AddTransactionModal({ title, partyId, transactionData, direction, children }: TransactionProps) {
