@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation";
 
 interface QuickActionProp {
   partyId: string
+  contact?: string | null
 }
 
-const QuickActions = ({ partyId }: QuickActionProp) => {
+const QuickActions = ({ partyId, contact }: QuickActionProp) => {
   const router = useRouter()
   return (
     <section className="lg:px-0 lg:py-4">
@@ -17,10 +18,13 @@ const QuickActions = ({ partyId }: QuickActionProp) => {
           <Share2 className="h-4 w-4" />
           Statement
         </Button>
-        <Button variant="outline" className="h-12 px-12 mx-1 rounded-full gap-2 lg:h-14 hover:scale-[1.02] transition">
-          <Phone className="h-4 w-4" />
-          Call Party
-        </Button>
+
+        {!!contact && (
+          <Button variant="outline" className="h-12 px-12 mx-1 rounded-full gap-2 lg:h-14 hover:scale-[1.02] transition">
+            <Phone className="h-4 w-4" />
+            Call Party
+          </Button>
+        )}
       </div>
     </section>
   )

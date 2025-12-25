@@ -21,6 +21,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
       id: true,
       name: true,
       type: true,
+      contactNo: true,
       transactions: {
         where: {
           businessId: session?.session.activeBusinessId || "",
@@ -108,7 +109,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
           </Card>
 
           {/* Quick Actions */}
-          <QuickActions partyId={partyId} />
+          <QuickActions partyId={partyId} contact={partyDetails?.contactNo} />
 
           {/* Search */}
           <section className="sticky top-16 z-10 bg-background px-4 py-4 lg:static lg:px-0">
