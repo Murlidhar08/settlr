@@ -42,12 +42,13 @@ export default function Parties() {
   };
 
   return (
-    <div className="w-full bg-background pb-28">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <Header title="Parties" />
 
-      {/* Search */}
-      <div className="px-6 pb-3">
+      {/* Main content */}
+      <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6">
+        {/* Search */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
           <Input
@@ -55,44 +56,44 @@ export default function Parties() {
             className="h-12 rounded-full pl-10"
           />
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="px-6 pb-4 flex justify-center md:justify-start">
-        <Tabs
-          value={tab}
-          onValueChange={handleTabChange}
-          className="w-full"
-        >
-          <TabsList className="h-28 rounded-full transition-all duration-300 w-86 md:w-96 lg:w-96">
-            <TabsTrigger value="customers" className="flex-1 rounded-full p-3">
-              Customers
-            </TabsTrigger>
+        {/* Tabs */}
+        <div className="flex justify-center md:justify-start">
+          <Tabs
+            value={tab}
+            onValueChange={handleTabChange}
+            className="w-full"
+          >
+            <TabsList className="h-28 rounded-full transition-all duration-300 w-86 md:w-96 lg:w-96">
+              <TabsTrigger value="customers" className="flex-1 rounded-full p-3">
+                Customers
+              </TabsTrigger>
 
-            <TabsTrigger value="suppliers" className="flex-1 rounded-full">
-              Suppliers
-            </TabsTrigger>
-          </TabsList>
+              <TabsTrigger value="suppliers" className="flex-1 rounded-full">
+                Suppliers
+              </TabsTrigger>
+            </TabsList>
 
-          {/* TAB CONTENT */}
-          <div className="mt-4">
-            <TabsContent value="customers">
-              <CustomersTab />
-              <AddPartiesModal
-                title="Add Customer"
-                type={PartyType.CUSTOMER}
-              />
-            </TabsContent>
+            {/* TAB CONTENT */}
+            <div className="mt-4">
+              <TabsContent value="customers">
+                <CustomersTab />
+                <AddPartiesModal
+                  title="Add Customer"
+                  type={PartyType.CUSTOMER}
+                />
+              </TabsContent>
 
-            <TabsContent value="suppliers">
-              <SuppliersTab />
-              <AddPartiesModal
-                title="Add Supplier"
-                type={PartyType.SUPPLIER}
-              />
-            </TabsContent>
-          </div>
-        </Tabs>
+              <TabsContent value="suppliers">
+                <SuppliersTab />
+                <AddPartiesModal
+                  title="Add Supplier"
+                  type={PartyType.SUPPLIER}
+                />
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
       </div>
     </div>
   );

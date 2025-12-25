@@ -24,7 +24,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Sidebar />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto pb-24 transition-[width] duration-300 ease-in-out lg:pb-6">
+        <main className="flex-1 overflow-y-auto pb-24 bg-background transition-[width] duration-300 ease-in-out">
           {children}
         </main>
       </div>

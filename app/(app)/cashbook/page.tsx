@@ -19,7 +19,7 @@ export default function CashbookPage() {
       <Header title="Cashbook" />
 
       {/* Container */}
-      <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
+      <div className="mx-auto w-full max-w-4xl px-6 pb-32">
         <CashSummary />
 
         {/* Filters */}

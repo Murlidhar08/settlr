@@ -1,15 +1,16 @@
-import { ArrowLeft, Search, Phone, Share2, Plus } from 'lucide-react'
+import { Search, Phone, Share2, ArrowDown, ArrowUpRight } from 'lucide-react'
 import { format } from "date-fns";
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { TransactionItem } from './components/transaction-item'
 import { AddTransactionModal } from './components/add-transaction-modal'
 import { prisma } from '@/lib/prisma'
 import { TransactionDirection } from '@/lib/generated/prisma/client'
 import { getUserSession } from '@/lib/auth'
+import { BackHeader } from '@/components/back-header';
+import { QuickActions } from './components/quick-action';
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;
@@ -52,74 +53,62 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
     }
   })
 
+  const formatAmount = (amount: number) =>
+    amount.toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
 
   return (
     <div className="relative mx-auto min-h-screen max-w-full bg-background pb-28 lg:pb-16">
-      <div className="mx-auto w-full max-w-4xl lg:px-6">
 
-        {/* Top App Bar */}
-        <header className="sticky top-0 z-20 flex items-center justify-between bg-secondary/90 backdrop-blur px-4 py-3 border-b lg:border-none">
-          <Button size="icon" variant="ghost" className="hover:scale-110 transition-transform">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+      {/* Top App Bar */}
+      <BackHeader
+        title={partyDetails?.name}
+        description={partyDetails?.type}
+        backUrl='/parties'
+      />
 
-          <div className="flex flex-1 flex-col items-center">
-            <h2 className="text-lg font-bold tracking-tight lg:text-2xl">
-              {partyDetails?.id} - {partyDetails?.name}
-            </h2>
-            <Badge
-              variant="secondary"
-              className="mt-0.5 text-[10px] uppercase tracking-wider lg:text-xs"
-            >
-              {partyDetails?.type}
-            </Badge>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto pb-24 lg:py-8">
+      {/* Main Content */}
+      <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6">
+        <main className="flex-1 overflow-y-auto pb-24">
           {/* Balance Card */}
-          <section className="px-4 py-2 lg:px-0">
-            <div>
-              <Card className="relative rounded-2xl p-6 lg:p-8 lg:grid lg:grid-cols-3 lg:gap-8">
-                <div className="absolute left-0 top-0 h-full w-1.5 bg-primary rounded-l-2xl" />
+          <Card className="relative overflow-hidden rounded-2xl border bg-white m-1 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+            <div className="absolute inset-y-0 left-0 w-1.5 bg-primary" />
 
-                <div className="flex flex-col gap-4 lg:col-span-2">
-                  <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                    Net Balance to Pay
-                  </p>
-                  <h1 className="mt-1 text-4xl font-bold lg:text-5xl">${totalIn - totalOut}</h1>
+            <div className="grid gap-6 px-5 lg:grid-cols-3 lg:gap-8 lg:px-5">
+              <div className="space-y-4 lg:col-span-2">
+                <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                  Net Balance to Pay
+                </p>
 
-                  <Separator className="lg:hidden" />
+                <h1 className="text-4xl font-bold lg:text-5xl">
+                  ${formatAmount(totalIn - totalOut)}
+                </h1>
 
-                  <div className="flex gap-6 pt-2">
-                    <div className="flex flex-col">
-                      <span className="text-xs text-muted-foreground">Total In</span>
-                      <span className="font-semibold text-emerald-600">+${totalIn}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs text-muted-foreground">Total Out</span>
-                      <span className="font-semibold text-rose-500">-${totalOut}</span>
-                    </div>
+                <Separator className="lg:hidden" />
+
+                <div className="flex gap-8 pt-2">
+                  <div className="flex flex-col">
+                    <span className="text-sm text-muted-foreground">Total In</span>
+                    <span className="text-lg font-semibold text-emerald-600">
+                      +${formatAmount(totalIn)}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <span className="text-sm text-muted-foreground">Total Out</span>
+                    <span className="text-lg font-semibold text-rose-500">
+                      -${formatAmount(totalOut)}
+                    </span>
                   </div>
                 </div>
-              </Card>
+              </div>
             </div>
-          </section>
+          </Card>
 
           {/* Quick Actions */}
-          <section className="px-4 py-4 lg:px-0 lg:py-6">
-            <div className="grid grid-cols-2 gap-3 lg:flex lg:gap-6">
-              <Button variant="outline" className="h-12 rounded-full gap-2 lg:h-14 hover:scale-[1.02] transition">
-                <Share2 className="h-4 w-4" />
-                Statement
-              </Button>
-              <Button variant="outline" className="h-12 rounded-full gap-2 lg:h-14 hover:scale-[1.02] transition">
-                <Phone className="h-4 w-4" />
-                Call Party
-              </Button>
-            </div>
-          </section>
+          <QuickActions partyId={partyId} />
 
           {/* Search */}
           <section className="sticky top-16 z-10 bg-background px-4 py-4 lg:static lg:px-0">
@@ -134,29 +123,31 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
 
           {/* Transactions */}
           <section className="px-4 pb-4 p-1 lg:px-0">
-            <h3 className="mb-3 text-sm font-bold lg:text-base">Recent Transactions</h3>
+            {/* <h3 className="mb-3 text-sm font-bold lg:text-base">Transactions</h3> */}
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 px-1">
               {/* Transaction List */}
-              {
-                partyDetails?.transactions?.map((transaction) => {
-                  return (
-                    <AddTransactionModal
-                      key={transaction.id}
-                      title="Add Transaction"
-                      partyId={partyId}
-                      transactionData={transaction}
-                    >
-                      <TransactionItem
-                        title={transaction.description ?? ""}
-                        subtitle={format(transaction.date, "dd, MMM, yyyy")}
-                        amount={String(transaction.amount)}
-                        type={transaction.direction}
-                      />
-                    </AddTransactionModal>
-                  )
-                })
-              }
+              <TransactionGroup label='TODAY'>
+                {
+                  partyDetails?.transactions?.map((transaction) => {
+                    return (
+                      <AddTransactionModal
+                        key={transaction.id}
+                        title="Add Transaction"
+                        partyId={partyId}
+                        transactionData={transaction}
+                      >
+                        <TransactionItem
+                          title={transaction.description ?? ""}
+                          subtitle={format(transaction.date, "dd, MMM, yyyy")}
+                          amount={String(transaction.amount)}
+                          type={transaction.direction}
+                        />
+                      </AddTransactionModal>
+                    )
+                  })
+                }
+              </TransactionGroup>
 
               {/* <TransactionItem
                                 title="Invoice #1023"
@@ -191,28 +182,50 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
             </div>
           </section>
         </main>
-      </div>
 
-      {/* Bottom Gradient */}
-      <footer className='fixed bottom-0 w-full'>
-        <div className="flex flex-row w-full justify-center mx-auto">
-          <AddTransactionModal title="Add Transaction" partyId={partyId} direction={TransactionDirection.OUT}>
-            <Button className="pointer-events-auto h-14 w-full max-w-sm rounded-md gap-3 shadow-xl hover:scale-[1.03] transition-transform bg-rose-800" size="lg">
-              <Plus className="h-5 w-5" />
-              YOU GAVE
-            </Button>
-          </AddTransactionModal>
+        {/* Bottom Action Footer */}
+        <div className="fixed bottom-23 right-5 lg:bottom-3 z-50">
+          <div className="pointer-events-auto mx-auto flex justify-end gap-4">
+            {/* YOU GAVE */}
+            <AddTransactionModal
+              title="Add Transaction"
+              partyId={partyId}
+              direction={TransactionDirection.OUT}
+            >
+              <Button size="lg" className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+                <ArrowUpRight className="h-5 w-5" />
+                You Gave
+              </Button>
+            </AddTransactionModal>
 
-          <AddTransactionModal title="Add Transaction" partyId={partyId} direction={TransactionDirection.IN}>
-            <Button className="pointer-events-auto h-14 w-full max-w-sm rounded-md gap-3 shadow-xl hover:scale-[1.03] transition-transform bg-green-900" size="lg">
-              <Plus className="h-5 w-5" />
-              YOU GOT
-            </Button>
-          </AddTransactionModal>
+            {/* YOU GET */}
+            <AddTransactionModal
+              title="Add Transaction"
+              partyId={partyId}
+              direction={TransactionDirection.IN}
+            >
+              <Button
+                size="lg"
+                className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <ArrowDown className="h-5 w-5" />
+                You Get
+              </Button>
+            </AddTransactionModal>
+          </div>
         </div>
+      </div>
+    </div>
+  )
+}
 
-        <div className="pointer-events-none absolute bottom-0 left-0 h-24 w-full bg-linear-to-t from-background to-transparent" />
-      </footer>
+function TransactionGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        {label}
+      </span>
+      {children}
     </div>
   )
 }

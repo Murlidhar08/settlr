@@ -76,7 +76,7 @@ export default async function Page() {
           </div >
 
           {/* Receivables */}
-          < StatCard
+          <StatCard
             title="Total Receivables"
             amount="$4,200.00"
             subtitle="Customers owe you"
@@ -85,7 +85,7 @@ export default async function Page() {
           />
 
           {/* Payables */}
-          < StatCard
+          <StatCard
             title="Total Payables"
             amount="$1,150.00"
             subtitle="You owe suppliers"

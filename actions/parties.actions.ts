@@ -8,47 +8,48 @@ import { Party } from "@/lib/generated/prisma/client";
 import { getUserSession } from "@/lib/auth";
 
 export async function addParties(partyData: Party) {
-    const session = await getUserSession();
-    if (!session) {
-        console.error("User is not logged in.")
-        return null;
-    }
+  const session = await getUserSession();
 
-    await prisma.party.create({
-        data: {
-            businessId: session.session.activeBusinessId || undefined,
-            contactNo: partyData.contactNo,
-            name: partyData.name,
-            type: partyData.type,
-        },
-    });
+  if (!session) {
+    console.error("User is not logged in.")
+    return null;
+  }
 
-    revalidatePath("/parties")
+  await prisma.party.create({
+    data: {
+      businessId: session.session.activeBusinessId || undefined,
+      contactNo: partyData.contactNo,
+      name: partyData.name,
+      type: partyData.type,
+    },
+  });
+
+  revalidatePath("/parties")
 }
 
 export async function getCustomerList() {
-    const session = await getUserSession();
-    const customerList = await prisma.party.findMany({
-        where: {
-            type: PartyType.CUSTOMER,
-            businessId: session?.session.activeBusinessId || ""
-        }
-    });
+  const session = await getUserSession();
+  const customerList = await prisma.party.findMany({
+    where: {
+      type: PartyType.CUSTOMER,
+      businessId: session?.session.activeBusinessId || ""
+    }
+  });
 
-    revalidatePath("/parties")
-    return customerList;
+  revalidatePath("/parties")
+  return customerList;
 }
 
 export async function getSupplierList() {
-    const session = await getUserSession();
-    const supplierList = await prisma.party.findMany({
-        where: {
-            type: PartyType.SUPPLIER,
-            businessId: session?.session.activeBusinessId || ""
-        }
-    });
+  const session = await getUserSession();
+  const supplierList = await prisma.party.findMany({
+    where: {
+      type: PartyType.SUPPLIER,
+      businessId: session?.session.activeBusinessId || ""
+    }
+  });
 
-    revalidatePath("/parties")
-    return supplierList;
+  revalidatePath("/parties")
+  return supplierList;
 }
 

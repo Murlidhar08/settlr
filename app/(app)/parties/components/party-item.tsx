@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 
@@ -12,6 +13,12 @@ const getInitials = function (userName: string): string {
   }
   return initials;
 };
+
+const getRandomAvatarColor = () => {
+  const hue = Math.floor(Math.random() * 360);
+  return `hsl(${hue}, 70%, 45%)`;
+};
+
 
 interface partyItemProp {
   id: string,
@@ -39,14 +46,22 @@ const PartyItem = ({
   return (
     <div
       onClick={() => router.push(`/parties/${id}`)}
-      className="flex items-center gap-4 rounded-2xl border bg-card p-4 active:scale-[0.98] transition cursor-pointer"
+      className="flex items-center justify-between rounded-2xl border bg-white p-4 gap-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
     >
 
       <Avatar className="h-12 w-12">
         {avatarUrl ? (
           <AvatarImage src={avatarUrl} />
         ) : (
-          <AvatarFallback>{getInitials(name)}</AvatarFallback>
+          <AvatarFallback
+            className="text-white font-medium"
+            style={{
+              // eslint-disable-next-line react-hooks/use-memo, react-hooks/rules-of-hooks
+              backgroundColor: useMemo(getRandomAvatarColor, [])
+            }}
+          >
+            {getInitials(name)}
+          </AvatarFallback>
         )}
       </Avatar>
 

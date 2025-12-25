@@ -27,7 +27,8 @@ const Header = ({ title, isProfile }: HeaderProps) => {
       {/* Profile */}
       {isProfile && (
         <Avatar size="lg">
-          <AvatarImage src="https://i.pravatar.cc/300" />
+          {/* DYNCAMIC AVATAR PENDING */}
+          {/* <AvatarImage src="https://i.pravatar.cc/300" /> */}
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       )}

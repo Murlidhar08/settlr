@@ -31,7 +31,7 @@ const TransactionItem = ({ title, subtitle, amount, type, }: TransactionProp) =>
           <p className="mt-0.5 text-xs text-muted-foreground lg:text-sm">{subtitle}</p>
         </div>
 
-        <div className="shrink-0 text-right">
+        <div className="shrink-0 text-right mr-3">
           <p className={`text-base font-bold lg:text-lg ${isIn ? 'text-emerald-600' : 'text-rose-600'}`}>
             {`${isIn ? "+" : "-"}$${amount}`}
           </p>

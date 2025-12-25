@@ -6,10 +6,10 @@ import { SupplierList } from "./supplier-list";
 
 const SuppliersTab = () => {
   return (
-    <main className="space-y-4 px-4">
+    <main className="space-y-4">
 
       {/* Total Receivables */}
-      <section className="px-2">
+      <section>
         <p className="mb-2 text-sm font-medium text-muted-foreground">
           Total Payables
         </p>
@@ -33,7 +33,7 @@ const SuppliersTab = () => {
       </section>
 
       {/* Recently Active */}
-      <p className="px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
         Recently Active
       </p>
 
