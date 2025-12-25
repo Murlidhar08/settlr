@@ -6,10 +6,10 @@ import { Plus } from "lucide-react";
 
 // Components
 import Header from "@/components/Header";
-import CashSummary from "./components/CashSummary";
-import CashFilters from "./components/CashFilters";
-import CashTransactionItem from "./components/CashTransactionItem";
-import AddTransactionSheet from "./components/AddTransactionSheet";
+import CashSummary from "./_components/CashSummary";
+import CashFilters from "./_components/CashFilters";
+import CashTransactionItem from "./_components/CashTransactionItem";
+import AddTransactionSheet from "./_components/AddTransactionSheet";
 
 export default function CashbookPage() {
     const [open, setOpen] = useState(false);
