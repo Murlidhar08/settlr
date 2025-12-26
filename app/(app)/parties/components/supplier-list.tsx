@@ -15,16 +15,14 @@ const SupplierList = () => {
   return (
     <>
       {
-        supplierList?.map((item, idx) => {
+        supplierList?.map(item => {
           return (
             <PartyItem
-              key={idx}
+              key={item.id}
               id={item.id}
               name={item.name}
               subtitle={item.name}
-              amount="+$500.00"
-              status="Return"
-              negative
+              amount={item.amount}
               avatarUrl={item.profileUrl || undefined}
             />
           )

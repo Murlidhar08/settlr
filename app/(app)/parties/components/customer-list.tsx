@@ -22,9 +22,7 @@ const CustomerList = () => {
               id={item.id}
               name={item.name}
               subtitle={item.name}
-              amount="+$500.00"
-              status="Return"
-              negative
+              amount={item.amount}
               avatarUrl={item.profileUrl || undefined}
             />
           )

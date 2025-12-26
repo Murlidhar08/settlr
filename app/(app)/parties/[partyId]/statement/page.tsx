@@ -11,10 +11,10 @@ export default async function Page({ params }: { params: Promise<{ partyId: stri
     <div className="min-h-screen bg-background">
       <BackHeader title={`${partyId} - Public Statement`} backUrl={`/parties/${partyId}`} />
 
-      <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6">
+      <div className="mx-auto max-w-4xl mt-6 space-y-8 px-6">
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto pb-32">
+        <main className="flex-1 overflow-y-auto">
 
           {/* Profile */}
           <section className="flex flex-col items-center px-6 pb-8 pt-4 text-center">
@@ -45,7 +45,7 @@ export default async function Page({ params }: { params: Promise<{ partyId: stri
           </section>
 
           {/* Transactions */}
-          <section className="rounded-t-[2.5rem] bg-muted/30 p-6 shadow-inner">
+          <section className="p-6">
             <div className="mb-6 flex items-center justify-between px-2">
               <h3 className="text-xl font-bold">Transactions</h3>
               <Button variant="ghost" size="sm" className="gap-1 text-xs uppercase">
@@ -89,7 +89,7 @@ export default async function Page({ params }: { params: Promise<{ partyId: stri
           </section>
 
           {/* Footer */}
-          <div className="w-full rounded-t-3xl border-t bg-white shadow-[0_-8px_30px_rgba(0,0,0,0.08)] dark:border-slate-800 dark:bg-[#1a190b]">
+          <div className="w-full border-t bg-gray-100 dark:border-slate-800 dark:bg-[#1a190b]">
             <div className="p-6">
               <div className="mb-6 grid grid-cols-2 gap-4">
                 <Metric label="Total In" value="+$245.00" positive />
@@ -123,7 +123,7 @@ export default async function Page({ params }: { params: Promise<{ partyId: stri
 
 function TransactionGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 mb-5">
       <span className="px-2 py-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
         {label}
       </span>

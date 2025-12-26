@@ -4,14 +4,11 @@ import { useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 
-const getInitials = function (userName: string): string {
-  const names = userName.split(' ');
-  let initials = names[0].substring(0, 1).toUpperCase();
-
-  if (names.length > 1) {
-    initials += names[names.length - 1].substring(0, 1).toUpperCase();
-  }
-  return initials;
+const getInitials = (name: string): string => {
+  const parts = name.trim().split(" ");
+  return parts.length === 1
+    ? parts[0][0].toUpperCase()
+    : `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 };
 
 const getRandomAvatarColor = () => {
@@ -19,83 +16,87 @@ const getRandomAvatarColor = () => {
   return `hsl(${hue}, 70%, 45%)`;
 };
 
-
-interface partyItemProp {
-  id: string,
-  name: string,
-  amount: string,
-  subtitle?: string,
-  status?: string,
-  avatarUrl?: string,
-  neutral?: boolean,
-  negative?: boolean,
+interface PartyItemProps {
+  id: string;
+  name: string;
+  amount: number; // 🔥 Net balance
+  subtitle?: string;
+  avatarUrl?: string;
 }
 
 const PartyItem = ({
   id,
   name,
-  subtitle,
   amount,
-  status,
+  subtitle,
   avatarUrl,
-  neutral,
-  negative,
-}: partyItemProp) => {
+}: PartyItemProps) => {
   const router = useRouter();
+
+  const avatarColor = useMemo(() => getRandomAvatarColor(), []);
+
+  const isAdvance = amount > 0;
+  const isDue = amount < 0;
+  const isSettled = amount === 0;
+
+  const status = isSettled
+    ? "Settled"
+    : isAdvance
+      ? "Advance"
+      : "Due";
 
   return (
     <div
       onClick={() => router.push(`/parties/${id}`)}
-      className="flex items-center justify-between rounded-2xl border bg-white p-4 gap-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+      className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
     >
-
       <Avatar className="h-12 w-12">
         {avatarUrl ? (
-          <AvatarImage src={avatarUrl} />
+          <AvatarImage src={avatarUrl} alt={name} />
         ) : (
           <AvatarFallback
-            className="text-white font-medium"
-            style={{
-              // eslint-disable-next-line react-hooks/use-memo, react-hooks/rules-of-hooks
-              backgroundColor: useMemo(getRandomAvatarColor, [])
-            }}
+            className="font-medium text-white"
+            style={{ backgroundColor: avatarColor }}
           >
             {getInitials(name)}
           </AvatarFallback>
         )}
       </Avatar>
 
-      <div className="flex-1 min-w-0">
-        <p className="truncate font-bold">{name}</p>
-        <p className="truncate text-xs text-muted-foreground">
-          {subtitle}
-        </p>
+      <div className="min-w-0 flex-1">
+        <p className="truncate font-semibold">{name}</p>
+        {subtitle && (
+          <p className="truncate text-xs text-muted-foreground">
+            {subtitle}
+          </p>
+        )}
       </div>
 
       <div className="text-right">
         <p
-          className={
-            neutral
-              ? "font-mono font-bold text-muted-foreground"
-              : negative
-                ? "font-mono font-bold text-rose-500"
-                : "font-mono font-bold text-emerald-600"
-          }
+          className={`font-mono font-bold ${isSettled
+            ? "text-muted-foreground"
+            : isAdvance
+              ? "text-emerald-600"
+              : "text-rose-500"
+            }`}
         >
-          {amount}
+          ₹{Math.abs(amount)}
         </p>
-        {status && (
-          <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${neutral
-            ? "bg-gray-100"
-            : negative
-              ? "bg-red-100 text-rose-500"
-              : "bg-emerald-100 text-emerald-600"}`} >
-            {status}
-          </span>
-        )}
-      </div>
-    </div >
-  )
-}
 
-export { PartyItem }
+        <span
+          className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${isSettled
+            ? "bg-gray-100 text-gray-500"
+            : isAdvance
+              ? "bg-emerald-100 text-emerald-600"
+              : "bg-rose-100 text-rose-500"
+            }`}
+        >
+          {status}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+export { PartyItem };
