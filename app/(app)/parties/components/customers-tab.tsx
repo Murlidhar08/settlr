@@ -1,34 +1,109 @@
-// Packages
-import { ArrowDown, ChevronRight } from "lucide-react";
+"use client";
 
-// Components
-import { CustomerList } from "./customer-list";
+import { ArrowDown, ArrowUp, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
 
-const CustomersTab = () => {
+import { PartyList } from "./party-list";
+import { PartyType } from "@/lib/generated/prisma/enums";
+import { getPartyList } from "@/actions/parties.actions";
+import { PartyRes } from "@/types/party/PartyRes";
+
+interface PartyListProp {
+  partyType: PartyType;
+}
+
+export default function CustomersTab({ partyType }: PartyListProp) {
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    getPartyList(partyType)
+      .then((res: PartyRes[]) => {
+        if (!mounted) return;
+
+        const total = res.reduce((sum, party) => {
+          return sum + party.amount;
+        }, 0);
+
+        setTotalAmount(Number(total.toFixed(3)));
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const isCollect = totalAmount > 0;
+  const isPay = totalAmount < 0;
+  const isSettled = totalAmount === 0;
+
+  const label = isSettled
+    ? "Settled"
+    : isCollect
+      ? "To Collect"
+      : "To Pay";
+
+  const ArrowIcon = isCollect ? ArrowUp : ArrowDown;
+
   return (
     <main className="space-y-4">
-
-      {/* Total Receivables */}
-      <section className="">
+      {/* Total Balance */}
+      <section>
         <p className="mb-2 text-sm font-medium text-muted-foreground">
-          Total Receivables
+          Total Balance
         </p>
 
-        <div className="flex items-center justify-between rounded-2xl border bg-emerald-50 p-4">
+        <div
+          className={`flex items-center justify-between rounded-2xl border p-4 transition-colors ${isCollect
+            ? "bg-emerald-50"
+            : isPay ? "bg-rose-50" : "bg-muted"
+            }`}
+        >
           <div className="flex items-center gap-3">
-            <div className="rounded-full bg-emerald-100 p-2 text-emerald-600">
-              <ArrowDown className="size-4" />
+            <div className={`rounded-full p-2 ${isCollect
+              ? "bg-emerald-100 text-emerald-600"
+              : isPay
+                ? "bg-rose-100 text-rose-600"
+                : "bg-gray-100 text-gray-500"
+              }`}
+            >
+              {!isSettled && <ArrowIcon className="size-4" />}
             </div>
+
             <div>
               <p className="text-xs font-medium text-muted-foreground">
-                To Collect
+                {label}
               </p>
-              <p className="text-xl font-bold text-emerald-700">
-                +$3,450.50
+
+              <p
+                className={`text-xl font-bold ${isCollect
+                  ? "text-emerald-700"
+                  : isPay
+                    ? "text-rose-600"
+                    : "text-muted-foreground"
+                  }`}
+              >
+                {loading
+                  ? "—"
+                  : `₹${Math.abs(totalAmount)}`}
               </p>
             </div>
           </div>
-          <ChevronRight className="text-emerald-400" />
+
+          <ChevronRight
+            className={
+              isCollect
+                ? "text-emerald-400"
+                : isPay
+                  ? "text-rose-400"
+                  : "text-muted-foreground"
+            }
+          />
         </div>
       </section>
 
@@ -37,10 +112,8 @@ const CustomersTab = () => {
         Recently Active
       </p>
 
-      <CustomerList />
+      <PartyList partyType={partyType} />
       <div className="h-24" />
     </main>
   );
 }
-
-export { CustomersTab }

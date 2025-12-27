@@ -10,8 +10,7 @@ import { PartyType } from "@/lib/generated/prisma/enums";
 
 // Components
 import { AddPartiesModal } from "./components/add-parties-modal";
-import { CustomersTab } from "./components/customers-tab";
-import { SuppliersTab } from "./components/suppliers-tab";
+import CustomersTab from "./components/customers-tab";
 
 const VALID_TABS = ["customers", "suppliers"] as const;
 type TabType = (typeof VALID_TABS)[number];
@@ -77,7 +76,8 @@ export default function Parties() {
             {/* TAB CONTENT */}
             <div className="mt-4">
               <TabsContent value="customers">
-                <CustomersTab />
+                <CustomersTab partyType={PartyType.CUSTOMER} />
+
                 <AddPartiesModal
                   title="Add Customer"
                   type={PartyType.CUSTOMER}
@@ -85,7 +85,8 @@ export default function Parties() {
               </TabsContent>
 
               <TabsContent value="suppliers">
-                <SuppliersTab />
+                <CustomersTab partyType={PartyType.SUPPLIER} />
+
                 <AddPartiesModal
                   title="Add Supplier"
                   type={PartyType.SUPPLIER}

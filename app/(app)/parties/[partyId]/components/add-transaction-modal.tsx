@@ -57,6 +57,7 @@ const AddTransactionModal = ({ title, partyId, transactionData, direction, child
     });
 
     setPopOpen(false);
+    resetForm()
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,6 +67,19 @@ const AddTransactionModal = ({ title, partyId, transactionData, direction, child
       [name]: value
     }));
   };
+
+  const resetForm = () => {
+    setData({
+      businessId: "",
+      amount: "",
+      date: new Date().toISOString().substring(0, 10),
+      description: "",
+      mode: PaymentMode.CASH,
+      direction: direction,
+      partyId: partyId,
+      userId: "",
+    });
+  }
 
   return (
     <>

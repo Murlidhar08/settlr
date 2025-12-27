@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card"
 import { TransactionDirection } from "@/lib/generated/prisma/enums"
-import { ArrowDown, ArrowUpRight } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react"
 
 interface TransactionProp {
   title: string,
@@ -15,17 +15,12 @@ const TransactionItem = ({ title, subtitle, amount, type, }: TransactionProp) =>
   return (
     <div className="p-1">
       <Card className="flex flex-row items-center p-3 hover:scale-[1.01] transition">
-        <div
-          className={`mr-4 flex h-12 w-12 items-center justify-center rounded-full ${isIn
-            ? 'bg-emerald-100 text-emerald-600'
-            : 'bg-rose-100 text-rose-600'
-            }`}
-        >
-          {isIn ? <ArrowDown className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+          {isIn ? <ArrowDownLeft className="text-emerald-600 h-5 w-5" /> : <ArrowUpRight className="text-rose-600 h-5 w-5" />}
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="truncate text-sm font-bold lg:text-base">
+          <p className="truncate text-sm font-semibold lg:text-base">
             {title ? title : isIn ? "Payment Recived" : "Payment Sended"}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground lg:text-sm">{subtitle}</p>

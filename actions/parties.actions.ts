@@ -6,18 +6,19 @@ import { revalidatePath } from "next/cache";
 import { PartyType, TransactionDirection } from "@/lib/generated/prisma/enums";
 import { Party, Prisma } from "@/lib/generated/prisma/client";
 import { getUserSession } from "@/lib/auth";
+import { PartyRes } from "@/types/party/PartyRes";
 
-export async function addParties(partyData: Party) {
+export async function addParties(partyData: Party): Promise<boolean> {
   const session = await getUserSession();
 
-  if (!session) {
+  if (!session || !session.session.activeBusinessId) {
     console.error("User is not logged in.")
-    return null;
+    return false;
   }
 
   await prisma.party.create({
     data: {
-      businessId: session.session.activeBusinessId || undefined,
+      businessId: session.session.activeBusinessId,
       contactNo: partyData.contactNo,
       name: partyData.name,
       type: partyData.type,
@@ -25,62 +26,19 @@ export async function addParties(partyData: Party) {
   });
 
   revalidatePath("/parties")
+  return true;
 }
 
-export async function getCustomerList() {
+export async function getPartyList(type: PartyType): Promise<PartyRes[]> {
   const session = await getUserSession();
 
-  if (!session?.session.activeBusinessId) return [];
-
-  const customers = await prisma.party.findMany({
-    where: {
-      type: PartyType.CUSTOMER,
-      businessId: session.session.activeBusinessId,
-    },
-    select: {
-      id: true,
-      name: true,
-      contactNo: true,
-      profileUrl: true,
-      transactions: {
-        select: {
-          amount: true,
-          direction: true,
-        },
-      },
-    },
-  });
-
-  return customers.map((customer) => {
-    let pending = new Prisma.Decimal(0);
-
-    for (const tx of customer.transactions) {
-      if (tx.direction === TransactionDirection.OUT) {
-        pending = pending.minus(tx.amount);   // credit given
-      } else {
-        pending = pending.plus(tx.amount);  // payment received
-      }
-    }
-
-    return {
-      id: customer.id,
-      name: customer.name,
-      contactNo: customer.contactNo,
-      profileUrl: customer.profileUrl,
-      amount: Number(pending), // +620 or -1200
-    };
-  });
-}
-
-export async function getSupplierList() {
-  const session = await getUserSession();
-
-  if (!session?.session.activeBusinessId) return [];
+  if (!session?.session.activeBusinessId)
+    return [];
 
   const suppliers = await prisma.party.findMany({
     where: {
-      type: PartyType.SUPPLIER,
       businessId: session.session.activeBusinessId,
+      type: { in: [type, PartyType.BOTH] },
     },
     select: {
       id: true,
@@ -96,15 +54,14 @@ export async function getSupplierList() {
     },
   });
 
-  const supplierList = suppliers.map((supplier) => {
+  const supplierList = suppliers.map(supplier => {
     let balance = new Prisma.Decimal(0);
 
     for (const tx of supplier.transactions) {
-      if (tx.direction === TransactionDirection.OUT) {
+      if (tx.direction === TransactionDirection.OUT)
         balance = balance.minus(tx.amount);   // payment made to supplier
-      } else {
+      else
         balance = balance.plus(tx.amount);    // refund / credit received
-      }
     }
 
     return {
@@ -118,4 +75,3 @@ export async function getSupplierList() {
 
   return supplierList;
 }
-

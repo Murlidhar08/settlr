@@ -1,16 +1,20 @@
-import { Search, Phone, Share2, ArrowDown, ArrowUpRight } from 'lucide-react'
+// Packages
+import { Search, ArrowDown, ArrowUpRight } from 'lucide-react'
 import { format } from "date-fns";
+
+// Components
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
+import { BackHeader } from '@/components/back-header';
 import { TransactionItem } from './components/transaction-item'
 import { AddTransactionModal } from './components/add-transaction-modal'
-import { prisma } from '@/lib/prisma'
-import { TransactionDirection } from '@/lib/generated/prisma/client'
-import { getUserSession } from '@/lib/auth'
-import { BackHeader } from '@/components/back-header';
 import { QuickActions } from './components/quick-action';
+import { BalanceCard } from './components/balance-card';
+
+// Lib
+import { prisma } from '@/lib/prisma'
+import { getUserSession } from '@/lib/auth'
+import { TransactionDirection } from '@/lib/generated/prisma/client'
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;
@@ -26,6 +30,9 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
         where: {
           businessId: session?.session.activeBusinessId || "",
           partyId: partyId,
+        },
+        orderBy: {
+          createdAt: "desc"
         }
       }
     },
@@ -54,12 +61,6 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
     }
   })
 
-  const formatAmount = (amount: number) =>
-    amount.toLocaleString("en-IN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-
   return (
     <div className="relative mx-auto min-h-screen max-w-full bg-background pb-28 lg:pb-16">
 
@@ -74,39 +75,11 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
       <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6">
         <main className="flex-1 overflow-y-auto pb-24">
           {/* Balance Card */}
-          <Card className="relative overflow-hidden rounded-2xl border bg-white m-1 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-            <div className="absolute inset-y-0 left-0 w-1.5 bg-primary" />
-
-            <div className="grid gap-6 px-5 lg:grid-cols-3 lg:gap-8 lg:px-5">
-              <div className="space-y-4 lg:col-span-2">
-                <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                  Net Balance to Pay
-                </p>
-
-                <h1 className="text-4xl font-bold lg:text-5xl">
-                  ${formatAmount(totalIn - totalOut)}
-                </h1>
-
-                <Separator className="lg:hidden" />
-
-                <div className="flex gap-8 pt-2">
-                  <div className="flex flex-col">
-                    <span className="text-sm text-muted-foreground">Total In</span>
-                    <span className="text-lg font-semibold text-emerald-600">
-                      +${formatAmount(totalIn)}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col">
-                    <span className="text-sm text-muted-foreground">Total Out</span>
-                    <span className="text-lg font-semibold text-rose-500">
-                      -${formatAmount(totalOut)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <BalanceCard
+            totalIn={totalIn}
+            totalOut={totalOut}
+            currency='$'
+          />
 
           {/* Quick Actions */}
           <QuickActions partyId={partyId} contact={partyDetails?.contactNo} />
@@ -124,8 +97,6 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
 
           {/* Transactions */}
           <section className="px-4 pb-4 p-1 lg:px-0">
-            {/* <h3 className="mb-3 text-sm font-bold lg:text-base">Transactions</h3> */}
-
             <div className="flex flex-col gap-3 px-1">
               {/* Transaction List */}
               <TransactionGroup label='TODAY'>
