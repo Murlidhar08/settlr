@@ -1,14 +1,25 @@
 "use client"
 
-import { Building2 } from "lucide-react"
+import { CalendarIcon, Wallet, Paperclip, ChevronDownIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetFooter, SheetHeader } from "@/components/ui/sheet"
-import { Input } from "@/components/ui/input"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { useState, useEffect, ReactNode } from "react"
 import { PaymentMode, TransactionDirection } from "@/lib/generated/prisma/enums"
 import { addTransaction } from "@/actions/transaction.actions"
 import { Transaction } from "@/lib/generated/prisma/client"
+
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Select,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+  SelectItem,
+} from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+
 
 interface TransactionProps {
   title: string
@@ -18,138 +29,185 @@ interface TransactionProps {
   direction?: TransactionDirection
 }
 
-const AddTransactionModal = ({ title, partyId, transactionData, direction, children }: TransactionProps) => {
-  const [popOpen, setPopOpen] = useState(false);
+export const AddTransactionModal = ({
+  title,
+  partyId,
+  transactionData,
+  direction,
+  children,
+}: TransactionProps) => {
+  const [open, setOpen] = useState(false)
+  const [dateOpen, setDateOpen] = useState(false)
 
-  const [data, setData] = useState({
+  const [data, setData] = useState<any>({
     businessId: "",
     amount: "",
     date: new Date().toISOString().substring(0, 10),
     description: "",
     mode: PaymentMode.CASH,
-    direction: direction,
-    partyId: partyId,
+    direction,
+    partyId,
     userId: "",
-  });
+  })
 
-  // Prefill when editing
   useEffect(() => {
     if (transactionData) {
-      setData({
-        businessId: transactionData.businessId,
-        amount: transactionData.amount.toString(),
-        date: transactionData.date.toISOString().substring(0, 10),
-        description: transactionData.description ?? "",
-        mode: transactionData.mode,
-        direction: transactionData.direction,
-        partyId: transactionData.partyId,
-        userId: transactionData.userId,
-        id: transactionData.id,
-      });
+      setData((pre: any) => {
+        return {
+          ...pre,
+          amount: transactionData.amount.toString(),
+          date: transactionData.date.toISOString().substring(0, 10),
+        }
+      })
     }
-  }, [transactionData]);
+  }, [transactionData])
 
   const handleAddTransaction = async () => {
     await addTransaction({
       ...data,
       amount: Number(data.amount),
-      date: new Date(data.date)
-    });
-
-    setPopOpen(false);
-    resetForm()
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const resetForm = () => {
-    setData({
-      businessId: "",
-      amount: "",
-      date: new Date().toISOString().substring(0, 10),
-      description: "",
-      mode: PaymentMode.CASH,
-      direction: direction,
-      partyId: partyId,
-      userId: "",
-    });
+      date: new Date(data.date),
+    })
+    setOpen(false)
   }
 
   return (
     <>
-      {/* Trigger Button */}
-      <div onClick={() => setPopOpen(true)} className="inline-block cursor-pointer">
+      <div onClick={() => setOpen(true)} className="inline-block cursor-pointer">
         {children}
       </div>
 
-      {/* Sheet */}
-      <Sheet open={popOpen} onOpenChange={setPopOpen}>
-        <SheetContent side="right" className="flex h-full w-full max-w-full flex-col p-0 sm:max-w-xl">
-
-          <SheetHeader className="sticky top-0 z-10 flex-row items-center justify-between border-b bg-background px-6 py-4">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold">{title}</h2>
-            </div>
-          </SheetHeader>
-
-          <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
-
-            {/* Amount */}
-            <div className="space-y-2">
-              <Label htmlFor="amount">Amount</Label>
-              <Input
-                name="amount"
-                placeholder="Amount"
-                value={data.amount}
-                onChange={handleChange}
-              />
-            </div>
-
-            {/* Date */}
-            <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input
-                name="date"
-                type="date"
-                value={data.date}
-                onChange={handleChange}
-              />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Input
-                name="description"
-                placeholder="Description"
-                value={data.description}
-                onChange={handleChange}
-              />
-            </div>
-
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent
+          side="right"
+          className="flex h-full w-full max-w-full flex-col p-0 sm:max-w-md"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between border-b px-5 py-4">
+            <h2 className="text-base font-semibold">{title}</h2>
           </div>
 
-          <SheetFooter className="sticky bottom-0 border-t bg-background px-6 py-4">
-            <div className="flex w-full gap-3">
-              <Button variant="outline" className="flex-1" onClick={() => setPopOpen(false)}>Cancel</Button>
-
-              <Button className="flex-1" onClick={handleAddTransaction}>
-                {data.id ? "Update" : "Add"} Transaction
-              </Button>
+          {/* Body */}
+          <div className="flex-1 space-y-6 overflow-y-auto px-5 py-6">
+            {/* Amount */}
+            <div className="text-center space-y-1">
+              <div className="flex items-center justify-center gap-1 text-4xl font-semibold text-red-500">
+                <span>₹</span>
+                <input
+                  value={data.amount}
+                  onChange={(e) =>
+                    setData({ ...data, amount: e.target.value })
+                  }
+                  inputMode="numeric"
+                  placeholder="0.00"
+                  className="w-32 bg-transparent text-center outline-none placeholder:text-red-200"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">ENTER AMOUNT</p>
             </div>
-          </SheetFooter>
 
+            {/* Date & Mode */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Date */}
+              <div className="">
+                <Label className="text-xs text-muted-foreground">DATE</Label>
+
+                <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                  <PopoverTrigger>
+                    <Button
+                      variant="outline"
+                      className="mt-1 flex w-full justify-between px-3 text-sm font-medium"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                        {data.date
+                          ? new Date(data.date).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })
+                          : "Select date"}
+                      </div>
+                      <ChevronDownIcon className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </PopoverTrigger>
+
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={new Date(data.date)}
+                      onSelect={(selectedDate) => {
+                        if (!selectedDate) return
+                        setData({
+                          ...data,
+                          date: selectedDate.toISOString().substring(0, 10),
+                        })
+                        setDateOpen(false)
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Mode */}
+              <div className="">
+                <Label className="text-xs text-muted-foreground">MODE</Label>
+
+                <Select
+                  value={data.mode}
+                  onValueChange={(value) => setData({ ...data, mode: value as PaymentMode })}
+                >
+                  <SelectTrigger className="mt-1 h-10 rounded-lg border px-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Wallet className="h-4 w-4 text-muted-foreground" />
+                      <SelectValue />
+                    </div>
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value={PaymentMode.CASH}>Cash</SelectItem>
+                    <SelectItem value={PaymentMode.ONLINE}>Online</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Note */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">NOTE</Label>
+              <Textarea
+                placeholder="What is this for?"
+                value={data.description}
+                onChange={(e) => setData({ ...data, description: e.target.value })}
+                className="min-h-20 rounded-xl"
+              />
+            </div>
+
+            {/* Attachments */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">
+                ATTACHMENTS
+              </Label>
+              <div className="flex gap-3">
+                <div className="flex h-16 w-16 flex-col items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground hover:bg-muted/40 cursor-pointer">
+                  <Paperclip className="h-4 w-4 mb-1" />
+                  ADD
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer CTA */}
+          <div className="sticky bottom-0 border-t bg-background p-4">
+            <Button
+              onClick={handleAddTransaction}
+              className="h-12 w-full rounded-xl bg-red-500 text-white text-base font-semibold hover:bg-red-600 active:scale-[0.98] transition"
+            >
+              {direction === TransactionDirection.OUT ? "You give" : "You get"}
+            </Button>
+          </div>
         </SheetContent>
       </Sheet>
     </>
-  );
+  )
 }
-
-export { AddTransactionModal }
