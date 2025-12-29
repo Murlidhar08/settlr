@@ -25,8 +25,8 @@ import { toast } from "sonner"
 
 interface TransactionProps {
   title: string
-  partyId: string
   children: ReactNode
+  partyId?: string | null
   transactionData?: Transaction
   direction?: TransactionDirection
 }
