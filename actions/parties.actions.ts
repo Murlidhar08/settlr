@@ -31,13 +31,13 @@ export async function addParties(partyData: Party): Promise<boolean> {
 
 export async function getPartyList(type: PartyType): Promise<PartyRes[]> {
   const session = await getUserSession();
-
-  if (!session?.session.activeBusinessId)
+  const businessId = session?.session?.activeBusinessId;
+  if (!businessId)
     return [];
 
-  const suppliers = await prisma.party.findMany({
+  const parties = await prisma.party.findMany({
     where: {
-      businessId: session.session.activeBusinessId,
+      businessId,
       type: { in: [type, PartyType.BOTH] },
     },
     select: {
@@ -54,24 +54,26 @@ export async function getPartyList(type: PartyType): Promise<PartyRes[]> {
     },
   });
 
-  const supplierList = suppliers.map(supplier => {
-    let balance = new Prisma.Decimal(0);
-
-    for (const tx of supplier.transactions) {
-      if (tx.direction === TransactionDirection.OUT)
-        balance = balance.minus(tx.amount);   // payment made to supplier
-      else
-        balance = balance.plus(tx.amount);    // refund / credit received
-    }
+  return parties.map((party) => {
+    /**
+     * pending > 0 → To Collect
+     * pending < 0 → To Pay
+     */
+    const pending = party.transactions.reduce(
+      (acc, tx) => {
+        return tx.direction === TransactionDirection.OUT
+          ? acc.plus(tx.amount)
+          : acc.minus(tx.amount);
+      },
+      new Prisma.Decimal(0)
+    );
 
     return {
-      id: supplier.id,
-      name: supplier.name,
-      contactNo: supplier.contactNo,
-      profileUrl: supplier.profileUrl,
-      amount: Number(balance), // +Advance | -Due
+      id: party.id,
+      name: party.name,
+      contactNo: party.contactNo,
+      profileUrl: party.profileUrl,
+      amount: Number(pending.toFixed(2)),
     };
   });
-
-  return supplierList;
 }

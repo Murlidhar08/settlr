@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarIcon, Wallet, Paperclip, ChevronDownIcon } from "lucide-react"
+import { CalendarIcon, Wallet, Paperclip, ChevronDownIcon, ArrowDown, ArrowUpRight, ArrowDownLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Label } from "@/components/ui/label"
@@ -38,6 +38,7 @@ export const AddTransactionModal = ({
 }: TransactionProps) => {
   const [open, setOpen] = useState(false)
   const [dateOpen, setDateOpen] = useState(false)
+  const isOut = direction === TransactionDirection.OUT;
 
   const [data, setData] = useState<any>({
     businessId: "",
@@ -80,7 +81,7 @@ export const AddTransactionModal = ({
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="right"
-          className="flex h-full w-full max-w-full flex-col p-0 sm:max-w-md"
+          className="w-screen! max-w-none! h-screen sm:w-full! sm:max-w-md! sm:h-full flex flex-col p-0 pb-[env(safe-area-inset-bottom)]"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b px-5 py-4">
@@ -91,16 +92,20 @@ export const AddTransactionModal = ({
           <div className="flex-1 space-y-6 overflow-y-auto px-5 py-6">
             {/* Amount */}
             <div className="text-center space-y-1">
-              <div className="flex items-center justify-center gap-1 text-4xl font-semibold text-red-500">
+              <div
+                className={`flex items-center justify-center gap-1 text-4xl font-semibold ${isOut ? "text-rose-500" : "text-emerald-500"
+                  }`}
+              >
                 <span>₹</span>
                 <input
                   value={data.amount}
-                  onChange={(e) =>
-                    setData({ ...data, amount: e.target.value })
-                  }
+                  onChange={(e) => setData({ ...data, amount: e.target.value })}
                   inputMode="numeric"
                   placeholder="0.00"
-                  className="w-32 bg-transparent text-center outline-none placeholder:text-red-200"
+                  className={`w-32 bg-transparent text-center outline-none ${isOut
+                    ? "placeholder:text-rose-200"
+                    : "placeholder:text-emerald-200"
+                    }`}
                 />
               </div>
               <p className="text-xs text-muted-foreground">ENTER AMOUNT</p>
@@ -197,15 +202,34 @@ export const AddTransactionModal = ({
             </div>
           </div>
 
+
           {/* Footer CTA */}
           <div className="sticky bottom-0 border-t bg-background p-4">
-            <Button
-              onClick={handleAddTransaction}
-              className="h-12 w-full rounded-xl bg-red-500 text-white text-base font-semibold hover:bg-red-600 active:scale-[0.98] transition"
-            >
-              {direction === TransactionDirection.OUT ? "You give" : "You get"}
-            </Button>
+            <div className="flex gap-3">
+              {/* Cancel */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => { setOpen(false) }}
+                className="h-12 flex-1 rounded-xl text-base font-medium"
+              >
+                Cancel
+              </Button>
+
+              {/* Save */}
+              <Button
+                onClick={handleAddTransaction}
+                className={`h-12 flex-1 rounded-xl text-white text-base font-semibold transition active:scale-[0.98] ${isOut
+                  ? "bg-rose-600 hover:bg-rose-700"
+                  : "bg-emerald-600 hover:bg-emerald-700"
+                  }`}
+              >
+                {isOut ? "You give" : "You get"}
+                {isOut ? <ArrowUpRight className="h-5 w-5" /> : <ArrowDownLeft className="h-5 w-5" />}
+              </Button>
+            </div>
           </div>
+
         </SheetContent>
       </Sheet>
     </>

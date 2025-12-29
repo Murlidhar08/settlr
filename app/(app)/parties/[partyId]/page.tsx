@@ -1,5 +1,5 @@
 // Packages
-import { Search, ArrowDown, ArrowUpRight } from 'lucide-react'
+import { Search, ArrowDown, ArrowUpRight, ArrowRight, ArrowDownLeft } from 'lucide-react'
 import { format } from "date-fns";
 
 // Components
@@ -82,7 +82,9 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
           />
 
           {/* Quick Actions */}
-          <QuickActions partyId={partyId} contact={partyDetails?.contactNo} />
+          <div className='w-full mt-4'>
+            <QuickActions partyId={partyId} contact={partyDetails?.contactNo} />
+          </div>
 
           {/* Search */}
           <section className="sticky top-16 z-10 bg-background px-4 py-4 lg:static lg:px-0">
@@ -180,7 +182,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
                 size="lg"
                 className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
               >
-                <ArrowDown className="h-5 w-5" />
+                <ArrowDownLeft className="h-5 w-5" />
                 You Get
               </Button>
             </AddTransactionModal>
@@ -193,7 +195,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
 
 function TransactionGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 w-full">
       <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
         {label}
       </span>

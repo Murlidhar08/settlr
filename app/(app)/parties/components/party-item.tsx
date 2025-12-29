@@ -19,7 +19,7 @@ const getRandomAvatarColor = () => {
 interface PartyItemProps {
   id: string;
   name: string;
-  amount: number; // 🔥 Net balance
+  amount: number;
   subtitle?: string;
   avatarUrl?: string;
 }
