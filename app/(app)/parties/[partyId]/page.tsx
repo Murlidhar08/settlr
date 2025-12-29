@@ -27,6 +27,15 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
       type: true,
       contactNo: true,
       transactions: {
+        select: {
+          id: true,
+          amount: true,
+          date: true,
+          mode: true,
+          direction: true,
+          description: true,
+          createdAt: true
+        },
         where: {
           businessId: session?.session.activeBusinessId || "",
           partyId: partyId,
@@ -45,7 +54,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
       ...rawPartyDetails,
       transactions: rawPartyDetails.transactions?.map(tra => ({
         ...tra,
-        amount: tra.amount.toNumber(),
+        amount: tra.amount.toNumber()
       })) ?? []
     };
   }
@@ -112,10 +121,11 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
                         transactionData={transaction}
                       >
                         <TransactionItem
-                          title={transaction.description ?? ""}
-                          subtitle={format(transaction.date, "dd, MMM, yyyy")}
+                          title={transaction.description || ""}
+                          subtitle={format(transaction.date, "dd MMM, yyyy")}
                           amount={String(transaction.amount)}
                           type={transaction.direction}
+                          mode={transaction.mode}
                         />
                       </AddTransactionModal>
                     )

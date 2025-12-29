@@ -1,15 +1,16 @@
 import { Card } from "@/components/ui/card"
-import { TransactionDirection } from "@/lib/generated/prisma/enums"
+import { PaymentMode, TransactionDirection } from "@/lib/generated/prisma/enums"
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react"
 
 interface TransactionProp {
   title: string,
   subtitle: string,
   amount: string,
+  mode: PaymentMode
   type: TransactionDirection
 }
 
-const TransactionItem = ({ title, subtitle, amount, type, }: TransactionProp) => {
+const TransactionItem = ({ title, subtitle, amount, type, mode }: TransactionProp) => {
   const isIn = type === TransactionDirection.IN;
 
   return (
@@ -23,7 +24,9 @@ const TransactionItem = ({ title, subtitle, amount, type, }: TransactionProp) =>
           <p className="truncate text-sm font-semibold lg:text-base">
             {title ? title : isIn ? "Payment Recived" : "Payment Sended"}
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground lg:text-sm">{subtitle}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground lg:text-sm">
+            {mode} • {subtitle}
+          </p>
         </div>
 
         <div className="shrink-0 text-right mr-3">
