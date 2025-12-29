@@ -14,7 +14,7 @@ import { redirect } from "next/navigation";
 
 // Component
 import TransactionItem from "./components/transaction-item";
-import StatCard from "./components/stat-card";
+import SummaryCard from "./components/summary-card";
 import { Header } from "@/components/header";
 import SwitchBusiness from "./components/business-switch";
 
@@ -58,41 +58,7 @@ export default async function Page() {
         </div>
 
         {/* Summary Cards */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" >
-
-          {/* Net Cash */}
-          < div className="relative overflow-hidden rounded-3xl bg-[#2C3E50] p-6 text-white shadow-lg transition-transform hover:-translate-y-1" >
-            <div className="absolute -top-20 -right-20 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
-            <div className="relative z-10 flex justify-between">
-              <div>
-                <p className="text-sm text-slate-300">Net Cash on Hand</p>
-                <p className="mt-1 text-3xl font-bold">₹12,450.00</p>
-              </div>
-              <PiggyBank className="h-6 w-6 opacity-80" />
-            </div>
-            <div className="relative z-10 mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-1 text-xs font-semibold text-emerald-300">
-              <MoveUpRight className="h-3 w-3" /> 12% this month
-            </div>
-          </div >
-
-          {/* Receivables */}
-          <StatCard
-            title="Total Receivables"
-            amount="$4,200.00"
-            subtitle="Customers owe you"
-            icon={< MoveDownLeft />}
-            positive
-          />
-
-          {/* Payables */}
-          <StatCard
-            title="Total Payables"
-            amount="$1,150.00"
-            subtitle="You owe suppliers"
-            icon={< MoveUpRight />}
-            positive={undefined}
-          />
-        </section>
+        <SummaryCard />
 
         {/* Transactions */}
         <section className="flex-1 pt-6 md:px-6" >

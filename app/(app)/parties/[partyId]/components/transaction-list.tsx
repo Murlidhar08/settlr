@@ -54,20 +54,22 @@ const TransactionList = ({ transactions, partyId }: transactionListProp) => {
           .map(([label, transactions]) => (
             <TransactionGroup key={label} label={label}>
               {transactions.map((transaction) => (
-                <AddTransactionModal
+                // <AddTransactionModal
+                //   key={transaction.id}
+                //   title="Add Transaction"
+                //   partyId={partyId}
+                //   transactionData={transaction}
+                // >
+                <TransactionItem
                   key={transaction.id}
-                  title="Add Transaction"
-                  partyId={partyId}
-                  transactionData={transaction}
-                >
-                  <TransactionItem
-                    title={transaction.description || ""}
-                    subtitle={format(transaction.date, "hh:mm a")}
-                    amount={String(transaction.amount)}
-                    type={transaction.direction}
-                    mode={transaction.mode}
-                  />
-                </AddTransactionModal>
+                  transactionId={transaction.id}
+                  title={transaction.description || ""}
+                  subtitle={format(transaction.date, "hh:mm a")}
+                  amount={String(transaction.amount)}
+                  type={transaction.direction}
+                  mode={transaction.mode}
+                />
+                // </AddTransactionModal>
               ))}
             </TransactionGroup>
           ))}
