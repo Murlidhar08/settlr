@@ -49,8 +49,9 @@ export async function getPartyList(type: PartyType): Promise<PartyRes[]> {
         select: {
           amount: true,
           direction: true,
+          date: true
         },
-      },
+      }
     },
   });
 

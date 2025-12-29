@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarIcon, Wallet, Paperclip, ChevronDownIcon, ArrowDown, ArrowUpRight, ArrowDownLeft } from "lucide-react"
+import { CalendarIcon, Wallet, Paperclip, ChevronDownIcon, ArrowUpRight, ArrowDownLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Label } from "@/components/ui/label"
@@ -9,6 +9,7 @@ import { useState, useEffect, ReactNode } from "react"
 import { PaymentMode, TransactionDirection } from "@/lib/generated/prisma/enums"
 import { addTransaction } from "@/actions/transaction.actions"
 import { Transaction } from "@/lib/generated/prisma/client"
+import { format } from "date-fns"
 
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -19,6 +20,7 @@ import {
   SelectItem,
 } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { toast } from "sonner"
 
 
 interface TransactionProps {
@@ -43,7 +45,7 @@ export const AddTransactionModal = ({
   const [data, setData] = useState<any>({
     businessId: "",
     amount: "",
-    date: new Date().toISOString().substring(0, 10),
+    date: format(new Date(), "yyyy-MM-dd"),
     description: "",
     mode: PaymentMode.CASH,
     direction,
@@ -64,10 +66,15 @@ export const AddTransactionModal = ({
   }, [transactionData])
 
   const handleAddTransaction = async () => {
+    // validation
+    if (!data.amount)
+      return toast.error("Amount is required!!")
+
     await addTransaction({
       ...data,
       amount: Number(data.amount),
       date: new Date(data.date),
+      description: data.description || null
     })
     setOpen(false)
   }
@@ -126,11 +133,7 @@ export const AddTransactionModal = ({
                       <div className="flex items-center gap-2">
                         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                         {data.date
-                          ? new Date(data.date).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })
+                          ? data.date
                           : "Select date"}
                       </div>
                       <ChevronDownIcon className="h-4 w-4 text-muted-foreground" />
@@ -143,10 +146,14 @@ export const AddTransactionModal = ({
                       selected={new Date(data.date)}
                       onSelect={(selectedDate) => {
                         if (!selectedDate) return
-                        setData({
-                          ...data,
-                          date: selectedDate.toISOString().substring(0, 10),
+
+                        setData((pre: any) => {
+                          return {
+                            ...pre,
+                            date: format(selectedDate, "yyyy-MM-dd"),
+                          }
                         })
+
                         setDateOpen(false)
                       }}
                     />

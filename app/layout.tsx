@@ -28,7 +28,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={nunitoSans.variable}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}>
         {children}
-        <Toaster />
+
+        {/* Toast Container */}
+        <Toaster
+          position="top-right"
+          expand={false}
+        />
       </body>
     </html>
   );

@@ -1,12 +1,12 @@
 // Packages
-import { Search, ArrowDown, ArrowUpRight, ArrowRight, ArrowDownLeft } from 'lucide-react'
-import { format } from "date-fns";
+import { Search, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
+import { format, isToday, isYesterday } from "date-fns";
 
 // Components
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { BackHeader } from '@/components/back-header';
-import { TransactionItem } from './components/transaction-item'
+import { TransactionItem } from '@/components/transaction-item'
 import { AddTransactionModal } from './components/add-transaction-modal'
 import { QuickActions } from './components/quick-action';
 import { BalanceCard } from './components/balance-card';
@@ -14,7 +14,31 @@ import { BalanceCard } from './components/balance-card';
 // Lib
 import { prisma } from '@/lib/prisma'
 import { getUserSession } from '@/lib/auth'
-import { TransactionDirection } from '@/lib/generated/prisma/client'
+import { Transaction, TransactionDirection } from '@/lib/generated/prisma/client'
+
+function groupTransactionsByDate(transactions: Transaction[]) {
+  const groups: Record<string, Transaction[]> = {};
+
+  for (const tx of transactions) {
+    let label = "";
+
+    if (isToday(tx.date)) {
+      label = "TODAY";
+    } else if (isYesterday(tx.date)) {
+      label = "YESTERDAY";
+    } else {
+      label = format(tx.date, "dd MMM, yyyy");
+    }
+
+    if (!groups[label]) {
+      groups[label] = [];
+    }
+
+    groups[label].push(tx);
+  }
+
+  return groups;
+}
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;
@@ -41,7 +65,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
           partyId: partyId,
         },
         orderBy: {
-          createdAt: "desc"
+          date: "desc"
         }
       }
     },
@@ -108,63 +132,34 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
 
           {/* Transactions */}
           <section className="px-4 pb-4 p-1 lg:px-0">
-            <div className="flex flex-col gap-3 px-1">
-              {/* Transaction List */}
-              <TransactionGroup label='TODAY'>
-                {
-                  partyDetails?.transactions?.map((transaction) => {
-                    return (
-                      <AddTransactionModal
-                        key={transaction.id}
-                        title="Add Transaction"
-                        partyId={partyId}
-                        transactionData={transaction}
-                      >
-                        <TransactionItem
-                          title={transaction.description || ""}
-                          subtitle={format(transaction.date, "dd MMM, yyyy")}
-                          amount={String(transaction.amount)}
-                          type={transaction.direction}
-                          mode={transaction.mode}
-                        />
-                      </AddTransactionModal>
-                    )
-                  })
-                }
-              </TransactionGroup>
+            <div className="flex flex-col gap-4 px-1">
 
-              {/* <TransactionItem
-                                title="Invoice #1023"
-                                subtitle="Oct 24, 2023 • Payment Sent"
-                                amount="-$500.00"
-                                type={TransactionDirection.IN}
-                            />
-                            <TransactionItem
-                                title="Refund Processed"
-                                subtitle="Oct 22, 2023 • Credit Note"
-                                amount="+$120.00"
-                                type={TransactionDirection.IN}
-                            />
-                            <TransactionItem
-                                title="Material Purchase"
-                                subtitle="Oct 18, 2023 • Bulk Order"
-                                amount="-$2,100.00"
-                                type={TransactionDirection.OUT}
-                            />
-                            <TransactionItem
-                                title="Advance Payment"
-                                subtitle="Oct 15, 2023 • Project A"
-                                amount="+$1,500.00"
-                                type={TransactionDirection.IN}
-                            />
-                            <TransactionItem
-                                title="Consulting Fee"
-                                subtitle="Oct 10, 2023 • Hourly"
-                                amount="+$450.00"
-                                type={TransactionDirection.OUT}
-                            /> */}
+              {partyDetails?.transactions &&
+                Object.entries(groupTransactionsByDate(partyDetails.transactions))
+                  .map(([label, transactions]) => (
+                    <TransactionGroup key={label} label={label}>
+                      {transactions.map((transaction) => (
+                        <AddTransactionModal
+                          key={transaction.id}
+                          title="Add Transaction"
+                          partyId={partyId}
+                          transactionData={transaction}
+                        >
+                          <TransactionItem
+                            title={transaction.description || ""}
+                            subtitle={format(transaction.date, "hh:mm a")}
+                            amount={String(transaction.amount)}
+                            type={transaction.direction}
+                            mode={transaction.mode}
+                          />
+                        </AddTransactionModal>
+                      ))}
+                    </TransactionGroup>
+                  ))}
+
             </div>
           </section>
+
         </main>
 
         {/* Bottom Action Footer */}
