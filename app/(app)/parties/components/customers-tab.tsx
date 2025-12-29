@@ -36,7 +36,7 @@ export default function CustomersTab({ partyType }: PartyListProp) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [partyType]);
 
   const isCollect = totalAmount > 0;
   const isPay = totalAmount < 0;
@@ -48,7 +48,7 @@ export default function CustomersTab({ partyType }: PartyListProp) {
       ? "To Collect"
       : "To Pay";
 
-  const ArrowIcon = isCollect ? ArrowUp : ArrowDown;
+  const ArrowIcon = isCollect ? ArrowDown : ArrowUp;
 
   return (
     <main className="space-y-4">

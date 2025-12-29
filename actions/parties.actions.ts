@@ -55,15 +55,11 @@ export async function getPartyList(type: PartyType): Promise<PartyRes[]> {
   });
 
   return parties.map((party) => {
-    /**
-     * pending > 0 → To Collect
-     * pending < 0 → To Pay
-     */
     const pending = party.transactions.reduce(
       (acc, tx) => {
         return tx.direction === TransactionDirection.OUT
-          ? acc.plus(tx.amount)
-          : acc.minus(tx.amount);
+          ? acc.minus(tx.amount)
+          : acc.plus(tx.amount);
       },
       new Prisma.Decimal(0)
     );

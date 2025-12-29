@@ -36,7 +36,6 @@ const PartyItem = ({
   const avatarColor = useMemo(() => getRandomAvatarColor(), []);
 
   const isAdvance = amount > 0;
-  const isDue = amount < 0;
   const isSettled = amount === 0;
 
   const status = isSettled
