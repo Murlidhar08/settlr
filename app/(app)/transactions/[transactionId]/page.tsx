@@ -161,7 +161,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
 
         <FooterButtons>
           <AlertDialog>
-            <AlertDialogTrigger asChild>
+            <AlertDialogTrigger>
               <Button
                 size="lg"
                 variant="outline"
@@ -197,7 +197,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
                 </AlertDialogCancel>
 
                 {/* YES */}
-                <AlertDialogAction asChild>
+                <AlertDialogAction>
                   <form action={deleteTransaction.bind(
                     null,
                     transaction.id,
@@ -205,12 +205,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
                   )}>
                     <Button
                       type="submit"
-                      className="
-        rounded-full h-11 px-8
-        bg-red-600 text-white font-semibold
-        hover:bg-red-700
-        transition
-      "
+                      className="rounded-full h-11 px-8 bg-red-600 text-white font-semibold hover:bg-red-700 transition"
                     >
                       Yes, Delete
                     </Button>

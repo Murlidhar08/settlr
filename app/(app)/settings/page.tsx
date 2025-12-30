@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   ChevronRight,
@@ -33,7 +33,10 @@ import { toast } from "sonner";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [theme, setTheme] = React.useState<"auto" | "light" | "dark">("auto");
+  const [currency, setCurrency] = useState("USD");
+  const [dateFormat, setDateFormat] = useState("DD/MM/YYYY");
+  const [paymentMode, setPaymentMode] = useState("Cash");
+  const [theme, setTheme] = useState<"auto" | "light" | "dark">("auto");
 
   // -------------
   // Handle Logout
@@ -83,7 +86,7 @@ export default function SettingsPage() {
         {/* GENERAL */}
         <Section title="General Preferences">
           <Row icon={DollarSign} label="Currency">
-            <Select defaultValue="USD">
+            <Select defaultValue={currency}>
               <SelectTrigger className="w-30">
                 <SelectValue />
               </SelectTrigger>
@@ -96,7 +99,7 @@ export default function SettingsPage() {
           </Row>
 
           <Row icon={Calendar} label="Date Format">
-            <Select defaultValue="DD/MM/YYYY">
+            <Select defaultValue={dateFormat}>
               <SelectTrigger className="w-35">
                 <SelectValue />
               </SelectTrigger>
@@ -108,7 +111,9 @@ export default function SettingsPage() {
           </Row>
 
           <Row icon={CreditCard} label="Default Payment">
-            <Select defaultValue="Cash">
+            <Select defaultValue={paymentMode} onValueChange={(e) => {
+              // Change Reflect
+            }}>
               <SelectTrigger className="w-30">
                 <SelectValue />
               </SelectTrigger>

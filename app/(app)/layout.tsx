@@ -13,9 +13,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     headers: await headers(),
   });
 
-  if (!session) {
+  if (!session)
     redirect("/login");
-  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
