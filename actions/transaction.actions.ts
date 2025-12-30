@@ -4,6 +4,7 @@
 import { prisma } from "@/lib/prisma";
 import { getUserSession } from "@/lib/auth";
 import { Transaction } from "@/lib/generated/prisma/client";
+import { redirect } from "next/navigation"
 
 
 export async function addTransaction(transactionData: Transaction) {
@@ -41,4 +42,26 @@ export async function addTransaction(transactionData: Transaction) {
       userId: session?.user.id || "",
     },
   });
+}
+
+export async function deleteTransaction(transactionId: string, partyId?: string) {
+  const session = await getUserSession()
+
+  if (!session?.session.activeBusinessId) {
+    throw new Error("Unauthorized")
+  }
+
+  await prisma.transaction.delete({
+    where: {
+      id: transactionId,
+      businessId: session.session.activeBusinessId,
+    },
+  })
+
+  // Redirect after delete
+  if (partyId)
+    redirect(`/parties/${partyId}`)
+  else
+    redirect("/parties")
+
 }

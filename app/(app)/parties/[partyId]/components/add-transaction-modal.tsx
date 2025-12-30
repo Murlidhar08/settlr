@@ -45,11 +45,11 @@ export const AddTransactionModal = ({
   const [data, setData] = useState<any>({
     businessId: "",
     amount: "",
-    date: format(new Date(), "yyyy-MM-dd"),
+    date: format(transactionData?.date || new Date(), "yyyy-MM-dd"),
     description: "",
     mode: PaymentMode.CASH,
     direction,
-    partyId,
+    partyId: partyId || null,
     userId: "",
   })
 
@@ -58,8 +58,8 @@ export const AddTransactionModal = ({
       setData((pre: any) => {
         return {
           ...pre,
-          amount: transactionData.amount.toString(),
-          date: transactionData.date.toISOString().substring(0, 10),
+          amount: Number(transactionData.amount),
+          date: format(transactionData?.date || new Date(), "yyyy-MM-dd"),
         }
       })
     }
@@ -121,7 +121,7 @@ export const AddTransactionModal = ({
             {/* Date & Mode */}
             <div className="grid grid-cols-2 gap-3">
               {/* Date */}
-              <div className="">
+              <div>
                 <Label className="text-xs text-muted-foreground">DATE</Label>
 
                 <Popover open={dateOpen} onOpenChange={setDateOpen}>
@@ -162,7 +162,7 @@ export const AddTransactionModal = ({
               </div>
 
               {/* Mode */}
-              <div className="">
+              <div>
                 <Label className="text-xs text-muted-foreground">MODE</Label>
 
                 <Select

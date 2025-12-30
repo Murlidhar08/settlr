@@ -3,8 +3,23 @@ import { prisma } from "@/lib/prisma"
 import { getUserSession } from "@/lib/auth"
 import { TransactionDirection } from "@/lib/generated/prisma/enums"
 import { format } from "date-fns"
-import { Check } from "lucide-react"
+import { Check, PenSquareIcon, Trash2 } from "lucide-react"
 import { BackHeader } from "@/components/back-header"
+import { FooterButtons } from "@/components/footer-buttons"
+import { Button } from "@/components/ui/button"
+import { AddTransactionModal } from "../../parties/[partyId]/components/add-transaction-modal"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { deleteTransaction } from "@/actions/transaction.actions"
 
 export default async function TransactionDetailPage({ params }: { params: Promise<{ transactionId: string }> }) {
   const transactionId = (await params).transactionId;
@@ -144,17 +159,82 @@ export default async function TransactionDetailPage({ params }: { params: Promis
           </div>
         </main>
 
-        {/* Footer Actions */}
-        <footer className="fixed bottom-0 left-0 right-0 z-20 bg-linear-to-t from-background-light via-background-light to-transparent p-4 pt-10 dark:from-background-dark dark:via-background-dark md:p-6">
-          <div className="mx-auto flex max-w-md flex-col gap-3 md:max-w-2xl lg:max-w-5xl lg:flex-row lg:gap-4">
-            <button className="h-14 flex-1 rounded-2xl bg-primary text-white font-bold shadow-lg transition active:scale-[0.98]">
+        <FooterButtons>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                size="lg"
+                variant="outline"
+                className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase
+          text-red-600 border-red-200
+          shadow-lg shadow-primary-600/30
+          transition-all hover:shadow-xl hover:-translate-y-0.5
+          hover:text-red-600 active:translate-y-0"
+              >
+                <Trash2 className="h-5 w-5" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+
+            <AlertDialogContent className="rounded-2xl">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-lg font-bold">
+                  Are you sure?
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-sm text-muted-foreground">
+                  Are you sure you want to delete this transaction?
+                  <br />
+                  <span className="font-semibold text-red-500">
+                    This action cannot be reversed.
+                  </span>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              <AlertDialogFooter className="gap-3 sm:gap-2">
+                {/* NO */}
+                <AlertDialogCancel className="rounded-full h-11 px-8 bg-muted text-muted-foreground hover:bg-muted/80">
+                  No
+                </AlertDialogCancel>
+
+                {/* YES */}
+                <AlertDialogAction asChild>
+                  <form action={deleteTransaction.bind(
+                    null,
+                    transaction.id,
+                    transaction.partyId || ""
+                  )}>
+                    <Button
+                      type="submit"
+                      className="
+        rounded-full h-11 px-8
+        bg-red-600 text-white font-semibold
+        hover:bg-red-700
+        transition
+      "
+                    >
+                      Yes, Delete
+                    </Button>
+                  </form>
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {/* EDIT */}
+          <AddTransactionModal
+            title="Add Transaction"
+            transactionData={transaction}
+            direction={transaction.direction}
+          >
+            <Button
+              size="lg"
+              className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase shadow-lg shadow-primary-600/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <PenSquareIcon className="h-5 w-5" />
               Edit
-            </button>
-            <button className="h-14 flex-1 rounded-2xl border border-slate-200 text-rose-600 font-bold transition active:scale-[0.98] dark:border-slate-700">
-              Delete
-            </button>
-          </div>
-        </footer>
+            </Button>
+          </AddTransactionModal>
+        </FooterButtons>
       </div>
     </div>
   )

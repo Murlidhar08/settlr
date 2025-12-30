@@ -133,10 +133,11 @@ export const auth = betterAuth({
     },
   },
   session: {
-    cookieCache: {
-      enabled: true,
-      maxAge: 60 // 1 Minute
-    },
+    // PENDING CACHE
+    // cookieCache: {
+    //   enabled: true,
+    //   maxAge: 10 // 1 Minute
+    // },
     additionalFields: {
       activeBusinessId: { type: "string", required: false }
     }

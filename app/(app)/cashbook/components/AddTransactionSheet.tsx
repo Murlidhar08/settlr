@@ -121,7 +121,7 @@ export const AddTransactionSheet = ({
             {/* Date & Mode */}
             <div className="grid grid-cols-2 gap-3">
               {/* Date */}
-              <div className="">
+              <div>
                 <Label className="text-xs text-muted-foreground">DATE</Label>
 
                 <Popover open={dateOpen} onOpenChange={setDateOpen}>
@@ -162,7 +162,7 @@ export const AddTransactionSheet = ({
               </div>
 
               {/* Mode */}
-              <div className="">
+              <div>
                 <Label className="text-xs text-muted-foreground">MODE</Label>
 
                 <Select
