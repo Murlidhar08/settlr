@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ChevronRight,
@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
 import { upsertUserSettings } from "@/actions/user-settings.actions";
 import { useSession } from "@/lib/auth-client";
+import { UserSettings } from "@/lib/generated/prisma/client";
 
 
 // type UserPreferences = {
@@ -45,10 +46,29 @@ import { useSession } from "@/lib/auth-client";
 export default function SettingsPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState<Currency>(Currency.INR);
   const [dateFormat, setDateFormat] = useState("DD/MM/YYYY");
-  const [paymentMode, setPaymentMode] = useState("Cash");
-  const [theme, setTheme] = useState<"auto" | "light" | "dark">("auto");
+  const [paymentMode, setPaymentMode] = useState<PaymentMode>(PaymentMode.CASH);
+  const [theme, setTheme] = useState<ThemeMode>(ThemeMode.AUTO);
+
+  const initialized = useRef(false);
+
+  // 2. Sync state when session loads
+  useEffect(() => {
+    if (isPending) return;
+    if (!session?.user?.settings) return;
+    if (initialized.current) return;
+
+    const s = session.user.settings as UserSettings;
+
+    // Currency
+    setCurrency(s.currency);
+    setDateFormat(s.dateFormat ?? "DD/MM/YYYY");
+    setPaymentMode(s.defaultPayment ?? PaymentMode.CASH);
+    setTheme(s.theme)
+
+    initialized.current = true;
+  }, [isPending, session]);
 
   if (isPending)
     return <h1>Loading ...</h1>;
@@ -196,14 +216,14 @@ export default function SettingsPage() {
               <div className="flex gap-1 bg-muted rounded-xl p-1">
                 <div className="flex gap-1 bg-muted rounded-xl p-1">
                   <Button
-                    variant={theme === "auto" ? "secondary" : "ghost"}
+                    variant={theme === ThemeMode.AUTO ? "secondary" : "ghost"}
                     size="sm"
                     className={cn(
                       "gap-1 rounded-lg text-xs font-semibold",
-                      theme === "auto" && "bg-background shadow"
+                      theme === ThemeMode.AUTO && "bg-background shadow"
                     )}
                     onClick={async () => {
-                      setTheme("auto");
+                      setTheme(ThemeMode.AUTO);
                       await upsertUserSettings({ theme: ThemeMode.AUTO });
                     }}
                   >
@@ -212,14 +232,14 @@ export default function SettingsPage() {
                   </Button>
 
                   <Button
-                    variant={theme === "light" ? "secondary" : "ghost"}
+                    variant={theme === ThemeMode.LIGHT ? "secondary" : "ghost"}
                     size="sm"
                     className={cn(
                       "gap-1 rounded-lg text-xs font-semibold",
-                      theme === "light" && "bg-background shadow"
+                      theme === ThemeMode.LIGHT && "bg-background shadow"
                     )}
                     onClick={async () => {
-                      setTheme("light");
+                      setTheme(ThemeMode.LIGHT);
                       await upsertUserSettings({ theme: ThemeMode.LIGHT });
                     }}
                   >
@@ -228,14 +248,14 @@ export default function SettingsPage() {
                   </Button>
 
                   <Button
-                    variant={theme === "dark" ? "secondary" : "ghost"}
+                    variant={theme === ThemeMode.DARK ? "secondary" : "ghost"}
                     size="sm"
                     className={cn(
                       "gap-1 rounded-lg text-xs font-semibold",
-                      theme === "dark" && "bg-background shadow"
+                      theme === ThemeMode.DARK && "bg-background shadow"
                     )}
                     onClick={async () => {
-                      setTheme("dark");
+                      setTheme(ThemeMode.DARK);
                       await upsertUserSettings({ theme: ThemeMode.DARK });
                     }}
                   >

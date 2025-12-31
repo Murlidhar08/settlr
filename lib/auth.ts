@@ -2,6 +2,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
+import { customSession } from "better-auth/plugins";
 
 // Lib
 import { prisma } from "./prisma";
@@ -12,6 +13,7 @@ import { getResetPasswordEmailHtml } from "./templates/email-reset-password";
 import { getVerificationEmailHtml } from "./templates/email-verification";
 import { getPasswordResetSuccessEmailHtml } from "./templates/email-password-reseted";
 import { headers } from "next/headers";
+import { Currency, PaymentMode, ThemeMode } from "./generated/prisma/enums";
 
 // Const
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
@@ -151,9 +153,39 @@ export const auth = betterAuth({
     // },
     additionalFields: {
       activeBusinessId: { type: "string", required: false }
-    }
+    },
+
   },
-  plugins: [nextCookies()]
+  plugins: [
+    nextCookies(),
+    customSession(async ({ user, session }) => {
+      // Fetch extended settings from database
+      const settings = await prisma.userSettings.findUnique({
+        where: { userId: user.id },
+        select: {
+          currency: true,
+          dateFormat: true,
+          defaultPayment: true,
+          theme: true
+        }
+      });
+
+      const mergedSettings = {
+        currency: settings?.currency ?? Currency.INR,
+        dateFormat: settings?.dateFormat ?? "DD/MM/YYYY",
+        defaultPayment: settings?.defaultPayment ?? PaymentMode.CASH,
+        theme: settings?.theme ?? ThemeMode.AUTO,
+      };
+
+      return {
+        session,
+        user: {
+          ...user,
+          settings: mergedSettings
+        },
+      };
+    }),
+  ]
 });
 
 export const getUserSession = async () => {
