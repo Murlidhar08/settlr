@@ -30,6 +30,16 @@ import { Header } from "@/components/header";
 import { signOut } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
+import { UserSettings } from "@/lib/generated/prisma/client";
+import { upsertUserSettings } from "@/actions/user-settings.actions";
+
+type UserPreferences = {
+  theme: ThemeMode;
+  currency: Currency;
+  dateFormat: string;
+  defaultPayment: PaymentMode;
+};
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -37,6 +47,21 @@ export default function SettingsPage() {
   const [dateFormat, setDateFormat] = useState("DD/MM/YYYY");
   const [paymentMode, setPaymentMode] = useState("Cash");
   const [theme, setTheme] = useState<"auto" | "light" | "dark">("auto");
+  const [userPref, setUserPref] = useState<UserPreferences>({
+    theme: ThemeMode.AUTO,
+    currency: Currency.INR,
+    dateFormat: "DD/MM/YYYY",
+    defaultPayment: PaymentMode.CASH
+  });
+
+  // ----------
+  // Const
+  const currencyLabel: Record<Currency, string> = {
+    USD: "USD ($)",
+    INR: "INR (₹)",
+    EUR: "EUR (€)",
+  };
+
 
   // -------------
   // Handle Logout
@@ -54,6 +79,12 @@ export default function SettingsPage() {
       toast.error("Failed to logout");
     }
   };
+
+  // ----------------
+  // Handle value change
+  const changeValue = async (label: string, value: UserPreferences) => {
+
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -86,20 +117,38 @@ export default function SettingsPage() {
         {/* GENERAL */}
         <Section title="General Preferences">
           <Row icon={DollarSign} label="Currency">
-            <Select defaultValue={currency}>
+            <Select defaultValue={currency}
+              onValueChange={async (value) => {
+                setCurrency(value as Currency);
+                await upsertUserSettings({
+                  currency: value as Currency
+                });
+              }}
+            >
               <SelectTrigger className="w-30">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="USD">USD ($)</SelectItem>
-                <SelectItem value="INR">INR (₹)</SelectItem>
-                <SelectItem value="EUR">EUR (€)</SelectItem>
+                {Object.values(Currency).map((currency) => (
+                  <SelectItem key={currency} value={currency}>
+                    {currencyLabel[currency]}
+                  </SelectItem>
+                ))}
               </SelectContent>
+
             </Select>
           </Row>
 
           <Row icon={Calendar} label="Date Format">
-            <Select defaultValue={dateFormat}>
+            <Select
+              defaultValue={dateFormat}
+              onValueChange={async (value) => {
+                setDateFormat(value);
+                await upsertUserSettings({
+                  dateFormat: value || ""
+                });
+              }}
+            >
               <SelectTrigger className="w-35">
                 <SelectValue />
               </SelectTrigger>
@@ -111,15 +160,24 @@ export default function SettingsPage() {
           </Row>
 
           <Row icon={CreditCard} label="Default Payment">
-            <Select defaultValue={paymentMode} onValueChange={(e) => {
-              // Change Reflect
-            }}>
+            <Select
+              defaultValue={paymentMode}
+              onValueChange={async (value: PaymentMode) => {
+                setDateFormat(value);
+                await upsertUserSettings({
+                  defaultPayment: value
+                });
+              }}
+            >
               <SelectTrigger className="w-30">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Cash">Cash</SelectItem>
-                <SelectItem value="Online">Online</SelectItem>
+                {Object.values(PaymentMode).map((mode) => (
+                  <SelectItem key={mode} value={mode}>
+                    {mode}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </Row>
@@ -140,24 +198,56 @@ export default function SettingsPage() {
               </div>
 
               <div className="flex gap-1 bg-muted rounded-xl p-1">
-                <ThemeButton
-                  active={theme === "auto"}
-                  onClick={() => setTheme("auto")}
-                >
-                  <Laptop size={20} /> Auto
-                </ThemeButton>
-                <ThemeButton
-                  active={theme === "light"}
-                  onClick={() => setTheme("light")}
-                >
-                  <Sun size={20} /> Light
-                </ThemeButton>
-                <ThemeButton
-                  active={theme === "dark"}
-                  onClick={() => setTheme("dark")}
-                >
-                  <Moon size={20} /> Dark
-                </ThemeButton>
+                <div className="flex gap-1 bg-muted rounded-xl p-1">
+                  <Button
+                    variant={theme === "auto" ? "secondary" : "ghost"}
+                    size="sm"
+                    className={cn(
+                      "gap-1 rounded-lg text-xs font-semibold",
+                      theme === "auto" && "bg-background shadow"
+                    )}
+                    onClick={async () => {
+                      setTheme("auto");
+                      await upsertUserSettings({ theme: ThemeMode.AUTO });
+                    }}
+                  >
+                    <Laptop size={16} />
+                    Auto
+                  </Button>
+
+                  <Button
+                    variant={theme === "light" ? "secondary" : "ghost"}
+                    size="sm"
+                    className={cn(
+                      "gap-1 rounded-lg text-xs font-semibold",
+                      theme === "light" && "bg-background shadow"
+                    )}
+                    onClick={async () => {
+                      setTheme("light");
+                      await upsertUserSettings({ theme: ThemeMode.LIGHT });
+                    }}
+                  >
+                    <Sun size={16} />
+                    Light
+                  </Button>
+
+                  <Button
+                    variant={theme === "dark" ? "secondary" : "ghost"}
+                    size="sm"
+                    className={cn(
+                      "gap-1 rounded-lg text-xs font-semibold",
+                      theme === "dark" && "bg-background shadow"
+                    )}
+                    onClick={async () => {
+                      setTheme("dark");
+                      await upsertUserSettings({ theme: ThemeMode.DARK });
+                    }}
+                  >
+                    <Moon size={16} />
+                    Dark
+                  </Button>
+                </div>
+
               </div>
             </motion.div>
           </div>
@@ -190,7 +280,7 @@ export default function SettingsPage() {
           Version 1.0.0 (Build 204)
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 

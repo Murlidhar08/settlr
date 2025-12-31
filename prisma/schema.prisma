@@ -22,6 +22,7 @@ enum PaymentMode {
 enum Currency {
   INR
   USD
+  EUR
 }
 
 enum TransactionDirection {
@@ -113,40 +114,29 @@ model Verification {
 }
 
 model UserSettings {
-  id         String    @id @default(cuid())
-  userId     String    @unique
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  theme      ThemeMode @default(AUTO)
-  dateFormat String    @default("DD/MM/YYYY")
-  createdAt  DateTime  @default(now())
+  userId String @id
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  currency       Currency    @default(INR)
+  dateFormat     String      @default("DD/MM/YYYY")
+  defaultPayment PaymentMode @default(CASH)
+  theme          ThemeMode   @default(AUTO)
+  createdAt      DateTime    @default(now())
 
   @@map("userSettings")
 }
 
 model Business {
-  id               String            @id @default(cuid())
-  name             String
-  ownerId          String
-  owner            User              @relation(fields: [ownerId], references: [id])
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @default(now()) @updatedAt
-  transactions     Transaction[]
-  businessSettings BusinessSettings?
-  parties          Party[]
+  id           String        @id @default(cuid())
+  name         String
+  ownerId      String
+  owner        User          @relation(fields: [ownerId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @default(now()) @updatedAt
+  transactions Transaction[]
+  parties      Party[]
 
   @@map("business")
-}
-
-model BusinessSettings {
-  id                 String      @id @default(cuid())
-  businessId         String      @unique
-  business           Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  currency           Currency    @default(INR)
-  defaultPaymentMode PaymentMode @default(CASH)
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @default(now()) @updatedAt
-
-  @@map("businessSettings")
 }
 
 model Party {
