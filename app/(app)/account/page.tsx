@@ -1,12 +1,18 @@
 'use client'
 
 import * as React from 'react'
-import { ArrowLeft, Camera, User, Store, Phone, Mail, LogOut, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Camera, User, Phone, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useSession } from "@/lib/auth-client";
 
 export default function AccountPage() {
+  const { data: session, isPending } = useSession();
+
+  if (isPending)
+    return <h1>Loading ...</h1>
+
   return (
     <div className="relative min-h-screen bg-background pb-28">
       {/* Top App Bar */}
@@ -22,7 +28,7 @@ export default function AccountPage() {
       <section className="flex flex-col items-center py-8">
         <div className="relative">
           <Avatar className="h-28 w-28 ring-4 ring-background shadow-lg">
-            <AvatarImage src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmO4aBu60OoiO1rjHCGaM_A6LY6PrmSOiWoNLCcElzIhhAYGURbHNu8cnq3VPIzEz2ZY5hUbhdg22FBOq1vouszpBYqHuwVCbtiPBrASgouKjCps3mh5yZcbgYMpt0cgWECVDXJabe9cepFi53o7CfDJsEsIFIsOvwLiePzj94tucnti3KQAmlWnoRNP_kDTyU0Kk2futwt3o9gVDdqmyr3wMIGg1ONhPyW56dGPgRuI05HTVajNbohag1nGuomuotyHBi-s03hfAc" />
+            <AvatarImage src={session?.user?.image || ""} />
             <AvatarFallback>AS</AvatarFallback>
           </Avatar>
           <button className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow">
@@ -34,10 +40,10 @@ export default function AccountPage() {
 
       {/* Form */}
       <section className="mx-auto flex w-full max-w-lg flex-col gap-4 px-4">
-        <Field label="Full Name" icon={User} defaultValue="Alex Sterling" />
-        <Field label="Business Name" icon={Store} defaultValue="Sterling Logistics LLC" />
-        <Field label="Phone Number" icon={Phone} defaultValue="+1 (555) 000-0000" />
-        <Field label="Email Address" icon={Mail} defaultValue="alex@sterlinglogistics.com" type="email" />
+        <Field label="Full Name" icon={User} defaultValue={session?.user?.name} />
+        {/* <Field label="Business Name" icon={Store} defaultValue="Sterling Logistics LLC" /> */}
+        <Field label="Phone Number" icon={Phone} defaultValue={session?.user?.contactNo} />
+        <Field label="Email Address" icon={Mail} defaultValue={session?.user?.email} type="email" />
       </section>
     </div>
   )

@@ -120,6 +120,17 @@ export const auth = betterAuth({
         console.error("Error in sendVerificationMail:", error)
         throw error
       }
+    },
+    afterEmailVerification: async (user, request) => {
+      // Add Default Business
+      await prisma.business.create({
+        data: {
+          name: "Default Business",
+          ownerId: user.id,
+        }
+      });
+
+      console.log(`${user.email} has been successfully verified!`);
     }
   },
   socialProviders: {

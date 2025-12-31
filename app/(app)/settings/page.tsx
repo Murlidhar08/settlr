@@ -31,28 +31,27 @@ import { signOut } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
-import { UserSettings } from "@/lib/generated/prisma/client";
 import { upsertUserSettings } from "@/actions/user-settings.actions";
+import { useSession } from "@/lib/auth-client";
 
-type UserPreferences = {
-  theme: ThemeMode;
-  currency: Currency;
-  dateFormat: string;
-  defaultPayment: PaymentMode;
-};
+
+// type UserPreferences = {
+//   theme: ThemeMode;
+//   currency: Currency;
+//   dateFormat: string;
+//   defaultPayment: PaymentMode;
+// };
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { data: session, isPending } = useSession();
   const [currency, setCurrency] = useState("USD");
   const [dateFormat, setDateFormat] = useState("DD/MM/YYYY");
   const [paymentMode, setPaymentMode] = useState("Cash");
   const [theme, setTheme] = useState<"auto" | "light" | "dark">("auto");
-  const [userPref, setUserPref] = useState<UserPreferences>({
-    theme: ThemeMode.AUTO,
-    currency: Currency.INR,
-    dateFormat: "DD/MM/YYYY",
-    defaultPayment: PaymentMode.CASH
-  });
+
+  if (isPending)
+    return <h1>Loading ...</h1>;
 
   // ----------
   // Const
@@ -61,7 +60,6 @@ export default function SettingsPage() {
     INR: "INR (₹)",
     EUR: "EUR (€)",
   };
-
 
   // -------------
   // Handle Logout
@@ -80,12 +78,6 @@ export default function SettingsPage() {
     }
   };
 
-  // ----------------
-  // Handle value change
-  const changeValue = async (label: string, value: UserPreferences) => {
-
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <Header title="Settings" />
@@ -103,13 +95,17 @@ export default function SettingsPage() {
             {/* <User size={28} /> */}
             <img
               className="rounded-full"
-              src="https://github.com/shadcn.png"
+              src={session?.user?.image ?? "https://github.com/shadcn.png"}
               alt="image"
             />
           </div>
           <div className="flex-1">
-            <p className="font-bold text-lg">Alex Sterling</p>
-            <p className="text-sm text-muted-foreground">Sterling Logistics</p>
+            <p className="font-bold text-lg">
+              {session?.user?.name ?? "Unknown"}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {session?.user?.email ?? "Unknown"}
+            </p>
           </div>
           <ChevronRight className="text-muted-foreground" />
         </motion.div>
@@ -360,26 +356,26 @@ function LinkRow({ label }: { label: string }) {
   );
 }
 
-function ThemeButton({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: React.ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all",
-        active
-          ? "bg-background shadow text-primary"
-          : "text-muted-foreground hover:text-primary"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
+// function ThemeButton({
+//   active,
+//   children,
+//   onClick,
+// }: {
+//   active: boolean;
+//   children: React.ReactNode;
+//   onClick: () => void;
+// }) {
+//   return (
+//     <button
+//       onClick={onClick}
+//       className={cn(
+//         "px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all",
+//         active
+//           ? "bg-background shadow text-primary"
+//           : "text-muted-foreground hover:text-primary"
+//       )}
+//     >
+//       {children}
+//     </button>
+//   );
+// }
