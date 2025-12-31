@@ -133,7 +133,7 @@ export default function SettingsPage() {
         {/* GENERAL */}
         <Section title="General Preferences">
           <Row icon={DollarSign} label="Currency">
-            <Select defaultValue={currency}
+            <Select value={currency}
               onValueChange={async (value) => {
                 setCurrency(value as Currency);
                 await upsertUserSettings({
@@ -157,7 +157,7 @@ export default function SettingsPage() {
 
           <Row icon={Calendar} label="Date Format">
             <Select
-              defaultValue={dateFormat}
+              value={dateFormat}
               onValueChange={async (value) => {
                 setDateFormat(value);
                 await upsertUserSettings({
@@ -177,7 +177,7 @@ export default function SettingsPage() {
 
           <Row icon={CreditCard} label="Default Payment">
             <Select
-              defaultValue={paymentMode}
+              value={paymentMode}
               onValueChange={async (value: PaymentMode) => {
                 setDateFormat(value);
                 await upsertUserSettings({
@@ -315,14 +315,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Row({
-  icon: Icon,
-  label,
-  children,
-}: {
-  icon: any;
-  label: string;
-  children: React.ReactNode;
+function Row({ icon: Icon, label, children }: {
+  icon: any; label: string; children: React.ReactNode
 }) {
   return (
     <motion.div

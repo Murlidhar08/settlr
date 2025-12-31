@@ -1,10 +1,9 @@
 "use server";
 
 // Package
-import { auth, getUserSession } from "@/lib/auth";
+import { getUserSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 
 export async function addBusiness(name: string) {
   if (!name) {
@@ -37,7 +36,7 @@ export async function switchBusiness(businessId: string, redirectTo?: string | n
   }
 
   // 2. Optimization: Skip if already active
-  if (session.session.activeBusinessId === businessId) {
+  if (!session.session.activeBusinessId || session.session.activeBusinessId === businessId) {
     return { success: true };
   }
 

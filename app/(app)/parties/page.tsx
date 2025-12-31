@@ -77,20 +77,10 @@ export default function Parties() {
             <div className="mt-4">
               <TabsContent value="customers">
                 <CustomersTab partyType={PartyType.CUSTOMER} />
-
-                <AddPartiesModal
-                  title="Add Customer"
-                  type={PartyType.CUSTOMER}
-                />
               </TabsContent>
 
               <TabsContent value="suppliers">
                 <CustomersTab partyType={PartyType.SUPPLIER} />
-
-                <AddPartiesModal
-                  title="Add Supplier"
-                  type={PartyType.SUPPLIER}
-                />
               </TabsContent>
             </div>
           </Tabs>

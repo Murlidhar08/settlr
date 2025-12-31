@@ -12,12 +12,19 @@ import { Label } from "@/components/ui/label"
 /* ========================================================= */
 import { addParties } from "@/actions/parties.actions"
 import { PartyType } from "@/lib/generated/prisma/enums"
-import { Party } from "@/lib/generated/prisma/client"
 
 interface ParitesProps {
-  title: string,
+  title?: string,
   type: PartyType
 }
+
+type PartyInput = {
+  name: string;
+  businessId: string;
+  type: PartyType;
+  contactNo?: string | null;
+  profileUrl: string | null;
+};
 
 /* ========================================================= */
 /* COMPONENT */
@@ -25,7 +32,7 @@ interface ParitesProps {
 
 const AddPartiesModal = ({ title, type }: ParitesProps) => {
   const [popOpen, setPopOpen] = useState(false);
-  const [data, setData] = useState<Party>({
+  const [data, setData] = useState<PartyInput>({
     type: type,
     name: "",
     businessId: "",
@@ -33,9 +40,24 @@ const AddPartiesModal = ({ title, type }: ParitesProps) => {
     profileUrl: null
   })
 
-  const handleAddBusiness = async () => {
-    await addParties(data);
-    setPopOpen(false)
+  title = title || type == PartyType.CUSTOMER
+    ? "Add Customer"
+    : type == PartyType.SUPPLIER
+      ? "Add Supplier"
+      : "Title"
+
+  const handleAddParty = async () => {
+    const success = await addParties(data);
+    if (success) {
+      setData({
+        type: type,
+        name: "",
+        businessId: "",
+        contactNo: null,
+        profileUrl: null
+      })
+      setPopOpen(false);
+    }
   }
 
   return (
@@ -97,7 +119,7 @@ const AddPartiesModal = ({ title, type }: ParitesProps) => {
               </Button>
 
               <Button
-                onClick={handleAddBusiness}
+                onClick={handleAddParty}
                 className="flex-1"
                 disabled={false} // PENDING
               >

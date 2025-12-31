@@ -7,6 +7,7 @@ import { PartyList } from "./party-list";
 import { PartyType } from "@/lib/generated/prisma/enums";
 import { getPartyList } from "@/actions/parties.actions";
 import { PartyRes } from "@/types/party/PartyRes";
+import { AddPartiesModal } from "./add-parties-modal";
 
 interface PartyListProp {
   partyType: PartyType;
@@ -112,7 +113,13 @@ export default function CustomersTab({ partyType }: PartyListProp) {
         Recently Active
       </p>
 
+      {/* List of party Items */}
       <PartyList partyType={partyType} />
+
+      {/* Add Party */}
+      <AddPartiesModal type={partyType} />
+
+      {/* Bottom Spacing */}
       <div className="h-24" />
     </main>
   );
