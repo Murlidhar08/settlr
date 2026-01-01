@@ -36,10 +36,12 @@ import { signOut } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
-import { upsertUserSettings } from "@/actions/user-settings.actions";
+import getCredientialAccounts, { getListSessions, upsertUserSettings } from "@/actions/user-settings.actions";
 import { useSession } from "@/lib/auth-client";
 import { UserSettings } from "@/lib/generated/prisma/client";
 import { SecurityModal } from "./components/security-modal";
+import { SessionModal } from "./components/session-modal";
+import { LinkAccountModal } from "./components/link-account-modal";
 
 
 // type UserPreferences = {
@@ -57,6 +59,9 @@ export default function SettingsPage() {
   const [paymentMode, setPaymentMode] = useState<PaymentMode>(PaymentMode.CASH);
   const [theme, setTheme] = useState<ThemeMode>(ThemeMode.AUTO);
 
+  const [sessionsList, setSessionsList] = useState([])
+  const [currAccount, setCurrAccount] = useState()
+
   const initialized = useRef(false);
 
   // 2. Sync state when session loads
@@ -71,7 +76,19 @@ export default function SettingsPage() {
     setCurrency(s.currency);
     setDateFormat(s.dateFormat ?? "DD/MM/YYYY");
     setPaymentMode(s.defaultPayment ?? PaymentMode.CASH);
-    setTheme(s.theme)
+    setTheme(s.theme);
+
+    getListSessions()
+      .then(res => {
+        if (!res) return
+        setSessionsList(res)
+      })
+
+    getCredientialAccounts()
+      .then(res => {
+        if (!res) return
+        setCurrAccount(res)
+      })
 
     initialized.current = true;
   }, [isPending, session]);
@@ -208,15 +225,16 @@ export default function SettingsPage() {
         {/* SECURITY */}
         <Section title="Security">
           {/* Link Account */}
-          <ActionRow icon={Link2Icon} title="Link Account">
-          </ActionRow>
+          <LinkAccountModal currentAccounts={currAccount} />
+          {/* <ActionRow icon={Link2Icon} title="Link Account">
+          </ActionRow> */}
 
           {/* Security */}
           <SecurityModal email={session?.user.email} />
 
           {/* Sessions */}
-          <ActionRow icon={KeyRound} title="Sessions Management">
-          </ActionRow>
+          <SessionModal sessions={sessionsList} currentSessionToken={session?.session.token} />
+          {/* <ActionRow icon={KeyRound} title="Sessions Management"></ActionRow> */}
 
           {/* Danger */}
           <ActionRow icon={Trash2} title="Danger Zone">
@@ -393,27 +411,3 @@ function LinkRow({ label }: { label: string }) {
     </motion.button>
   );
 }
-
-// function ThemeButton({
-//   active,
-//   children,
-//   onClick,
-// }: {
-//   active: boolean;
-//   children: React.ReactNode;
-//   onClick: () => void;
-// }) {
-//   return (
-//     <button
-//       onClick={onClick}
-//       className={cn(
-//         "px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all",
-//         active
-//           ? "bg-background shadow text-primary"
-//           : "text-muted-foreground hover:text-primary"
-//       )}
-//     >
-//       {children}
-//     </button>
-//   );
-// }

@@ -39,3 +39,21 @@ export async function getUserSettings() {
 export async function getListUserAccounts() {
   return await auth.api.listUserAccounts({ headers: await headers() })
 }
+
+export async function getListSessions() {
+  return await auth.api.listSessions({
+    headers: await headers(),
+  });
+}
+
+export default async function getCredientialAccounts() {
+  const accounts = await auth.api.listUserAccounts({
+    headers: await headers(),
+  })
+
+  const nonCredentialAccounts = accounts.filter(
+    a => a.providerId !== "credential"
+  )
+
+  return nonCredentialAccounts;
+}

@@ -1,4 +1,4 @@
-import { Building2, ChevronRight, LockKeyhole } from "lucide-react"
+import { ChevronRight, LockKeyhole } from "lucide-react"
 import {
   Sheet,
   SheetClose,
@@ -8,11 +8,22 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 import { getListUserAccounts } from "@/actions/user-settings.actions"
-import SetPasswordForm from "./set-password-form"
-import ChangePasswordForm from "./change-password-form"
+import { ActionButton } from "@/components/ui/action-button"
+
+import { useForm } from "react-hook-form"
+
+import { Button } from "@/components/ui/button"
+import { LoadingSwap } from "@/components/ui/loading-swap"
+import { PasswordInput } from "@/components/ui/password-input"
+import { Checkbox } from "@/components/ui/checkbox"
+
+import { authClient } from "@/lib/auth-client"
+import { toast } from "sonner"
+import { BetterAuthActionButton } from "@/components/auth/better-auth-action-button"
+
+
 // import { headers } from "next/headers"
 
 interface PopupSheetProps {
@@ -107,5 +118,113 @@ const SecurityModal = ({ email }: PopupSheetProps) => {
     </Sheet >
   )
 }
+
+type ChangePasswordFormValues = {
+  currentPassword: string
+  newPassword: string
+  revokeOtherSessions: boolean
+}
+
+// CHANGE PASSWORD CONTROL
+function ChangePasswordForm() {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isSubmitting },
+    setValue,
+  } = useForm<ChangePasswordFormValues>({
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      revokeOtherSessions: false,
+    },
+  })
+
+  async function onSubmit(values: ChangePasswordFormValues) {
+    await authClient.changePassword(values, {
+      onSuccess: () => {
+        toast.success("Password changed successfully")
+        reset()
+      },
+      onError: (error) => {
+        toast.error(error?.error?.message ?? "Failed to change password")
+      },
+    })
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* Current Password */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium">Current Password</label>
+        <PasswordInput {...register("currentPassword", { required: true })} />
+        {errors.currentPassword && (
+          <p className="text-sm text-destructive">
+            Current password is required
+          </p>
+        )}
+      </div>
+
+      {/* New Password */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium">New Password</label>
+        <PasswordInput
+          {...register("newPassword", {
+            required: true,
+            minLength: 8,
+          })}
+        />
+        {errors.newPassword && (
+          <p className="text-sm text-destructive">
+            Password must be at least 8 characters
+          </p>
+        )}
+      </div>
+
+      {/* Revoke Sessions */}
+      <div className="flex items-center gap-3">
+        <Checkbox
+          checked={watch("revokeOtherSessions")}
+          onCheckedChange={(checked) =>
+            setValue("revokeOtherSessions", Boolean(checked))
+          }
+        />
+        <label className="text-sm font-medium cursor-pointer">
+          Log out other sessions
+        </label>
+      </div>
+
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <LoadingSwap isLoading={isSubmitting}>
+          Change Password
+        </LoadingSwap>
+      </Button>
+    </form>
+  )
+}
+
+// SET PASSWORD CONTROL
+export default function SetPasswordForm({ email }: { email?: string }) {
+  if (!email)
+    return console.error("Session ended");
+
+  return (
+    <BetterAuthActionButton
+      variant="outline"
+      successMessage="Password reset email sent"
+      action={() => {
+        return authClient.requestPasswordReset({
+          email,
+          redirectTo: "/reset-password",
+        })
+      }}
+    >
+      Send Password Reset Email
+    </BetterAuthActionButton>
+  )
+}
+
 
 export { SecurityModal }
