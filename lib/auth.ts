@@ -12,6 +12,7 @@ import { FROM_EMAIL, resend } from "./resend";
 import { getResetPasswordEmailHtml } from "./templates/email-reset-password";
 import { getVerificationEmailHtml } from "./templates/email-verification";
 import { getPasswordResetSuccessEmailHtml } from "./templates/email-password-reseted";
+import { getDeleteAccountEmailHtml } from "./templates/email-delete-account";
 import { headers } from "next/headers";
 import { Currency, PaymentMode, ThemeMode } from "./generated/prisma/enums";
 
@@ -31,6 +32,37 @@ export const auth = betterAuth({
       address: {
         type: "string",
       },
+    },
+    deleteUser: {
+      enabled: true,
+      sendDeleteAccountVerification: async ({ user, url }) => {
+        try {
+          const emailHtml = getDeleteAccountEmailHtml(user.email, url)
+
+          const { data, error } = await resend.emails.send({
+            from: FROM_EMAIL,
+            to: user.email,
+            subject: "Confirm Account Deletion",
+            html: emailHtml,
+          })
+
+          if (error) {
+            console.error("Failed to send delete account email:", error)
+            throw new Error("Failed to send delete account email")
+          }
+
+          console.log("Delete account confirmation email sent to:", user.email)
+          console.log("Email ID:", data?.id)
+
+          // Dev-only helper
+          if (process.env.NODE_ENV === "development") {
+            console.log("Delete confirmation URL (dev only):", url)
+          }
+        } catch (error) {
+          console.error("Error in sendDeleteAccountVerification:", error)
+          throw error
+        }
+      }
     },
   },
   emailAndPassword: {

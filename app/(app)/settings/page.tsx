@@ -42,6 +42,7 @@ import { UserSettings } from "@/lib/generated/prisma/client";
 import { SecurityModal } from "./components/security-modal";
 import { SessionModal } from "./components/session-modal";
 import { LinkAccountModal } from "./components/link-account-modal";
+import { DangerModal } from "./components/danger-modal";
 
 
 // type UserPreferences = {
@@ -237,8 +238,9 @@ export default function SettingsPage() {
           {/* <ActionRow icon={KeyRound} title="Sessions Management"></ActionRow> */}
 
           {/* Danger */}
-          <ActionRow icon={Trash2} title="Danger Zone">
-          </ActionRow>
+          <DangerModal />
+          {/* <ActionRow icon={Trash2} title="Danger Zone">
+          </ActionRow> */}
         </Section>
 
         {/* APPEARANCE */}
