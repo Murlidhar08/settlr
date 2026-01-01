@@ -1,16 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getUserSession } from "@/lib/auth";
+import { auth, getUserSession } from "@/lib/auth";
 import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
 import { UserSettings } from "@/lib/generated/prisma/client";
-
-// type UpdateUserSettingsInput = {
-//   currency?: Currency;
-//   dateFormat?: string;
-//   defaultPayment?: PaymentMode;
-//   theme?: ThemeMode;
-// };
+import { headers } from "next/headers";
 
 export async function upsertUserSettings(data: UserSettings) {
   const session = await getUserSession();
@@ -40,4 +34,8 @@ export async function getUserSettings() {
   return prisma.userSettings.findUnique({
     where: { userId: session.user.id },
   });
+}
+
+export async function getListUserAccounts() {
+  return await auth.api.listUserAccounts({ headers: await headers() })
 }

@@ -7,28 +7,38 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "@/components/ui/sheet"
-// import { motion } from "framer-motion"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
+import { useEffect, useState } from "react"
+import { getListUserAccounts } from "@/actions/user-settings.actions"
+import SetPasswordForm from "./set-password-form"
+import ChangePasswordForm from "./change-password-form"
+// import { headers } from "next/headers"
 
 interface PopupSheetProps {
-  title?: string
+  email?: string
 }
 
 /* ========================================================= */
 /* COMPONENT */
 /* ========================================================= */
 
-export default async function SecurityModal({ }: PopupSheetProps) {
-  const [accounts] = await Promise.all([
-    auth.api.listUserAccounts({ headers: await headers() }),
-  ])
+const SecurityModal = ({ email }: PopupSheetProps) => {
+  const [hasPasswordAccount, setHasPasswordAccount] = useState<boolean>();
+
+  useEffect(() => {
+    getListUserAccounts()
+      .then(accounts => {
+        const hasPassAcc = accounts.some(a => a.providerId === "credential")
+        setHasPasswordAccount(hasPassAcc);
+      })
+
+  }, [])
 
   return (
     <Sheet>
       <SheetTrigger className="w-full">
-        <button
+        <motion.button
           whileTap={{ scale: 0.98 }}
           className="w-full flex items-center gap-4 px-4 h-16 text-left"
         >
@@ -41,7 +51,7 @@ export default async function SecurityModal({ }: PopupSheetProps) {
             </p>
           </div>
           <ChevronRight className="text-muted-foreground" />
-        </button>
+        </motion.button>
       </SheetTrigger>
 
       <SheetContent
@@ -62,7 +72,19 @@ export default async function SecurityModal({ }: PopupSheetProps) {
         {/* BODY */}
         {/* ================================================== */}
         <div className="flex-1 overflow-y-auto px-6 py-6">
-          Place content
+          {hasPasswordAccount ? (
+            // Update user password
+            <>
+              <h1>User Has password account</h1>
+              <ChangePasswordForm />
+            </>
+          ) : (
+            // Set user Password
+            <>
+              <h1>User Do not have password account</h1>
+              <SetPasswordForm email={email} />
+            </>
+          )}
         </div>
 
         {/* ================================================== */}
@@ -85,3 +107,5 @@ export default async function SecurityModal({ }: PopupSheetProps) {
     </Sheet >
   )
 }
+
+export { SecurityModal }

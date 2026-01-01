@@ -39,7 +39,7 @@ import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
 import { upsertUserSettings } from "@/actions/user-settings.actions";
 import { useSession } from "@/lib/auth-client";
 import { UserSettings } from "@/lib/generated/prisma/client";
-import SecurityModal from "./components/security-modal";
+import { SecurityModal } from "./components/security-modal";
 
 
 // type UserPreferences = {
@@ -212,7 +212,7 @@ export default function SettingsPage() {
           </ActionRow>
 
           {/* Security */}
-          {/* <SecurityModal /> */}
+          <SecurityModal email={session?.user.email} />
 
           {/* Sessions */}
           <ActionRow icon={KeyRound} title="Sessions Management">
