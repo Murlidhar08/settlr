@@ -1,45 +1,15 @@
-"use client";
-
 // Packages
 import { Header } from "@/components/header";
-import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search } from "lucide-react";
 import { PartyType } from "@/lib/generated/prisma/enums";
 
 // Components
-import { AddPartiesModal } from "./components/add-parties-modal";
 import CustomersTab from "./components/customers-tab";
-
-const VALID_TABS = ["customers", "suppliers"] as const;
-type TabType = (typeof VALID_TABS)[number];
+import { LoadingSuspense } from "@/components/Loading-suspense";
 
 export default function Parties() {
-  const [tab, setTab] = useState<TabType>("customers");
-
-  // Read hash on initial load + on back/forward
-  useEffect(() => {
-    const applyHash = () => {
-      const hash = window.location.hash.replace("#", "");
-      if (VALID_TABS.includes(hash as TabType)) {
-        setTab(hash as TabType);
-      }
-    };
-
-    applyHash();
-    window.addEventListener("hashchange", applyHash);
-
-    return () => window.removeEventListener("hashchange", applyHash);
-  }, []);
-
-  // Update hash when tab changes
-  const handleTabChange = (val: string) => {
-    const nextTab = val as TabType;
-    setTab(nextTab);
-    window.history.replaceState(null, "", `#${nextTab}`);
-  };
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -58,11 +28,7 @@ export default function Parties() {
 
         {/* Tabs */}
         <div className="flex justify-center md:justify-start">
-          <Tabs
-            value={tab}
-            onValueChange={handleTabChange}
-            className="w-full"
-          >
+          <Tabs defaultValue="customers" className="w-full">
             <TabsList className="h-28 rounded-full transition-all duration-300 w-86 md:w-96 lg:w-96">
               <TabsTrigger value="customers" className="flex-1 rounded-full p-3">
                 Customers
@@ -80,7 +46,9 @@ export default function Parties() {
               </TabsContent>
 
               <TabsContent value="suppliers">
-                <CustomersTab partyType={PartyType.SUPPLIER} />
+                <LoadingSuspense>
+                  <CustomersTab partyType={PartyType.SUPPLIER} />
+                </LoadingSuspense>
               </TabsContent>
             </div>
           </Tabs>

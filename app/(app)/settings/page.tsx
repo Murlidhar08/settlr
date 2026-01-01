@@ -15,6 +15,11 @@ import {
   Moon,
   Sun,
   Laptop,
+  MoveRight,
+  Link2Icon,
+  LockKeyhole,
+  KeyRound,
+  Trash2,
 } from "lucide-react";
 
 import {
@@ -34,6 +39,7 @@ import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
 import { upsertUserSettings } from "@/actions/user-settings.actions";
 import { useSession } from "@/lib/auth-client";
 import { UserSettings } from "@/lib/generated/prisma/client";
+import SecurityModal from "./components/security-modal";
 
 
 // type UserPreferences = {
@@ -197,6 +203,24 @@ export default function SettingsPage() {
               </SelectContent>
             </Select>
           </Row>
+        </Section>
+
+        {/* SECURITY */}
+        <Section title="Security">
+          {/* Link Account */}
+          <ActionRow icon={Link2Icon} title="Link Account">
+          </ActionRow>
+
+          {/* Security */}
+          {/* <SecurityModal /> */}
+
+          {/* Sessions */}
+          <ActionRow icon={KeyRound} title="Sessions Management">
+          </ActionRow>
+
+          {/* Danger */}
+          <ActionRow icon={Trash2} title="Danger Zone">
+          </ActionRow>
         </Section>
 
         {/* APPEARANCE */}

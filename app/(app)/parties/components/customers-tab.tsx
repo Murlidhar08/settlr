@@ -1,50 +1,25 @@
-"use client";
-
 import { ArrowDown, ArrowUp, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import { PartyList } from "./party-list";
 import { PartyType } from "@/lib/generated/prisma/enums";
 import { getPartyList } from "@/actions/parties.actions";
-import { PartyRes } from "@/types/party/PartyRes";
 import { AddPartiesModal } from "./add-parties-modal";
 
 interface PartyListProp {
   partyType: PartyType;
 }
 
-export default function CustomersTab({ partyType }: PartyListProp) {
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [loading, setLoading] = useState(true);
+export default async function CustomersTab({ partyType }: PartyListProp) {
+  const res = await getPartyList(partyType)
 
-  useEffect(() => {
-    let mounted = true;
-
-    getPartyList(partyType)
-      .then((res: PartyRes[]) => {
-        if (!mounted) return;
-
-        const total = res.reduce((sum, party) => {
-          return sum + party.amount;
-        }, 0);
-
-        setTotalAmount(Number(total.toFixed(3)));
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [partyType]);
-
+  // Calculated
+  let totalAmount = res.reduce((sum, party) => { return sum + party.amount; }, 0);
+  totalAmount = Number(totalAmount.toFixed(3));
   const isCollect = totalAmount > 0;
   const isPay = totalAmount < 0;
   const isSettled = totalAmount === 0;
 
-  const label = isSettled
-    ? "Settled"
+  const label = isSettled ? "Settled"
     : isCollect
       ? "To Collect"
       : "To Pay";
@@ -89,9 +64,7 @@ export default function CustomersTab({ partyType }: PartyListProp) {
                     : "text-muted-foreground"
                   }`}
               >
-                {loading
-                  ? "—"
-                  : `₹${Math.abs(totalAmount)}`}
+                {`₹${Math.abs(totalAmount)}`}
               </p>
             </div>
           </div>
