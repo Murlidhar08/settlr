@@ -152,9 +152,11 @@ export const auth = betterAuth({
     //   maxAge: 10 // 1 Minute
     // },
     additionalFields: {
-      activeBusinessId: { type: "string", required: false }
+      activeBusinessId: {
+        type: "string",
+        required: false
+      }
     },
-
   },
   plugins: [
     nextCookies(),
