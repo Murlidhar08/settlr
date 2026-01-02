@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/react"
-import { customSessionClient } from "better-auth/client/plugins";
+import { customSessionClient, twoFactorClient } from "better-auth/client/plugins";
 import { auth } from "./auth";
 
 export const authClient = createAuthClient({
@@ -7,7 +7,11 @@ export const authClient = createAuthClient({
   plugins: [customSessionClient<typeof auth>()],
 })
 
-export const { signIn, signUp, useSession, signOut, resetPassword } = createAuthClient();
+export const { signIn, signUp, useSession, signOut, resetPassword } = createAuthClient({
+  plugins: [
+    twoFactorClient()
+  ]
+});
 
 // Google
 export const signInWithGoogle = async () => {

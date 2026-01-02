@@ -3,6 +3,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { customSession } from "better-auth/plugins";
+import { twoFactor } from "better-auth/plugins"
 
 // Lib
 import { prisma } from "./prisma";
@@ -155,7 +156,7 @@ export const auth = betterAuth({
         throw error
       }
     },
-    afterEmailVerification: async (user, request) => {
+    afterEmailVerification: async (user) => {
       // Add Default Business
       await prisma.business.create({
         data: {
@@ -192,6 +193,7 @@ export const auth = betterAuth({
   },
   plugins: [
     nextCookies(),
+    twoFactor(),
     customSession(async ({ user, session }) => {
       // Fetch extended settings from database
       const settings = await prisma.userSettings.findUnique({

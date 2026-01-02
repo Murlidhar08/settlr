@@ -8,7 +8,7 @@ import {
   Zap,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { auth, getUserSession } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -25,9 +25,7 @@ import { switchBusiness } from "@/actions/business.actions";
 /* PAGE */
 /* ========================================================= */
 export default async function Page() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getUserSession()
 
   if (!session?.user)
     redirect("/login");

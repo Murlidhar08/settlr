@@ -15,11 +15,6 @@ import {
   Moon,
   Sun,
   Laptop,
-  MoveRight,
-  Link2Icon,
-  LockKeyhole,
-  KeyRound,
-  Trash2,
 } from "lucide-react";
 
 import {
@@ -45,13 +40,6 @@ import { LinkAccountModal } from "./components/link-account-modal";
 import { DangerModal } from "./components/danger-modal";
 
 
-// type UserPreferences = {
-//   theme: ThemeMode;
-//   currency: Currency;
-//   dateFormat: string;
-//   defaultPayment: PaymentMode;
-// };
-
 export default function SettingsPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
@@ -72,6 +60,7 @@ export default function SettingsPage() {
     if (initialized.current) return;
 
     const s = session.user.settings as UserSettings;
+
 
     // Currency
     setCurrency(s.currency);
@@ -203,7 +192,7 @@ export default function SettingsPage() {
             <Select
               value={paymentMode}
               onValueChange={async (value: PaymentMode) => {
-                setDateFormat(value);
+                setPaymentMode(value);
                 await upsertUserSettings({
                   defaultPayment: value
                 });
@@ -226,21 +215,24 @@ export default function SettingsPage() {
         {/* SECURITY */}
         <Section title="Security">
           {/* Link Account */}
-          <LinkAccountModal currentAccounts={currAccount} />
-          {/* <ActionRow icon={Link2Icon} title="Link Account">
-          </ActionRow> */}
+          <LinkAccountModal
+            currentAccounts={currAccount}
+          />
 
           {/* Security */}
-          <SecurityModal email={session?.user.email} />
+          <SecurityModal
+            email={session?.user.email}
+            isTwoFactorEnabled={session?.user?.twoFactorEnabled ?? false}
+          />
 
           {/* Sessions */}
-          <SessionModal sessions={sessionsList} currentSessionToken={session?.session.token} />
-          {/* <ActionRow icon={KeyRound} title="Sessions Management"></ActionRow> */}
+          <SessionModal
+            sessions={sessionsList}
+            currentSessionToken={session?.session.token}
+          />
 
           {/* Danger */}
           <DangerModal />
-          {/* <ActionRow icon={Trash2} title="Danger Zone">
-          </ActionRow> */}
         </Section>
 
         {/* APPEARANCE */}

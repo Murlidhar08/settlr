@@ -2,11 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth-client";
+import { authClient, signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Wallet, Mail, EyeOff, Eye, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 export default function LoginPage() {
@@ -16,6 +16,15 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Redirect to dashboard
+  useEffect(() => {
+    authClient.getSession()
+      .then((session) => {
+        if (session.data)
+          router.push("/dashboard");
+      });
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

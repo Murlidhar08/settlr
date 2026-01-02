@@ -6,10 +6,19 @@ import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Wallet, Mail, EyeOff, Eye, ShieldCheck, User } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function SignupPage() {
   const router = useRouter();
+
+  // Redirect to dashboard
+  useEffect(() => {
+    authClient.getSession()
+      .then((session) => {
+        if (session.data) router.push("/dashboard");
+      });
+  }, [router])
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -48,7 +57,8 @@ export default function SignupPage() {
       if (result.error) {
         setError(result.error.message || "Signup failed");
       } else {
-        router.push("/dashboard");
+        toast.success("Registration successful! Please check your email for a link to confirm your account.")
+        router.push("/login");
       }
     } catch (err) {
       setError("An error occurred during signup");

@@ -28,13 +28,14 @@ import { BetterAuthActionButton } from "@/components/auth/better-auth-action-but
 
 interface PopupSheetProps {
   email?: string
+  isTwoFactorEnabled: boolean
 }
 
 /* ========================================================= */
 /* COMPONENT */
 /* ========================================================= */
 
-const SecurityModal = ({ email }: PopupSheetProps) => {
+const SecurityModal = ({ email, isTwoFactorEnabled }: PopupSheetProps) => {
   const [hasPasswordAccount, setHasPasswordAccount] = useState<boolean>();
 
   useEffect(() => {
@@ -96,6 +97,12 @@ const SecurityModal = ({ email }: PopupSheetProps) => {
               <SetPasswordForm email={email} />
             </>
           )}
+        </div>
+
+        <hr />
+
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          {/* ADD 2FA SETTINGS HERE */}
         </div>
 
         {/* ================================================== */}

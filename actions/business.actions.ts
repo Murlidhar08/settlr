@@ -36,7 +36,7 @@ export async function switchBusiness(businessId: string, redirectTo?: string | n
   }
 
   // 2. Optimization: Skip if already active
-  if (!session.session.activeBusinessId || session.session.activeBusinessId === businessId) {
+  if (!businessId || session.session.activeBusinessId === businessId) {
     return { success: true };
   }
 
@@ -51,8 +51,6 @@ export async function switchBusiness(businessId: string, redirectTo?: string | n
     // 4. Revalidate paths to clear Next.js Data Cache
     if (redirectTo) {
       revalidatePath(redirectTo);
-    } else {
-      revalidatePath("/", "layout"); // Revalidate everything to reflect header/sidebar changes
     }
 
     return { success: true };
