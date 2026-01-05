@@ -1,4 +1,4 @@
-import { DiscordIcon, GitHubIcon } from "@/components/auth/o-auth-icons";
+import { DiscordIcon, GoogleIcon } from "@/components/auth/o-auth-icons";
 import { ComponentProps, ElementType } from "react"
 
 export const SUPPORTED_OAUTH_PROVIDERS = ["google", "discord"] as const
@@ -9,5 +9,5 @@ export const SUPPORTED_OAUTH_PROVIDER_DETAILS: Record<
   { name: string; Icon: ElementType<ComponentProps<"svg">> }
 > = {
   discord: { name: "Discord", Icon: DiscordIcon },
-  google: { name: "Google", Icon: GitHubIcon },
+  google: { name: "Google", Icon: GoogleIcon },
 }

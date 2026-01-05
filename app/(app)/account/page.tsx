@@ -1,8 +1,8 @@
 'use client'
 
-import * as React from 'react'
-import { ArrowLeft, Camera, User, Phone, Mail } from 'lucide-react'
-import { useForm } from 'react-hook-form'
+import { useEffect } from 'react'
+import { Camera, User, Phone, Mail } from 'lucide-react'
+import { useForm, UseFormRegisterReturn } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
@@ -23,12 +23,7 @@ export default function AccountPage() {
   const router = useRouter()
   const { data: session, isPending } = useSession()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { isSubmitting },
-    reset,
-  } = useForm<ProfileFormValues>({
+  const { register, handleSubmit, formState: { isSubmitting }, reset } = useForm<ProfileFormValues>({
     defaultValues: {
       name: session?.user?.name || '',
       email: session?.user?.email || '',
@@ -36,12 +31,12 @@ export default function AccountPage() {
     },
   })
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (session?.user) {
       reset({
         name: session.user.name ?? '',
         email: session.user.email ?? '',
-        contactNo: session.user.contactNo ?? '',
+        contactNo: session?.user?.contactNo || '',
       })
     }
   }, [session, reset])
@@ -91,7 +86,7 @@ export default function AccountPage() {
 
       router.refresh()
     } catch (error) {
-      toast.error('Something went wrong')
+      toast.error('Something went wrong');
     }
   }
 
@@ -127,13 +122,13 @@ export default function AccountPage() {
         <Field
           label="Full Name"
           icon={User}
-          register={register('name', { required: true })}
+          registration={register('name', { required: true })}
         />
 
         <Field
           label="Phone Number"
           icon={Phone}
-          register={register('contactNo')}
+          registration={register('contactNo')}
         />
 
         <Field
@@ -141,7 +136,7 @@ export default function AccountPage() {
           icon={Mail}
           type="email"
           disabled={true}
-          register={register('email', { required: true })}
+          registration={register('email', { required: true })}
         />
       </section>
 
@@ -164,25 +159,25 @@ export default function AccountPage() {
 function Field({
   label,
   icon: Icon,
-  register,
-  type = 'text',
+  registration,
+  type = "text",
   disabled = false,
 }: {
   label: string
   icon: React.ElementType
-  register: ReturnType<typeof import('react-hook-form').useForm>['register']
+  registration: UseFormRegisterReturn
   type?: string
   disabled?: boolean
 }) {
   return (
-    <div className={`flex flex-col gap-2 ${disabled ? 'cursor-not-allowed select-none' : ''}`}>
+    <div className={`flex flex-col gap-2 ${disabled ? "cursor-not-allowed select-none" : ""}`}>
       <label className="ml-1 text-sm font-medium">{label}</label>
       <div className="relative">
         <Input
           disabled={disabled}
           type={type}
-          {...register}
-          className={`h-14 rounded-xl pr-10 `}
+          {...registration}
+          className="h-14 rounded-xl pr-10"
         />
         <Icon className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
       </div>

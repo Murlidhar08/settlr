@@ -193,6 +193,37 @@ export const auth = betterAuth({
       }
     },
   },
+  databaseHooks: {
+    session: {
+      create: {
+        before: async userSession => {
+          const settings = await prisma.userSettings.findUnique({
+            where: { userId: userSession.userId },
+            select: {
+              currency: true,
+              dateFormat: true,
+              defaultPayment: true,
+              theme: true
+            }
+          });
+
+          const mergedSettings = {
+            currency: settings?.currency ?? Currency.INR,
+            dateFormat: settings?.dateFormat ?? "DD/MM/YYYY",
+            defaultPayment: settings?.defaultPayment ?? PaymentMode.CASH,
+            theme: settings?.theme ?? ThemeMode.AUTO,
+          };
+
+          return {
+            data: {
+              ...userSession,
+              settings: mergedSettings
+            }
+          }
+        }
+      }
+    }
+  },
   plugins: [
     nextCookies(),
     twoFactor(),

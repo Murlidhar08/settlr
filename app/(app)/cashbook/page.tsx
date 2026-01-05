@@ -36,10 +36,7 @@ export default async function CashbookPage() {
     ],
   });
 
-  const updtlList = rawPartyDetails?.map(tra => ({
-    ...tra,
-    amount: tra.amount.toNumber()
-  })) ?? []
+  const updtlList = rawPartyDetails ?? []
 
   let totalIn = 0,
     totalOut = 0;
