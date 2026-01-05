@@ -29,9 +29,11 @@ export const auth = betterAuth({
     additionalFields: {
       contactNo: {
         type: "string",
+        required: false
       },
       address: {
         type: "string",
+        required: false
       },
     },
     deleteUser: {
@@ -194,38 +196,41 @@ export const auth = betterAuth({
   plugins: [
     nextCookies(),
     twoFactor(),
-    customSession(async ({ user, session }) => {
-      // Fetch extended settings from database
-      const settings = await prisma.userSettings.findUnique({
-        where: { userId: user.id },
-        select: {
-          currency: true,
-          dateFormat: true,
-          defaultPayment: true,
-          theme: true
-        }
-      });
+    // customSession(async ({ user, session }) => {
+    //   // Fetch extended settings from database
+    //   const settings = await prisma.userSettings.findUnique({
+    //     where: { userId: user.id },
+    //     select: {
+    //       currency: true,
+    //       dateFormat: true,
+    //       defaultPayment: true,
+    //       theme: true
+    //     }
+    //   });
 
-      const mergedSettings = {
-        currency: settings?.currency ?? Currency.INR,
-        dateFormat: settings?.dateFormat ?? "DD/MM/YYYY",
-        defaultPayment: settings?.defaultPayment ?? PaymentMode.CASH,
-        theme: settings?.theme ?? ThemeMode.AUTO,
-      };
+    //   const mergedSettings = {
+    //     currency: settings?.currency ?? Currency.INR,
+    //     dateFormat: settings?.dateFormat ?? "DD/MM/YYYY",
+    //     defaultPayment: settings?.defaultPayment ?? PaymentMode.CASH,
+    //     theme: settings?.theme ?? ThemeMode.AUTO,
+    //   };
 
-      return {
-        session,
-        user: {
-          ...user,
-          settings: mergedSettings
-        },
-      };
-    }),
+    //   return {
+    //     session: {
+    //       ...session,
+    //       activeBusinessId: session?.activeBusinessId ?? null,
+    //     },
+    //     user: {
+    //       ...user,
+    //       settings: mergedSettings,
+    //     },
+    //   }
+    // }),
   ]
 });
 
 export const getUserSession = async () => {
   return await auth.api.getSession({
-    headers: await headers(),
+    headers: await headers()
   });
 };
