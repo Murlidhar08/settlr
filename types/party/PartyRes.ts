@@ -1,3 +1,5 @@
+import { PartyType } from "@/lib/generated/prisma/enums"
+
 export interface PartyRes {
   id: string
   name: string
@@ -5,3 +7,9 @@ export interface PartyRes {
   contactNo?: string | null
   profileUrl?: string | null
 }
+
+export interface PartyInput {
+  name: string
+  type: PartyType
+  contactNo?: string | null
+};

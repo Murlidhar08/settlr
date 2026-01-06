@@ -3,10 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { auth, getUserSession } from "@/lib/auth";
 import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
-import { UserSettings } from "@/lib/generated/prisma/client";
 import { headers } from "next/headers";
+import { UserSettingsInput } from "@/types/user/UserSettingsInput";
 
-export async function upsertUserSettings(data: UserSettings) {
+export async function upsertUserSettings(data: UserSettingsInput) {
   const session = await getUserSession();
   if (!session?.user?.id) throw new Error("Unauthorized");
   const userId = session.user.id;

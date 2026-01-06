@@ -45,7 +45,7 @@ export default function AccountPage() {
 
   async function onSubmit(data: ProfileFormValues) {
     try {
-      const promises: Promise<any>[] = []
+      const promises = []
 
       promises.push(
         authClient.updateUser({
@@ -87,6 +87,7 @@ export default function AccountPage() {
       router.refresh()
     } catch (error) {
       toast.error('Something went wrong');
+      console.error('Something went wrong', error);
     }
   }
 

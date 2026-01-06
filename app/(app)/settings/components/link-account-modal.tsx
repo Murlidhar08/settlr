@@ -22,9 +22,7 @@ import { useRouter } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { authClient } from '@/lib/auth-client'
 
-type Account = Awaited<
-  ReturnType<typeof auth.api.listUserAccounts>
->[number]
+type Account = Awaited<ReturnType<typeof auth.api.listUserAccounts>>[number]
 
 interface LinkAccountModalProps {
   currentAccounts?: Account[]
@@ -35,8 +33,6 @@ interface LinkAccountModalProps {
 /* ========================================================= */
 
 const LinkAccountModal = ({ currentAccounts }: LinkAccountModalProps) => {
-  const router = useRouter()
-
   return (
     <Sheet>
       <SheetTrigger className="w-full">

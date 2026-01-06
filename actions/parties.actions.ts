@@ -4,11 +4,11 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { PartyType, TransactionDirection } from "@/lib/generated/prisma/enums";
-import { Party, Prisma } from "@/lib/generated/prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { getUserSession } from "@/lib/auth";
-import { PartyRes } from "@/types/party/PartyRes";
+import { PartyInput, PartyRes } from "@/types/party/PartyRes";
 
-export async function addParties(partyData: Party): Promise<boolean> {
+export async function addParties(partyData: PartyInput): Promise<boolean> {
   const session = await getUserSession();
 
   if (!session || !session.session.activeBusinessId) {

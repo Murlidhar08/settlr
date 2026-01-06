@@ -1,30 +1,35 @@
 import { createAuthClient } from "better-auth/react"
-import { customSessionClient, inferAdditionalFields, twoFactorClient } from "better-auth/client/plugins";
-import { auth } from "./auth";
+import { inferAdditionalFields, twoFactorClient } from "better-auth/client/plugins"
+import { Auth } from "./auth";
 
+/**
+ * Single source of truth for auth client
+ */
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  plugins: [inferAdditionalFields<typeof auth>()],
+  plugins: [
+    inferAdditionalFields<Auth>(),
+    twoFactorClient(),
+  ],
 })
 
-export const { signIn, signUp, useSession, signOut, resetPassword } = createAuthClient({
-  plugins: [
-    twoFactorClient()
-  ]
-});
+/**
+ * Re-export helpers for convenience
+ */
+export const { signIn, signUp, signOut, useSession, resetPassword } = authClient
 
-// Google
-export const signInWithGoogle = async () => {
-  return await authClient.signIn.social({
-    provider: "google",
-    callbackURL: "/dashboard"
-  });
-};
+/**
+ * Social providers
+ */
+type SocialProvider = "google" | "discord"
 
-// Discord
-export const signInWithDiscord = async () => {
+export const signInWithSocial = async (provider: SocialProvider) => {
   return await authClient.signIn.social({
-    provider: "discord",
+    provider,
     callbackURL: "/dashboard"
   })
 }
+
+export const signInWithGoogle = async () => await signInWithSocial("google");
+
+export const signInWithDiscord = async () => await signInWithSocial("discord")

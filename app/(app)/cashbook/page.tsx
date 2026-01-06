@@ -1,14 +1,8 @@
-// Packages
-import { Plus } from "lucide-react";
-
 // Components
 import { Header } from "@/components/header";
 import CashSummary from "./components/CashSummary";
 import CashFilters from "./components/CashFilters";
-import CashTransactionItem from "./components/CashTransactionItem";
-import { TransactionItem } from "@/components/transaction-item";
-import { PaymentMode, TransactionDirection } from "@/lib/generated/prisma/enums";
-import { AddTransactionSheet } from "./components/AddTransactionSheet";
+import { TransactionDirection } from "@/lib/generated/prisma/enums";
 import { TransactionList } from "../parties/[partyId]/components/transaction-list";
 import { prisma } from "@/lib/prisma";
 import { getUserSession } from "@/lib/auth";
@@ -17,15 +11,6 @@ import { AddTransactionFooter } from "../parties/[partyId]/components/add-transa
 export default async function CashbookPage() {
   const session = await getUserSession();
   const rawPartyDetails = await prisma.transaction.findMany({
-    select: {
-      id: true,
-      amount: true,
-      date: true,
-      mode: true,
-      direction: true,
-      description: true,
-      createdAt: true
-    },
     where: {
       businessId: session?.session.activeBusinessId || "",
       partyId: null,
@@ -36,7 +21,12 @@ export default async function CashbookPage() {
     ],
   });
 
-  const updtlList = rawPartyDetails ?? []
+  const updtlList = rawPartyDetails?.map((tra) => {
+    return {
+      ...tra,
+      amount: Number(tra.amount)
+    }
+  }) ?? []
 
   let totalIn = 0,
     totalOut = 0;

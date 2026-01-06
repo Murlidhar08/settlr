@@ -16,6 +16,7 @@ import {
   Sun,
   Laptop,
 } from "lucide-react";
+import Image from "next/image"
 
 import {
   Select,
@@ -33,7 +34,7 @@ import { toast } from "sonner";
 import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
 import getCredientialAccounts, { getListSessions, upsertUserSettings } from "@/actions/user-settings.actions";
 import { useSession } from "@/lib/auth-client";
-import { UserSettings } from "@/lib/generated/prisma/client";
+import { Session, UserSettings } from "@/lib/generated/prisma/client";
 import { SecurityModal } from "./components/security-modal";
 import { SessionModal } from "./components/session-modal";
 import { LinkAccountModal } from "./components/link-account-modal";
@@ -48,7 +49,7 @@ export default function SettingsPage() {
   const [paymentMode, setPaymentMode] = useState<PaymentMode>(PaymentMode.CASH);
   const [theme, setTheme] = useState<ThemeMode>(ThemeMode.AUTO);
 
-  const [sessionsList, setSessionsList] = useState([])
+  const [sessionsList, setSessionsList] = useState<Session[]>([])
   const [currAccount, setCurrAccount] = useState()
 
   const initialized = useRef(false);
@@ -63,7 +64,7 @@ export default function SettingsPage() {
 
 
     // Currency
-    setCurrency(s.currency);
+    setCurrency(s.currency ?? Currency.INR);
     setDateFormat(s.dateFormat ?? "DD/MM/YYYY");
     setPaymentMode(s.defaultPayment ?? PaymentMode.CASH);
     setTheme(s.theme);
@@ -71,7 +72,7 @@ export default function SettingsPage() {
     getListSessions()
       .then(res => {
         if (!res) return
-        setSessionsList(res)
+        setSessionsList(res as Session[])
       })
 
     getCredientialAccounts()
@@ -108,6 +109,7 @@ export default function SettingsPage() {
       }, 300);
     } catch (error) {
       toast.error("Failed to logout");
+      console.error(error);
     }
   };
 
@@ -124,12 +126,14 @@ export default function SettingsPage() {
           whileTap={{ scale: 0.98 }}
           className="flex items-center gap-4 p-4 rounded-2xl bg-background border shadow-sm cursor-pointer"
         >
-          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-            {/* <User size={28} /> */}
-            <img
-              className="rounded-full"
+          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+            <Image
               src={session?.user?.image ?? "https://github.com/shadcn.png"}
-              alt="image"
+              alt="User avatar"
+              width={64}
+              height={64}
+              className="rounded-full object-cover"
+              priority
             />
           </div>
           <div className="flex-1">
@@ -146,12 +150,16 @@ export default function SettingsPage() {
         {/* GENERAL */}
         <Section title="General Preferences">
           <Row icon={DollarSign} label="Currency">
-            <Select value={currency}
-              onValueChange={async (value) => {
-                setCurrency(value as Currency);
-                await upsertUserSettings({
-                  currency: value as Currency
-                });
+            <Select
+              value={currency}
+              onValueChange={(value) => {
+                if (!value) return
+
+                const v = value as Currency
+                setCurrency(v)
+
+                // fire-and-forget async side-effect
+                upsertUserSettings({ currency: v })
               }}
             >
               <SelectTrigger className="w-30">
@@ -171,11 +179,14 @@ export default function SettingsPage() {
           <Row icon={Calendar} label="Date Format">
             <Select
               value={dateFormat}
-              onValueChange={async (value) => {
-                setDateFormat(value);
-                await upsertUserSettings({
-                  dateFormat: value || ""
-                });
+              onValueChange={(value) => {
+                if (!value) return
+
+                setDateFormat(value)
+
+                void upsertUserSettings({
+                  dateFormat: value,
+                })
               }}
             >
               <SelectTrigger className="w-35">
@@ -191,11 +202,15 @@ export default function SettingsPage() {
           <Row icon={CreditCard} label="Default Payment">
             <Select
               value={paymentMode}
-              onValueChange={async (value: PaymentMode) => {
-                setPaymentMode(value);
-                await upsertUserSettings({
-                  defaultPayment: value
-                });
+              onValueChange={(value) => {
+                if (!value) return
+
+                const v = value as PaymentMode
+                setPaymentMode(v)
+
+                void upsertUserSettings({
+                  defaultPayment: v,
+                })
               }}
             >
               <SelectTrigger className="w-30">
@@ -221,7 +236,7 @@ export default function SettingsPage() {
 
           {/* Security */}
           <SecurityModal
-            email={session?.user.email}
+            email={session?.user.email ?? ""}
             isTwoFactorEnabled={session?.user?.twoFactorEnabled ?? false}
           />
 
@@ -352,7 +367,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Row({ icon: Icon, label, children }: {
-  icon: any; label: string; children: React.ReactNode
+  icon: React.ElementType; label: string; children: React.ReactNode
 }) {
   return (
     <motion.div
@@ -373,7 +388,7 @@ function ActionRow({
   title,
   subtitle,
 }: {
-  icon: any;
+  icon: React.ElementType;
   title: string;
   subtitle?: string;
 }) {

@@ -1,13 +1,9 @@
 // Packages
-import { Search, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
-import { format, isToday, isYesterday } from "date-fns";
+import { Search } from 'lucide-react'
 
 // Components
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { BackHeader } from '@/components/back-header';
-import { TransactionItem } from '@/components/transaction-item'
-import { AddTransactionModal } from './components/add-transaction-modal'
 import { QuickActions } from './components/quick-action';
 import { BalanceCard } from './components/balance-card';
 
@@ -54,7 +50,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
   if (rawPartyDetails) {
     partyDetails = {
       ...rawPartyDetails,
-      transactions: rawPartyDetails.transactions?.map(tra => ({
+      transactions: rawPartyDetails?.transactions?.map(tra => ({
         ...tra,
         amount: tra.amount.toNumber()
       })) ?? []
@@ -113,7 +109,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
             {/* Tasaction List */}
             <TransactionList
               partyId={partyDetails?.id}
-              transactions={partyDetails?.transactions}
+              transactions={partyDetails?.transactions ?? []}
             />
           </section>
 

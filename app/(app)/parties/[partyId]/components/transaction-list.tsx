@@ -1,17 +1,16 @@
 "use client";
 
 import { format, isToday, isYesterday } from "date-fns";
-import { AddTransactionModal } from "./add-transaction-modal";
-import { Transaction } from "@/lib/generated/prisma/client";
 import { TransactionItem } from "@/components/transaction-item";
+import { TransactionRes } from "@/types/transaction/TransactionData";
 
 interface transactionListProp {
-  transactions: Transaction[]
+  transactions: TransactionRes[]
   partyId?: string | null
 }
 
-function groupTransactionsByDate(transactions: Transaction[]) {
-  const groups: Record<string, Transaction[]> = {};
+function groupTransactionsByDate(transactions: TransactionRes[]) {
+  const groups: Record<string, TransactionRes[]> = {};
 
   for (const tx of transactions) {
     let label = "";
@@ -45,7 +44,7 @@ function TransactionGroup({ label, children }: { label: string; children: React.
   )
 }
 
-const TransactionList = ({ transactions, partyId }: transactionListProp) => {
+const TransactionList = ({ transactions }: transactionListProp) => {
   return (
     <div className="flex flex-col gap-4 px-1">
 
@@ -54,12 +53,6 @@ const TransactionList = ({ transactions, partyId }: transactionListProp) => {
           .map(([label, transactions]) => (
             <TransactionGroup key={label} label={label}>
               {transactions.map((transaction) => (
-                // <AddTransactionModal
-                //   key={transaction.id}
-                //   title="Add Transaction"
-                //   partyId={partyId}
-                //   transactionData={transaction}
-                // >
                 <TransactionItem
                   key={transaction.id}
                   transactionId={transaction.id}
@@ -69,7 +62,6 @@ const TransactionList = ({ transactions, partyId }: transactionListProp) => {
                   type={transaction.direction}
                   mode={transaction.mode}
                 />
-                // </AddTransactionModal>
               ))}
             </TransactionGroup>
           ))}

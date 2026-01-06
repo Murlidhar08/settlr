@@ -27,7 +27,7 @@ import { BetterAuthActionButton } from "@/components/auth/better-auth-action-but
 // import { headers } from "next/headers"
 
 interface PopupSheetProps {
-  email?: string
+  email: string
   isTwoFactorEnabled: boolean
 }
 
@@ -134,14 +134,7 @@ type ChangePasswordFormValues = {
 
 // CHANGE PASSWORD CONTROL
 function ChangePasswordForm() {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { errors, isSubmitting },
-    setValue,
-  } = useForm<ChangePasswordFormValues>({
+  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting }, setValue } = useForm<ChangePasswordFormValues>({
     defaultValues: {
       currentPassword: "",
       newPassword: "",
@@ -155,7 +148,7 @@ function ChangePasswordForm() {
         toast.success("Password changed successfully")
         reset()
       },
-      onError: (error) => {
+      onError: (error: any) => {
         toast.error(error?.error?.message ?? "Failed to change password")
       },
     })
@@ -213,10 +206,7 @@ function ChangePasswordForm() {
 }
 
 // SET PASSWORD CONTROL
-export default function SetPasswordForm({ email }: { email?: string }) {
-  if (!email)
-    return console.error("Session ended");
-
+function SetPasswordForm({ email }: { email: string }) {
   return (
     <BetterAuthActionButton
       variant="outline"

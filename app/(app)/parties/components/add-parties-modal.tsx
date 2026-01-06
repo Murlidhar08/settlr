@@ -12,19 +12,12 @@ import { Label } from "@/components/ui/label"
 /* ========================================================= */
 import { addParties } from "@/actions/parties.actions"
 import { PartyType } from "@/lib/generated/prisma/enums"
+import { PartyInput } from "@/types/party/PartyRes"
 
 interface ParitesProps {
   title?: string,
   type: PartyType
 }
-
-type PartyInput = {
-  name: string;
-  businessId: string;
-  type: PartyType;
-  contactNo?: string | null;
-  profileUrl: string | null;
-};
 
 /* ========================================================= */
 /* COMPONENT */
@@ -35,9 +28,7 @@ const AddPartiesModal = ({ title, type }: ParitesProps) => {
   const [data, setData] = useState<PartyInput>({
     type: type,
     name: "",
-    businessId: "",
-    contactNo: null,
-    profileUrl: null
+    contactNo: null
   })
 
   title = title || type == PartyType.CUSTOMER
@@ -48,13 +39,12 @@ const AddPartiesModal = ({ title, type }: ParitesProps) => {
 
   const handleAddParty = async () => {
     const success = await addParties(data);
+
     if (success) {
       setData({
         type: type,
         name: "",
-        businessId: "",
-        contactNo: null,
-        profileUrl: null
+        contactNo: null
       })
       setPopOpen(false);
     }
