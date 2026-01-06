@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  settlr-web:
+    container_name: settlr-web
+    image: settlr-web:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3101:3000'
+    env_file:
+      - .env
+    restart: unless-stopped

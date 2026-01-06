@@ -34,12 +34,14 @@ import { toast } from "sonner";
 import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
 import getCredientialAccounts, { getListSessions, upsertUserSettings } from "@/actions/user-settings.actions";
 import { useSession } from "@/lib/auth-client";
-import { Session, UserSettings } from "@/lib/generated/prisma/client";
+import { Session } from "@/lib/generated/prisma/client";
 import { SecurityModal } from "./components/security-modal";
 import { SessionModal } from "./components/session-modal";
 import { LinkAccountModal } from "./components/link-account-modal";
 import { DangerModal } from "./components/danger-modal";
+import { auth } from "@/lib/auth";
 
+type userAccount = Awaited<ReturnType<typeof auth.api.listUserAccounts>>[number]
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -50,24 +52,24 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState<ThemeMode>(ThemeMode.AUTO);
 
   const [sessionsList, setSessionsList] = useState<Session[]>([])
-  const [currAccount, setCurrAccount] = useState()
+  const [currAccount, setCurrAccount] = useState<userAccount[]>([])
 
   const initialized = useRef(false);
 
   // 2. Sync state when session loads
   useEffect(() => {
-    if (isPending) return;
-    if (!session?.user?.settings) return;
-    if (initialized.current) return;
+    // if (isPending) return;
+    // if (!session?.session?.settings) return;
+    // if (initialized.current) return;
 
-    const s = session.user.settings as UserSettings;
+    // const s = session.session.settings
 
 
-    // Currency
-    setCurrency(s.currency ?? Currency.INR);
-    setDateFormat(s.dateFormat ?? "DD/MM/YYYY");
-    setPaymentMode(s.defaultPayment ?? PaymentMode.CASH);
-    setTheme(s.theme);
+    // // Currency
+    // setCurrency(s.currency ?? Currency.INR);
+    // setDateFormat(s.dateFormat ?? "DD/MM/YYYY");
+    // setPaymentMode(s.defaultPayment ?? PaymentMode.CASH);
+    // setTheme(s.theme);
 
     getListSessions()
       .then(res => {
@@ -78,7 +80,7 @@ export default function SettingsPage() {
     getCredientialAccounts()
       .then(res => {
         if (!res) return
-        setCurrAccount(res)
+        setCurrAccount(res as userAccount[])
       })
 
     initialized.current = true;
@@ -127,13 +129,10 @@ export default function SettingsPage() {
           className="flex items-center gap-4 p-4 rounded-2xl bg-background border shadow-sm cursor-pointer"
         >
           <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-            <Image
+            <img
               src={session?.user?.image ?? "https://github.com/shadcn.png"}
               alt="User avatar"
-              width={64}
-              height={64}
               className="rounded-full object-cover"
-              priority
             />
           </div>
           <div className="flex-1">

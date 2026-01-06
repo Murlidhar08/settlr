@@ -2,7 +2,7 @@
 CREATE TYPE "PaymentMode" AS ENUM ('CASH', 'ONLINE');
 
 -- CreateEnum
-CREATE TYPE "Currency" AS ENUM ('INR', 'USD');
+CREATE TYPE "Currency" AS ENUM ('INR', 'USD', 'EUR');
 
 -- CreateEnum
 CREATE TYPE "TransactionDirection" AS ENUM ('IN', 'OUT');
@@ -24,6 +24,7 @@ CREATE TABLE "user" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "contactNo" TEXT,
     "address" TEXT,
+    "twoFactorEnabled" BOOLEAN DEFAULT false,
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );
@@ -75,14 +76,25 @@ CREATE TABLE "verification" (
 );
 
 -- CreateTable
-CREATE TABLE "userSettings" (
+CREATE TABLE "twoFactor" (
     "id" TEXT NOT NULL,
+    "secret" TEXT NOT NULL,
+    "backupCodes" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "theme" "ThemeMode" NOT NULL DEFAULT 'AUTO',
+
+    CONSTRAINT "twoFactor_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "userSettings" (
+    "userId" TEXT NOT NULL,
+    "currency" "Currency" NOT NULL DEFAULT 'INR',
     "dateFormat" TEXT NOT NULL DEFAULT 'DD/MM/YYYY',
+    "defaultPayment" "PaymentMode" NOT NULL DEFAULT 'CASH',
+    "theme" "ThemeMode" NOT NULL DEFAULT 'AUTO',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "userSettings_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "userSettings_pkey" PRIMARY KEY ("userId")
 );
 
 -- CreateTable
@@ -94,18 +106,6 @@ CREATE TABLE "business" (
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "business_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "businessSettings" (
-    "id" TEXT NOT NULL,
-    "businessId" TEXT NOT NULL,
-    "currency" "Currency" NOT NULL DEFAULT 'INR',
-    "defaultPaymentMode" "PaymentMode" NOT NULL DEFAULT 'CASH',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "businessSettings_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -167,10 +167,10 @@ CREATE INDEX "account_userId_idx" ON "account"("userId");
 CREATE INDEX "verification_identifier_idx" ON "verification"("identifier");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "userSettings_userId_key" ON "userSettings"("userId");
+CREATE INDEX "twoFactor_secret_idx" ON "twoFactor"("secret");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "businessSettings_businessId_key" ON "businessSettings"("businessId");
+CREATE INDEX "twoFactor_userId_idx" ON "twoFactor"("userId");
 
 -- CreateIndex
 CREATE INDEX "party_businessId_idx" ON "party"("businessId");
@@ -194,13 +194,13 @@ ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "twoFactor" ADD CONSTRAINT "twoFactor_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "userSettings" ADD CONSTRAINT "userSettings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "business" ADD CONSTRAINT "business_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "businessSettings" ADD CONSTRAINT "businessSettings_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "party" ADD CONSTRAINT "party_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "business"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

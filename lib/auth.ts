@@ -133,6 +133,11 @@ export const auth = betterAuth({
       try {
         const emailHtml = getVerificationEmailHtml(user.email, url);
 
+        // In development, also log the URL for easy testing
+        if (process.env.NODE_ENV === "development") {
+          console.log("verification URL (dev only):", url)
+        }
+
         // Send the email using Resend
         const { data, error } = await resend.emails.send({
           from: FROM_EMAIL,
@@ -147,12 +152,6 @@ export const auth = betterAuth({
         }
         console.log("Verification password email sent successfully to:", user.email)
         console.log("Email ID:", data?.id)
-
-        // In development, also log the URL for easy testing
-        if (process.env.NODE_ENV === "development") {
-          console.log("verification URL (dev only):", url)
-        }
-
       } catch (error) {
         console.error("Error in sendVerificationMail:", error)
         throw error
@@ -259,6 +258,8 @@ export const auth = betterAuth({
     // }),
   ]
 });
+
+export type Auth = typeof auth;
 
 export const getUserSession = async () => {
   return await auth.api.getSession({
