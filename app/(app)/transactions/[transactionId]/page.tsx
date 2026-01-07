@@ -220,6 +220,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
             title="Add Transaction"
             transactionData={transaction}
             direction={transaction.direction}
+            partyId={transaction.partyId}
           >
             <Button
               size="lg"
