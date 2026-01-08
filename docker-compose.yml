@@ -1,6 +1,22 @@
-version: '3.9'
-
 services:
+  postgres:
+    image: postgres:16
+    container_name: settlr-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: settlr
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - settlr_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   settlr-web:
     container_name: settlr-web
     image: settlr-web:latest
@@ -9,6 +25,30 @@ services:
       dockerfile: Dockerfile
     ports:
       - '3001:3000'
-    env_file:
-      - .env
+    environment:
+      # ---- Auth / App URLs (container-safe) ----
+      BETTER_AUTH_SECRET: lMD1eol2MrTxIZixGYyjwT0G0DQJ6oLJ
+      BETTER_AUTH_URL: http://localhost:3001
+      NEXT_PUBLIC_APP_URL: http://localhost:3001
+
+      # ---- Database (Docker DNS hostname) ----
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/settlr
+
+      # ---- Email ----
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL}
+
+      # ---- OAuth Providers ----
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
+
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
+
+volumes:
+  settlr_pgdata:
