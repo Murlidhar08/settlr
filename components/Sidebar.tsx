@@ -65,7 +65,7 @@ const Sidebar = () => {
                 {...item}
                 active={active}
                 collapsed={collapsed}
-                onClick={() => router.push(item.href)}
+                onClick={() => router.push(item.href as any)}
               />
             );
           })}
@@ -94,7 +94,7 @@ const Sidebar = () => {
                 key={item.href}
                 {...item}
                 active={active}
-                onClick={() => router.push(item.href)}
+                onClick={() => router.push(item.href as any)}
               />
             );
           })}

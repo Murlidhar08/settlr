@@ -17,10 +17,17 @@ const BackHeader = ({ title, description, backUrl = "", isProfile = false }: Hea
   const router = useRouter();
   isProfile = isProfile ?? true;
 
+  const handleBack = () => {
+    if (!backUrl)
+      router.back();
+
+    router.push(backUrl as any)
+  }
+
   return (
     <header className="sticky top-0 z-20 flex items-center justify-between bg-secondary/90 backdrop-blur px-4 py-3 border-b lg:border-none">
 
-      <Button onClick={() => { router.push(backUrl) }} size="icon" variant="ghost" className="hover:scale-110 transition-transform">
+      <Button onClick={handleBack} size="icon" variant="ghost" className="hover:scale-110 transition-transform">
         <ArrowLeft className="h-5 w-5" />
       </Button>
 

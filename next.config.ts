@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // output: process.platform === "win32" ? undefined : "standalone",
   output: "standalone",
   typedRoutes: true,
   experimental: {
@@ -11,7 +12,7 @@ const nextConfig: NextConfig = {
     // Dangerously allow production builds to successfully complete even if
     // your project has type errors.
     // !! WARN !!
-    ignoreBuildErrors: true,
+    // ignoreBuildErrors: true,
   },
   images: {
     remotePatterns: [
