@@ -262,7 +262,29 @@ export const auth = betterAuth({
 export type Auth = typeof auth;
 
 export const getUserSession = async () => {
-  return await auth.api.getSession({
+  const data = await auth.api.getSession({
     headers: await headers()
   });
+
+  const settings = await prisma.userSettings.findUnique({
+    where: { userId: data?.session.userId },
+    select: {
+      currency: true,
+      dateFormat: true,
+      defaultPayment: true,
+      theme: true
+    }
+  });
+
+  const mergedSetting = {
+    currency: settings?.currency ?? Currency.INR,
+    dateFormat: settings?.dateFormat ?? "DD/MM/YYYY",
+    defaultPayment: settings?.defaultPayment ?? PaymentMode.CASH,
+    theme: settings?.theme ?? ThemeMode.AUTO,
+  };
+
+  return {
+    ...data,
+    userSetting: mergedSetting
+  }
 };

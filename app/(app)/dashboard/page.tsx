@@ -1,15 +1,11 @@
 import {
-  PiggyBank,
-  MoveUpRight,
-  MoveDownLeft,
   Building2,
   Printer,
   User,
   Zap,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { auth, getUserSession } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getUserSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 // Component
@@ -38,7 +34,7 @@ export default async function Page() {
     where: { ownerId: session?.user.id }
   });
 
-  const selectedBusinessId = session.session.activeBusinessId || businessList?.[0]?.id;
+  const selectedBusinessId = session.session?.activeBusinessId || businessList?.[0]?.id;
   await switchBusiness(selectedBusinessId);
 
   return (

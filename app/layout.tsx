@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const data = await getUserSession();
-  const theme = ThemeMode.AUTO;
+  const theme = data.userSetting.theme ?? ThemeMode.LIGHT;
 
   return (
     <html lang="en" className={nunitoSans.variable} suppressHydrationWarning>
