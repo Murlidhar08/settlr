@@ -2,7 +2,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { customSession } from "better-auth/plugins";
 import { twoFactor } from "better-auth/plugins"
 
 // Lib
@@ -16,9 +15,10 @@ import { getPasswordResetSuccessEmailHtml } from "./templates/email-password-res
 import { getDeleteAccountEmailHtml } from "./templates/email-delete-account";
 import { headers } from "next/headers";
 import { Currency, PaymentMode, ThemeMode } from "./generated/prisma/enums";
+import { env } from "./env";
 
 // Const
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+const appUrl = env.NEXT_PUBLIC_APP_URL;
 
 export const auth = betterAuth({
   appName: "Settlr",
@@ -58,7 +58,7 @@ export const auth = betterAuth({
           console.log("Email ID:", data?.id)
 
           // Dev-only helper
-          if (process.env.NODE_ENV === "development") {
+          if (env.NODE_ENV === "development") {
             console.log("Delete confirmation URL (dev only):", url)
           }
         } catch (error) {
@@ -92,7 +92,7 @@ export const auth = betterAuth({
         console.log("Email ID:", data?.id)
 
         // In development, also log the URL for easy testing
-        if (process.env.NODE_ENV === "development") {
+        if (env.NODE_ENV === "development") {
           console.log("Reset URL (dev only):", url)
         }
 
@@ -134,7 +134,7 @@ export const auth = betterAuth({
         const emailHtml = getVerificationEmailHtml(user.email, url);
 
         // In development, also log the URL for easy testing
-        if (process.env.NODE_ENV === "development") {
+        if (env.NODE_ENV === "development") {
           console.log("verification URL (dev only):", url)
         }
 
@@ -171,12 +171,12 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      clientId: env.GOOGLE_CLIENT_ID as string,
+      clientSecret: env.GOOGLE_CLIENT_SECRET as string,
     },
     discord: {
-      clientId: process.env.DISCORD_CLIENT_ID as string,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
+      clientId: env.DISCORD_CLIENT_ID as string,
+      clientSecret: env.DISCORD_CLIENT_SECRET as string,
     },
   },
   session: {

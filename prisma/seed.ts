@@ -62,7 +62,6 @@ async function main() {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Amit Traders",
         contactNo: "9876543201",
-        profileUrl: "https://i.pravatar.cc/301",
         type: "CUSTOMER",
       },
       {
@@ -70,7 +69,6 @@ async function main() {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Sharma Stores",
         contactNo: "9933445566",
-        profileUrl: "https://i.pravatar.cc/302",
         type: "CUSTOMER",
       },
       {
@@ -78,28 +76,24 @@ async function main() {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Gupta Electronics",
         contactNo: "8585858585",
-        profileUrl: "https://i.pravatar.cc/303",
         type: "CUSTOMER",
       },
       {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Mehta Supermarket",
         contactNo: "9090909090",
-        profileUrl: "https://i.pravatar.cc/304",
         type: "CUSTOMER",
       },
       {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Kiran Enterprises",
         contactNo: "9123456780",
-        profileUrl: "https://i.pravatar.cc/305",
         type: "CUSTOMER",
       },
       {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Ravi Construction",
         contactNo: "9988776655",
-        profileUrl: "https://i.pravatar.cc/306",
         type: "CUSTOMER",
       },
 
@@ -108,35 +102,30 @@ async function main() {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Sagar Wholesales",
         contactNo: "9111223344",
-        profileUrl: "https://i.pravatar.cc/311",
         type: "SUPPLIER",
       },
       {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Metro Distributors",
         contactNo: "9445566778",
-        profileUrl: "https://i.pravatar.cc/312",
         type: "SUPPLIER",
       },
       {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Perfect Packaging",
         contactNo: "8800112233",
-        profileUrl: "https://i.pravatar.cc/313",
         type: "SUPPLIER",
       },
       {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Fresh Farm Foods",
         contactNo: "9556677880",
-        profileUrl: "https://i.pravatar.cc/314",
         type: "SUPPLIER",
       },
       {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Modern Stationery",
         contactNo: "9222334455",
-        profileUrl: "https://i.pravatar.cc/315",
         type: "SUPPLIER",
       },
 
@@ -146,7 +135,6 @@ async function main() {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Swift Logistics",
         contactNo: "9333445567",
-        profileUrl: "https://i.pravatar.cc/319",
         type: "BOTH",
       },
       {
@@ -154,7 +142,6 @@ async function main() {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Prime Chemicals",
         contactNo: "8445566779",
-        profileUrl: "https://i.pravatar.cc/320",
         type: "BOTH",
       },
       {
@@ -162,7 +149,6 @@ async function main() {
         businessId: "cmk2i4nnn0000k4vercnwxr8w",
         name: "Royal Textiles",
         contactNo: "9009988776",
-        profileUrl: "https://i.pravatar.cc/317",
         type: "BOTH",
       },
     ]

@@ -1,12 +1,13 @@
 import { createAuthClient } from "better-auth/react"
 import { inferAdditionalFields, twoFactorClient } from "better-auth/client/plugins"
 import { Auth } from "./auth";
+import { env } from "./env";
 
 /**
  * Single source of truth for auth client
  */
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  baseURL: env.NEXT_PUBLIC_APP_URL,
   plugins: [
     inferAdditionalFields<Auth>(),
     twoFactorClient(),
