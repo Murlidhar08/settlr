@@ -266,8 +266,11 @@ export const getUserSession = async () => {
     headers: await headers()
   });
 
+  // return null if no session found
+  if (!data) return null;
+
   const settings = await prisma.userSettings.findUnique({
-    where: { userId: data?.session.userId },
+    where: { userId: data.session.userId },
     select: {
       currency: true,
       dateFormat: true,
