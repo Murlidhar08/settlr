@@ -25,8 +25,17 @@ COPY prisma ./prisma
 FROM base AS builder
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV RESEND_API_KEY=dummy-build-key
+ENV NODE_ENV="production"
+ENV DATABASE_URL="postgresql://user:pass@localhost:5432/settlr"
+ENV BETTER_AUTH_SECRET="build-secret"
+ENV BETTER_AUTH_URL="http://localhost:3000"
+ENV NEXT_PUBLIC_APP_URL="http://localhost:3000"
+ENV RESEND_API_KEY="dummy-build-key"
+ENV RESEND_FROM_EMAIL="build@example.com"
+ENV GOOGLE_CLIENT_ID="build-google-client-id"
+ENV GOOGLE_CLIENT_SECRET="build-google-client-secret"
+ENV DISCORD_CLIENT_ID="build-discord-client-id"
+ENV DISCORD_CLIENT_SECRET="build-discord-client-secret"
 
 COPY --from=prisma /app/node_modules ./node_modules
 COPY --from=prisma /app/prisma ./prisma
@@ -47,9 +56,6 @@ RUN \
 # ---------- Runtime ----------
 FROM base AS runner
 WORKDIR /app
-
-ENV NODE_ENV=production
-ENV RESEND_API_KEY=fake_api_key
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

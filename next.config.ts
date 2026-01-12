@@ -4,9 +4,6 @@ const nextConfig: NextConfig = {
   // output: process.platform === "win32" ? undefined : "standalone",
   output: "standalone",
   typedRoutes: true,
-  experimental: {
-    typedEnv: true,
-  },
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if

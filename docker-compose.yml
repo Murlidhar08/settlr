@@ -5,10 +5,10 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: settlr
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgresusr
+      POSTGRES_PASSWORD: postgrespass
     ports:
-      - '5432:5432'
+      - '5433:5432'
     volumes:
       - settlr_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -32,7 +32,7 @@ services:
       NEXT_PUBLIC_APP_URL: http://localhost:3001
 
       # ---- Database (Docker DNS hostname) ----
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/settlr
+      DATABASE_URL: postgresql://user:pass@locahost:5432/settlr
 
       # ---- Email ----
       RESEND_API_KEY: ${RESEND_API_KEY}
