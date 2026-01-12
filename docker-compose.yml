@@ -24,27 +24,9 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - '3001:3000'
-    environment:
-      # ---- Auth / App URLs (container-safe) ----
-      BETTER_AUTH_SECRET: lMD1eol2MrTxIZixGYyjwT0G0DQJ6oLJ
-      BETTER_AUTH_URL: http://localhost:3001
-      NEXT_PUBLIC_APP_URL: http://localhost:3001
-
-      # ---- Database (Docker DNS hostname) ----
-      DATABASE_URL: postgresql://user:pass@locahost:5432/settlr
-
-      # ---- Email ----
-      RESEND_API_KEY: ${RESEND_API_KEY}
-      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL}
-
-      # ---- OAuth Providers ----
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-
-      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
-      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
-
+      - '3000:3000'
+    env_file:
+      - .env.production
     depends_on:
       postgres:
         condition: service_healthy
