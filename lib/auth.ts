@@ -2,7 +2,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { twoFactor } from "better-auth/plugins"
+import { customSession, twoFactor } from "better-auth/plugins"
 
 // Lib
 import { prisma } from "./prisma";
@@ -15,10 +15,10 @@ import { getPasswordResetSuccessEmailHtml } from "./templates/email-password-res
 import { getDeleteAccountEmailHtml } from "./templates/email-delete-account";
 import { headers } from "next/headers";
 import { Currency, PaymentMode, ThemeMode } from "./generated/prisma/enums";
-import { env } from "./env";
+import { envServer } from "./env.server";
 
 // Const
-const appUrl = env.NEXT_PUBLIC_APP_URL;
+const appUrl = envServer.NEXT_PUBLIC_APP_URL;
 
 export const auth = betterAuth({
   appName: "Settlr",
@@ -58,7 +58,7 @@ export const auth = betterAuth({
           console.log("Email ID:", data?.id)
 
           // Dev-only helper
-          if (env.NODE_ENV === "development") {
+          if (envServer.NODE_ENV === "development") {
             console.log("Delete confirmation URL (dev only):", url)
           }
         } catch (error) {
@@ -92,7 +92,7 @@ export const auth = betterAuth({
         console.log("Email ID:", data?.id)
 
         // In development, also log the URL for easy testing
-        if (env.NODE_ENV === "development") {
+        if (envServer.NODE_ENV === "development") {
           console.log("Reset URL (dev only):", url)
         }
 
@@ -134,7 +134,7 @@ export const auth = betterAuth({
         const emailHtml = getVerificationEmailHtml(user.email, url);
 
         // In development, also log the URL for easy testing
-        if (env.NODE_ENV === "development") {
+        if (envServer.NODE_ENV === "development") {
           console.log("verification URL (dev only):", url)
         }
 
@@ -171,12 +171,12 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: env.GOOGLE_CLIENT_ID as string,
-      clientSecret: env.GOOGLE_CLIENT_SECRET as string,
+      clientId: envServer.GOOGLE_CLIENT_ID as string,
+      clientSecret: envServer.GOOGLE_CLIENT_SECRET as string,
     },
     discord: {
-      clientId: env.DISCORD_CLIENT_ID as string,
-      clientSecret: env.DISCORD_CLIENT_SECRET as string,
+      clientId: envServer.DISCORD_CLIENT_ID as string,
+      clientSecret: envServer.DISCORD_CLIENT_SECRET as string,
     },
   },
   session: {
@@ -226,68 +226,49 @@ export const auth = betterAuth({
   plugins: [
     nextCookies(),
     twoFactor(),
-    // customSession(async ({ user, session }) => {
-    //   // Fetch extended settings from database
-    //   const settings = await prisma.userSettings.findUnique({
-    //     where: { userId: user.id },
-    //     select: {
-    //       currency: true,
-    //       dateFormat: true,
-    //       defaultPayment: true,
-    //       theme: true
-    //     }
-    //   });
+    customSession(async ({ user, session }) => {
+      // fetch extended settings from database
+      const settings = await prisma.userSettings.findUnique({
+        where: { userId: session.userId },
+        select: {
+          currency: true,
+          dateFormat: true,
+          defaultPayment: true,
+          theme: true
+        }
+      });
 
-    //   const mergedSettings = {
-    //     currency: settings?.currency ?? Currency.INR,
-    //     dateFormat: settings?.dateFormat ?? "DD/MM/YYYY",
-    //     defaultPayment: settings?.defaultPayment ?? PaymentMode.CASH,
-    //     theme: settings?.theme ?? ThemeMode.AUTO,
-    //   };
+      // Is TwoFactor enabled
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: {
+          twoFactorEnabled: true,
+        },
+      })
 
-    //   return {
-    //     session: {
-    //       ...session,
-    //       activeBusinessId: session?.activeBusinessId ?? null,
-    //     },
-    //     user: {
-    //       ...user,
-    //       settings: mergedSettings,
-    //     },
-    //   }
-    // }),
+      return {
+        session: {
+          ...session,
+          userSetting: {
+            currency: settings?.currency ?? Currency.INR,
+            dateFormat: settings?.dateFormat ?? "DD/MM/YYYY",
+            defaultPayment: settings?.defaultPayment ?? PaymentMode.CASH,
+            theme: settings?.theme ?? ThemeMode.AUTO,
+          }
+        },
+        user: {
+          ...user,
+          twoFactorEnabled: dbUser?.twoFactorEnabled
+        }
+      }
+    }),
   ]
 });
 
 export type Auth = typeof auth;
 
 export const getUserSession = async () => {
-  const data = await auth.api.getSession({
+  return await auth.api.getSession({
     headers: await headers()
   });
-
-  // return null if no session found
-  if (!data) return null;
-
-  const settings = await prisma.userSettings.findUnique({
-    where: { userId: data.session.userId },
-    select: {
-      currency: true,
-      dateFormat: true,
-      defaultPayment: true,
-      theme: true
-    }
-  });
-
-  const mergedSetting = {
-    currency: settings?.currency ?? Currency.INR,
-    dateFormat: settings?.dateFormat ?? "DD/MM/YYYY",
-    defaultPayment: settings?.defaultPayment ?? PaymentMode.CASH,
-    theme: settings?.theme ?? ThemeMode.AUTO,
-  };
-
-  return {
-    ...data,
-    userSetting: mergedSetting
-  }
 };

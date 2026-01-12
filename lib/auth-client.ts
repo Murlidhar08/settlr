@@ -1,15 +1,16 @@
 import { createAuthClient } from "better-auth/react"
-import { inferAdditionalFields, twoFactorClient } from "better-auth/client/plugins"
+import { customSessionClient, inferAdditionalFields, twoFactorClient } from "better-auth/client/plugins"
 import { Auth } from "./auth";
-import { env } from "./env";
+import { envClient } from "./env.client";
 
 /**
  * Single source of truth for auth client
  */
 export const authClient = createAuthClient({
-  baseURL: env.NEXT_PUBLIC_APP_URL,
+  baseURL: envClient.NEXT_PUBLIC_APP_URL,
   plugins: [
     inferAdditionalFields<Auth>(),
+    customSessionClient<Auth>(),
     twoFactorClient(),
   ],
 })
@@ -32,5 +33,4 @@ export const signInWithSocial = async (provider: SocialProvider) => {
 }
 
 export const signInWithGoogle = async () => await signInWithSocial("google");
-
-export const signInWithDiscord = async () => await signInWithSocial("discord")
+export const signInWithDiscord = async () => await signInWithSocial("discord");

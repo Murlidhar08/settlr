@@ -17,12 +17,12 @@ const envSchema = zod.object({
   RESEND_FROM_EMAIL: zod.string().nonempty(),
 
   //  Google login
-  GOOGLE_CLIENT_ID: zod.string().nonempty(),
-  GOOGLE_CLIENT_SECRET: zod.string().nonempty(),
+  GOOGLE_CLIENT_ID: zod.string(),
+  GOOGLE_CLIENT_SECRET: zod.string(),
 
   //  Discord
-  DISCORD_CLIENT_ID: zod.string().nonempty(),
-  DISCORD_CLIENT_SECRET: zod.string().nonempty()
+  DISCORD_CLIENT_ID: zod.string(),
+  DISCORD_CLIENT_SECRET: zod.string()
 })
 
-export const env = envSchema.parse(process.env)
+export const envServer = envSchema.parse(process.env)

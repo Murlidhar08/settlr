@@ -1,10 +1,10 @@
 import { Resend } from "resend"
-import { env } from "./env"
+import { envServer } from "./env.server"
 
 // Initialize Resend with API key from environment variables
-export const resend = new Resend(env.RESEND_API_KEY);
+export const resend = new Resend(envServer.RESEND_API_KEY);
 
 // Default sender email - use your verified domain in production
-export const FROM_EMAIL = env.RESEND_FROM_EMAIL;
+export const FROM_EMAIL = envServer.RESEND_FROM_EMAIL;
 
-console.log("Resend API Key: ", env.RESEND_API_KEY)
+console.log("Resend API Key: ", envServer.RESEND_API_KEY)

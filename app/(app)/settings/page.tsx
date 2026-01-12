@@ -58,18 +58,17 @@ export default function SettingsPage() {
 
   // 2. Sync state when session loads
   useEffect(() => {
-    // if (isPending) return;
-    // if (!session?.session?.settings) return;
-    // if (initialized.current) return;
+    if (isPending) return;
+    if (!session?.session.userSetting) return;
+    if (initialized.current) return;
 
-    // const s = session.session.settings
+    const s = session.session.userSetting;
 
-
-    // // Currency
-    // setCurrency(s.currency ?? Currency.INR);
-    // setDateFormat(s.dateFormat ?? "DD/MM/YYYY");
-    // setPaymentMode(s.defaultPayment ?? PaymentMode.CASH);
-    // setTheme(s.theme);
+    // Currency
+    setCurrency(s.currency ?? Currency.INR);
+    setDateFormat(s.dateFormat ?? "DD/MM/YYYY");
+    setPaymentMode(s.defaultPayment ?? PaymentMode.CASH);
+    setTheme(s.theme);
 
     getListSessions()
       .then(res => {
