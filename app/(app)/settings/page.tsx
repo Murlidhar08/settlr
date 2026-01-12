@@ -59,10 +59,10 @@ export default function SettingsPage() {
   // 2. Sync state when session loads
   useEffect(() => {
     if (isPending) return;
-    if (!session?.session.userSetting) return;
+    if (!session?.session.userSettings) return;
     if (initialized.current) return;
 
-    const s = session.session.userSetting;
+    const s = session.session.userSettings;
 
     // Currency
     setCurrency(s.currency ?? Currency.INR);

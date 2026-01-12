@@ -192,76 +192,63 @@ export const auth = betterAuth({
       }
     },
   },
-  databaseHooks: {
-    session: {
-      create: {
-        before: async userSession => {
-          const settings = await prisma.userSettings.findUnique({
-            where: { userId: userSession.userId },
-            select: {
-              currency: true,
-              dateFormat: true,
-              defaultPayment: true,
-              theme: true
-            }
-          });
-
-          const mergedSettings = {
-            currency: settings?.currency ?? Currency.INR,
-            dateFormat: settings?.dateFormat ?? "DD/MM/YYYY",
-            defaultPayment: settings?.defaultPayment ?? PaymentMode.CASH,
-            theme: settings?.theme ?? ThemeMode.AUTO,
-          };
-
-          return {
-            data: {
-              ...userSession,
-              settings: mergedSettings
-            }
-          }
-        }
-      }
-    }
-  },
   plugins: [
     nextCookies(),
     twoFactor(),
     customSession(async ({ user, session }) => {
-      // fetch extended settings from database
-      const settings = await prisma.userSettings.findUnique({
-        where: { userId: session.userId },
-        select: {
-          currency: true,
-          dateFormat: true,
-          defaultPayment: true,
-          theme: true
-        }
-      });
-
-      // Is TwoFactor enabled
       const dbUser = await prisma.user.findUnique({
         where: { id: user.id },
         select: {
+          contactNo: true,
+          address: true,
           twoFactorEnabled: true,
+
+          // current session context
+          sessions: {
+            where: { id: session.id },
+            select: {
+              activeBusinessId: true,
+            },
+            take: 1,
+          },
+
+          // user preferences
+          userSettings: {
+            select: {
+              currency: true,
+              dateFormat: true,
+              defaultPayment: true,
+              theme: true,
+            },
+          },
         },
       })
+
+      const activeBusinessId = dbUser?.sessions?.[0]?.activeBusinessId ?? null
+      const settings = dbUser?.userSettings
 
       return {
         session: {
           ...session,
-          userSetting: {
+          activeBusinessId,
+
+          userSettings: {
             currency: settings?.currency ?? Currency.INR,
             dateFormat: settings?.dateFormat ?? "DD/MM/YYYY",
             defaultPayment: settings?.defaultPayment ?? PaymentMode.CASH,
             theme: settings?.theme ?? ThemeMode.AUTO,
-          }
+          },
         },
+
         user: {
           ...user,
-          twoFactorEnabled: dbUser?.twoFactorEnabled
-        }
+          contactNo: dbUser?.contactNo,
+          address: dbUser?.address,
+          twoFactorEnabled: dbUser?.twoFactorEnabled ?? false,
+        },
       }
-    }),
+    })
+
   ]
 });
 

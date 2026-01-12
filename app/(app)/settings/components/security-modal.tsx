@@ -101,7 +101,8 @@ const SecurityModal = ({ email, isTwoFactorEnabled }: PopupSheetProps) => {
 
         <hr />
 
-        <div className="flex-1 overflow-y-auto px-6 py-6">
+        {/* TODO: PENDING */}
+        <div className="flex-1 overflow-y-auto px-6 py-6 hidden">
           {/* ADD 2FA SETTINGS HERE */}
         </div>
 
@@ -148,7 +149,7 @@ function ChangePasswordForm() {
         toast.success("Password changed successfully")
         reset()
       },
-      onError: (error: any) => {
+      onError: (error) => {
         toast.error(error?.error?.message ?? "Failed to change password")
       },
     })
