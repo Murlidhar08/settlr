@@ -6,5 +6,3 @@ export const resend = new Resend(envServer.RESEND_API_KEY);
 
 // Default sender email - use your verified domain in production
 export const FROM_EMAIL = envServer.RESEND_FROM_EMAIL;
-
-console.log("Resend API Key: ", envServer.RESEND_API_KEY)

@@ -1,7 +1,7 @@
 services:
-  settlr-web:
-    container_name: settlr-web
-    image: settlr-web:latest
+  settlr:
+    container_name: settlr
+    image: settlr:latest
     build:
       context: .
       dockerfile: Dockerfile
