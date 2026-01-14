@@ -6,7 +6,6 @@ import { getUserSession } from "@/lib/auth";
 import { Transaction } from "@/lib/generated/prisma/client";
 import { redirect } from "next/navigation"
 
-
 export async function addTransaction(transactionData: Transaction) {
   const session = await getUserSession();
 
@@ -64,4 +63,23 @@ export async function deleteTransaction(transactionId: string, partyId?: string)
   else
     redirect("/parties")
 
+}
+
+export async function getRecentTransactions() {
+  const session = await getUserSession();
+
+  return await prisma.transaction.findMany({
+    where: {
+      businessId: session?.session.activeBusinessId || "",
+    },
+    orderBy: {
+      date: "desc",
+    },
+    take: 8,
+    include: {
+      party: {
+        select: { name: true },
+      },
+    },
+  });
 }

@@ -7,9 +7,9 @@ import { PartyType } from "@/lib/generated/prisma/enums";
 
 // Components
 import CustomersTab from "./components/customers-tab";
-import { LoadingSuspense } from "@/components/Loading-suspense";
+import { LoadingSuspense } from "@/components/loading-suspense";
 
-export default function Parties() {
+export default async function Parties() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}

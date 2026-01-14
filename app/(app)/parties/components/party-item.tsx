@@ -3,13 +3,7 @@
 import { useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-
-const getInitials = (name: string): string => {
-  const parts = name.trim().split(" ");
-  return parts.length === 1
-    ? parts[0][0].toUpperCase()
-    : `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-};
+import { getInitials } from "@/utility/party";
 
 const getRandomAvatarColor = () => {
   const hue = Math.floor(Math.random() * 360);

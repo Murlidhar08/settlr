@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 
 interface HeaderProps {
   title: string | undefined,
-  backUrl: string
+  backUrl?: string
   description?: string | undefined
   isProfile?: boolean
 }

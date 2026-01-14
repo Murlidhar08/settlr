@@ -16,6 +16,10 @@ import SwitchBusiness from "./components/business-switch";
 
 // Actions
 import { switchBusiness } from "@/actions/business.actions";
+import { getRecentTransactions } from "@/actions/transaction.actions";
+import { format } from "date-fns";
+import { formatAmount } from "@/utility/transaction";
+import { TransactionDirection } from "@/lib/generated/prisma/enums";
 
 /* ========================================================= */
 /* PAGE */
@@ -34,8 +38,28 @@ export default async function Page() {
     where: { ownerId: session?.user.id }
   });
 
+  const recentTransactions = await getRecentTransactions();
+
   const selectedBusinessId = session.session?.activeBusinessId || businessList?.[0]?.id;
   await switchBusiness(selectedBusinessId);
+
+  const getTransactionTitle = (
+    description: string | null,
+    direction: TransactionDirection,
+    partyName?: string,
+  ) => {
+    if (description && description.trim().length > 0) {
+      return description;
+    }
+
+    if (!partyName) {
+      return "Cashbook"
+    }
+
+    return direction === TransactionDirection.IN
+      ? "Payment Received"
+      : "Payment Sent";
+  };
 
   return (
     <div className="w-full">
@@ -55,7 +79,7 @@ export default async function Page() {
         <SummaryCard />
 
         {/* Transactions */}
-        <section className="flex-1 pt-6 md:px-6" >
+        <section className="flex-1 pt-6 md:px-6">
           <div className="flex items-center justify-between pb-3">
             <h2 className="text-lg font-bold">Recent Transactions</h2>
             <button className="text-sm text-slate-500 hover:text-[#2C3E50] transition">
@@ -64,71 +88,31 @@ export default async function Page() {
           </div>
 
           <div className="space-y-3">
-            <TransactionItem
-              icon={<Building2 />}
-              title="Acme Corp Payment"
-              meta="Oct 24 • Invoice #1024"
-              amount="+$1,200.00"
-              positive
-            />
-            <TransactionItem
-              icon={<Printer />}
-              title="Office Supplies"
-              meta="Oct 23 • Printer"
-              amount="-$150.00"
-              positive={undefined}
-            />
-            <TransactionItem
-              icon={<User />}
-              title="Consulting Fee"
-              meta="Oct 22 • Client B"
-              amount="+$500.00"
-              positive
-            />
-            <TransactionItem
-              icon={<Zap />}
-              title="Electricity Bill"
-              meta="Oct 20 • Utilities"
-              amount="-$230.00"
-              positive={undefined}
-            />
-            <TransactionItem
-              icon={<Zap />}
-              title="Electricity Bill"
-              meta="Oct 20 • Utilities"
-              amount="-$230.00"
-              positive={undefined}
-            />
-            <TransactionItem
-              icon={<Zap />}
-              title="Electricity Bill"
-              meta="Oct 20 • Utilities"
-              amount="-$230.00"
-              positive={undefined}
-            />
-            <TransactionItem
-              icon={<Zap />}
-              title="Electricity Bill"
-              meta="Oct 20 • Utilities"
-              amount="-$230.00"
-              positive={undefined}
-            />
-            <TransactionItem
-              icon={<Zap />}
-              title="Electricity Bill"
-              meta="Oct 20 • Utilities"
-              amount="-$230.00"
-              positive={undefined}
-            />
-            <TransactionItem
-              icon={<Zap />}
-              title="Electricity Bill"
-              meta="Oct 20 • Utilities"
-              amount="-$230.00"
-              positive={undefined}
-            />
+            {recentTransactions.length === 0 && (
+              <p className="text-sm text-slate-500">
+                No transactions yet
+              </p>
+            )}
+
+            {recentTransactions.map((tx) => {
+              const positive = tx.direction === "IN";
+
+              return (
+                <TransactionItem
+                  key={tx.id}
+                  id={tx.id}
+                  icon={positive ? <Building2 /> : <Zap />}
+                  title={getTransactionTitle(tx.description, tx.direction, tx.party?.name)}
+                  meta={`${format(tx.date, "dd MMM")} • ${tx.mode}${tx.party?.name ? ` • ${tx.party.name}` : ""
+                    }`}
+                  amount={formatAmount(Number(tx.amount), tx.direction == TransactionDirection.IN)}
+                  positive={positive}
+                />
+              );
+            })}
           </div>
         </section>
+
       </div>
     </div>
   );
