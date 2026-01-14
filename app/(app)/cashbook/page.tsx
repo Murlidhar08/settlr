@@ -2,11 +2,16 @@
 import { Header } from "@/components/header";
 import CashSummary from "./components/CashSummary";
 import CashFilters from "./components/CashFilters";
+import { TransactionList } from "@/components/transaction/transaction-list";
+import { AddTransactionModal } from "@/components/transaction/add-transaction-modal";
+
+// Lib
 import { TransactionDirection } from "@/lib/generated/prisma/enums";
-import { TransactionList } from "../parties/[partyId]/components/transaction-list";
 import { prisma } from "@/lib/prisma";
 import { getUserSession } from "@/lib/auth";
-import { AddTransactionFooter } from "../parties/[partyId]/components/add-transaction-footer";
+import { FooterButtons } from "@/components/footer-buttons";
+import { Button } from "@/components/ui/button";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 export default async function CashbookPage() {
   const session = await getUserSession();
@@ -53,113 +58,38 @@ export default async function CashbookPage() {
         {/* Transactions */}
         <div className="mt-3">
           <section>
-            {/* <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground mb-3">
-              <span>Today, 12 Oct</span>
-              <span>-₹330.00</span>
-            </div> */}
-
             {/* Transaction List */}
             <TransactionList partyId={null} transactions={updtlList || []} />
-
-            {/* <div className="space-y-3">
-              <TransactionItem
-                amount="300"
-                mode={PaymentMode.CASH}
-                subtitle="Test"
-                title="Mahesh Chavda"
-                type={TransactionDirection.IN}
-              />
-
-              <CashTransactionItem
-                name="Sarah Mitchell"
-                time="10:42 AM"
-                amount="+₹120.00"
-                type="in"
-                tag="Online"
-              />
-
-              <CashTransactionItem
-                name="Fast Logistics"
-                time="02:15 PM"
-                amount="-₹450.00"
-                type="out"
-                tag="Cash"
-              />
-              <CashTransactionItem
-                name="Fast Logistics"
-                time="02:15 PM"
-                amount="-₹450.00"
-                type="out"
-                tag="Cash"
-              />
-              <CashTransactionItem
-                name="Fast Logistics"
-                time="02:15 PM"
-                amount="-₹450.00"
-                type="out"
-                tag="Cash"
-              />
-              <CashTransactionItem
-                name="Fast Logistics"
-                time="02:15 PM"
-                amount="-₹450.00"
-                type="out"
-                tag="Cash"
-              />
-              <CashTransactionItem
-                name="Fast Logistics"
-                time="02:15 PM"
-                amount="-₹450.00"
-                type="out"
-                tag="Cash"
-              />
-              <CashTransactionItem
-                name="Fast Logistics"
-                time="02:15 PM"
-                amount="-₹450.00"
-                type="out"
-                tag="Cash"
-              />
-              <CashTransactionItem
-                name="Fast Logistics"
-                time="02:15 PM"
-                amount="-₹450.00"
-                type="out"
-                tag="Cash"
-              />
-              <CashTransactionItem
-                name="Fast Logistics"
-                time="02:15 PM"
-                amount="-₹450.00"
-                type="out"
-                tag="Cash"
-              />
-              <CashTransactionItem
-                name="Fast Logistics"
-                time="02:15 PM"
-                amount="-₹450.00"
-                type="out"
-                tag="Cash"
-              />
-            </div> */}
           </section>
         </div>
       </div>
 
-      {/* Floating Action Button */}
-      {/* <AddTransactionSheet
-        title="Add Cash"
-        direction={TransactionDirection.IN}
-      >
-        <button className="fixed bottom-24 right-5 z-40 h-14 w-14 rounded-full bg-primary text-white shadow-xl flex items-center justify-center">
-          <Plus className="h-6 w-6" />
-        </button>
-      </AddTransactionSheet> */}
+      <FooterButtons>
+        {/* YOU GAVE */}
+        <AddTransactionModal
+          title="Add Transaction"
+          direction={TransactionDirection.OUT}
+        >
+          <Button size="lg" className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+            <ArrowUpRight className="h-5 w-5" />
+            You Gave
+          </Button>
+        </AddTransactionModal>
 
-      <AddTransactionFooter partyId={null} />
-
-      {/* Add Transaction Sheet */}
-      {/* <AddTransactionSheet open={open} onOpenChange={setOpen} /> */}
+        {/* YOU GET */}
+        <AddTransactionModal
+          title="Add Transaction"
+          direction={TransactionDirection.IN}
+        >
+          <Button
+            size="lg"
+            className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <ArrowDownLeft className="h-5 w-5" />
+            You Get
+          </Button>
+        </AddTransactionModal>
+      </FooterButtons>
     </div>
   );
 }

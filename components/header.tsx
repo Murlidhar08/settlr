@@ -1,13 +1,18 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Wallet } from "lucide-react";
+"use client"
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useSession } from "@/lib/auth-client"
+import { getInitials } from "@/utility/party"
+import { Wallet } from "lucide-react"
 
 interface HeaderProps {
-  title: string,
+  title: string
   isProfile?: boolean
 }
 
 const Header = ({ title, isProfile }: HeaderProps) => {
-  isProfile = isProfile ?? true;
+  isProfile = isProfile ?? true
+  const { data: session } = useSession()
 
   return (
     <header className="sticky top-0 z-20 flex items-center justify-between bg-slate-200/80 dark:bg-slate-950/90 backdrop-blur px-6 py-4 mb-4">
@@ -26,10 +31,9 @@ const Header = ({ title, isProfile }: HeaderProps) => {
 
       {/* Profile */}
       {isProfile && (
-        <Avatar size="lg">
-          {/* DYNCAMIC AVATAR PENDING */}
-          {/* <AvatarImage src="https://i.pravatar.cc/300" /> */}
-          <AvatarFallback>CN</AvatarFallback>
+        <Avatar size="lg" className="ring-1 ring-background shadow-lg">
+          <AvatarImage src={session?.user?.image || ''} />
+          <AvatarFallback>{getInitials(session?.user.name)}</AvatarFallback>
         </Avatar>
       )}
     </header>

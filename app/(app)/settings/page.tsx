@@ -16,7 +16,12 @@ import {
   Sun,
   Laptop,
 } from "lucide-react";
-import Image from "next/image"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar"
+
 
 import {
   Select,
@@ -40,6 +45,7 @@ import { SessionModal } from "./components/session-modal";
 import { LinkAccountModal } from "./components/link-account-modal";
 import { DangerModal } from "./components/danger-modal";
 import { auth } from "@/lib/auth";
+import { getInitials } from "@/utility/party";
 
 type userAccount = Awaited<ReturnType<typeof auth.api.listUserAccounts>>[number]
 
@@ -127,13 +133,16 @@ export default function SettingsPage() {
           whileTap={{ scale: 0.98 }}
           className="flex items-center gap-4 p-4 rounded-2xl bg-background border shadow-sm cursor-pointer"
         >
-          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-            <img
-              src={session?.user?.image ?? "https://github.com/shadcn.png"}
-              alt="User avatar"
-              className="rounded-full object-cover"
+          <Avatar className="h-16 w-16 ring-2 ring-background transition-transform hover:scale-105">
+            <AvatarImage
+              src={session?.user?.image ?? undefined}
+              alt={session?.user?.name ?? "User avatar"}
             />
-          </div>
+            <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
+              {getInitials(session?.user?.name)}
+            </AvatarFallback>
+          </Avatar>
+
           <div className="flex-1">
             <p className="font-bold text-lg">
               {session?.user?.name ?? "Unknown"}

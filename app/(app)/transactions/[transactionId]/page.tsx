@@ -7,7 +7,7 @@ import { Check, PenSquareIcon, Trash2 } from "lucide-react"
 import { BackHeader } from "@/components/back-header"
 import { FooterButtons } from "@/components/footer-buttons"
 import { Button } from "@/components/ui/button"
-import { AddTransactionModal } from "../../parties/[partyId]/components/add-transaction-modal"
+import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
 import {
   AlertDialog,
   AlertDialogAction,

@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LoadingSwap } from '@/components/ui/loading-swap'
 import { authClient, useSession } from '@/lib/auth-client'
 import { BackHeader } from '@/components/back-header'
+import { getInitials } from '@/utility/party'
 
 type ProfileFormValues = {
   name: string
@@ -104,13 +105,13 @@ export default function AccountPage() {
         <div className="relative">
           <Avatar className="h-28 w-28 ring-4 ring-background shadow-lg">
             <AvatarImage src={session?.user?.image || ''} />
-            <AvatarFallback>
-              {session?.user?.name?.charAt(0) ?? 'U'}
+            <AvatarFallback className="text-2xl">
+              {getInitials(session?.user?.name)}
             </AvatarFallback>
           </Avatar>
           <button
             type="button"
-            className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow"
+            className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow cursor-pointer"
           >
             <Camera className="h-4 w-4" />
           </button>

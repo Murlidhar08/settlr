@@ -1,5 +1,5 @@
 import { TransactionDirection } from "@/lib/generated/prisma/enums"
-import { AddTransactionModal } from "./add-transaction-modal"
+import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
 import { Button } from "@/components/ui/button"
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react"
 

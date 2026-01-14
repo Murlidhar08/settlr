@@ -11,7 +11,7 @@ import { BalanceCard } from './components/balance-card';
 import { prisma } from '@/lib/prisma'
 import { getUserSession } from '@/lib/auth'
 import { TransactionDirection } from '@/lib/generated/prisma/client'
-import { TransactionList } from './components/transaction-list';
+import { TransactionList } from '@/components/transaction/transaction-list';
 import { AddTransactionFooter } from './components/add-transaction-footer';
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
