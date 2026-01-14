@@ -17,11 +17,8 @@ import { headers } from "next/headers";
 import { Currency, PaymentMode, ThemeMode } from "./generated/prisma/enums";
 import { envServer } from "./env.server";
 
-// Const
-const appUrl = envServer.NEXT_PUBLIC_APP_URL;
-
 export const auth = betterAuth({
-  appName: "Settlr",
+  appName: envServer.NEXT_PUBLIC_APP_NAME,
   database: prismaAdapter(prisma, {
     provider: "postgresql", // or "mysql", "postgresql", ...etc
   }),
@@ -102,6 +99,9 @@ export const auth = betterAuth({
     // Send password reset successfully mail
     onPasswordReset: async ({ user }) => {
       try {
+        // TODO: SEND DYANAMIC URL BASED ON ACCESS DOMAIN
+        // const appUrl = envServer.NEXT_PUBLIC_APP_URL;
+        const appUrl = "";
         const emailHtml = getPasswordResetSuccessEmailHtml(user.email, appUrl);
 
         const { data, error } = await sendMail({

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { useState } from "react";
+import { envClient } from "@/lib/env.client";
 
 type NavItem = {
   label: string;
@@ -49,7 +50,7 @@ const Sidebar = () => {
 
           {!collapsed && (
             <span className="text-xl font-bold whitespace-nowrap transition-opacity duration-200">
-              Settlr
+              {envClient.NEXT_PUBLIC_APP_NAME}
             </span>
           )}
         </div>
