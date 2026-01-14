@@ -6,7 +6,7 @@ import { customSession, twoFactor } from "better-auth/plugins"
 
 // Lib
 import { prisma } from "./prisma";
-import { FROM_EMAIL, resend } from "./resend";
+import { sendMail } from "./nodemailer";
 
 // Template
 import { getResetPasswordEmailHtml } from "./templates/email-reset-password";
@@ -42,12 +42,11 @@ export const auth = betterAuth({
         try {
           const emailHtml = getDeleteAccountEmailHtml(user.email, url)
 
-          const { data, error } = await resend.emails.send({
-            from: FROM_EMAIL,
-            to: user.email,
+          const { data, error } = await sendMail({
+            sendTo: user.email,
             subject: "Confirm Account Deletion",
-            html: emailHtml,
-          })
+            htmlContent: emailHtml
+          });
 
           if (error) {
             console.error("Failed to send delete account email:", error)
@@ -76,12 +75,10 @@ export const auth = betterAuth({
       try {
         const emailHtml = getResetPasswordEmailHtml(user.email, url)
 
-        // Send the email using Resend
-        const { data, error } = await resend.emails.send({
-          from: FROM_EMAIL,
-          to: user.email,
+        const { data, error } = await sendMail({
+          sendTo: user.email,
           subject: "Reset Your Password",
-          html: emailHtml,
+          htmlContent: emailHtml
         });
 
         if (error) {
@@ -89,7 +86,7 @@ export const auth = betterAuth({
           throw new Error("Failed to send reset password email")
         }
         console.log("Reset password email sent successfully to:", user.email)
-        console.log("Email ID:", data?.id)
+        console.log("Email data:", data)
 
         // In development, also log the URL for easy testing
         if (envServer.NODE_ENV === "development") {
@@ -107,11 +104,10 @@ export const auth = betterAuth({
       try {
         const emailHtml = getPasswordResetSuccessEmailHtml(user.email, appUrl);
 
-        const { data, error } = await resend.emails.send({
-          from: FROM_EMAIL,
-          to: user.email,
+        const { data, error } = await sendMail({
+          sendTo: user.email,
           subject: "Password Reset Successful",
-          html: emailHtml,
+          htmlContent: emailHtml
         });
 
         if (error) {
@@ -120,7 +116,7 @@ export const auth = betterAuth({
         }
 
         console.log("Password reset success email sent to:", user.email);
-        console.log("Email ID:", data?.id);
+        console.log("Email data:", data);
       } catch (err) {
         console.error("Error in onPasswordReset:", err);
         throw err;
@@ -138,12 +134,11 @@ export const auth = betterAuth({
           console.log("verification URL (dev only):", url)
         }
 
-        // Send the email using Resend
-        const { data, error } = await resend.emails.send({
-          from: FROM_EMAIL,
-          to: user.email,
+        // Send the email
+        const { data, error } = await sendMail({
+          sendTo: user.email,
           subject: "Verify Email",
-          html: emailHtml,
+          htmlContent: emailHtml
         });
 
         if (error) {

@@ -12,9 +12,13 @@ const envSchema = zod.object({
   BETTER_AUTH_URL: zod.string().nonempty(),
   NEXT_PUBLIC_APP_URL: zod.string().nonempty(),
 
-  //  Resend Email Service
-  RESEND_API_KEY: zod.string().nonempty(),
-  RESEND_FROM_EMAIL: zod.string().nonempty(),
+  //  Email Service
+  SMTP_HOST: zod.string().nonempty(),
+  SMTP_PORT: zod.string().nonempty(),
+  SMTP_USER: zod.string().nonempty(),
+  SMTP_PASS: zod.string().nonempty(),
+  SMTP_SECURE: zod.string().nonempty(),
+  FROM_EMAIL: zod.string().nonempty(),
 
   //  Google login
   GOOGLE_CLIENT_ID: zod.string(),
