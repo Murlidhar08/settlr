@@ -9,7 +9,11 @@ export const authClient = createAuthClient({
   plugins: [
     customSessionClient<Auth>(),
     inferAdditionalFields<Auth>(),
-    twoFactorClient(),
+    twoFactorClient({
+      onTwoFactorRedirect: () => {
+        window.location.href = "/two-factor"
+      },
+    }),
   ],
 })
 

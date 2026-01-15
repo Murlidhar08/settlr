@@ -1,9 +1,4 @@
-import {
-  Building2,
-  Printer,
-  User,
-  Zap,
-} from "lucide-react";
+import { Wallet2, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getUserSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -30,7 +25,7 @@ export default async function Page() {
   if (!session?.user)
     redirect("/login");
 
-  const businessList: any = await prisma.business?.findMany({
+  const businessList = await prisma.business?.findMany({
     select: {
       id: true,
       name: true
@@ -60,6 +55,13 @@ export default async function Page() {
       ? "Payment Received"
       : "Payment Sent";
   };
+
+  const getTransactionIcon = (direction: TransactionDirection, partyName?: string) => {
+    if (!partyName) return <Wallet2 />
+
+    return direction == TransactionDirection.OUT
+      ? <ArrowUpRight /> : <ArrowDownLeft />
+  }
 
   return (
     <div className="w-full">
@@ -95,13 +97,13 @@ export default async function Page() {
             )}
 
             {recentTransactions.map((tx) => {
-              const positive = tx.direction === "IN";
+              const positive = tx.direction === TransactionDirection.IN;
 
               return (
                 <TransactionItem
                   key={tx.id}
                   id={tx.id}
-                  icon={positive ? <Building2 /> : <Zap />}
+                  icon={getTransactionIcon(tx.direction, tx.party?.name)}
                   title={getTransactionTitle(tx.description, tx.direction, tx.party?.name)}
                   meta={`${format(tx.date, "dd MMM")} • ${tx.mode}${tx.party?.name ? ` • ${tx.party.name}` : ""
                     }`}

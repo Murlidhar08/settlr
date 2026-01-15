@@ -22,6 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { authClient } from "@/lib/auth-client"
 import { toast } from "sonner"
 import { BetterAuthActionButton } from "@/components/auth/better-auth-action-button"
+import { TwoFactorAuth } from "./two-factor-auth"
 
 
 // import { headers } from "next/headers"
@@ -101,10 +102,43 @@ const SecurityModal = ({ email, isTwoFactorEnabled }: PopupSheetProps) => {
 
         <hr />
 
-        {/* TODO: PENDING */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 hidden">
-          {/* ADD 2FA SETTINGS HERE */}
-        </div>
+        {/* Two factor section */}
+        {hasPasswordAccount && (
+          <div className="flex-1 overflow-y-auto px-6 py-6">
+            {/* Section header */}
+            <div className="mb-4 flex items-center justify-between">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold">
+                  Two-Factor Authentication
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Extra protection for sensitive actions
+                </p>
+              </div>
+
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium
+          ${isTwoFactorEnabled
+                    ? "bg-primary/10 text-primary"
+                    : "bg-muted text-muted-foreground"
+                  }`}
+              >
+                {isTwoFactorEnabled ? "Enabled" : "Disabled"}
+              </span>
+            </div>
+
+            {/* Content */}
+            <div className="rounded-xl border bg-muted/30 p-4 space-y-3">
+              <TwoFactorAuth isEnabled={isTwoFactorEnabled} />
+
+              {!isTwoFactorEnabled && (
+                <p className="text-xs text-muted-foreground">
+                  We recommend enabling 2FA to secure your account and business data.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ================================================== */}
         {/* FOOTER */}
