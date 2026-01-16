@@ -80,6 +80,7 @@ export default async function CashbookPage() {
         <AddTransactionModal
           title="Add Transaction"
           direction={TransactionDirection.IN}
+          path="/cashbook"
         >
           <Button
             size="lg"

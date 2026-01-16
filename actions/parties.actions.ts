@@ -53,6 +53,9 @@ export async function getPartyList(type: PartyType): Promise<PartyRes[]> {
         },
       }
     },
+    orderBy: {
+      createdAt: "desc"
+    }
   });
 
   return parties.map((party) => {

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 
 interface TransactionProps {
@@ -28,7 +29,8 @@ interface TransactionProps {
   children: ReactNode
   partyId?: string | null
   transactionData?: Transaction
-  direction?: TransactionDirection
+  direction?: TransactionDirection,
+  path?: string
 }
 
 export const AddTransactionModal = ({
@@ -36,10 +38,12 @@ export const AddTransactionModal = ({
   partyId,
   transactionData,
   direction,
+  path,
   children,
 }: TransactionProps) => {
   const [open, setOpen] = useState(false)
   const [dateOpen, setDateOpen] = useState(false)
+  const router = useRouter()
   const isOut = direction === TransactionDirection.OUT;
 
   const [data, setData] = useState<any>({
@@ -75,8 +79,22 @@ export const AddTransactionModal = ({
       amount: Number(data.amount),
       date: new Date(data.date),
       description: data.description || null
-    })
+    }, path)
+
+    router.refresh()
     setOpen(false)
+
+    // Clear data
+    setData({
+      businessId: "",
+      amount: "",
+      date: format(transactionData?.date || new Date(), "yyyy-MM-dd"),
+      description: "",
+      mode: PaymentMode.CASH,
+      direction,
+      partyId: partyId || null,
+      userId: "",
+    })
   }
 
   return (

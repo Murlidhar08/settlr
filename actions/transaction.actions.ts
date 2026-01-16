@@ -5,13 +5,15 @@ import { prisma } from "@/lib/prisma";
 import { getUserSession } from "@/lib/auth";
 import { Transaction } from "@/lib/generated/prisma/client";
 import { redirect } from "next/navigation"
+import { revalidatePath } from "next/cache";
 
-export async function addTransaction(transactionData: Transaction) {
+export async function addTransaction(transactionData: Transaction, pathToRevalidate?: string) {
   const session = await getUserSession();
+  let result
 
   // If id exists and not zero -> update
   if (!!transactionData.id) {
-    return await prisma.transaction.update({
+    result = await prisma.transaction.update({
       where: {
         id: transactionData.id,
       },
@@ -29,18 +31,25 @@ export async function addTransaction(transactionData: Transaction) {
   }
 
   // Else -> create
-  return await prisma.transaction.create({
-    data: {
-      businessId: session?.session.activeBusinessId || "",
-      amount: transactionData.amount,
-      date: transactionData.date,
-      description: transactionData.description,
-      mode: transactionData.mode,
-      direction: transactionData.direction,
-      partyId: transactionData.partyId,
-      userId: session?.user.id || "",
-    },
-  });
+  else {
+    result = await prisma.transaction.create({
+      data: {
+        businessId: session?.session.activeBusinessId || "",
+        amount: transactionData.amount,
+        date: transactionData.date,
+        description: transactionData.description,
+        mode: transactionData.mode,
+        direction: transactionData.direction,
+        partyId: transactionData.partyId,
+        userId: session?.user.id || "",
+      },
+    });
+  }
+
+  if (pathToRevalidate)
+    revalidatePath(pathToRevalidate)
+
+  return result;
 }
 
 export async function deleteTransaction(transactionId: string, partyId?: string) {

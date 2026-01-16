@@ -1,58 +1,74 @@
 "use client"
 
-import { Building2, Plus } from "lucide-react"
+import { Building2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
-import { Sheet, SheetContent, SheetFooter, SheetHeader } from "@/components/ui/sheet"
+import { ReactNode, useState } from "react"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 
 /* ========================================================= */
-/* TYPES */
+/* ACTIONS + TYPES */
 /* ========================================================= */
 import { addParties } from "@/actions/parties.actions"
 import { PartyType } from "@/lib/generated/prisma/enums"
 import { PartyInput } from "@/types/party/PartyRes"
 
-interface ParitesProps {
-  title?: string,
+interface PartiesProps {
+  title?: string
   type: PartyType
+  children: ReactNode
 }
 
 /* ========================================================= */
 /* COMPONENT */
 /* ========================================================= */
 
-const AddPartiesModal = ({ title, type }: ParitesProps) => {
-  const [popOpen, setPopOpen] = useState(false);
+const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
+  const [open, setOpen] = useState(false)
+
   const [data, setData] = useState<PartyInput>({
-    type: type,
+    type,
     name: "",
-    contactNo: null
+    contactNo: null,
   })
 
-  title = title || type == PartyType.CUSTOMER
-    ? "Add Customer"
-    : type == PartyType.SUPPLIER
-      ? "Add Supplier"
-      : "Title"
+  const resolvedTitle =
+    title ??
+    (type === PartyType.CUSTOMER
+      ? "Add Customer"
+      : type === PartyType.SUPPLIER
+        ? "Add Supplier"
+        : "Add Party")
 
   const handleAddParty = async () => {
-    const success = await addParties(data);
+    if (!data.name.trim()) {
+      return toast.error("Party name is required")
+    }
+
+    const success = await addParties(data)
 
     if (success) {
+      toast.success("Party added successfully")
       setData({
-        type: type,
+        type,
         name: "",
-        contactNo: null
+        contactNo: null,
       })
-      setPopOpen(false);
+      setOpen(false)
     }
   }
 
   return (
     <>
-      <Sheet open={popOpen} onOpenChange={setPopOpen}>
+      {/* Floating CTA */}
+      <div onClick={() => setOpen(true)} className="inline-block cursor-pointer">
+        {children}
+      </div>
+
+      {/* Sheet */}
+      <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="right"
           className="w-screen! max-w-none! h-screen sm:w-full! sm:max-w-md! sm:h-full flex flex-col p-0 pb-[env(safe-area-inset-bottom)]"
@@ -60,37 +76,49 @@ const AddPartiesModal = ({ title, type }: ParitesProps) => {
           {/* ================================================== */}
           {/* HEADER */}
           {/* ================================================== */}
-          <SheetHeader className="sticky top-0 z-10 flex-row items-center justify-between border-b bg-background px-6 py-4">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold">{title}</h2>
+          <div className="flex items-center gap-3 border-b px-5 py-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+              <Building2 className="h-5 w-5" />
             </div>
-          </SheetHeader>
+            <h2 className="text-base font-semibold">{resolvedTitle}</h2>
+          </div>
 
           {/* ================================================== */}
           {/* BODY */}
           {/* ================================================== */}
-          <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
+          <div className="flex-1 space-y-6 overflow-y-auto px-5 py-6">
             {/* Party Name */}
             <div className="space-y-2">
-              <Label htmlFor="name">Party name</Label>
+              <Label className="text-xs text-muted-foreground">
+                PARTY NAME
+              </Label>
               <Input
-                id="name"
-                placeholder="Party name"
+                placeholder="Enter name"
                 value={data.name}
-                onChange={e => { setData(pre => ({ ...pre, name: e.target.value })) }}
+                onChange={(e) =>
+                  setData((pre) => ({ ...pre, name: e.target.value }))
+                }
+                className="h-12 rounded-xl"
                 autoFocus
               />
             </div>
 
-            {/* Party Name */}
+            {/* Contact No */}
             <div className="space-y-2">
-              <Label htmlFor="name">Contact No</Label>
+              <Label className="text-xs text-muted-foreground">
+                CONTACT NUMBER
+              </Label>
               <Input
-                id="conatactNo"
-                placeholder="Contact No"
-                value={data.contactNo || ""}
-                onChange={e => { setData(pre => ({ ...pre, contactNo: e.target.value })) }}
+                placeholder="Optional"
+                inputMode="numeric"
+                value={data.contactNo ?? ""}
+                onChange={(e) =>
+                  setData((pre) => ({
+                    ...pre,
+                    contactNo: e.target.value || null,
+                  }))
+                }
+                className="h-12 rounded-xl"
               />
             </div>
           </div>
@@ -98,39 +126,26 @@ const AddPartiesModal = ({ title, type }: ParitesProps) => {
           {/* ================================================== */}
           {/* FOOTER */}
           {/* ================================================== */}
-          <SheetFooter className="sticky bottom-0 border-t bg-background px-6 py-4">
-            <div className="flex w-full gap-3">
+          <div className="sticky bottom-0 border-t bg-background p-4">
+            <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="flex-1"
-                onClick={() => setPopOpen(false)} // PENDING
+                className="h-12 flex-1 rounded-xl text-base"
+                onClick={() => setOpen(false)}
               >
                 Cancel
               </Button>
 
               <Button
                 onClick={handleAddParty}
-                className="flex-1"
-                disabled={false} // PENDING
+                className="h-12 flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-base font-semibold"
               >
-                Add {type == PartyType.CUSTOMER
-                  ? "Customer"
-                  : type == PartyType.SUPPLIER
-                    ? "Supplier"
-                    : "Party"}
+                Add {type === PartyType.CUSTOMER ? "Customer" : "Supplier"}
               </Button>
             </div>
-          </SheetFooter>
+          </div>
         </SheetContent>
       </Sheet>
-
-      <Button
-        onClick={() => { setPopOpen(true) }}
-        size="icon"
-        className="fixed bottom-24 right-6 z-30 h-16 w-16 rounded-full bg-green-800"
-      >
-        <Plus className="size-7" />
-      </Button>
     </>
   )
 }

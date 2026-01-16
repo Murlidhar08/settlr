@@ -1,5 +1,5 @@
 // Packages
-import { Search } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react'
 
 // Components
 import { Input } from '@/components/ui/input'
@@ -12,7 +12,9 @@ import { prisma } from '@/lib/prisma'
 import { getUserSession } from '@/lib/auth'
 import { TransactionDirection } from '@/lib/generated/prisma/client'
 import { TransactionList } from '@/components/transaction/transaction-list';
-import { AddTransactionFooter } from './components/add-transaction-footer';
+import { FooterButtons } from '@/components/footer-buttons';
+import { AddTransactionModal } from '@/components/transaction/add-transaction-modal';
+import { Button } from '@/components/ui/button';
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;
@@ -38,9 +40,14 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
           businessId: session?.session.activeBusinessId || "",
           partyId: partyId,
         },
-        orderBy: {
-          date: "desc"
-        }
+        orderBy: [
+          {
+            date: "desc"
+          },
+          {
+            createdAt: "desc"
+          }
+        ]
       }
     },
     where: { id: partyId }
@@ -116,7 +123,36 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
         </main>
 
         {/* Bottom Action Footer */}
-        <AddTransactionFooter partyId={partyId} />
+        <FooterButtons>
+          {/* YOU GAVE */}
+          <AddTransactionModal
+            title="Add Transaction"
+            partyId={partyId}
+            direction={TransactionDirection.OUT}
+            path={`/parties/${partyId}`}
+          >
+            <Button size="lg" className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+              <ArrowUpRight className="h-5 w-5" />
+              You Gave
+            </Button>
+          </AddTransactionModal>
+
+          {/* YOU GET */}
+          <AddTransactionModal
+            title="Add Transaction"
+            partyId={partyId}
+            direction={TransactionDirection.IN}
+            path={`/parties/${partyId}`}
+          >
+            <Button
+              size="lg"
+              className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <ArrowDownLeft className="h-5 w-5" />
+              You Get
+            </Button>
+          </AddTransactionModal>
+        </FooterButtons>
       </div>
     </div>
   )

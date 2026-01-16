@@ -1,9 +1,11 @@
-import { ArrowDown, ArrowUp, ChevronRight } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronRight, Plus } from "lucide-react";
 
 import { PartyList } from "./party-list";
 import { PartyType } from "@/lib/generated/prisma/enums";
 import { getPartyList } from "@/actions/parties.actions";
 import { AddPartiesModal } from "./add-parties-modal";
+import { FooterButtons } from "@/components/footer-buttons";
+import { Button } from "@/components/ui/button";
 
 interface PartyListProp {
   partyType: PartyType;
@@ -90,7 +92,23 @@ export default async function CustomersTab({ partyType }: PartyListProp) {
       <PartyList partyType={partyType} />
 
       {/* Add Party */}
-      <AddPartiesModal type={partyType} />
+      {/* <AddPartiesModal type={partyType} /> */}
+
+      <FooterButtons>
+        <AddPartiesModal type={partyType}>
+          <Button size="lg" className="px-12 flex-1 h-14 rounded-full font-semibold uppercase bg-primary text-white shadow-lg shadow-rose-600/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+            <Plus className="size-7" />
+            <span className="hidden md:block">
+              {partyType == PartyType.CUSTOMER
+                ? "Add Customer" :
+                PartyType.SUPPLIER
+                  ? "Add Supplier"
+                  : "NONE"
+              }
+            </span>
+          </Button>
+        </AddPartiesModal>
+      </FooterButtons>
 
       {/* Bottom Spacing */}
       <div className="h-24" />
