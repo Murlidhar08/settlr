@@ -1,12 +1,13 @@
-import nodemailer, { SentMessageInfo } from "nodemailer"
+import { createTransport, SentMessageInfo } from "nodemailer"
+import { envServer } from "./env.server";
 
-export const smtpTransporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: process.env.SMTP_SECURE === "true", // true for 465, false for STARTTLS
+export const smtpTransporter = createTransport({
+  host: envServer.SMTP_HOST,
+  port: Number(envServer.SMTP_PORT),
+  secure: envServer.SMTP_SECURE === "true", // true for 465, false for STARTTLS
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: envServer.SMTP_USER,
+    pass: envServer.SMTP_PASS,
   },
 });
 
@@ -35,7 +36,7 @@ export async function sendMail({ sendTo, subject, htmlContent }: sendMailProp):
   try {
     // Build email options
     const mailOptions = {
-      from: process.env.FROM_EMAIL,
+      from: envServer.FROM_EMAIL,
       to: sendTo,
       subject,
       html: htmlContent,
