@@ -54,7 +54,7 @@ const BackHeader = ({
         onClick={handleBack}
         size="icon"
         variant="ghost"
-        className="hover:scale-110 transition-transform"
+        className="hover:scale-110 transition-transform cursor-pointer"
       >
         <ArrowLeft className="h-5 w-5" />
       </Button>

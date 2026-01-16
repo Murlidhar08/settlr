@@ -13,6 +13,7 @@ import { LoadingSwap } from '@/components/ui/loading-swap'
 import { authClient, useSession } from '@/lib/auth-client'
 import { BackHeader } from '@/components/back-header'
 import { getInitials } from '@/utility/party'
+import { FooterButtons } from '@/components/footer-buttons'
 
 type ProfileFormValues = {
   name: string
@@ -98,7 +99,7 @@ export default function AccountPage() {
       className="relative min-h-screen bg-background pb-28"
     >
       {/* Top App Bar */}
-      <BackHeader title='Edit Profile' backUrl='/settings' isProfile={true} />
+      <BackHeader title='Edit Profile' backUrl='/settings' />
 
       {/* Avatar Section */}
       <section className="flex flex-col items-center py-8">
@@ -143,17 +144,18 @@ export default function AccountPage() {
       </section>
 
       {/* Submit */}
-      <div className="fixed inset-x-0 bottom-0 border-t bg-background p-4">
+      <FooterButtons>
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="h-14 w-full rounded-xl text-base font-semibold"
+          size="lg"
+          className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase shadow-lg shadow-primary-600/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
         >
           <LoadingSwap isLoading={isSubmitting}>
             Save Changes
           </LoadingSwap>
         </Button>
-      </div>
+      </FooterButtons>
     </form>
   )
 }
