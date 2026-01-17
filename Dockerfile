@@ -27,8 +27,9 @@ WORKDIR /app
 
 ENV NODE_ENV="production"
 ENV DATABASE_URL="postgresql://user:pass@localhost:5432/settlr"
-ENV BETTER_AUTH_SECRET="build-secret"
 ENV NEXT_PUBLIC_APP_NAME="Settlr"
+ENV BETTER_AUTH_SECRET="build-secret"
+ENV BETTER_AUTH_URL="auth-url"
 ENV SMTP_HOST="<mail.example.com>"
 ENV SMTP_PORT="587"
 ENV SMTP_USER="<USER@example.com>"

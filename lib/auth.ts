@@ -19,6 +19,11 @@ import { envServer } from "./env.server";
 
 export const auth = betterAuth({
   appName: envServer.NEXT_PUBLIC_APP_NAME,
+  baseURL: envServer.BETTER_AUTH_URL,
+  secret: envServer.BETTER_AUTH_SECRET,
+  trustedOrigins: [
+    envServer.BETTER_AUTH_URL,
+  ],
   database: prismaAdapter(prisma, {
     provider: "postgresql", // or "mysql", "postgresql", ...etc
   }),
