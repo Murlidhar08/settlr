@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSession } from "@/lib/auth-client"
 import { getInitials } from "@/utility/party"
 import { Wallet } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 interface HeaderProps {
   title: string
@@ -12,7 +13,14 @@ interface HeaderProps {
 
 const Header = ({ title, isProfile }: HeaderProps) => {
   isProfile = isProfile ?? true
-  const { data: session } = useSession()
+  const router = useRouter()
+  const { data: session } = useSession();
+
+  // ------------------
+  // Hanlders
+  const handleRedirect = () => {
+    router.push("/account")
+  }
 
   return (
     <header className="sticky top-0 z-20 flex items-center justify-between bg-slate-200/80 dark:bg-slate-950/90 backdrop-blur px-6 py-4 mb-4">
@@ -31,7 +39,7 @@ const Header = ({ title, isProfile }: HeaderProps) => {
 
       {/* Profile */}
       {isProfile && (
-        <Avatar size="lg" className="ring-1 ring-background shadow-lg">
+        <Avatar onClick={handleRedirect} size="lg" className="ring-1 ring-background shadow-lg cursor-pointer">
           <AvatarImage src={session?.user?.image || ''} />
           <AvatarFallback>{getInitials(session?.user.name)}</AvatarFallback>
         </Avatar>

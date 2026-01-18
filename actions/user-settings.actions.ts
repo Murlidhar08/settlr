@@ -1,5 +1,6 @@
 "use server";
 
+import packageJson from "@/package.json"
 import { prisma } from "@/lib/prisma";
 import { auth, getUserSession } from "@/lib/auth";
 import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
@@ -46,7 +47,7 @@ export async function getListSessions() {
   });
 }
 
-export default async function getCredientialAccounts() {
+export async function getCredientialAccounts() {
   const accounts = await auth.api.listUserAccounts({
     headers: await headers(),
   })
@@ -56,4 +57,8 @@ export default async function getCredientialAccounts() {
   )
 
   return nonCredentialAccounts;
+}
+
+export async function getAppVersion() {
+  return packageJson.version;
 }

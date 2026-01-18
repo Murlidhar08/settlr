@@ -37,7 +37,7 @@ import { signOut } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
-import getCredientialAccounts, { getListSessions, upsertUserSettings } from "@/actions/user-settings.actions";
+import { getCredientialAccounts, getAppVersion, getListSessions, upsertUserSettings } from "@/actions/user-settings.actions";
 import { useSession } from "@/lib/auth-client";
 import { Session } from "@/lib/generated/prisma/client";
 import { SecurityModal } from "./components/security-modal";
@@ -46,35 +46,30 @@ import { LinkAccountModal } from "./components/link-account-modal";
 import { DangerModal } from "./components/danger-modal";
 import { auth } from "@/lib/auth";
 import { getInitials } from "@/utility/party";
+import { useUserConfig } from "@/components/providers/user-config-provider";
 
 type userAccount = Awaited<ReturnType<typeof auth.api.listUserAccounts>>[number]
 
 export default function SettingsPage() {
   const router = useRouter();
+  const userConfig = useUserConfig()
   const { data: session, isPending } = useSession();
-  const [currency, setCurrency] = useState<Currency>(Currency.INR);
-  const [dateFormat, setDateFormat] = useState("DD/MM/YYYY");
-  const [paymentMode, setPaymentMode] = useState<PaymentMode>(PaymentMode.CASH);
-  const [theme, setTheme] = useState<ThemeMode>(ThemeMode.AUTO);
+
+  const [currency, setCurrency] = useState<Currency>(userConfig.currency);
+  const [dateFormat, setDateFormat] = useState(userConfig.dateFormat);
+  const [paymentMode, setPaymentMode] = useState<PaymentMode>(userConfig.defaultPayment);
+  const [theme, setTheme] = useState<ThemeMode>(userConfig.theme);
 
   const [sessionsList, setSessionsList] = useState<Session[]>([])
   const [currAccount, setCurrAccount] = useState<userAccount[]>([])
+  const [version, setVersion] = useState<string>("Pending ...");
 
   const initialized = useRef(false);
 
   // 2. Sync state when session loads
   useEffect(() => {
     if (isPending) return;
-    if (!session?.session.userSettings) return;
     if (initialized.current) return;
-
-    const s = session.session.userSettings;
-
-    // Currency
-    setCurrency(s.currency ?? Currency.INR);
-    setDateFormat(s.dateFormat ?? "DD/MM/YYYY");
-    setPaymentMode(s.defaultPayment ?? PaymentMode.CASH);
-    setTheme(s.theme);
 
     getListSessions()
       .then(res => {
@@ -86,6 +81,11 @@ export default function SettingsPage() {
       .then(res => {
         if (!res) return
         setCurrAccount(res as userAccount[])
+      })
+
+    getAppVersion()
+      .then(res => {
+        setVersion(res);
       })
 
     initialized.current = true;
@@ -327,17 +327,23 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        {/* DATA */}
-        <Section title="Data Management">
-          <ActionRow icon={CloudUpload} title="Backup Data" subtitle="Synced just now" />
-          <ActionRow icon={Download} title="Export Transactions" />
-        </Section>
+        {/* DATA MANAGEMENT */}
+        {/* TODO: PENDING DATA BACKUP*/}
+        <div className="hidden">
+          <Section title="Data Management">
+            <ActionRow icon={CloudUpload} title="Backup Data" subtitle="Synced just now" />
+            <ActionRow icon={Download} title="Export Transactions" />
+          </Section>
+        </div>
 
         {/* SUPPORT */}
-        <Section title="Support">
-          <LinkRow label="Help Center" />
-          <LinkRow label="Privacy Policy" />
-        </Section>
+        {/* TODO: PENDING DATA BACKUP*/}
+        <div className="hidden">
+          <Section title="Support">
+            <LinkRow label="Help Center" />
+            <LinkRow label="Privacy Policy" />
+          </Section>
+        </div>
 
         {/* LOGOUT */}
         <motion.div whileTap={{ scale: 0.97 }}>
@@ -351,7 +357,7 @@ export default function SettingsPage() {
         </motion.div>
 
         <div className="text-center text-xs text-muted-foreground pt-10">
-          Version 1.0.0 (Build 204)
+          Build Version {version}
         </div>
       </div>
     </div >

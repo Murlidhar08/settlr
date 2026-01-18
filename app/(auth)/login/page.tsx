@@ -52,7 +52,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-background select-none">
+    <div className="min-h-screen flex flex-col lg:flex-row select-none">
 
       {/* LEFT SIDE */}
       <div className="flex flex-col justify-between w-full lg:w-1/2 px-6 sm:px-12 lg:px-20 py-8">
@@ -180,11 +180,7 @@ export default function LoginPage() {
       </div>
 
       {/* RIGHT PANEL */}
-      <div className="
-        hidden lg:flex w-1/2 p-10 items-center justify-center
-        bg-linear-to-br from-primary to-primary/80 text-white relative overflow-hidden
-        rounded-l-[3rem]
-      ">
+      <div className="hidden lg:flex w-1/2 p-10 items-center justify-center bg-linear-to-br from-primary to-primary/80 text-white relative overflow-hidden rounded-l-[3rem]">
         <div className="absolute inset-0 bg-primary/20 backdrop-blur-sm animate-pulse" />
         <div className="relative z-10 text-center px-10">
           <div className="w-40 h-48 bg-white/10 backdrop-blur-lg rounded-3xl flex flex-col items-center justify-center border border-white/20 shadow-xl mx-auto mb-6 hover:scale-[1.03] transition-transform duration-200">
