@@ -10,15 +10,17 @@ import { BalanceCard } from './components/balance-card';
 // Lib
 import { prisma } from '@/lib/prisma'
 import { getUserSession } from '@/lib/auth'
-import { TransactionDirection } from '@/lib/generated/prisma/client'
+import { Currency, TransactionDirection } from '@/lib/generated/prisma/client'
 import { TransactionList } from '@/components/transaction/transaction-list';
 import { FooterButtons } from '@/components/footer-buttons';
 import { AddTransactionModal } from '@/components/transaction/add-transaction-modal';
 import { Button } from '@/components/ui/button';
+import { getUserConfig } from '@/lib/user-config';
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;
   const session = await getUserSession();
+  const userConfig = await getUserConfig()
 
   const rawPartyDetails = await prisma.party.findFirst({
     select: {
@@ -92,7 +94,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
           <BalanceCard
             totalIn={totalIn}
             totalOut={totalOut}
-            currency='$'
+            currency={userConfig.currency == Currency.INR ? "₹" : "$"}
           />
 
           {/* Quick Actions */}

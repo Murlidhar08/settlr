@@ -4,7 +4,7 @@ import { Currency, PaymentMode, ThemeMode } from "./generated/prisma/enums";
 export async function getUserConfig() {
   const session = await getUserSession()
   if (!session?.session?.userSettings)
-    return null
+    return getDefaultConfig();
 
   return session.session.userSettings;
 }
