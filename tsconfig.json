@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "target": "ES2023",
     "lib": [
       "dom",
       "dom.iterable",
@@ -23,17 +24,21 @@
     ],
     "paths": {
       "@/*": [
-        "./src/*"
+        "./*"
       ]
-    },
-    "target": "ES2023"
+    }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    "**/*.mts",
+    "components/sidebar.tsx",
+    "app/(app)/dashboard/components/BottomNav.tsx",
+    "app/(app)/dashboard/components/stat-card.tsx",
+    "app/(app)/dashboard/components/transaction-item.tsx"
   ],
   "exclude": [
     "node_modules"

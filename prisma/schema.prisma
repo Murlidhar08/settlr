@@ -1,0 +1,212 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ENUMS
+enum PaymentMode {
+  CASH
+  ONLINE
+}
+
+enum Currency {
+  INR
+  USD
+  EUR
+}
+
+enum TransactionDirection {
+  IN
+  OUT
+}
+
+enum ThemeMode {
+  AUTO
+  LIGHT
+  DARK
+}
+
+enum PartyType {
+  CUSTOMER
+  SUPPLIER
+  BOTH
+}
+
+// ----------
+// TABLES
+
+// BETTER AUTH TABLES
+model User {
+  id                String                @id
+  name              String
+  email             String
+  emailVerified     Boolean               @default(false)
+  image             String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  contactNo         String?
+  address           String?
+  sessions          Session[]
+  accounts          Account[]
+  createdBusinesses Business[]
+  documents         TransactionDocument[]
+  userSettings      UserSettings?
+  transactions      Transaction[]
+
+  twoFactorEnabled Boolean?    @default(false)
+  twofactors       TwoFactor[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id               String   @id
+  expiresAt        DateTime
+  token            String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  ipAddress        String?
+  userAgent        String?
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeBusinessId String?
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model TwoFactor {
+  id          String @id
+  secret      String
+  backupCodes String
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([secret])
+  @@index([userId])
+  @@map("twoFactor")
+}
+
+// APPLICATION TABLES
+model UserSettings {
+  userId String @id
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  currency       Currency    @default(INR)
+  dateFormat     String      @default("DD/MM/YYYY")
+  defaultPayment PaymentMode @default(CASH)
+  theme          ThemeMode   @default(AUTO)
+  createdAt      DateTime    @default(now())
+
+  @@map("userSettings")
+}
+
+model Business {
+  id           String        @id @default(cuid())
+  name         String
+  ownerId      String
+  owner        User          @relation(fields: [ownerId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @default(now()) @updatedAt
+  transactions Transaction[]
+  parties      Party[]
+
+  @@map("business")
+}
+
+model Party {
+  id           String        @id @default(cuid())
+  businessId   String
+  business     Business      @relation(fields: [businessId], references: [id])
+  name         String
+  contactNo    String?
+  type         PartyType
+  profileUrl   String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @default(now()) @updatedAt
+  transactions Transaction[]
+
+  @@index([businessId])
+  @@map("party")
+}
+
+model Transaction {
+  id          String                @id @default(cuid())
+  businessId  String
+  business    Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  amount      Decimal               @db.Decimal(12, 2)
+  mode        PaymentMode
+  direction   TransactionDirection
+  date        DateTime              @default(now())
+  description String?
+  userId      String
+  user        User                  @relation(fields: [userId], references: [id])
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @default(now()) @updatedAt
+  documents   TransactionDocument[]
+  partyId     String?
+  party       Party?                @relation(fields: [partyId], references: [id])
+
+  @@index([businessId])
+  @@index([date])
+  @@index([businessId, mode])
+  @@map("transaction")
+}
+
+model TransactionDocument {
+  id            String      @id @default(cuid())
+  name          String
+  extension     String
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  createdAt     DateTime    @default(now())
+
+  @@index([transactionId])
+  @@map("transactionDocument")
+}
