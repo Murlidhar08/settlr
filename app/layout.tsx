@@ -30,6 +30,20 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: envClient.NEXT_PUBLIC_APP_NAME,
   description: envClient.NEXT_PUBLIC_APP_DESCRIPTION,
+  manifest: "/manifest.json",
+  themeColor: "#F3EFE0",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Settlr",
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/icons/icon-192x192.png",
+  },
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
