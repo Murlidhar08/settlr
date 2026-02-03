@@ -5,12 +5,17 @@ import { Toaster } from "@/components/ui/sonner"
 
 // Style
 import "./globals.css";
+
+// Lib
 import { getUserSession } from "@/lib/auth";
 import { ThemeMode } from "@/lib/generated/prisma/enums";
 import { ThemeProvider } from "@/components/theme-provider";
 import { envClient } from "@/lib/env.client";
 
-const nunitoSans = Nunito_Sans({ variable: '--font-sans' });
+const nunitoSans = Nunito_Sans({
+  variable: '--font-sans',
+  subsets: ["latin"]
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
