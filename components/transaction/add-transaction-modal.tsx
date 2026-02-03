@@ -47,6 +47,7 @@ export const AddTransactionModal = ({
   const isOut = direction === TransactionDirection.OUT;
 
   const [data, setData] = useState<any>({
+    id: undefined,
     businessId: "",
     amount: "",
     date: format(transactionData?.date || new Date(), "yyyy-MM-dd"),
@@ -62,6 +63,7 @@ export const AddTransactionModal = ({
       setData((pre: any) => {
         return {
           ...pre,
+          ...transactionData,
           amount: Number(transactionData.amount),
           date: format(transactionData?.date || new Date(), "yyyy-MM-dd"),
         }
@@ -86,6 +88,7 @@ export const AddTransactionModal = ({
 
     // Clear data
     setData({
+      id: undefined,
       businessId: "",
       amount: "",
       date: format(transactionData?.date || new Date(), "yyyy-MM-dd"),
@@ -117,10 +120,7 @@ export const AddTransactionModal = ({
           <div className="flex-1 space-y-6 overflow-y-auto px-5 py-6">
             {/* Amount */}
             <div className="text-center space-y-1">
-              <div
-                className={`flex items-center justify-center gap-1 text-4xl font-semibold ${isOut ? "text-rose-500" : "text-emerald-500"
-                  }`}
-              >
+              <div className={`flex items-center justify-center gap-1 text-4xl font-semibold ${isOut ? "text-rose-500" : "text-emerald-500"}`}>
                 <span>₹</span>
                 <input
                   value={data.amount}
