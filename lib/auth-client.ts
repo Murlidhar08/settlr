@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/react"
-import { customSessionClient, inferAdditionalFields, twoFactorClient } from "better-auth/client/plugins"
+import { customSessionClient, inferAdditionalFields, lastLoginMethodClient, twoFactorClient } from "better-auth/client/plugins"
 import { Auth } from "./auth";
 
 /**
@@ -14,6 +14,7 @@ export const authClient = createAuthClient({
         window.location.href = "/two-factor"
       },
     }),
+    lastLoginMethodClient(),
   ],
 })
 
