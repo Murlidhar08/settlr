@@ -8,6 +8,7 @@ import "./globals.css";
 import { getUserSession } from "@/lib/auth";
 import { ThemeMode } from "@/lib/generated/prisma/enums";
 import { ThemeProvider } from "@/components/theme-provider";
+import { envClient } from "@/lib/env.client";
 
 const nunitoSans = Nunito_Sans({ variable: '--font-sans' });
 
@@ -22,8 +23,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Settlr",
-  description: "Settlr for managing personal finance",
+  title: envClient.NEXT_PUBLIC_APP_NAME,
+  description: envClient.NEXT_PUBLIC_APP_DESCRIPTION,
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

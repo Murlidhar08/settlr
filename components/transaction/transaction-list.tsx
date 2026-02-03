@@ -47,7 +47,14 @@ function TransactionGroup({ label, children }: { label: string; children: React.
 const TransactionList = ({ transactions }: transactionListProp) => {
   return (
     <div className="flex flex-col gap-4 px-1">
+      {/* No Records */}
+      {!transactions?.length && (
+        <p className="text-sm text-slate-500">
+          No transactions yet
+        </p>
+      )}
 
+      {/* List Of All Transactions */}
       {transactions &&
         Object.entries(groupTransactionsByDate(transactions))
           .map(([label, transactions]) => (
