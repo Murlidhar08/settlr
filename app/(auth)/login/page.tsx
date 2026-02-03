@@ -1,13 +1,18 @@
 "use client";
 
+// Packages
+import { useEffect, useState } from "react";
+import { Wallet, Mail, EyeOff, Eye, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+
+// Lib
+import { authClient, signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth-client";
+
+// Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authClient, signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth-client";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Wallet, Mail, EyeOff, Eye, ShieldCheck } from "lucide-react";
-import { useEffect, useState } from "react";
-import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
