@@ -15,12 +15,14 @@ import { getRecentTransactions } from "@/actions/transaction.actions";
 import { format } from "date-fns";
 import { formatAmount } from "@/utility/transaction";
 import { TransactionDirection } from "@/lib/generated/prisma/enums";
+import { getUserConfig } from "@/lib/user-config";
 
 /* ========================================================= */
 /* PAGE */
 /* ========================================================= */
 export default async function Page() {
-  const session = await getUserSession()
+  const session = await getUserSession();
+  const { currency } = await getUserConfig();
 
   if (!session?.user)
     redirect("/login");
@@ -105,9 +107,8 @@ export default async function Page() {
                   id={tx.id}
                   icon={getTransactionIcon(tx.direction, tx.party?.name)}
                   title={getTransactionTitle(tx.description, tx.direction, tx.party?.name)}
-                  meta={`${format(tx.date, "dd MMM")} • ${tx.mode}${tx.party?.name ? ` • ${tx.party.name}` : ""
-                    }`}
-                  amount={formatAmount(Number(tx.amount), tx.direction == TransactionDirection.IN)}
+                  meta={`${format(tx.date, "dd MMM")} • ${tx.mode}${tx.party?.name ? ` • ${tx.party.name}` : ""}`}
+                  amount={formatAmount(Number(tx.amount), currency, true, tx.direction)}
                   positive={positive}
                 />
               );

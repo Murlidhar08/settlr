@@ -13,9 +13,12 @@ import { prisma } from "@/lib/prisma";
 import { TransactionDirection } from '@/lib/generated/prisma/enums';
 import { cn } from "@/lib/utils";
 import { getInitials } from '@/utility/party';
+import { formatAmount } from '@/utility/transaction';
+import { getUserConfig } from '@/lib/user-config';
 
 export default async function Page({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;
+  const { currency } = await getUserConfig();
 
   const party = await prisma.party.findUnique({
     where: { id: partyId },
@@ -34,10 +37,6 @@ export default async function Page({ params }: { params: Promise<{ partyId: stri
   function getTitle(description: string | null, direction: TransactionDirection) {
     if (description?.trim()) return description;
     return direction === "IN" ? "Payment Received" : "Payment Sent";
-  }
-
-  function formatAmount(amount: number, direction: TransactionDirection) {
-    return `${direction === "IN" ? "+" : "-"}₹${Math.abs(amount).toLocaleString("en-IN")}`;
   }
 
   function groupTransactions(transactions: any[]) {
@@ -59,11 +58,11 @@ export default async function Page({ params }: { params: Promise<{ partyId: stri
   const grouped = groupTransactions(party.transactions);
 
   const totalIn = party.transactions
-    .filter(t => t.direction === "IN")
+    .filter(t => t.direction === TransactionDirection.IN)
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const totalOut = party.transactions
-    .filter(t => t.direction === "OUT")
+    .filter(t => t.direction === TransactionDirection.OUT)
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const balance = totalIn - totalOut;
@@ -124,7 +123,7 @@ export default async function Page({ params }: { params: Promise<{ partyId: stri
                       }
                       title={getTitle(tx.description, tx.direction)}
                       meta={`${format(tx.date, "dd MMM")} • ${tx.mode}`}
-                      amount={formatAmount(Number(tx.amount), tx.direction)}
+                      amount={formatAmount(tx.amount, currency)}
                       negative={negative}
                     />
                   );
@@ -138,8 +137,8 @@ export default async function Page({ params }: { params: Promise<{ partyId: stri
         <div className="w-full border-t bg-gray-100 dark:border-slate-800 dark:bg-[#1a190b]">
           <div className="p-6">
             <div className="mb-6 grid grid-cols-2 gap-4">
-              <Metric label="Total In" value={`+₹${totalIn.toLocaleString("en-IN")}`} positive />
-              <Metric label="Total Out" value={`-₹${totalOut.toLocaleString("en-IN")}`} />
+              <Metric label="Total In" value={formatAmount(totalIn, currency, false, TransactionDirection.IN)} positive />
+              <Metric label="Total Out" value={formatAmount(totalOut, currency, false, TransactionDirection.OUT)} />
             </div>
 
             <div className="flex items-center gap-4">
@@ -148,7 +147,7 @@ export default async function Page({ params }: { params: Promise<{ partyId: stri
                   Closing Balance
                 </p>
                 <p className={`text-3xl font-bold ${balance >= 0 ? "text-green-600" : "text-red-600"}`}>
-                  ₹{balance.toLocaleString("en-IN")}
+                  {formatAmount(balance, currency, true)}
                 </p>
               </div>
 

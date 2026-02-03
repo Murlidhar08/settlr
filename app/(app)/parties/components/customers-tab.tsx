@@ -1,18 +1,21 @@
 import { ArrowDown, ArrowUp, ChevronRight, Plus } from "lucide-react";
 
 import { PartyList } from "./party-list";
-import { PartyType } from "@/lib/generated/prisma/enums";
+import { Currency, PartyType } from "@/lib/generated/prisma/enums";
 import { getPartyList } from "@/actions/parties.actions";
 import { AddPartiesModal } from "./add-parties-modal";
 import { FooterButtons } from "@/components/footer-buttons";
 import { Button } from "@/components/ui/button";
+import { formatAmount } from "@/utility/transaction";
+import { getUserConfig } from "@/lib/user-config";
 
 interface PartyListProp {
   partyType: PartyType;
 }
 
 export default async function CustomersTab({ partyType }: PartyListProp) {
-  const res = await getPartyList(partyType)
+  const res = await getPartyList(partyType);
+  const { currency } = await getUserConfig();
 
   // Calculated
   let totalAmount = res.reduce((sum, party) => { return sum + party.amount; }, 0);
@@ -66,7 +69,7 @@ export default async function CustomersTab({ partyType }: PartyListProp) {
                     : "text-muted-foreground"
                   }`}
               >
-                {`₹${Math.abs(totalAmount)}`}
+                {formatAmount(totalAmount, currency)}
               </p>
             </div>
           </div>

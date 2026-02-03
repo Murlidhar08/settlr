@@ -11,8 +11,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useUserConfig } from "@/components/providers/user-config-provider";
 
 import { getInitials } from "@/utility/party"
+import { formatAmount } from "@/utility/transaction"
 
 const getRandomAvatarColor = () => {
   const hue = Math.floor(Math.random() * 360)
@@ -35,6 +37,7 @@ const PartyItem = ({
   avatarUrl,
 }: PartyItemProps) => {
   const router = useRouter()
+  const { currency } = useUserConfig();
   const avatarColor = useMemo(() => getRandomAvatarColor(), [])
 
   const isAdvance = amount > 0
@@ -118,7 +121,7 @@ const PartyItem = ({
                   : "text-rose-500"
                 }`}
             >
-              ₹{Math.abs(amount)}
+              {formatAmount(amount, currency)}
             </p>
 
             <span
