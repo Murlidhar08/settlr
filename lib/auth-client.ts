@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/react"
-import { customSessionClient, inferAdditionalFields, lastLoginMethodClient, twoFactorClient } from "better-auth/client/plugins"
+import { adminClient, customSessionClient, inferAdditionalFields, lastLoginMethodClient, twoFactorClient } from "better-auth/client/plugins"
 import { Auth } from "./auth";
 
 /**
@@ -15,6 +15,7 @@ export const authClient = createAuthClient({
       },
     }),
     lastLoginMethodClient(),
+    adminClient(),
   ],
 })
 

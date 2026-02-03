@@ -14,6 +14,7 @@ datasource db {
 }
 
 // ENUMS
+
 enum PaymentMode {
   CASH
   ONLINE
@@ -46,6 +47,7 @@ enum PartyType {
 // TABLES
 
 // BETTER AUTH TABLES
+
 model User {
   id                String                @id
   name              String
@@ -66,6 +68,11 @@ model User {
   twoFactorEnabled Boolean?    @default(false)
   twofactors       TwoFactor[]
 
+  role       String?
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
+
   @@unique([email])
   @@map("user")
 }
@@ -81,6 +88,8 @@ model Session {
   userId           String
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   activeBusinessId String?
+
+  impersonatedBy String?
 
   @@unique([token])
   @@index([userId])
@@ -132,6 +141,7 @@ model TwoFactor {
 }
 
 // APPLICATION TABLES
+
 model UserSettings {
   userId String @id
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
