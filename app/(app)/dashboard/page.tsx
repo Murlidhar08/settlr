@@ -1,154 +1,122 @@
-import {
-    PiggyBank,
-    MoveUpRight,
-    MoveDownLeft,
-    Building2,
-    Printer,
-    User,
-    Zap,
-} from "lucide-react";
+import { Wallet2, ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { getUserSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 // Component
-import TransactionItem from "./components/TransactionItem";
-import StatCard from "./components/StatCard";
-import Header from "@/components/Header";
-import SwitchBusiness from "./components/BusinessSwitch";
-import { prisma } from "@/lib/prisma";
+import TransactionItem from "./components/transaction-item";
+import SummaryCard from "./components/summary-card";
+import { Header } from "@/components/header";
+import SwitchBusiness from "./components/business-switch";
+
+// Actions
+import { switchBusiness } from "@/actions/business.actions";
+import { getRecentTransactions } from "@/actions/transaction.actions";
+import { format } from "date-fns";
+import { formatAmount } from "@/utility/transaction";
+import { TransactionDirection } from "@/lib/generated/prisma/enums";
+import { getUserConfig } from "@/lib/user-config";
 
 /* ========================================================= */
 /* PAGE */
 /* ========================================================= */
 export default async function Page() {
-    const businessList: any = await prisma.business?.findMany({ select: { id: true, name: true } });
-    const selectedBusinessId = businessList?.[0]?.id;
+  const session = await getUserSession();
+  const { currency } = await getUserConfig();
 
-    return (
-        <div className="w-full">
-            {/* Header */}
-            <Header title="Dashboard" />
+  if (!session?.user)
+    redirect("/login");
 
-            {/* Store */}
-            <div className="px-4">
-                <div className="mb-4">
-                    <SwitchBusiness
-                        businesses={businessList}
-                        activeBusinessId={selectedBusinessId}
-                    />
-                </div>
+  const businessList = await prisma.business?.findMany({
+    select: {
+      id: true,
+      name: true
+    },
+    where: { ownerId: session?.user.id }
+  });
 
-                {/* Summary Cards */}
-                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" >
+  const recentTransactions = await getRecentTransactions();
 
-                    {/* Net Cash */}
-                    < div className="relative overflow-hidden rounded-3xl bg-[#2C3E50] p-6 text-white shadow-lg transition-transform hover:-translate-y-1" >
-                        <div className="absolute -top-20 -right-20 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
-                        <div className="relative z-10 flex justify-between">
-                            <div>
-                                <p className="text-sm text-slate-300">Net Cash on Hand</p>
-                                <p className="mt-1 text-3xl font-bold">₹12,450.00</p>
-                            </div>
-                            <PiggyBank className="h-6 w-6 opacity-80" />
-                        </div>
-                        <div className="relative z-10 mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-1 text-xs font-semibold text-emerald-300">
-                            <MoveUpRight className="h-3 w-3" /> 12% this month
-                        </div>
-                    </div >
+  const selectedBusinessId = session.session?.activeBusinessId || businessList?.[0]?.id;
+  await switchBusiness(selectedBusinessId);
 
-                    {/* Receivables */}
-                    < StatCard
-                        title="Total Receivables"
-                        amount="$4,200.00"
-                        subtitle="Customers owe you"
-                        icon={< MoveDownLeft />}
-                        positive
-                    />
+  const getTransactionTitle = (
+    description: string | null,
+    direction: TransactionDirection,
+    partyName?: string,
+  ) => {
+    if (description && description.trim().length > 0) {
+      return description;
+    }
 
-                    {/* Payables */}
-                    < StatCard
-                        title="Total Payables"
-                        amount="$1,150.00"
-                        subtitle="You owe suppliers"
-                        icon={< MoveUpRight />}
-                        positive={undefined}
-                    />
-                </section>
+    if (!partyName) {
+      return "Cashbook"
+    }
 
-                {/* Transactions */}
-                <section className="flex-1 pt-6 md:px-6" >
-                    <div className="flex items-center justify-between pb-3">
-                        <h2 className="text-lg font-bold">Recent Transactions</h2>
-                        <button className="text-sm text-slate-500 hover:text-[#2C3E50] transition">
-                            View All
-                        </button>
-                    </div>
+    return direction === TransactionDirection.IN
+      ? "Payment Received"
+      : "Payment Sent";
+  };
 
-                    <div className="space-y-3">
-                        <TransactionItem
-                            icon={<Building2 />}
-                            title="Acme Corp Payment"
-                            meta="Oct 24 • Invoice #1024"
-                            amount="+$1,200.00"
-                            positive
-                        />
-                        <TransactionItem
-                            icon={<Printer />}
-                            title="Office Supplies"
-                            meta="Oct 23 • Printer"
-                            amount="-$150.00"
-                            positive={undefined}
-                        />
-                        <TransactionItem
-                            icon={<User />}
-                            title="Consulting Fee"
-                            meta="Oct 22 • Client B"
-                            amount="+$500.00"
-                            positive
-                        />
-                        <TransactionItem
-                            icon={<Zap />}
-                            title="Electricity Bill"
-                            meta="Oct 20 • Utilities"
-                            amount="-$230.00"
-                            positive={undefined}
-                        />
-                        <TransactionItem
-                            icon={<Zap />}
-                            title="Electricity Bill"
-                            meta="Oct 20 • Utilities"
-                            amount="-$230.00"
-                            positive={undefined}
-                        />
-                        <TransactionItem
-                            icon={<Zap />}
-                            title="Electricity Bill"
-                            meta="Oct 20 • Utilities"
-                            amount="-$230.00"
-                            positive={undefined}
-                        />
-                        <TransactionItem
-                            icon={<Zap />}
-                            title="Electricity Bill"
-                            meta="Oct 20 • Utilities"
-                            amount="-$230.00"
-                            positive={undefined}
-                        />
-                        <TransactionItem
-                            icon={<Zap />}
-                            title="Electricity Bill"
-                            meta="Oct 20 • Utilities"
-                            amount="-$230.00"
-                            positive={undefined}
-                        />
-                        <TransactionItem
-                            icon={<Zap />}
-                            title="Electricity Bill"
-                            meta="Oct 20 • Utilities"
-                            amount="-$230.00"
-                            positive={undefined}
-                        />
-                    </div>
-                </section>
-            </div>
+  const getTransactionIcon = (direction: TransactionDirection, partyName?: string) => {
+    if (!partyName) return <Wallet2 />
+
+    return direction == TransactionDirection.OUT
+      ? <ArrowUpRight /> : <ArrowDownLeft />
+  }
+
+  return (
+    <div className="w-full">
+      {/* Header */}
+      <Header title="Dashboard" />
+
+      {/* Store */}
+      <div className="px-4">
+        <div className="mb-4">
+          <SwitchBusiness
+            businesses={businessList}
+            activeBusinessId={selectedBusinessId}
+          />
         </div>
-    );
+
+        {/* Summary Cards */}
+        <SummaryCard />
+
+        {/* Transactions */}
+        <section className="flex-1 pt-6 md:px-6">
+          <div className="flex items-center justify-between pb-3">
+            <h2 className="text-lg font-bold">Recent Transactions</h2>
+            <button className="text-sm text-slate-500 hover:text-[#2C3E50] transition">
+              View All
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {recentTransactions.length === 0 && (
+              <p className="text-sm text-slate-500">
+                No transactions yet
+              </p>
+            )}
+
+            {recentTransactions.map((tx) => {
+              const positive = tx.direction === TransactionDirection.IN;
+
+              return (
+                <TransactionItem
+                  key={tx.id}
+                  id={tx.id}
+                  icon={getTransactionIcon(tx.direction, tx.party?.name)}
+                  title={getTransactionTitle(tx.description, tx.direction, tx.party?.name)}
+                  meta={`${format(tx.date, "dd MMM")} • ${tx.mode}${tx.party?.name ? ` • ${tx.party.name}` : ""}`}
+                  amount={formatAmount(Number(tx.amount), currency, true, tx.direction)}
+                  positive={positive}
+                />
+              );
+            })}
+          </div>
+        </section>
+
+      </div>
+    </div>
+  );
 }

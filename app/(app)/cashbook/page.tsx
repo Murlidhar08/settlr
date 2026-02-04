@@ -1,126 +1,96 @@
-"use client";
-
-// Packages
-import { useState } from "react";
-import { Plus } from "lucide-react";
-
 // Components
-import Header from "@/components/Header";
+import { Header } from "@/components/header";
 import CashSummary from "./components/CashSummary";
 import CashFilters from "./components/CashFilters";
-import CashTransactionItem from "./components/CashTransactionItem";
-import AddTransactionSheet from "./components/AddTransactionSheet";
+import { TransactionList } from "@/components/transaction/transaction-list";
+import { AddTransactionModal } from "@/components/transaction/add-transaction-modal";
 
-export default function CashbookPage() {
-    const [open, setOpen] = useState(false);
+// Lib
+import { TransactionDirection } from "@/lib/generated/prisma/enums";
+import { prisma } from "@/lib/prisma";
+import { getUserSession } from "@/lib/auth";
+import { FooterButtons } from "@/components/footer-buttons";
+import { Button } from "@/components/ui/button";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
-    return (
-        <div className="w-full bg-background pb-28">
-            <Header title="Cashbook" />
+export default async function CashbookPage() {
+  const session = await getUserSession();
+  const rawPartyDetails = await prisma.transaction.findMany({
+    where: {
+      businessId: session?.session.activeBusinessId || "",
+      partyId: null,
+    },
+    orderBy: [
+      { date: "desc" },
+      { createdAt: "desc" },
+    ],
+  });
 
-            {/* Container */}
-            <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
-                <CashSummary />
+  const updtlList = rawPartyDetails?.map((tra) => {
+    return {
+      ...tra,
+      amount: Number(tra.amount)
+    }
+  }) ?? []
 
-                {/* Filters */}
-                <CashFilters />
+  let totalIn = 0,
+    totalOut = 0;
 
-                {/* Transactions */}
-                <div>
-                    <section>
-                        <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground mb-3">
-                            <span>Today, 12 Oct</span>
-                            <span>-₹330.00</span>
-                        </div>
+  rawPartyDetails?.forEach((tra) => {
+    if (tra.direction == TransactionDirection.IN)
+      totalIn += Number(tra.amount);
+    else if (tra.direction == TransactionDirection.OUT) {
+      totalOut += Number(tra.amount);
+    }
+  })
 
-                        <div className="space-y-3">
+  return (
+    <div className="w-full bg-background pb-28">
+      <Header title="Cashbook" />
 
-                            <CashTransactionItem
-                                name="Sarah Mitchell"
-                                time="10:42 AM"
-                                amount="+₹120.00"
-                                type="in"
-                                tag="Online"
-                            />
+      {/* Container */}
+      <div className="mx-auto w-full max-w-4xl px-6 pb-32">
+        <CashSummary totalIn={totalIn} totalOut={totalOut} />
 
-                            <CashTransactionItem
-                                name="Fast Logistics"
-                                time="02:15 PM"
-                                amount="-₹450.00"
-                                type="out"
-                                tag="Cash"
-                            />
-                            <CashTransactionItem
-                                name="Fast Logistics"
-                                time="02:15 PM"
-                                amount="-₹450.00"
-                                type="out"
-                                tag="Cash"
-                            />
-                            <CashTransactionItem
-                                name="Fast Logistics"
-                                time="02:15 PM"
-                                amount="-₹450.00"
-                                type="out"
-                                tag="Cash"
-                            />
-                            <CashTransactionItem
-                                name="Fast Logistics"
-                                time="02:15 PM"
-                                amount="-₹450.00"
-                                type="out"
-                                tag="Cash"
-                            />
-                            <CashTransactionItem
-                                name="Fast Logistics"
-                                time="02:15 PM"
-                                amount="-₹450.00"
-                                type="out"
-                                tag="Cash"
-                            />
-                            <CashTransactionItem
-                                name="Fast Logistics"
-                                time="02:15 PM"
-                                amount="-₹450.00"
-                                type="out"
-                                tag="Cash"
-                            />
-                            <CashTransactionItem
-                                name="Fast Logistics"
-                                time="02:15 PM"
-                                amount="-₹450.00"
-                                type="out"
-                                tag="Cash"
-                            />
-                            <CashTransactionItem
-                                name="Fast Logistics"
-                                time="02:15 PM"
-                                amount="-₹450.00"
-                                type="out"
-                                tag="Cash"
-                            />
-                            <CashTransactionItem
-                                name="Fast Logistics"
-                                time="02:15 PM"
-                                amount="-₹450.00"
-                                type="out"
-                                tag="Cash"
-                            />
-                        </div>
-                    </section>
-                </div>
-            </div>
+        {/* Filters */}
+        <CashFilters />
 
-            {/* Floating Action Button */}
-            <button
-                onClick={() => setOpen(true)}
-                className="fixed bottom-24 right-5 z-40 h-14 w-14 rounded-full bg-primary text-white shadow-xl flex items-center justify-center"
-            >
-                <Plus className="h-6 w-6" />
-            </button>
-
-            {/* Add Transaction Sheet */}
-            <AddTransactionSheet open={open} onOpenChange={setOpen} />
+        {/* Transactions */}
+        <div className="mt-3">
+          <section>
+            {/* Transaction List */}
+            <TransactionList partyId={null} transactions={updtlList || []} />
+          </section>
         </div>
-    );
+      </div>
+
+      <FooterButtons>
+        {/* YOU GAVE */}
+        <AddTransactionModal
+          title="Add Transaction"
+          direction={TransactionDirection.OUT}
+        >
+          <Button size="lg" className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+            <ArrowUpRight className="h-5 w-5" />
+            You Gave
+          </Button>
+        </AddTransactionModal>
+
+        {/* YOU GET */}
+        <AddTransactionModal
+          title="Add Transaction"
+          direction={TransactionDirection.IN}
+          path="/cashbook"
+        >
+          <Button
+            size="lg"
+            className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <ArrowDownLeft className="h-5 w-5" />
+            You Get
+          </Button>
+        </AddTransactionModal>
+      </FooterButtons>
+    </div>
+  );
 }

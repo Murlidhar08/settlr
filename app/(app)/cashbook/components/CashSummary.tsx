@@ -1,31 +1,51 @@
-import { motion } from "framer-motion";
+interface CashSummaryProp {
+  totalIn: number
+  totalOut: number
+}
 
-export default function CashSummary() {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-6 rounded-3xl bg-background p-6 shadow-sm"
-        >
-            <p className="text-xs uppercase text-muted-foreground text-center">
-                Total Cash Balance
-            </p>
+export default function CashSummary({
+  totalIn,
+  totalOut,
+}: CashSummaryProp) {
+  const cashBalance = totalIn - totalOut
+  const isPositive = cashBalance >= 0
 
-            <h2 className="mt-2 text-center text-4xl font-extrabold">
-                ₹4,250.00
-            </h2>
+  const formatAmount = (value: number) =>
+    value.toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
 
-            <div className="mt-6 grid grid-cols-2 gap-4">
-                <div className="rounded-2xl bg-green-50 p-4 text-center">
-                    <p className="text-green-600 font-bold text-lg">+₹1,500</p>
-                    <span className="text-xs text-muted-foreground">Total In</span>
-                </div>
+  return (
+    <div className="mt-6 rounded-3xl bg-background p-6 shadow-sm">
+      <p className="text-center text-xs uppercase text-muted-foreground">
+        Total Cash Balance
+      </p>
 
-                <div className="rounded-2xl bg-red-50 p-4 text-center">
-                    <p className="text-red-600 font-bold text-lg">-₹820</p>
-                    <span className="text-xs text-muted-foreground">Total Out</span>
-                </div>
-            </div>
-        </motion.div>
-    );
+      <h2
+        className={`mt-2 text-center text-4xl font-extrabold ${isPositive ? "text-emerald-600" : "text-rose-600"
+          }`}
+      >
+        ₹{formatAmount(Math.abs(cashBalance))}
+      </h2>
+
+      <div className="mt-6 grid grid-cols-2 gap-4">
+        {/* Total In */}
+        <div className="rounded-2xl bg-emerald-50 p-4 text-center">
+          <p className="text-lg font-bold text-emerald-600">
+            +₹{formatAmount(totalIn)}
+          </p>
+          <span className="text-xs text-muted-foreground">Total In</span>
+        </div>
+
+        {/* Total Out */}
+        <div className="rounded-2xl bg-rose-50 p-4 text-center">
+          <p className="text-lg font-bold text-rose-600">
+            -₹{formatAmount(totalOut)}
+          </p>
+          <span className="text-xs text-muted-foreground">Total Out</span>
+        </div>
+      </div>
+    </div>
+  )
 }

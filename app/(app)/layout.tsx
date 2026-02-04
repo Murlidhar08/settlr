@@ -1,26 +1,37 @@
-"use client";
+// Components
+import { redirect } from "next/navigation";
+
+// Lib
+import { getUserSession } from "@/lib/auth";
 
 // Components
-import Sidebar from "@/components/Sidebar";
-import { useState } from "react";
+import { Sidebar } from "@/components/sidebar";
+import { getDefaultConfig, getUserConfig } from "@/lib/user-config";
+import { UserConfigProvider } from "@/components/providers/user-config-provider";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // User Config
+  let userConfig = await getUserConfig()
+  userConfig = userConfig ?? getDefaultConfig()
+
+  const session = await getUserSession();
+
+  if (!session)
+    redirect("/login");
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
-      <div className="flex min-h-screen">
-        {/* Fixed Sidebar */}
-        <Sidebar collapsed={collapsed} onCollapse={setCollapsed} />
+    <UserConfigProvider config={userConfig}>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+        <div className="flex min-h-screen">
+          {/* Fixed Sidebar */}
+          <Sidebar />
 
-        {/* Sidebar Spacer (ONLY for lg+) */}
-        <div className={`hidden lg:block shrink-0 ${collapsed ? "w-20" : "w-64"}`} />
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto pb-24 transition-[width] duration-300 ease-in-out lg:pb-6">
-          {children}
-        </main>
+          {/* Main Content */}
+          <main className="flex-1 overflow-y-auto pb-24 bg-background transition-[width] duration-300 ease-in-out">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </UserConfigProvider>
   );
 }

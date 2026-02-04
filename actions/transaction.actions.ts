@@ -1,40 +1,94 @@
 "use server";
 
-// Package
+// Lib
 import { prisma } from "@/lib/prisma";
-import { TransactionData } from "@/types/transaction/TransactionData";
+import { getUserSession } from "@/lib/auth";
+import { Transaction } from "@/lib/generated/prisma/client";
+import { redirect } from "next/navigation"
+import { revalidatePath } from "next/cache";
 
-export async function addTransaction(transactionData: TransactionData) {
-    // If id exists and not zero -> update
-    if (transactionData.id && transactionData.id !== 0) {
-        return await prisma.transaction.update({
-            where: {
-                id: transactionData.id,
-            },
-            data: {
-                businessId: transactionData.businessId,
-                amount: transactionData.amount,
-                date: transactionData.date,
-                description: transactionData.description,
-                mode: transactionData.mode,
-                direction: transactionData.direction,
-                partyId: transactionData.partyId,
-                userId: transactionData.userId,
-            },
-        });
-    }
+export async function addTransaction(transactionData: Transaction, pathToRevalidate?: string) {
+  const session = await getUserSession();
+  let result
 
-    // Else -> create
-    return await prisma.transaction.create({
-        data: {
-            businessId: transactionData.businessId,
-            amount: transactionData.amount,
-            date: transactionData.date,
-            description: transactionData.description,
-            mode: transactionData.mode,
-            direction: transactionData.direction,
-            partyId: transactionData.partyId,
-            userId: transactionData.userId,
-        },
+  // If id exists and not zero -> update
+  if (!!transactionData.id) {
+    result = await prisma.transaction.update({
+      where: {
+        id: transactionData.id,
+      },
+      data: {
+        businessId: transactionData.businessId,
+        amount: transactionData.amount,
+        date: transactionData.date,
+        description: transactionData.description,
+        mode: transactionData.mode,
+        direction: transactionData.direction,
+        partyId: transactionData.partyId,
+        userId: transactionData.userId,
+      },
     });
+  }
+
+  // Else -> create
+  else {
+    result = await prisma.transaction.create({
+      data: {
+        businessId: session?.session.activeBusinessId || "",
+        amount: transactionData.amount,
+        date: transactionData.date,
+        description: transactionData.description,
+        mode: transactionData.mode,
+        direction: transactionData.direction,
+        partyId: transactionData.partyId,
+        userId: session?.user.id || "",
+      },
+    });
+  }
+
+  if (pathToRevalidate)
+    revalidatePath(pathToRevalidate)
+
+  return result;
+}
+
+export async function deleteTransaction(transactionId: string, partyId?: string) {
+  const session = await getUserSession()
+
+  if (!session?.session.activeBusinessId) {
+    throw new Error("Unauthorized")
+  }
+
+  await prisma.transaction.delete({
+    where: {
+      id: transactionId,
+      businessId: session.session.activeBusinessId,
+    },
+  })
+
+  // Redirect after delete
+  if (partyId)
+    redirect(`/parties/${partyId}`)
+  else
+    redirect("/parties")
+
+}
+
+export async function getRecentTransactions() {
+  const session = await getUserSession();
+
+  return await prisma.transaction.findMany({
+    where: {
+      businessId: session?.session.activeBusinessId || "",
+    },
+    orderBy: {
+      date: "desc",
+    },
+    take: 8,
+    include: {
+      party: {
+        select: { name: true },
+      },
+    },
+  });
 }
