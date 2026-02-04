@@ -3,15 +3,13 @@ import { getUserSession } from "@/lib/auth"
 import { TransactionDirection, PaymentMode } from "@/lib/generated/prisma/enums"
 import { MoveDownLeft, MoveUpRight, PiggyBank } from "lucide-react"
 import StatCard from "./stat-card"
-
-const formatAmount = (value: number) =>
-  value.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
+import { formatAmount } from "@/utility/transaction"
+import { getUserConfig } from "@/lib/user-config"
 
 export default async function SummaryCard() {
-  const session = await getUserSession()
+  const session = await getUserSession();
+  const { currency } = await getUserConfig();
+
   const businessId = session?.session.activeBusinessId
   if (!businessId) return null
 
@@ -61,7 +59,7 @@ export default async function SummaryCard() {
           <div>
             <p className="text-sm text-slate-300">Net Cash on Hand</p>
             <p className="mt-1 text-3xl font-bold">
-              ₹{formatAmount(Math.abs(netCash))}
+              {formatAmount(netCash, currency)}
             </p>
           </div>
           <PiggyBank className="h-6 w-6 opacity-80" />
@@ -85,7 +83,7 @@ export default async function SummaryCard() {
       {/* Receivable */}
       <StatCard
         title="Total Receivables"
-        amount={`₹${formatAmount(receivable)}`}
+        amount={formatAmount(receivable, currency)}
         subtitle="Customers owe you"
         icon={<MoveDownLeft />}
         positive
@@ -94,7 +92,7 @@ export default async function SummaryCard() {
       {/* Payable */}
       <StatCard
         title="Total Payables"
-        amount={`₹${formatAmount(payable)}`}
+        amount={formatAmount(payable, currency)}
         subtitle="You owe suppliers"
         icon={<MoveUpRight />}
         positive={false}

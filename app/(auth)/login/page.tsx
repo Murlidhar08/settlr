@@ -1,13 +1,19 @@
 "use client";
 
+// Packages
+import { useEffect, useState } from "react";
+import { Wallet, Mail, EyeOff, Eye, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+
+// Lib
+import { authClient, signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth-client";
+
+// Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authClient, signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth-client";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Wallet, Mail, EyeOff, Eye, ShieldCheck } from "lucide-react";
-import { useEffect, useState } from "react";
-import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,6 +22,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [lastLogin, setLastLogin] = useState("");
 
   // Redirect to dashboard
   useEffect(() => {
@@ -24,6 +31,9 @@ export default function LoginPage() {
         if (session.data)
           router.push("/dashboard");
       });
+
+    // Last Login Method
+    setLastLogin(authClient.getLastUsedLoginMethod() || "");
   }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -133,9 +143,12 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="rounded-full h-12 w-full text-base font-semibold hover:scale-[1.02] active:scale-[0.97] transition-all duration-150"
+              className="relative rounded-full h-12 w-full text-base font-semibold hover:scale-[1.02] active:scale-[0.97] transition-all duration-150"
             >
               {loading ? "Signing in..." : "Sign In"}
+              {lastLogin === "email" && (
+                <Badge variant={"outline"} className="absolute bg-white -top-3 -right-1">Last used</Badge>
+              )}
             </Button>
           </form>
 
@@ -153,19 +166,27 @@ export default function LoginPage() {
             <Button
               onClick={handleGoogle}
               variant="outline"
-              className="rounded-full h-12 px-6 flex items-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition"
+              className="relative rounded-full h-12 px-6 flex items-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition"
             >
               <Image src="/google.svg" alt="Google" width={20} height={20} />
               <span className="hidden md:block">Sign in with Google</span>
+
+              {lastLogin === "google" && (
+                <Badge className="absolute -top-3 -right-1">Last used</Badge>
+              )}
             </Button>
 
             <Button
               onClick={handleDiscordLogin}
               variant="outline"
-              className="rounded-full h-12 px-6 flex items-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition"
+              className="relative rounded-full h-12 px-6 flex items-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition"
             >
               <Image src="/discord.svg" alt="Discord" width={20} height={20} />
               <span className="hidden md:block">Sign in with Discord</span>
+
+              {lastLogin === "discord" && (
+                <Badge className="absolute -top-3 -right-1">Last used</Badge>
+              )}
             </Button>
           </div>
         </div>

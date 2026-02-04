@@ -168,14 +168,8 @@ export default async function TransactionDetailPage({ params }: { params: Promis
               </AlertDialogCancel>
 
               <AlertDialogAction>
-                <form
-                  action={deleteTransaction.bind(
-                    null,
-                    transaction.id,
-                    transaction.partyId || ""
-                  )}
-                >
-                  <Button className="rounded-full bg-red-600 hover:bg-red-700">
+                <form action={deleteTransaction.bind(null, transaction.id, transaction.partyId || "")}>
+                  <Button type="submit">
                     Yes, delete
                   </Button>
                 </form>

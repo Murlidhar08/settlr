@@ -28,6 +28,7 @@ WORKDIR /app
 ENV NODE_ENV="production"
 ENV DATABASE_URL="postgresql://user:pass@localhost:5432/settlr"
 ENV NEXT_PUBLIC_APP_NAME="Settlr"
+ENV NEXT_PUBLIC_APP_DESCRIPTION="Settlr for managing personal finance"
 ENV BETTER_AUTH_SECRET="build-secret"
 ENV BETTER_AUTH_URL="auth-url"
 ENV SMTP_HOST="<mail.example.com>"

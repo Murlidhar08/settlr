@@ -10,8 +10,10 @@ async function main() {
       name: 'Dev User',
       contactNo: "9998887776",
       address: "Sample Address, Dev Enviroment, Settlr",
-      image: "https://i.pravatar.cc/300",
-      twoFactorEnabled: false
+      image: null,
+      twoFactorEnabled: false,
+      banned: false,
+      role: "admin"
     },
   });
 

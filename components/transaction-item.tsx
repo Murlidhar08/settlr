@@ -52,7 +52,7 @@ const TransactionItem = ({
             className={`text-base font-bold lg:text-lg ${isIn ? "text-emerald-600" : "text-rose-600"
               }`}
           >
-            {`${isIn ? "+" : "-"}₹${amount}`}
+            {amount}
           </p>
         </div>
       </Card>

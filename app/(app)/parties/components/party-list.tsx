@@ -3,13 +3,15 @@
 // Packages
 import { useEffect, useState } from "react";
 import { PartyType } from "@/lib/generated/prisma/enums";
+
 // Action
 import { getPartyList } from "@/actions/parties.actions";
+
 // componets
 import { PartyItem } from "./party-item";
+
 // Types
 import { PartyRes } from "@/types/party/PartyRes";
-
 
 interface PartyListProp {
   partyType: PartyType
@@ -38,6 +40,12 @@ const PartyList = ({ partyType }: PartyListProp) => {
           />
         )
       })}
+
+      {!partyLst?.length && (
+        <p className="text-sm text-slate-500">
+          No {partyType == "CUSTOMER" ? "customer" : "supplier"} yet
+        </p>
+      )}
     </>
   )
 }

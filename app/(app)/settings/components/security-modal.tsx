@@ -69,7 +69,7 @@ const SecurityModal = ({ email, isTwoFactorEnabled }: PopupSheetProps) => {
 
       <SheetContent
         side={"right"}
-        className="flex h-full w-full max-w-full flex-col p-0 sm:max-w-xl"
+        className="flex h-full w-full max-w-full flex-col p-0 sm:max-w-xl!"
       >
         {/* ================================================== */}
         {/* HEADER */}

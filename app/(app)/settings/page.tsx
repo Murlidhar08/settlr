@@ -277,7 +277,7 @@ export default function SettingsPage() {
                     variant={theme === ThemeMode.AUTO ? "secondary" : "ghost"}
                     size="sm"
                     className={cn(
-                      "gap-1 rounded-lg text-xs font-semibold",
+                      "gap-1 rounded-lg text-xs font-semibold hover:bg-white hover:shadow",
                       theme === ThemeMode.AUTO && "bg-background shadow"
                     )}
                     onClick={async () => {
@@ -293,7 +293,7 @@ export default function SettingsPage() {
                     variant={theme === ThemeMode.LIGHT ? "secondary" : "ghost"}
                     size="sm"
                     className={cn(
-                      "gap-1 rounded-lg text-xs font-semibold",
+                      "gap-1 rounded-lg text-xs font-semibold hover:bg-white hover:shadow",
                       theme === ThemeMode.LIGHT && "bg-background shadow"
                     )}
                     onClick={async () => {
@@ -309,8 +309,8 @@ export default function SettingsPage() {
                     variant={theme === ThemeMode.DARK ? "secondary" : "ghost"}
                     size="sm"
                     className={cn(
-                      "gap-1 rounded-lg text-xs font-semibold",
-                      theme === ThemeMode.DARK && "bg-background shadow"
+                      "gap-1 rounded-lg text-xs font-semibold hover:bg-white hover:shadow",
+                      theme === ThemeMode.DARK && "bg-background"
                     )}
                     onClick={async () => {
                       setTheme(ThemeMode.DARK);

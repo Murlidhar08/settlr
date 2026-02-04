@@ -3,6 +3,8 @@
 import { format, isToday, isYesterday } from "date-fns";
 import { TransactionItem } from "@/components/transaction-item";
 import { TransactionRes } from "@/types/transaction/TransactionData";
+import { formatAmount } from "@/utility/transaction";
+import { useUserConfig } from "@/components/providers/user-config-provider";
 
 interface transactionListProp {
   transactions: TransactionRes[]
@@ -45,9 +47,17 @@ function TransactionGroup({ label, children }: { label: string; children: React.
 }
 
 const TransactionList = ({ transactions }: transactionListProp) => {
+  const { currency } = useUserConfig();
   return (
     <div className="flex flex-col gap-4 px-1">
+      {/* No Records */}
+      {!transactions?.length && (
+        <p className="text-sm text-slate-500">
+          No transactions yet
+        </p>
+      )}
 
+      {/* List Of All Transactions */}
       {transactions &&
         Object.entries(groupTransactionsByDate(transactions))
           .map(([label, transactions]) => (
@@ -58,7 +68,7 @@ const TransactionList = ({ transactions }: transactionListProp) => {
                   transactionId={transaction.id}
                   title={transaction.description || ""}
                   subtitle={format(transaction.date, "hh:mm a")}
-                  amount={String(transaction.amount)}
+                  amount={formatAmount(transaction.amount, currency, true, transaction.direction)}
                   type={transaction.direction}
                   mode={transaction.mode}
                 />
