@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner"
+import type { Viewport } from 'next'
 
 // Style
 import "./globals.css";
@@ -27,11 +28,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#F3EFE0"
+}
+
 export const metadata: Metadata = {
   title: envClient.NEXT_PUBLIC_APP_NAME,
   description: envClient.NEXT_PUBLIC_APP_DESCRIPTION,
   manifest: "/manifest.json",
-  themeColor: "#F3EFE0",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
