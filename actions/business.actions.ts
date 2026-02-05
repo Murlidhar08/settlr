@@ -59,3 +59,20 @@ export async function switchBusiness(businessId: string, redirectTo?: string | n
     return { success: false, error: "Internal Server Error" };
   }
 }
+
+export async function getBusinessList() {
+  const session = await getUserSession();
+
+  if (!session) {
+    console.error("User is not logged in.")
+    return null;
+  }
+
+  return await prisma.business?.findMany({
+    select: {
+      id: true,
+      name: true
+    },
+    where: { ownerId: session?.user.id }
+  });
+}

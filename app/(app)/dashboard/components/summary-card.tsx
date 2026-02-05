@@ -65,11 +65,10 @@ export default async function SummaryCard() {
           <PiggyBank className="h-6 w-6 opacity-80" />
         </div>
 
-        <div
-          className={`relative z-10 mt-3 inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold ${netCash >= 0
-            ? "bg-emerald-500/20 text-emerald-300"
-            : "bg-rose-500/20 text-rose-300"
-            }`}
+        <div className={`relative z-10 mt-3 inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold ${netCash >= 0
+          ? "bg-emerald-500/20 text-emerald-300"
+          : "bg-rose-500/20 text-rose-300"
+          }`}
         >
           {netCash >= 0 ? (
             <MoveUpRight className="h-3 w-3" />

@@ -9,7 +9,7 @@ import { useEffect, useState } from "react"
 import { Sheet, SheetContent, SheetFooter, SheetHeader } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { addBusiness, switchBusiness } from "@/actions/business.actions"
+import { addBusiness, getBusinessList, switchBusiness } from "@/actions/business.actions"
 
 /* ========================================================= */
 /* TYPES */
@@ -20,26 +20,30 @@ interface Business {
   name: string
 }
 
-interface SwitchBusinessProps {
-  businesses: Business[]
-  activeBusinessId: string
-}
-
 /* ========================================================= */
 /* COMPONENT */
 /* ========================================================= */
 
-export default function SwitchBusiness({ businesses, activeBusinessId }: SwitchBusinessProps) {
+export default function SwitchBusiness() {
   const [selectBusiness, setSelectBusiness] = useState<Business>();
   const [popOpen, setPopOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [businessName, setBusinessName] = useState("");
+  const [businesses, setBusinesses] = useState<Business[]>([]);
 
   useEffect(() => {
-    const activeBus = businesses.find((b) => b.id === activeBusinessId);
-    setSelectBusiness(activeBus);
-    switchBusiness(activeBusinessId);
-  }, [activeBusinessId, businesses])
+    // const activeBus = businesses.find((b) => b.id === activeBusinessId);
+    // setSelectBusiness(activeBus);
+    // switchBusiness(activeBusinessId);
+
+    // const selectedBusinessId = session.session?.activebusinessid || businesslist?.[0]?.id;
+    // await switchbusiness(selectedbusinessid);
+    getBusinessList()
+      .then((res) => {
+        setBusinesses(res as Business[]);
+      });
+
+  }, [])
 
   const handleAddBusiness = async () => {
     await addBusiness(businessName)
@@ -59,7 +63,7 @@ export default function SwitchBusiness({ businesses, activeBusinessId }: SwitchB
         <PopoverTrigger className="group flex min-w-0 items-center gap-2">
           <span>Business -</span>
           <span className="truncate text-xl font-semibold tracking-tight text-foreground">
-            {selectBusiness?.name ?? "Select Business"}
+            {selectBusiness?.name ?? "Loading..."}
           </span>
 
           <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
