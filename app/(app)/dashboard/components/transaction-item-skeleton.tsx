@@ -28,6 +28,8 @@ export function TransactionListSkeletons() {
       <TransactionItemSkeleton />
       <TransactionItemSkeleton />
       <TransactionItemSkeleton />
+      <TransactionItemSkeleton />
+      <TransactionItemSkeleton />
     </div>
   )
 }
