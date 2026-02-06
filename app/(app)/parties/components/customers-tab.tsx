@@ -12,10 +12,12 @@ import BalanceCard from "./balance-card";
 
 interface PartyListProp {
   partyType: PartyType;
+  search?: string;
 }
 
-export default async function CustomersTab({ partyType }: PartyListProp) {
-  const partiesPromise = getPartyList(partyType);
+export default async function CustomersTab({ partyType, search }: PartyListProp) {
+  const partiesPromise = getPartyList(partyType, search);
+
   const { currency } = await getUserConfig();
 
   return (

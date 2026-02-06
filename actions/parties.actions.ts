@@ -29,17 +29,26 @@ export async function addParties(partyData: PartyInput): Promise<boolean> {
   return true;
 }
 
-export async function getPartyList(type: PartyType): Promise<PartyRes[]> {
+export async function getPartyList(type: PartyType, search?: string): Promise<PartyRes[]> {
   const session = await getUserSession();
   const businessId = session?.session?.activeBusinessId;
   if (!businessId)
     return [];
 
+  const where: any = {
+    businessId,
+    type: { in: [type, PartyType.BOTH] },
+  };
+
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { contactNo: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
   const parties = await prisma.party.findMany({
-    where: {
-      businessId,
-      type: { in: [type, PartyType.BOTH] },
-    },
+    where,
     select: {
       id: true,
       name: true,
@@ -57,6 +66,7 @@ export async function getPartyList(type: PartyType): Promise<PartyRes[]> {
       createdAt: "desc"
     }
   });
+
 
   return parties.map((party) => {
     const pending = party.transactions.reduce(
