@@ -1,4 +1,4 @@
-function StatCardSkeleton() {
+function StatusCardSkeleton() {
   return (
     <div className="flex items-center justify-between rounded-2xl border p-5 shadow-sm bg-muted/40 border-border animate-pulse">
       <div className="space-y-6">
@@ -18,12 +18,12 @@ function StatCardSkeleton() {
   );
 }
 
-export function StatGridSkeletons() {
+export function StatusGridSkeletons() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <StatCardSkeleton />
-      <StatCardSkeleton />
-      <StatCardSkeleton />
+      <StatusCardSkeleton />
+      <StatusCardSkeleton />
+      <StatusCardSkeleton />
     </div>
   )
 }

@@ -8,6 +8,9 @@ import { formatAmount } from "@/utility/transaction";
 export default async function RecentTransaction() {
   const recentTransactions = await getRecentTransactions();
 
+  // Temp
+  await new Promise((resolve, reject) => setTimeout(resolve, 3000));
+
   // ---------------------
   // Functions
   const getTransactionTitle = (description: string | null, direction: TransactionDirection, partyName?: string) => {
@@ -31,38 +34,28 @@ export default async function RecentTransaction() {
   }
 
   return (
-    <section className="flex-1 pt-6 md:px-6">
-      <div className="flex items-center justify-between pb-3">
-        <h2 className="text-lg font-bold">Recent Transactions</h2>
-        <button className="text-sm text-slate-500 hover:text-[#2C3E50] transition">
-          View All
-        </button>
-      </div>
+    <div className="space-y-3">
+      {recentTransactions.length === 0 && (
+        <p className="text-sm text-slate-500">
+          No transactions yet
+        </p>
+      )}
 
-      {/* List of transactions */}
-      <div className="space-y-3">
-        {recentTransactions.length === 0 && (
-          <p className="text-sm text-slate-500">
-            No transactions yet
-          </p>
-        )}
+      {recentTransactions.map((tx) => {
+        const positive = tx.direction === TransactionDirection.IN;
 
-        {recentTransactions.map((tx) => {
-          const positive = tx.direction === TransactionDirection.IN;
-
-          return (
-            <TransactionItem
-              key={tx.id}
-              id={tx.id}
-              icon={getTransactionIcon(tx.direction, tx.party?.name)}
-              title={getTransactionTitle(tx.description, tx.direction, tx.party?.name)}
-              meta={`${format(tx.date, "dd MMM")} • ${tx.mode}${tx.party?.name ? ` • ${tx.party.name}` : ""}`}
-              amount={formatAmount(Number(tx.amount), undefined, true, tx.direction)}
-              positive={positive}
-            />
-          );
-        })}
-      </div>
-    </section>
+        return (
+          <TransactionItem
+            key={tx.id}
+            id={tx.id}
+            icon={getTransactionIcon(tx.direction, tx.party?.name)}
+            title={getTransactionTitle(tx.description, tx.direction, tx.party?.name)}
+            meta={`${format(tx.date, "dd MMM")} • ${tx.mode}${tx.party?.name ? ` • ${tx.party.name}` : ""}`}
+            amount={formatAmount(Number(tx.amount), undefined, true, tx.direction)}
+            positive={positive}
+          />
+        );
+      })}
+    </div>
   );
 }

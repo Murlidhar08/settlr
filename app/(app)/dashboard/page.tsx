@@ -6,7 +6,8 @@ import SwitchBusiness from "./components/business-switch";
 // Actions
 import RecentTransaction from "./components/recent-transaction";
 import { Suspense } from "react";
-import { StatGridSkeletons } from "./components/stat-card-loading";
+import { StatusGridSkeletons } from "./components/status-card-loading";
+import { TransactionListSkeletons } from "./components/transaction-item-skeleton";
 
 /* ========================================================= */
 /* PAGE */
@@ -39,15 +40,27 @@ export default function Page() {
         </div>
 
         {/* Summary Cards */}
-        <Suspense fallback={<StatGridSkeletons />}>
+        <Suspense fallback={<StatusGridSkeletons />}>
           <SummaryCard />
         </Suspense>
 
 
         {/* Transactions */}
-        <Suspense fallback={"Loading Recent transaction..."}>
-          <RecentTransaction />
-        </Suspense>
+        <section className="flex-1 pt-6 md:px-6">
+          <div className="flex items-center justify-between pb-3">
+            <h2 className="text-lg font-bold">Recent Transactions</h2>
+            <button className="text-sm text-slate-500 hover:text-[#2C3E50] transition">
+              View All
+            </button>
+          </div>
+
+          <Suspense fallback={<TransactionListSkeletons />}>
+            <RecentTransaction />
+          </Suspense>
+        </section>
+
+        {/* Bottom Spacing */}
+        <div className="h-24" />
       </div>
     </div>
   );

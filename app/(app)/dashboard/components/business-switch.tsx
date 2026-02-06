@@ -9,7 +9,12 @@ import { useEffect, useState } from "react"
 import { Sheet, SheetContent, SheetFooter, SheetHeader } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { addBusiness, getBusinessList, switchBusiness } from "@/actions/business.actions"
+import {
+  addBusiness,
+  getBusinessList,
+  switchBusiness,
+} from "@/actions/business.actions"
+import { authClient } from "@/lib/auth-client"
 
 /* ========================================================= */
 /* TYPES */
@@ -25,54 +30,94 @@ interface Business {
 /* ========================================================= */
 
 export default function SwitchBusiness() {
-  const [selectBusiness, setSelectBusiness] = useState<Business>();
-  const [popOpen, setPopOpen] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [businessName, setBusinessName] = useState("");
-  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null)
+  const [businesses, setBusinesses] = useState<Business[]>([])
+  const [popOpen, setPopOpen] = useState(false)
+  const [open, setOpen] = useState(false)
+  const [businessName, setBusinessName] = useState("")
+
+  /* ========================================================= */
+  /* INIT: LOAD BUSINESSES + SESSION */
+  /* ========================================================= */
 
   useEffect(() => {
-    // const activeBus = businesses.find((b) => b.id === activeBusinessId);
-    // setSelectBusiness(activeBus);
-    // switchBusiness(activeBusinessId);
+    const init = async () => {
+      const [businessList, sessionRes] = await Promise.all([
+        getBusinessList(),
+        authClient.getSession(),
+      ])
 
-    // const selectedBusinessId = session.session?.activebusinessid || businesslist?.[0]?.id;
-    // await switchbusiness(selectedbusinessid);
-    getBusinessList()
-      .then((res) => {
-        setBusinesses(res as Business[]);
-      });
+      const list = businessList as Business[]
+      setBusinesses(list)
 
+      if (!list.length) return
+
+      const activeBusinessId =
+        sessionRes.data?.session?.activeBusinessId
+
+      const active =
+        list.find(b => b.id === activeBusinessId) ?? list[0]
+
+      setSelectedBusiness(active)
+
+      // ensure backend/session is in sync
+      await switchBusiness(active.id)
+    }
+
+    init()
   }, [])
 
-  const handleAddBusiness = async () => {
-    await addBusiness(businessName)
-    setPopOpen(false);
-    setOpen(false);
-  }
+  /* ========================================================= */
+  /* HANDLERS */
+  /* ========================================================= */
 
   const onChangeBusinessId = async (business: Business) => {
-    setSelectBusiness(business);
-    await switchBusiness(business.id);
-    setPopOpen(false);
+    setSelectedBusiness(business)
+    await switchBusiness(business.id)
+    setPopOpen(false)
   }
+
+  const handleAddBusiness = async () => {
+    if (!businessName.trim())
+      return
+
+    const newBusiness = await addBusiness(businessName)
+
+    // re-fetch list for consistency
+    const list = (await getBusinessList()) as Business[]
+    setBusinesses(list)
+
+    if (newBusiness?.id) {
+      const active = list.find(b => b.id === newBusiness.id)
+      if (active) {
+        setSelectedBusiness(active)
+        await switchBusiness(active.id)
+      }
+    }
+
+    setBusinessName("")
+    setOpen(false)
+    setPopOpen(false)
+  }
+
+  /* ========================================================= */
+  /* RENDER */
+  /* ========================================================= */
 
   return (
     <>
       <Popover open={popOpen} onOpenChange={setPopOpen}>
         <PopoverTrigger className="group flex min-w-0 items-center gap-2">
           <span>Business -</span>
-          <span className="truncate text-xl font-semibold tracking-tight text-foreground">
-            {selectBusiness?.name ?? "Loading..."}
+
+          <span className="truncate text-xl font-semibold tracking-tight">
+            {selectedBusiness?.name ?? "Loading..."}
           </span>
 
-          <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+          <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
         </PopoverTrigger>
 
-        <PopoverContent
-          align="start"
-          className="w-72 rounded-2xl p-2 shadow-xl"
-        >
+        <PopoverContent align="start" className="w-72 rounded-2xl p-2 shadow-xl">
           <AnimatePresence>
             <motion.div
               initial={{ opacity: 0, y: -4 }}
@@ -80,14 +125,13 @@ export default function SwitchBusiness() {
               exit={{ opacity: 0, y: -4 }}
               className="space-y-1"
             >
-              {/* Business List */}
-              {businesses.map((business) => {
-                const isActive = business.id === selectBusiness?.id
+              {businesses.map(business => {
+                const isActive = business.id === selectedBusiness?.id
 
                 return (
                   <button
                     key={business.id}
-                    onClick={() => { onChangeBusinessId(business) }}
+                    onClick={() => onChangeBusinessId(business)}
                     className={cn(
                       "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm transition",
                       isActive
@@ -101,24 +145,20 @@ export default function SwitchBusiness() {
                       {business.name}
                     </span>
 
-                    {isActive && (
-                      <Check className="h-4 w-4 shrink-0" />
-                    )}
+                    {isActive && <Check className="h-4 w-4" />}
                   </button>
                 )
               })}
 
-              {/* Divider */}
               <div className="my-2 h-px bg-border" />
 
-              {/* Add Business */}
               <Button
-                onClick={() => {
-                  setOpen(!open);
-                  setPopOpen(!popOpen)
-                }}
                 variant="ghost"
                 className="w-full justify-start gap-2 rounded-xl text-sm"
+                onClick={() => {
+                  setOpen(true)
+                  setPopOpen(false)
+                }}
               >
                 <Plus className="h-4 w-4" />
                 Add Business
@@ -126,28 +166,25 @@ export default function SwitchBusiness() {
             </motion.div>
           </AnimatePresence>
         </PopoverContent>
-      </Popover >
+      </Popover>
+
+      {/* ===================================================== */}
+      {/* ADD BUSINESS SHEET */}
+      {/* ===================================================== */}
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="right"
-          className="flex h-full w-full max-w-full flex-col p-0 sm:max-w-xl"
+          className="flex h-full w-full max-w-md flex-col p-0"
         >
-          {/* ================================================== */}
-          {/* HEADER */}
-          {/* ================================================== */}
-          <SheetHeader className="sticky top-0 z-10 flex-row items-center justify-between border-b bg-background px-6 py-4">
+          <SheetHeader className="border-b px-6 py-4">
             <div className="flex items-center gap-2">
               <Building2 className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-semibold">Add Business</h2>
             </div>
           </SheetHeader>
 
-          {/* ================================================== */}
-          {/* BODY */}
-          {/* ================================================== */}
           <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
-            {/* Business Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Business name</Label>
               <Input
@@ -160,23 +197,16 @@ export default function SwitchBusiness() {
             </div>
           </div>
 
-          {/* ================================================== */}
-          {/* FOOTER */}
-          {/* ================================================== */}
-          <SheetFooter className="sticky bottom-0 border-t bg-background px-6 py-4">
+          <SheetFooter className="border-t px-6 py-4">
             <div className="flex w-full gap-3">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setOpen(false)}
-              >
+              <Button variant="outline" className="flex-1" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
 
               <Button
-                onClick={handleAddBusiness}
                 className="flex-1"
-                disabled={!businessName?.trim()}
+                onClick={handleAddBusiness}
+                disabled={!businessName.trim()}
               >
                 Create Business
               </Button>

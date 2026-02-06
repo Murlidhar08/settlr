@@ -69,7 +69,7 @@ const SecurityModal = ({ email, isTwoFactorEnabled }: PopupSheetProps) => {
 
       <SheetContent
         side={"right"}
-        className="flex h-full w-full max-w-full flex-col p-0 sm:max-w-xl!"
+        className="w-screen! max-w-none! h-screen sm:w-full! sm:max-w-md! sm:h-full flex flex-col p-0 pb-[env(safe-area-inset-bottom)]"
       >
         {/* ================================================== */}
         {/* HEADER */}
@@ -144,17 +144,11 @@ const SecurityModal = ({ email, isTwoFactorEnabled }: PopupSheetProps) => {
         {/* FOOTER */}
         {/* ================================================== */}
         <SheetFooter className="sticky bottom-0 border-t bg-background px-6 py-4">
-          <div className="flex w-full gap-3">
-            {/* Close button */}
-            <SheetClose >
-              <Button
-                variant="outline"
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-            </SheetClose>
-          </div>
+          <SheetClose>
+            <Button variant="outline" className="w-full">
+              Close
+            </Button>
+          </SheetClose>
         </SheetFooter>
       </SheetContent >
     </Sheet >

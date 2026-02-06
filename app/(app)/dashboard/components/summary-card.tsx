@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { getUserSession } from "@/lib/auth"
 import { TransactionDirection, PaymentMode } from "@/lib/generated/prisma/enums"
 import { MoveDownLeft, MoveUpRight, PiggyBank } from "lucide-react"
-import StatCard from "./stat-card"
+import StatCard from "./status-card"
 import { formatAmount } from "@/utility/transaction"
 import { getUserConfig } from "@/lib/user-config"
 
@@ -21,6 +21,9 @@ export default async function SummaryCard() {
       mode: true,
     },
   })
+
+  // Temp
+  await new Promise((resolve, reject) => setTimeout(resolve, 3000));
 
   let cashIn = 0
   let cashOut = 0

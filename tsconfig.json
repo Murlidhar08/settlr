@@ -37,7 +37,7 @@
     "**/*.mts",
     "components/sidebar.tsx",
     "app/(app)/dashboard/components/BottomNav.tsx",
-    "app/(app)/dashboard/components/stat-card.tsx",
+    "app/(app)/dashboard/components/status-card.tsx",
     "app/(app)/dashboard/components/transaction-item.tsx"
   ],
   "exclude": [

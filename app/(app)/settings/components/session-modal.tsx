@@ -62,7 +62,7 @@ const SessionModal = ({
 
       <SheetContent
         side="right"
-        className="flex h-full w-full max-w-full flex-col p-0 sm:max-w-xl!"
+        className="w-screen! max-w-none! h-screen sm:w-full! sm:max-w-md! sm:h-full flex flex-col p-0 pb-[env(safe-area-inset-bottom)]"
       >
         {/* ================================================== */}
         {/* HEADER */}

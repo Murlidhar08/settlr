@@ -16,7 +16,7 @@ export async function addBusiness(name: string) {
     return null;
   }
 
-  await prisma.business.create({
+  const newBusiness = await prisma.business.create({
     data: {
       name: name,
       ownerId: session.user.id
@@ -24,7 +24,7 @@ export async function addBusiness(name: string) {
   });
 
   revalidatePath("/dashboard")
-  return true;
+  return newBusiness;
 }
 
 export async function switchBusiness(businessId: string, redirectTo?: string | null) {
