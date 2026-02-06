@@ -15,6 +15,10 @@ import {
   Moon,
   Sun,
   Laptop,
+  Link2Icon,
+  LockKeyhole,
+  KeyRoundIcon,
+  Trash2Icon,
 } from "lucide-react";
 import {
   Avatar,
@@ -37,18 +41,10 @@ import { signOut } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
-import { getCredientialAccounts, getAppVersion, getListSessions, upsertUserSettings } from "@/actions/user-settings.actions";
+import { getAppVersion, upsertUserSettings } from "@/actions/user-settings.actions";
 import { useSession } from "@/lib/auth-client";
-import { Session } from "@/lib/generated/prisma/client";
-import { SecurityModal } from "./components/security-modal";
-import { SessionModal } from "./components/session-modal";
-import { LinkAccountModal } from "./components/link-account-modal";
-import { DangerModal } from "./components/danger-modal";
-import { auth } from "@/lib/auth";
 import { getInitials } from "@/utility/party";
 import { useUserConfig } from "@/components/providers/user-config-provider";
-
-type userAccount = Awaited<ReturnType<typeof auth.api.listUserAccounts>>[number]
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -60,63 +56,34 @@ export default function SettingsPage() {
   const [paymentMode, setPaymentMode] = useState<PaymentMode>(userConfig.defaultPayment);
   const [theme, setTheme] = useState<ThemeMode>(userConfig.theme);
 
-  const [sessionsList, setSessionsList] = useState<Session[]>([])
-  const [currAccount, setCurrAccount] = useState<userAccount[]>([])
   const [version, setVersion] = useState<string>("Pending ...");
 
   const initialized = useRef(false);
 
-  // 2. Sync state when session loads
   useEffect(() => {
     if (isPending) return;
     if (initialized.current) return;
 
-    getListSessions()
-      .then(res => {
-        if (!res) return
-        setSessionsList(res as Session[])
-      })
-
-    getCredientialAccounts()
-      .then(res => {
-        if (!res) return
-        setCurrAccount(res as userAccount[])
-      })
-
-    getAppVersion()
-      .then(res => {
-        setVersion(res);
-      })
-
+    getAppVersion().then(res => setVersion(res));
     initialized.current = true;
   }, [isPending, session]);
 
   if (isPending)
-    return <h1>Loading ...</h1>;
+    return <SettingsSkeleton />;
 
-  // ----------
-  // Const
   const currencyLabel: Record<Currency, string> = {
     USD: "USD ($)",
     INR: "INR (₹)",
     EUR: "EUR (€)",
   };
 
-  // -------------
-  // Handle Logout
   const handleLogout = async () => {
     try {
       await signOut();
-
       toast.success("Logged out successfully");
-
-      // small delay so toast is visible before navigation
-      setTimeout(() => {
-        router.replace("/login");
-      }, 300);
+      setTimeout(() => router.replace("/login"), 300);
     } catch (error) {
       toast.error("Failed to logout");
-      console.error(error);
     }
   };
 
@@ -144,12 +111,8 @@ export default function SettingsPage() {
           </Avatar>
 
           <div className="flex-1">
-            <p className="font-bold text-lg">
-              {session?.user?.name ?? "Unknown"}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {session?.user?.email ?? "Unknown"}
-            </p>
+            <p className="font-bold text-lg">{session?.user?.name ?? "Unknown"}</p>
+            <p className="text-sm text-muted-foreground">{session?.user?.email ?? "Unknown"}</p>
           </div>
           <ChevronRight className="text-muted-foreground" />
         </motion.div>
@@ -161,11 +124,8 @@ export default function SettingsPage() {
               value={currency}
               onValueChange={(value) => {
                 if (!value) return
-
                 const v = value as Currency
                 setCurrency(v)
-
-                // fire-and-forget async side-effect
                 upsertUserSettings({ currency: v })
               }}
             >
@@ -179,7 +139,6 @@ export default function SettingsPage() {
                   </SelectItem>
                 ))}
               </SelectContent>
-
             </Select>
           </Row>
 
@@ -188,12 +147,8 @@ export default function SettingsPage() {
               value={dateFormat}
               onValueChange={(value) => {
                 if (!value) return
-
                 setDateFormat(value)
-
-                void upsertUserSettings({
-                  dateFormat: value,
-                })
+                void upsertUserSettings({ dateFormat: value })
               }}
             >
               <SelectTrigger className="w-35">
@@ -211,13 +166,9 @@ export default function SettingsPage() {
               value={paymentMode}
               onValueChange={(value) => {
                 if (!value) return
-
                 const v = value as PaymentMode
                 setPaymentMode(v)
-
-                void upsertUserSettings({
-                  defaultPayment: v,
-                })
+                void upsertUserSettings({ defaultPayment: v })
               }}
             >
               <SelectTrigger className="w-30">
@@ -225,9 +176,7 @@ export default function SettingsPage() {
               </SelectTrigger>
               <SelectContent>
                 {Object.values(PaymentMode).map((mode) => (
-                  <SelectItem key={mode} value={mode}>
-                    {mode}
-                  </SelectItem>
+                  <SelectItem key={mode} value={mode}>{mode}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -236,34 +185,34 @@ export default function SettingsPage() {
 
         {/* SECURITY */}
         <Section title="Security">
-          {/* Link Account */}
-          <LinkAccountModal
-            currentAccounts={currAccount}
+          <NavigationRow
+            icon={Link2Icon}
+            label="Link Account"
+            onClick={() => router.push("/settings/link-account" as any)}
           />
-
-          {/* Security */}
-          <SecurityModal
-            email={session?.user.email ?? ""}
-            isTwoFactorEnabled={session?.user?.twoFactorEnabled ?? false}
+          <NavigationRow
+            icon={LockKeyhole}
+            label="Security"
+            onClick={() => router.push("/settings/security" as any)}
           />
-
-          {/* Sessions */}
-          <SessionModal
-            sessions={sessionsList}
-            currentSessionToken={session?.session.token}
+          <NavigationRow
+            icon={KeyRoundIcon}
+            label="Session Management"
+            onClick={() => router.push("/settings/session-management" as any)}
           />
-
-          {/* Danger */}
-          <DangerModal />
+          <NavigationRow
+            icon={Trash2Icon}
+            label="Danger Zone"
+            labelClassName="text-destructive"
+            iconContainerClassName="bg-destructive/10 text-destructive"
+            onClick={() => router.push("/settings/danger" as any)}
+          />
         </Section>
 
         {/* APPEARANCE */}
         <Section title="Appearance">
           <div className="flex items-center justify-between px-4 h-16 w-full">
-            <motion.div
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center justify-between h-16 gap-4 flex-1"
-            >
+            <div className="flex items-center justify-between h-16 gap-4 flex-1">
               <div className="flex items-center gap-4">
                 <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
                   <PaintbrushIcon size={16} />
@@ -272,58 +221,41 @@ export default function SettingsPage() {
               </div>
 
               <div className="flex gap-1 bg-muted rounded-xl p-1">
-                <div className="flex gap-1 bg-muted rounded-xl p-1">
-                  <Button
-                    variant={theme === ThemeMode.AUTO ? "secondary" : "ghost"}
-                    size="sm"
-                    className={cn(
-                      "gap-1 rounded-lg text-xs font-semibold hover:bg-white hover:shadow",
-                      theme === ThemeMode.AUTO && "bg-background shadow"
-                    )}
-                    onClick={async () => {
-                      setTheme(ThemeMode.AUTO);
-                      await upsertUserSettings({ theme: ThemeMode.AUTO });
-                    }}
-                  >
-                    <Laptop size={16} />
-                    Auto
-                  </Button>
-
-                  <Button
-                    variant={theme === ThemeMode.LIGHT ? "secondary" : "ghost"}
-                    size="sm"
-                    className={cn(
-                      "gap-1 rounded-lg text-xs font-semibold hover:bg-white hover:shadow",
-                      theme === ThemeMode.LIGHT && "bg-background shadow"
-                    )}
-                    onClick={async () => {
-                      setTheme(ThemeMode.LIGHT);
-                      await upsertUserSettings({ theme: ThemeMode.LIGHT });
-                    }}
-                  >
-                    <Sun size={16} />
-                    Light
-                  </Button>
-
-                  <Button
-                    variant={theme === ThemeMode.DARK ? "secondary" : "ghost"}
-                    size="sm"
-                    className={cn(
-                      "gap-1 rounded-lg text-xs font-semibold hover:bg-white hover:shadow",
-                      theme === ThemeMode.DARK && "bg-background"
-                    )}
-                    onClick={async () => {
-                      setTheme(ThemeMode.DARK);
-                      await upsertUserSettings({ theme: ThemeMode.DARK });
-                    }}
-                  >
-                    <Moon size={16} />
-                    Dark
-                  </Button>
-                </div>
-
+                <Button
+                  variant={theme === ThemeMode.AUTO ? "secondary" : "ghost"}
+                  size="sm"
+                  className={cn("gap-1 rounded-lg text-xs font-semibold", theme === ThemeMode.AUTO && "bg-background shadow")}
+                  onClick={async () => {
+                    setTheme(ThemeMode.AUTO);
+                    await upsertUserSettings({ theme: ThemeMode.AUTO });
+                  }}
+                >
+                  <Laptop size={16} /> Auto
+                </Button>
+                <Button
+                  variant={theme === ThemeMode.LIGHT ? "secondary" : "ghost"}
+                  size="sm"
+                  className={cn("gap-1 rounded-lg text-xs font-semibold", theme === ThemeMode.LIGHT && "bg-background shadow")}
+                  onClick={async () => {
+                    setTheme(ThemeMode.LIGHT);
+                    await upsertUserSettings({ theme: ThemeMode.LIGHT });
+                  }}
+                >
+                  <Sun size={16} /> Light
+                </Button>
+                <Button
+                  variant={theme === ThemeMode.DARK ? "secondary" : "ghost"}
+                  size="sm"
+                  className={cn("gap-1 rounded-lg text-xs font-semibold", theme === ThemeMode.DARK && "bg-background shadow")}
+                  onClick={async () => {
+                    setTheme(ThemeMode.DARK);
+                    await upsertUserSettings({ theme: ThemeMode.DARK });
+                  }}
+                >
+                  <Moon size={16} /> Dark
+                </Button>
               </div>
-            </motion.div>
+            </div>
           </div>
         </Section>
 
@@ -363,6 +295,54 @@ export default function SettingsPage() {
     </div >
   );
 }
+
+function SettingsSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <Header title="Settings" />
+      <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6">
+        <div className="h-24 w-full animate-pulse rounded-2xl bg-muted" />
+        <div className="space-y-4">
+          <div className="h-4 w-24 animate-pulse bg-muted rounded" />
+          <div className="h-48 w-full animate-pulse rounded-2xl bg-muted" />
+        </div>
+        <div className="space-y-4">
+          <div className="h-4 w-24 animate-pulse bg-muted rounded" />
+          <div className="h-64 w-full animate-pulse rounded-2xl bg-muted" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NavigationRow({
+  icon: Icon,
+  label,
+  onClick,
+  labelClassName,
+  iconContainerClassName
+}: {
+  icon: any,
+  label: string,
+  onClick: () => void,
+  labelClassName?: string,
+  iconContainerClassName?: string
+}) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className="w-full flex items-center gap-4 px-4 h-16 text-left"
+    >
+      <div className={cn("h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center", iconContainerClassName)}>
+        <Icon size={16} />
+      </div>
+      <p className={cn("flex-1 font-semibold", labelClassName)}>{label}</p>
+      <ChevronRight className="text-muted-foreground" />
+    </motion.button>
+  );
+}
+
 
 /* ---------------- components ---------------- */
 
