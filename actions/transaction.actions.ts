@@ -92,3 +92,73 @@ export async function getRecentTransactions() {
     },
   });
 }
+
+export async function getCashbookTransactions(filters: {
+  category?: string;
+  search?: string;
+  date?: string;
+}) {
+  const session = await getUserSession();
+  const businessId = session?.session.activeBusinessId || "";
+
+  const where: any = {
+    businessId,
+    partyId: null, // Cashbook transactions are those without a party
+  };
+
+  // Category filter (Cash/Online)
+  if (filters.category === "Cash") {
+    where.mode = "CASH";
+  } else if (filters.category === "Online") {
+    where.mode = { not: "CASH" };
+  }
+
+  // Date filter (defaults to today if specified in the logic)
+  if (filters.date) {
+    const startOfDay = new Date(filters.date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(filters.date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    where.date = {
+      gte: startOfDay,
+      lte: endOfDay,
+    };
+  }
+
+  // Search filter (description or amount)
+  if (filters.search) {
+    const searchNum = parseFloat(filters.search);
+    where.OR = [
+      { description: { contains: filters.search, mode: "insensitive" } },
+      !isNaN(searchNum) ? { amount: { equals: searchNum } } : undefined,
+    ].filter(Boolean);
+  }
+
+  const transactions = await prisma.transaction.findMany({
+    where,
+    orderBy: [
+      { date: "desc" },
+      { createdAt: "desc" },
+    ],
+  });
+
+  let totalIn = 0;
+  let totalOut = 0;
+
+  transactions.forEach((tx) => {
+    const amount = Number(tx.amount);
+    if (tx.direction === "IN") totalIn += amount;
+    else totalOut += amount;
+  });
+
+  return {
+    transactions: transactions.map(transaction => ({
+      ...transaction,
+      amount: Number(transaction.amount)
+    })),
+    totalIn,
+    totalOut,
+  };
+}
+
