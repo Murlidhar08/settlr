@@ -83,9 +83,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
 
       {/* Top App Bar */}
       <BackHeaderClient
-        partyId={partyId}
-        title={partyDetails?.name}
-        description={partyDetails?.type}
+        party={partyDetails}
       />
 
       {/* Main Content */}

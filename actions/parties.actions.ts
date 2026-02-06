@@ -77,3 +77,55 @@ export async function getPartyList(type: PartyType): Promise<PartyRes[]> {
     };
   });
 }
+export async function updateParty(partyId: string, partyData: Partial<PartyInput>): Promise<boolean> {
+  const session = await getUserSession();
+
+  if (!session || !session.session.activeBusinessId) {
+    return false;
+  }
+
+  await prisma.party.update({
+    where: {
+      id: partyId,
+      businessId: session.session.activeBusinessId
+    },
+    data: {
+      name: partyData.name,
+      contactNo: partyData.contactNo,
+      type: partyData.type,
+    },
+  });
+
+  revalidatePath("/parties");
+  revalidatePath(`/parties/${partyId}`);
+  return true;
+}
+
+export async function deleteParty(partyId: string): Promise<boolean> {
+  const session = await getUserSession();
+
+  if (!session || !session.session.activeBusinessId) {
+    return false;
+  }
+
+  // Cascading delete is handled by code to be safe, 
+  // or you can rely on DB schema if onDelete: Cascade is set.
+  // We'll do it manually to ensure all associated transactions are gone.
+  await prisma.$transaction([
+    prisma.transaction.deleteMany({
+      where: {
+        partyId: partyId,
+        businessId: session.session.activeBusinessId
+      }
+    }),
+    prisma.party.delete({
+      where: {
+        id: partyId,
+        businessId: session.session.activeBusinessId
+      }
+    })
+  ]);
+
+  revalidatePath("/parties");
+  return true;
+}
