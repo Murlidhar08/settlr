@@ -7,11 +7,15 @@ import { BackHeader } from "@/components/back-header"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { useRouter } from "next/navigation"
+import { authClient } from "@/lib/auth-client"
+import { cn } from "@/lib/utils"
 import {
     getBusinessList,
     addBusiness,
     updateBusiness,
-    deleteBusiness
+    deleteBusiness,
+    switchBusiness
 } from "@/actions/business.actions"
 import { toast } from "sonner"
 import {
@@ -31,7 +35,9 @@ interface Business {
 }
 
 export default function BusinessPage() {
+    const router = useRouter()
     const [businesses, setBusinesses] = useState<Business[]>([])
+    const [activeId, setActiveId] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [editingId, setEditingId] = useState<string | null>(null)
     const [editName, setEditName] = useState("")
@@ -41,14 +47,30 @@ export default function BusinessPage() {
 
     const fetchBusinesses = async () => {
         setIsLoading(true)
-        const list = await getBusinessList()
+        const [list, sessionRes] = await Promise.all([
+            getBusinessList(),
+            authClient.getSession()
+        ])
+
         setBusinesses(list as Business[] || [])
+        setActiveId(sessionRes.data?.session?.activeBusinessId || null)
         setIsLoading(false)
     }
 
     useEffect(() => {
         fetchBusinesses()
     }, [])
+
+    const handleSwitch = async (id: string) => {
+        if (editingId) return;
+        try {
+            await switchBusiness(id)
+            router.push("/dashboard")
+            toast.success("Active business switched")
+        } catch (error) {
+            toast.error("Failed to switch business")
+        }
+    }
 
     const handleAdd = async () => {
         if (!newName.trim()) return
@@ -154,13 +176,24 @@ export default function BusinessPage() {
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: index * 0.05 }}
                             >
-                                <Card className="p-4 flex flex-row items-center justify-between group hover:border-primary/50 transition-colors shadow-sm">
+                                <Card
+                                    className={cn(
+                                        "p-4 flex flex-row items-center justify-between group transition-all shadow-sm cursor-pointer border-2",
+                                        activeId === business.id
+                                            ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                            : "hover:border-primary/50"
+                                    )}
+                                    onClick={() => handleSwitch(business.id)}
+                                >
                                     <div className="flex items-center gap-4 flex-1">
-                                        <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center text-primary">
+                                        <div className={cn(
+                                            "h-12 w-12 rounded-2xl flex items-center justify-center transition-colors",
+                                            activeId === business.id ? "bg-primary text-white" : "bg-muted text-primary"
+                                        )}>
                                             <Building2 size={24} />
                                         </div>
                                         {editingId === business.id ? (
-                                            <div className="flex gap-2 flex-1 max-w-md">
+                                            <div className="flex gap-2 flex-1 max-w-md" onClick={(e) => e.stopPropagation()}>
                                                 <Input
                                                     value={editName}
                                                     onChange={(e) => setEditName(e.target.value)}
@@ -172,8 +205,15 @@ export default function BusinessPage() {
                                                 <Button size="icon" variant="ghost" onClick={() => setEditingId(null)} className="h-10 w-10 shrink-0 rounded-xl"><X size={18} /></Button>
                                             </div>
                                         ) : (
-                                            <div>
-                                                <h4 className="text-xl font-bold tracking-tight">{business.name}</h4>
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="text-xl font-bold tracking-tight">{business.name}</h4>
+                                                    {activeId === business.id && (
+                                                        <span className="flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-white shadow-sm">
+                                                            <Check size={10} /> Active
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">Business ID: #{business.id}</p>
                                             </div>
                                         )}
@@ -185,7 +225,8 @@ export default function BusinessPage() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-colors"
-                                                onClick={() => {
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
                                                     setEditingId(business.id)
                                                     setEditName(business.name)
                                                 }}
@@ -196,7 +237,10 @@ export default function BusinessPage() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-10 w-10 rounded-xl hover:bg-rose-100 hover:text-rose-600 transition-colors"
-                                                onClick={() => setDeleteId(business.id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setDeleteId(business.id)
+                                                }}
                                             >
                                                 <Trash2 size={18} />
                                             </Button>
