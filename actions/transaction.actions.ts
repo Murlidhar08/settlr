@@ -162,3 +162,58 @@ export async function getCashbookTransactions(filters: {
   };
 }
 
+export async function getPartyStatement(partyId: string, filters: {
+  mode?: string;
+  direction?: string;
+  startDate?: string;
+  endDate?: string;
+}) {
+  const session = await getUserSession();
+  const businessId = session?.session.activeBusinessId || "";
+
+  const where: any = {
+    businessId,
+    partyId,
+  };
+
+  // Mode filter
+  if (filters.mode === "Cash") {
+    where.mode = "CASH";
+  } else if (filters.mode === "Online") {
+    where.mode = { not: "CASH" };
+  }
+
+  // Direction filter
+  if (filters.direction === "IN" || filters.direction === "OUT") {
+    where.direction = filters.direction;
+  }
+
+  // Date range filter
+  if (filters.startDate || filters.endDate) {
+    where.date = {};
+    if (filters.startDate) {
+      const start = new Date(filters.startDate);
+      start.setHours(0, 0, 0, 0);
+      where.date.gte = start;
+    }
+    if (filters.endDate) {
+      const end = new Date(filters.endDate);
+      end.setHours(23, 59, 59, 999);
+      where.date.lte = end;
+    }
+  }
+
+  const transactions = await prisma.transaction.findMany({
+    where,
+    orderBy: { date: "desc" },
+  });
+
+  const party = await prisma.party.findUnique({
+    where: { id: partyId },
+  });
+
+  return {
+    party,
+    transactions: transactions.map(tx => ({ ...tx, amount: Number(tx.amount) })),
+  };
+}
