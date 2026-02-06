@@ -60,6 +60,63 @@ export async function switchBusiness(businessId: string, redirectTo?: string | n
   }
 }
 
+export async function updateBusiness(id: string, name: string) {
+  if (!name) throw new Error("Business name is required");
+
+  const session = await getUserSession();
+  if (!session) return null;
+
+  const updated = await prisma.business.update({
+    where: {
+      id: id,
+      ownerId: session.user.id // Security check
+    },
+    data: { name }
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/business");
+  return updated;
+}
+
+export async function deleteBusiness(id: string) {
+  const session = await getUserSession();
+  if (!session) return null;
+
+  // Check if it's the only business - optional but recommended
+  const count = await prisma.business.count({
+    where: { ownerId: session.user.id }
+  });
+
+  if (count <= 1) {
+    throw new Error("You must have at least one business.");
+  }
+
+  await prisma.business.delete({
+    where: {
+      id: id,
+      ownerId: session.user.id // Security check
+    }
+  });
+
+  // If the deleted business was active, switch to another one
+  if (session.session.activeBusinessId === id) {
+    const other = await prisma.business.findFirst({
+      where: { ownerId: session.user.id }
+    });
+    if (other) {
+      await prisma.session.update({
+        where: { id: session.session.id },
+        data: { activeBusinessId: other.id }
+      });
+    }
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/business");
+  return { success: true };
+}
+
 export async function getBusinessList() {
   const session = await getUserSession();
 
@@ -76,3 +133,4 @@ export async function getBusinessList() {
     where: { ownerId: session?.user.id }
   });
 }
+
