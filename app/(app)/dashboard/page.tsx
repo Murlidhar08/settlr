@@ -33,10 +33,7 @@ export default function Page() {
       {/* Store */}
       <div className="px-4">
         <div className="mb-4">
-          <SwitchBusiness
-          // businesses={businessList}
-          // activeBusinessId={selectedBusinessId}
-          />
+          <SwitchBusiness />
         </div>
 
         {/* Summary Cards */}

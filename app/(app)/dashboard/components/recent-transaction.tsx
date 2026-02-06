@@ -8,9 +8,6 @@ import { formatAmount } from "@/utility/transaction";
 export default async function RecentTransaction() {
   const recentTransactions = await getRecentTransactions();
 
-  // Temp
-  await new Promise((resolve, reject) => setTimeout(resolve, 3000));
-
   // ---------------------
   // Functions
   const getTransactionTitle = (description: string | null, direction: TransactionDirection, partyName?: string) => {

@@ -22,9 +22,6 @@ export default async function SummaryCard() {
     },
   })
 
-  // Temp
-  await new Promise((resolve, reject) => setTimeout(resolve, 3000));
-
   let cashIn = 0
   let cashOut = 0
   let receivable = 0
