@@ -9,15 +9,12 @@ import { PartyType } from "@/lib/generated/prisma/enums";
 import CustomersTab from "./components/customers-tab";
 import { LoadingSuspense } from "@/components/loading-suspense";
 
-export default async function Parties() {
+export default function Parties() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <Header title="Parties" />
 
-      {/* Main content */}
       <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6">
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
           <Input
@@ -26,7 +23,6 @@ export default async function Parties() {
           />
         </div>
 
-        {/* Tabs */}
         <div className="flex justify-center md:justify-start">
           <Tabs defaultValue="customers" className="w-full">
             <TabsList className="h-28 rounded-full transition-all duration-300 w-86 md:w-96 lg:w-96">

@@ -1,11 +1,8 @@
 "use client";
 
 // Packages
-import { useEffect, useState } from "react";
+import { use } from "react";
 import { PartyType } from "@/lib/generated/prisma/enums";
-
-// Action
-import { getPartyList } from "@/actions/parties.actions";
 
 // componets
 import { PartyItem } from "./party-item";
@@ -15,16 +12,11 @@ import { PartyRes } from "@/types/party/PartyRes";
 
 interface PartyListProp {
   partyType: PartyType
+  promise: Promise<PartyRes[]>
 }
 
-const PartyList = ({ partyType }: PartyListProp) => {
-  const [partyLst, setPartyLst] = useState<PartyRes[]>([]);
-
-  useEffect(() => {
-    if (!partyType) return;
-
-    getPartyList(partyType).then((res: PartyRes[]) => setPartyLst(res));
-  }, [partyType]);
+const PartyList = ({ partyType, promise }: PartyListProp) => {
+  const partyLst = use(promise);
 
   return (
     <>
@@ -51,3 +43,4 @@ const PartyList = ({ partyType }: PartyListProp) => {
 }
 
 export { PartyList }
+
