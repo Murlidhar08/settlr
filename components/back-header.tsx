@@ -89,7 +89,11 @@ const BackHeader = ({
               <DropdownMenuItem
                 key={index}
                 onClick={item.onClick}
-                className={item.destructive ? "text-destructive focus:text-destructive" : ""}
+                className={
+                  item.destructive
+                    ? "text-destructive focus:text-destructive"
+                    : ""
+                }
               >
                 {item.icon && <span className="mr-2">{item.icon}</span>}
                 {item.label}
@@ -97,6 +101,7 @@ const BackHeader = ({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+
       ) : (
         <div className="w-10" /> // spacing placeholder
       )}

@@ -8,18 +8,7 @@ import { BackHeader } from "@/components/back-header"
 import { FooterButtons } from "@/components/footer-buttons"
 import { Button } from "@/components/ui/button"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { deleteTransaction } from "@/actions/transaction.actions"
+import { DeleteTransactionButton } from "./components/delete-transaction-button"
 
 export default async function TransactionDetailPage({ params }: { params: Promise<{ transactionId: string }> }) {
   const transactionId = (await params).transactionId;
@@ -142,41 +131,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
       {/* BOTTOM ACTIONS */}
       <FooterButtons>
         {/* DELETE */}
-        <AlertDialog>
-          <AlertDialogTrigger>
-            <Button
-              variant="outline"
-              size="lg"
-              className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase text-red-600 border-red-200 shadow-lg shadow-primary-600/30 transition-all hover:shadow-xl hover:-translate-y-0.5 hover:text-red-600 active:translate-y-0"
-            >
-              <Trash2 className="mr-2 h-5 w-5" />
-              Delete
-            </Button>
-          </AlertDialogTrigger>
-
-          <AlertDialogContent className="rounded-2xl">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete transaction?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-
-            <AlertDialogFooter>
-              <AlertDialogCancel className="rounded-full">
-                Cancel
-              </AlertDialogCancel>
-
-              <AlertDialogAction>
-                <form action={deleteTransaction.bind(null, transaction.id, transaction.partyId || "")}>
-                  <Button type="submit">
-                    Yes, delete
-                  </Button>
-                </form>
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <DeleteTransactionButton transaction={transaction} />
 
         {/* EDIT */}
         <AddTransactionModal

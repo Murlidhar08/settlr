@@ -94,9 +94,6 @@ export default async function CustomersTab({ partyType }: PartyListProp) {
       {/* List of party Items */}
       <PartyList partyType={partyType} />
 
-      {/* Add Party */}
-      {/* <AddPartiesModal type={partyType} /> */}
-
       <FooterButtons>
         <AddPartiesModal type={partyType}>
           <Button size="lg" className="px-12 flex-1 h-14 rounded-full font-semibold uppercase bg-primary text-white shadow-lg shadow-rose-600/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">

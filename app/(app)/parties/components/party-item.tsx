@@ -2,15 +2,7 @@
 
 import { useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { EllipsisVertical, Pencil, Trash2 } from "lucide-react"
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { useUserConfig } from "@/components/providers/user-config-provider";
 
 import { getInitials } from "@/utility/party"
@@ -45,46 +37,9 @@ const PartyItem = ({
 
   const status = isSettled ? "Settled" : isAdvance ? "Advance" : "Due"
 
-  const handleEdit = () => {
-    // open edit modal OR navigate
-    console.log("Edit party", id)
-  }
-
-  const handleDelete = () => {
-    // open confirmation dialog
-    console.log("Delete party", id)
-  }
-
   return (
     <>
       <div className="flex items-center gap-3 rounded-2xl border bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-        {/* Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <button
-              onClick={(e) => e.stopPropagation()}
-              className="rounded-md p-1 text-muted-foreground hover:bg-muted"
-            >
-              <EllipsisVertical className="h-5 w-5" />
-            </button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent align="start" className="w-40">
-            <DropdownMenuItem onClick={handleEdit}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit Party
-            </DropdownMenuItem>
-
-            <DropdownMenuItem
-              onClick={handleDelete}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Party
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
         {/* Main Content */}
         <div
           onClick={() => router.push(`/parties/${id}`)}

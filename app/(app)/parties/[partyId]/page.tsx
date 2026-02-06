@@ -3,7 +3,6 @@ import { ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react'
 
 // Components
 import { Input } from '@/components/ui/input'
-import { BackHeader } from '@/components/back-header';
 import { QuickActions } from './components/quick-action';
 import { BalanceCard } from './components/balance-card';
 
@@ -17,6 +16,7 @@ import { AddTransactionModal } from '@/components/transaction/add-transaction-mo
 import { Button } from '@/components/ui/button';
 import { getUserConfig } from '@/lib/user-config';
 import { getCurrencySymbol } from '@/utility/transaction';
+import BackHeaderClient from './components/back-header-client';
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;
@@ -82,10 +82,10 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
     <div className="relative mx-auto min-h-screen max-w-full bg-background pb-28 lg:pb-16">
 
       {/* Top App Bar */}
-      <BackHeader
+      <BackHeaderClient
+        partyId={partyId}
         title={partyDetails?.name}
         description={partyDetails?.type}
-        backUrl='/parties'
       />
 
       {/* Main Content */}

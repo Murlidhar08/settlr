@@ -12,6 +12,7 @@ import { getUserSession } from "@/lib/auth";
 import { ThemeMode } from "@/lib/generated/prisma/enums";
 import { ThemeProvider } from "@/components/theme-provider";
 import { envClient } from "@/lib/env.client";
+import { ConfirmProvider } from "@/components/providers/confirm-provider";
 
 const nunitoSans = Nunito_Sans({
   variable: '--font-sans',
@@ -60,15 +61,17 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="en" className={nunitoSans.variable} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background ${theme}`}>
-        <ThemeProvider theme={theme}>
-          {children}
+        <ConfirmProvider>
+          <ThemeProvider theme={theme}>
+            {children}
 
-          {/* Toast Container */}
-          <Toaster
-            position="top-right"
-            expand={false}
-          />
-        </ThemeProvider>
+            {/* Toast Container */}
+            <Toaster
+              position="top-right"
+              expand={false}
+            />
+          </ThemeProvider>
+        </ConfirmProvider>
       </body>
     </html>
   );
