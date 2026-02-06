@@ -58,15 +58,22 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="en" className={nunitoSans.variable} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}>
-        <ConfirmProvider>
-          {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ConfirmProvider>
+            {children}
 
-          {/* Toast Container */}
-          <Toaster
-            position="top-right"
-            expand={false}
-          />
-        </ConfirmProvider>
+            {/* Toast Container */}
+            <Toaster
+              position="top-right"
+              expand={false}
+            />
+          </ConfirmProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

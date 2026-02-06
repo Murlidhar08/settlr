@@ -2,15 +2,26 @@
 
 import { useForm } from "react-hook-form"
 import { useRouter } from "next/navigation"
+import { motion, Variants } from "framer-motion"
+import { KeyRound } from "lucide-react"
+
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { LoadingSwap } from "@/components/ui/loading-swap"
 import { authClient } from "@/lib/auth-client"
 import { toast } from "sonner"
 
 type TotpFormValues = {
   code: string
 }
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 300, damping: 24 } as any,
+  },
+};
 
 export function TotpForm() {
   const router = useRouter()
@@ -26,6 +37,7 @@ export function TotpForm() {
       { code: values.code },
       {
         onSuccess: () => {
+          toast.success("Identity verified successfully!")
           router.push("/")
         },
         onError: (error) => {
@@ -36,33 +48,48 @@ export function TotpForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-1">
-        <label className="text-sm font-medium">
-          Authenticator code
+    <motion.form
+      variants={itemVariants}
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-6"
+    >
+      <div className="space-y-3">
+        <label className="text-sm font-bold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+          <KeyRound className="w-4 h-4" /> Authenticator Code
         </label>
-        <Input
-          {...register("code", {
-            required: "Code is required",
-            minLength: { value: 6, message: "Enter 6-digit code" },
-            maxLength: { value: 6, message: "Enter 6-digit code" },
-          })}
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          placeholder="123456"
-        />
+        <div className="relative group">
+          <Input
+            {...register("code", {
+              required: "Code is required",
+              minLength: { value: 6, message: "Enter 6-digit code" },
+              maxLength: { value: 6, message: "Enter 6-digit code" },
+            })}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="000 000"
+            className="h-14 rounded-2xl text-center text-2xl tracking-[0.5em] font-mono pl-4 pr-4 transition-all duration-300 bg-background border-muted-foreground/10 focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          />
+        </div>
         {errors.code && (
-          <p className="text-xs text-destructive">
+          <p className="text-xs font-medium text-destructive animate-bounce">
             {errors.code.message}
           </p>
         )}
       </div>
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
-        <LoadingSwap isLoading={isSubmitting}>
-          Verify & Continue
-        </LoadingSwap>
+      <Button
+        type="submit"
+        className="relative rounded-2xl h-14 w-full text-lg font-bold shadow-xl shadow-primary/10 hover:shadow-primary/25 transition-all duration-300 active:scale-[0.98]"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? (
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+            Verifying...
+          </div>
+        ) : "Verify & Continue"}
       </Button>
-    </form>
+    </motion.form>
   )
 }
+
