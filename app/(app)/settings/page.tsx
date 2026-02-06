@@ -48,13 +48,12 @@ import { useUserConfig } from "@/components/providers/user-config-provider";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const userConfig = useUserConfig()
+  const { theme, setTheme, ...userConfig } = useUserConfig();
   const { data: session, isPending } = useSession();
 
   const [currency, setCurrency] = useState<Currency>(userConfig.currency);
   const [dateFormat, setDateFormat] = useState(userConfig.dateFormat);
   const [paymentMode, setPaymentMode] = useState<PaymentMode>(userConfig.defaultPayment);
-  const [theme, setTheme] = useState<ThemeMode>(userConfig.theme);
 
   const [version, setVersion] = useState<string>("Pending ...");
 
@@ -87,211 +86,221 @@ export default function SettingsPage() {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header title="Settings" />
 
-      <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6"
+      >
         {/* USER */}
         <motion.div
+          variants={itemVariants}
           onClick={() => { router.push("/account") }}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileHover={{ y: -2 }}
           whileTap={{ scale: 0.98 }}
-          className="flex items-center gap-4 p-4 rounded-2xl bg-background border shadow-sm cursor-pointer"
+          className="flex items-center gap-4 p-5 rounded-3xl bg-card border shadow-sm cursor-pointer transition-shadow hover:shadow-md"
         >
-          <Avatar className="h-16 w-16 ring-2 ring-background transition-transform hover:scale-105">
-            <AvatarImage
-              src={session?.user?.image ?? undefined}
-              alt={session?.user?.name ?? "User avatar"}
-            />
-            <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
-              {getInitials(session?.user?.name)}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative group">
+            <Avatar className="h-16 w-16 ring-4 ring-background transition-transform duration-500 group-hover:scale-110">
+              <AvatarImage
+                src={session?.user?.image ?? undefined}
+                alt={session?.user?.name ?? "User avatar"}
+              />
+              <AvatarFallback className="bg-primary/10 text-primary font-black text-xl">
+                {getInitials(session?.user?.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute inset-0 rounded-full bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
+          </div>
 
           <div className="flex-1">
-            <p className="font-bold text-lg">{session?.user?.name ?? "Unknown"}</p>
-            <p className="text-sm text-muted-foreground">{session?.user?.email ?? "Unknown"}</p>
+            <p className="font-black text-xl tracking-tight">{session?.user?.name ?? "Unknown"}</p>
+            <p className="text-sm font-medium text-muted-foreground opacity-70">{session?.user?.email ?? "Unknown"}</p>
           </div>
-          <ChevronRight className="text-muted-foreground" />
+          <div className="h-10 w-10 rounded-full bg-muted/50 flex items-center justify-center">
+            <ChevronRight className="text-muted-foreground" size={20} />
+          </div>
         </motion.div>
 
         {/* GENERAL */}
-        <Section title="General Preferences">
-          <Row icon={DollarSign} label="Currency">
-            <Select
-              value={currency}
-              onValueChange={(value) => {
-                if (!value) return
-                const v = value as Currency
-                setCurrency(v)
-                upsertUserSettings({ currency: v })
-              }}
-            >
-              <SelectTrigger className="w-30">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.values(Currency).map((currency) => (
-                  <SelectItem key={currency} value={currency}>
-                    {currencyLabel[currency]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Row>
+        <motion.div variants={itemVariants}>
+          <Section title="General Preferences">
+            <Row icon={DollarSign} label="Currency">
+              <Select
+                value={currency}
+                onValueChange={(value) => {
+                  if (!value) return
+                  const v = value as Currency
+                  setCurrency(v)
+                  upsertUserSettings({ currency: v })
+                  toast.success(`Currency updated to ${v}`)
+                }}
+              >
+                <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl shadow-2xl">
+                  {Object.values(Currency).map((currency) => (
+                    <SelectItem key={currency} value={currency} className="rounded-lg font-medium">
+                      {currencyLabel[currency]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Row>
 
-          <Row icon={Calendar} label="Date Format">
-            <Select
-              value={dateFormat}
-              onValueChange={(value) => {
-                if (!value) return
-                setDateFormat(value)
-                void upsertUserSettings({ dateFormat: value })
-              }}
-            >
-              <SelectTrigger className="w-35">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
-                <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
-              </SelectContent>
-            </Select>
-          </Row>
+            <Row icon={Calendar} label="Date Format">
+              <Select
+                value={dateFormat}
+                onValueChange={(value) => {
+                  if (!value) return
+                  setDateFormat(value)
+                  void upsertUserSettings({ dateFormat: value })
+                  toast.success(`Date format updated`)
+                }}
+              >
+                <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl shadow-2xl">
+                  <SelectItem value="DD/MM/YYYY" className="rounded-lg font-medium">DD/MM/YYYY</SelectItem>
+                  <SelectItem value="MM/DD/YYYY" className="rounded-lg font-medium">MM/DD/YYYY</SelectItem>
+                </SelectContent>
+              </Select>
+            </Row>
 
-          <Row icon={CreditCard} label="Default Payment">
-            <Select
-              value={paymentMode}
-              onValueChange={(value) => {
-                if (!value) return
-                const v = value as PaymentMode
-                setPaymentMode(v)
-                void upsertUserSettings({ defaultPayment: v })
-              }}
-            >
-              <SelectTrigger className="w-30">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.values(PaymentMode).map((mode) => (
-                  <SelectItem key={mode} value={mode}>{mode}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Row>
-        </Section>
-
-        {/* SECURITY */}
-        <Section title="Security">
-          <NavigationRow
-            icon={Link2Icon}
-            label="Link Account"
-            onClick={() => router.push("/settings/link-account" as any)}
-          />
-          <NavigationRow
-            icon={LockKeyhole}
-            label="Security"
-            onClick={() => router.push("/settings/security" as any)}
-          />
-          <NavigationRow
-            icon={KeyRoundIcon}
-            label="Session Management"
-            onClick={() => router.push("/settings/session-management" as any)}
-          />
-          <NavigationRow
-            icon={Trash2Icon}
-            label="Danger Zone"
-            labelClassName="text-destructive"
-            iconContainerClassName="bg-destructive/10 text-destructive"
-            onClick={() => router.push("/settings/danger" as any)}
-          />
-        </Section>
+            <Row icon={CreditCard} label="Default Payment">
+              <Select
+                value={paymentMode}
+                onValueChange={(value) => {
+                  if (!value) return
+                  const v = value as PaymentMode
+                  setPaymentMode(v)
+                  void upsertUserSettings({ defaultPayment: v })
+                  toast.success(`Default payment updated to ${v}`)
+                }}
+              >
+                <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl shadow-2xl">
+                  {Object.values(PaymentMode).map((mode) => (
+                    <SelectItem key={mode} value={mode} className="rounded-lg font-medium capitalize">{mode.toLowerCase()}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Row>
+          </Section>
+        </motion.div>
 
         {/* APPEARANCE */}
-        <Section title="Appearance">
-          <div className="flex items-center justify-between px-4 h-16 w-full">
-            <div className="flex items-center justify-between h-16 gap-4 flex-1">
-              <div className="flex items-center gap-4">
-                <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                  <PaintbrushIcon size={16} />
+        <motion.div variants={itemVariants}>
+          <Section title="Appearance">
+            <div className="flex items-center justify-between px-5 h-20 w-full group">
+              <div className="flex items-center justify-between h-full gap-4 flex-1">
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center transition-transform group-hover:rotate-12">
+                    <PaintbrushIcon size={18} />
+                  </div>
+                  <p className="flex-1 font-bold text-base">Theme Mode</p>
                 </div>
-                <p className="flex-1 font-semibold">Theme</p>
-              </div>
 
-              <div className="flex gap-1 bg-muted rounded-xl p-1">
-                <Button
-                  variant={theme === ThemeMode.AUTO ? "secondary" : "ghost"}
-                  size="sm"
-                  className={cn("gap-1 rounded-lg text-xs font-semibold", theme === ThemeMode.AUTO && "bg-background shadow")}
-                  onClick={async () => {
-                    setTheme(ThemeMode.AUTO);
-                    await upsertUserSettings({ theme: ThemeMode.AUTO });
-                  }}
-                >
-                  <Laptop size={16} /> Auto
-                </Button>
-                <Button
-                  variant={theme === ThemeMode.LIGHT ? "secondary" : "ghost"}
-                  size="sm"
-                  className={cn("gap-1 rounded-lg text-xs font-semibold", theme === ThemeMode.LIGHT && "bg-background shadow")}
-                  onClick={async () => {
-                    setTheme(ThemeMode.LIGHT);
-                    await upsertUserSettings({ theme: ThemeMode.LIGHT });
-                  }}
-                >
-                  <Sun size={16} /> Light
-                </Button>
-                <Button
-                  variant={theme === ThemeMode.DARK ? "secondary" : "ghost"}
-                  size="sm"
-                  className={cn("gap-1 rounded-lg text-xs font-semibold", theme === ThemeMode.DARK && "bg-background shadow")}
-                  onClick={async () => {
-                    setTheme(ThemeMode.DARK);
-                    await upsertUserSettings({ theme: ThemeMode.DARK });
-                  }}
-                >
-                  <Moon size={16} /> Dark
-                </Button>
+                <div className="flex gap-1 bg-muted/50 rounded-2xl p-1.5 border-2 border-transparent focus-within:border-primary/10">
+                  {[
+                    { id: ThemeMode.AUTO, icon: Laptop, label: "Auto" },
+                    { id: ThemeMode.LIGHT, icon: Sun, label: "Light" },
+                    { id: ThemeMode.DARK, icon: Moon, label: "Dark" },
+                  ].map((mode) => (
+                    <Button
+                      key={mode.id}
+                      variant={theme === mode.id ? "secondary" : "ghost"}
+                      size="sm"
+                      className={cn(
+                        "gap-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all px-4 h-9",
+                        theme === mode.id && "bg-background shadow-lg scale-100 text-primary",
+                        theme !== mode.id && "opacity-60 hover:opacity-100"
+                      )}
+                      onClick={async () => {
+                        setTheme(mode.id);
+                        await upsertUserSettings({ theme: mode.id });
+                      }}
+                    >
+                      <mode.icon size={15} />
+                      <span className="hidden sm:inline">{mode.label}</span>
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </Section>
-
-        {/* DATA MANAGEMENT */}
-        {/* TODO: PENDING DATA BACKUP*/}
-        <div className="hidden">
-          <Section title="Data Management">
-            <ActionRow icon={CloudUpload} title="Backup Data" subtitle="Synced just now" />
-            <ActionRow icon={Download} title="Export Transactions" />
           </Section>
-        </div>
+        </motion.div>
 
-        {/* SUPPORT */}
-        {/* TODO: PENDING DATA BACKUP*/}
-        <div className="hidden">
-          <Section title="Support">
-            <LinkRow label="Help Center" />
-            <LinkRow label="Privacy Policy" />
+        {/* SECURITY */}
+        <motion.div variants={itemVariants}>
+          <Section title="Security & Privacy">
+            <NavigationRow
+              icon={Link2Icon}
+              label="Connected Accounts"
+              onClick={() => router.push("/settings/link-account" as any)}
+            />
+            <NavigationRow
+              icon={LockKeyhole}
+              label="Safety & Security"
+              onClick={() => router.push("/settings/security" as any)}
+            />
+            <NavigationRow
+              icon={KeyRoundIcon}
+              label="Active Sessions"
+              onClick={() => router.push("/settings/session-management" as any)}
+            />
+            <NavigationRow
+              icon={Trash2Icon}
+              label="Danger Zone"
+              labelClassName="text-rose-600"
+              iconContainerClassName="bg-rose-100 text-rose-600"
+              onClick={() => router.push("/settings/danger" as any)}
+            />
           </Section>
-        </div>
+        </motion.div>
 
         {/* LOGOUT */}
-        <motion.div whileTap={{ scale: 0.97 }}>
+        <motion.div variants={itemVariants} whileTap={{ scale: 0.98 }}>
           <Button
             onClick={handleLogout}
             variant="destructive"
-            className="w-full h-12 rounded-xl gap-2"
+            className="w-full h-14 rounded-2xl gap-3 font-black uppercase tracking-[0.2em] shadow-lg shadow-rose-200 dark:shadow-rose-950/20"
           >
-            <LogOut size={18} /> Log Out
+            <LogOut size={20} /> Log Out Account
           </Button>
         </motion.div>
 
-        <div className="text-center text-xs text-muted-foreground pt-10">
-          Build Version {version}
-        </div>
-      </div>
+        <motion.div
+          variants={itemVariants}
+          className="text-center space-y-2 opacity-50 pt-4"
+        >
+          <p className="text-[10px] font-black uppercase tracking-[0.3em]">Build Version {version}</p>
+          <p className="text-[9px] font-medium italic">© 2024 Settlr. All rights reserved.</p>
+        </motion.div>
+      </motion.div>
     </div >
   );
 }

@@ -55,24 +55,20 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const data = await getUserSession();
-  const theme = data?.session.userSettings.theme ?? ThemeMode.LIGHT;
-
   return (
     <html lang="en" className={nunitoSans.variable} suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background ${theme}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}>
         <ConfirmProvider>
-          <ThemeProvider theme={theme}>
-            {children}
+          {children}
 
-            {/* Toast Container */}
-            <Toaster
-              position="top-right"
-              expand={false}
-            />
-          </ThemeProvider>
+          {/* Toast Container */}
+          <Toaster
+            position="top-right"
+            expand={false}
+          />
         </ConfirmProvider>
       </body>
     </html>
   );
 }
+

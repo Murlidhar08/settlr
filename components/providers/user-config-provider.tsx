@@ -8,6 +8,7 @@ interface userSettings {
   dateFormat: string,
   defaultPayment: PaymentMode,
   theme: ThemeMode,
+  setTheme: (theme: ThemeMode) => void,
 }
 
 const UserConfigContext = createContext<userSettings | null>(null)
@@ -20,10 +21,22 @@ export const useUserConfig = () => {
   return ctx
 }
 
-export function UserConfigProvider({ config, children }: { config: userSettings, children: React.ReactNode }) {
+import { useState } from "react"
+import { ThemeProvider } from "@/components/theme-provider"
+
+export function UserConfigProvider({ config, children }: { config: Omit<userSettings, 'setTheme'>, children: React.ReactNode }) {
+  const [theme, setThemeState] = useState<ThemeMode>(config.theme)
+
+  const setTheme = (newTheme: ThemeMode) => {
+    setThemeState(newTheme)
+  }
+
   return (
-    <UserConfigContext.Provider value={config}>
-      {children}
+    <UserConfigContext.Provider value={{ ...config, theme, setTheme }}>
+      <ThemeProvider theme={theme}>
+        {children}
+      </ThemeProvider>
     </UserConfigContext.Provider>
   )
 }
+
