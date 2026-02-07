@@ -1,67 +1,28 @@
-import { Skeleton } from "@/components/ui/skeleton"
-import { BackHeader } from "@/components/back-header"
-import { FooterButtons } from "@/components/footer-buttons"
+import { BackHeader } from "@/components/back-header";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function TransactionDetailLoading() {
-  return (
-    <div className="min-h-screen bg-background">
-      <BackHeader title="Transaction Details" />
-
-      <main className="mx-auto max-w-4xl px-4 pb-36 pt-6 md:px-6">
-        <div className="space-y-10">
-          {/* STATUS */}
-          <section className="flex flex-col items-center text-center space-y-4">
-            <Skeleton className="h-20 w-20 rounded-full" />
-            <Skeleton className="h-6 w-56" />
-            <Skeleton className="h-4 w-40" />
-          </section>
-
-          {/* AMOUNT CARD */}
-          <section className="rounded-3xl border bg-card p-6 text-center space-y-4">
-            <Skeleton className="mx-auto h-4 w-24" />
-            <Skeleton className="mx-auto h-10 w-40" />
-            <Skeleton className="mx-auto h-6 w-32 rounded-full" />
-          </section>
-
-          {/* DETAILS */}
-          <section className="rounded-3xl border bg-card p-6 space-y-5">
-            <DetailRowSkeleton />
-            <Divider />
-
-            <DetailRowSkeleton />
-            <Divider />
-
-            <DetailRowSkeleton />
-            <Divider />
-
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-20 w-full rounded-xl" />
+export default function Loading() {
+    return (
+        <div className="min-h-screen bg-background">
+            <div className="sticky top-0 z-30 flex items-center justify-between bg-background/60 backdrop-blur-2xl px-6 py-5 border-b border-border/40">
+                <Skeleton className="h-11 w-11 rounded-2xl" />
+                <Skeleton className="h-8 w-48 rounded-lg" />
+                <div className="w-11" />
             </div>
-          </section>
+
+            <main className="mx-auto max-w-4xl px-4 pb-36 pt-12 md:px-6 space-y-12">
+                <div className="flex flex-col items-center space-y-4">
+                    <Skeleton className="h-24 w-24 rounded-full" />
+                    <Skeleton className="h-10 w-64" />
+                    <Skeleton className="h-4 w-48" />
+                </div>
+
+                <Skeleton className="h-48 w-full rounded-[2.5rem]" />
+
+                <div className="space-y-4">
+                    <Skeleton className="h-72 w-full rounded-[2.5rem]" />
+                </div>
+            </main>
         </div>
-      </main>
-
-      {/* BOTTOM ACTIONS */}
-      <FooterButtons>
-        <Skeleton className="h-14 flex-1 rounded-full" />
-        <Skeleton className="h-14 flex-1 rounded-full" />
-      </FooterButtons>
-    </div>
-  )
-}
-
-/* Helpers */
-
-function Divider() {
-  return <div className="h-px w-full bg-border" />
-}
-
-function DetailRowSkeleton() {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <Skeleton className="h-4 w-32" />
-      <Skeleton className="h-4 w-40" />
-    </div>
-  )
+    );
 }
