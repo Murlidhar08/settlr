@@ -101,7 +101,7 @@ export default function SignupPage() {
       >
 
         {/* LOGO TOP */}
-        <motion.div variants={itemVariants} className="flex items-center gap-3 mb-6 group cursor-pointer">
+        <motion.div variants={itemVariants as any} className="flex items-center gap-3 mb-6 group cursor-pointer">
           <div className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
             <Wallet className="w-6 h-6" />
           </div>
@@ -110,7 +110,7 @@ export default function SignupPage() {
 
         {/* CENTER Form */}
         <div className="flex flex-col justify-center max-w-md mx-auto w-full py-12 lg:py-0">
-          <motion.div variants={itemVariants} className="mb-8">
+          <motion.div variants={itemVariants as any} className="mb-8">
             <h2 className="text-3xl font-bold tracking-tight mb-3">
               Join Settlr
             </h2>
@@ -119,7 +119,7 @@ export default function SignupPage() {
             </p>
           </motion.div>
 
-          <motion.form variants={itemVariants} onSubmit={handleSubmit} className="space-y-5">
+          <motion.form variants={itemVariants as any} onSubmit={handleSubmit} className="space-y-5">
 
             <AnimatePresence mode="wait">
               {error && (
@@ -219,7 +219,7 @@ export default function SignupPage() {
         </div>
 
         {/* bottom link */}
-        <motion.p variants={itemVariants} className="text-center text-muted-foreground mt-12 font-medium">
+        <motion.p variants={itemVariants as any} className="text-center text-muted-foreground mt-12 font-medium">
           Already have an account?{" "}
           <Link href="/login" className="font-bold text-primary hover:text-primary/80 transition-colors">
             Sign In
@@ -232,13 +232,13 @@ export default function SignupPage() {
         initial={{ x: 100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="hidden lg:flex w-1/2 p-12 items-center justify-center bg-linear-to-br from-primary to-primary-foreground/10 relative overflow-hidden rounded-l-[4rem] shadow-2xl"
+        className="hidden lg:flex w-1/2 p-12 items-center justify-center bg-linear-to-br from-primary via-primary/90 to-primary/80 relative overflow-hidden rounded-l-[4rem] shadow-2xl"
       >
         {/* Animated Background Gradients */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-foreground/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary-foreground/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
-        <div className="relative z-10 text-center px-12 text-primary-foreground">
+        <div className="relative z-10 text-center px-12 text-white">
           <motion.div
             animate={{
               y: [0, -10, 0],
@@ -248,7 +248,7 @@ export default function SignupPage() {
               repeat: Infinity,
               ease: "easeInOut",
             }}
-            className="w-48 h-56 bg-white/10 backdrop-blur-2xl rounded-[3rem] flex flex-col items-center justify-center border border-white/20 shadow-2xl mx-auto mb-10 group"
+            className="w-48 h-56 bg-white/10 backdrop-blur-3xl rounded-[3rem] flex flex-col items-center justify-center border border-white/20 shadow-2xl mx-auto mb-10 group"
           >
             <ShieldCheck className="w-20 h-20 text-white group-hover:scale-110 transition-transform duration-300" />
           </motion.div>
@@ -257,7 +257,7 @@ export default function SignupPage() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-4xl font-bold mb-6 tracking-tight"
+            className="text-4xl font-bold mb-6 tracking-tight text-white"
           >
             Welcome to Settlr
           </motion.h2>
@@ -265,12 +265,13 @@ export default function SignupPage() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="text-white/80 leading-relaxed text-lg max-w-md mx-auto font-medium"
+            className="text-white/90 leading-relaxed text-lg max-w-md mx-auto font-medium"
           >
             Start managing your bookkeeping securely and collaboratively with ease.
           </motion.p>
         </div>
       </motion.div>
+
     </div>
   );
 }

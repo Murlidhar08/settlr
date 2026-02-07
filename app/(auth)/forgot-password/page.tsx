@@ -196,13 +196,13 @@ export default function ForgotPasswordPage() {
         initial={{ x: 100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="hidden lg:flex w-1/2 p-12 items-center justify-center bg-linear-to-br from-primary to-primary-foreground/10 relative overflow-hidden rounded-l-[4rem] shadow-2xl"
+        className="hidden lg:flex w-1/2 p-12 items-center justify-center bg-linear-to-br from-primary via-primary/90 to-primary/80 relative overflow-hidden rounded-l-[4rem] shadow-2xl"
       >
         {/* Animated Background Gradients */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-foreground/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary-foreground/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
-        <div className="relative z-10 text-center px-12 text-primary-foreground">
+        <div className="relative z-10 text-center px-12 text-white">
           <motion.div
             animate={{
               rotate: [0, 5, -5, 0],
@@ -212,15 +212,15 @@ export default function ForgotPasswordPage() {
               repeat: Infinity,
               ease: "easeInOut",
             }}
-            className="w-48 h-56 bg-white/10 backdrop-blur-2xl rounded-[3rem] flex flex-col items-center justify-center border border-white/20 shadow-2xl mx-auto mb-10"
+            className="w-48 h-56 bg-white/10 backdrop-blur-3xl rounded-[3rem] flex flex-col items-center justify-center border border-white/20 shadow-2xl mx-auto mb-10 group"
           >
-            <ShieldAlert className="w-20 h-20 text-white" />
+            <ShieldAlert className="w-20 h-20 text-white group-hover:scale-110 transition-transform duration-300" />
           </motion.div>
           <motion.h2
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-4xl font-bold mb-6 tracking-tight"
+            className="text-4xl font-bold mb-6 tracking-tight text-white"
           >
             Password recovery made simple.
           </motion.h2>
@@ -228,13 +228,14 @@ export default function ForgotPasswordPage() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="text-white/80 leading-relaxed text-lg max-w-md mx-auto font-medium"
+            className="text-white/90 leading-relaxed text-lg max-w-md mx-auto font-medium"
           >
             Settlr ensures secure & seamless identity recovery while keeping
             your bookkeeping data protected.
           </motion.p>
         </div>
       </motion.div>
+
     </div>
   );
 }

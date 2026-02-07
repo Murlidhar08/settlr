@@ -2,7 +2,6 @@
 
 import { useForm } from "react-hook-form"
 import { useRouter } from "next/navigation"
-import { motion, Variants } from "framer-motion"
 import { KeyRound } from "lucide-react"
 
 import { Input } from "@/components/ui/input"
@@ -13,15 +12,6 @@ import { toast } from "sonner"
 type TotpFormValues = {
   code: string
 }
-
-const itemVariants: Variants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 300, damping: 24 } as any,
-  },
-};
 
 export function TotpForm() {
   const router = useRouter()
@@ -48,8 +38,7 @@ export function TotpForm() {
   }
 
   return (
-    <motion.form
-      variants={itemVariants}
+    <form
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-6"
     >
@@ -89,7 +78,8 @@ export function TotpForm() {
           </div>
         ) : "Verify & Continue"}
       </Button>
-    </motion.form>
+    </form>
   )
 }
+
 

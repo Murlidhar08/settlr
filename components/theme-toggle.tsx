@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect, useState } from "react"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button"
 
 export function ThemeToggle() {
     const { theme, setTheme } = useTheme()
-    const [mounted, setMounted] = React.useState(false)
+    const [mounted, setMounted] = useState(false)
 
-    React.useEffect(() => {
+    useEffect(() => {
         setMounted(true)
     }, [])
 
@@ -40,9 +40,9 @@ export function ThemeToggle() {
                     className="flex items-center justify-center"
                 >
                     {theme === "light" ? (
-                        <Sun className="h-5 w-5 text-amber-500" />
+                        <Sun className="h-5 w-5 hover:text-amber-500" />
                     ) : (
-                        <Moon className="h-5 w-5 text-blue-400" />
+                        <Moon className="h-5 w-5 hover:text-blue-400" />
                     )}
                 </motion.div>
             </AnimatePresence>

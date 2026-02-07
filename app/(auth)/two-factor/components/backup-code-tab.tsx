@@ -2,7 +2,6 @@
 
 import { useForm } from "react-hook-form"
 import { useRouter } from "next/navigation"
-import { motion, Variants } from "framer-motion"
 import { ShieldCheck } from "lucide-react"
 
 import { Input } from "@/components/ui/input"
@@ -13,15 +12,6 @@ import { toast } from "sonner"
 type BackupCodeFormValues = {
   code: string
 }
-
-const itemVariants: Variants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 300, damping: 24 } as any,
-  },
-};
 
 export function BackupCodeTab() {
   const router = useRouter()
@@ -48,8 +38,7 @@ export function BackupCodeTab() {
   }
 
   return (
-    <motion.form
-      variants={itemVariants}
+    <form
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-6"
     >
@@ -86,7 +75,8 @@ export function BackupCodeTab() {
           </div>
         ) : "Verify Backup Code"}
       </Button>
-    </motion.form>
+    </form>
   )
 }
+
 

@@ -21,11 +21,18 @@ export const useUserConfig = () => {
   return ctx
 }
 
-import { useState } from "react"
-import { ThemeProvider } from "@/components/theme-provider"
+import { useState, useEffect } from "react"
+import { useTheme } from "next-themes"
 
 export function UserConfigProvider({ config, children }: { config: Omit<userSettings, 'setTheme'>, children: React.ReactNode }) {
   const [theme, setThemeState] = useState<ThemeMode>(config.theme)
+  const { setTheme: setNextTheme } = useTheme()
+
+  useEffect(() => {
+    if (theme) {
+      setNextTheme(theme.toLowerCase())
+    }
+  }, [theme, setNextTheme])
 
   const setTheme = (newTheme: ThemeMode) => {
     setThemeState(newTheme)
@@ -33,10 +40,9 @@ export function UserConfigProvider({ config, children }: { config: Omit<userSett
 
   return (
     <UserConfigContext.Provider value={{ ...config, theme, setTheme }}>
-      <ThemeProvider theme={theme}>
-        {children}
-      </ThemeProvider>
+      {children}
     </UserConfigContext.Provider>
   )
 }
+
 

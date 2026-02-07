@@ -8,9 +8,6 @@ import type { Viewport } from 'next'
 import "./globals.css";
 
 // Lib
-import { getUserSession } from "@/lib/auth";
-import { ThemeMode } from "@/lib/generated/prisma/enums";
-import { ThemeProvider } from "@/components/theme-provider";
 import { envClient } from "@/lib/env.client";
 import { ConfirmProvider } from "@/components/providers/confirm-provider";
 
@@ -54,6 +51,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { ThemeProvider } from "next-themes";
+
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={nunitoSans.variable} suppressHydrationWarning>
@@ -78,4 +77,5 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     </html>
   );
 }
+
 
