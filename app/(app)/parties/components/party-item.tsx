@@ -39,52 +39,55 @@ const PartyItem = ({
 
   return (
     <>
-      <div className="flex items-center gap-3 rounded-2xl border bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex items-center gap-3 rounded-[2rem] border bg-card p-5 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg hover:border-primary/20 active:scale-[0.99]">
         {/* Main Content */}
         <div
           onClick={() => router.push(`/parties/${id}`)}
-          className="flex flex-1 cursor-pointer items-center gap-4"
+          className="flex flex-1 cursor-pointer items-center gap-5"
         >
-          <Avatar className="h-12 w-12">
-            {avatarUrl ? (
-              <AvatarImage src={avatarUrl} alt={name} />
-            ) : (
-              <AvatarFallback
-                className="font-medium text-white"
-                style={{ backgroundColor: avatarColor }}
-              >
-                {getInitials(name)}
-              </AvatarFallback>
-            )}
-          </Avatar>
+          <div className="relative group">
+            <Avatar className="h-14 w-14 ring-2 ring-background shadow-sm transition-transform duration-500 group-hover:scale-110">
+              {avatarUrl ? (
+                <AvatarImage src={avatarUrl} alt={name} />
+              ) : (
+                <AvatarFallback
+                  className="font-black text-white text-lg"
+                  style={{ backgroundColor: avatarColor }}
+                >
+                  {getInitials(name)}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div className="absolute inset-0 rounded-full bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
+          </div>
 
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold">{name}</p>
+          <div className="min-w-0 flex-1 space-y-1">
+            <p className="truncate font-black text-lg tracking-tight group-hover:text-primary transition-colors">{name}</p>
             {subtitle && (
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="truncate text-[11px] font-medium text-muted-foreground uppercase tracking-widest opacity-70">
                 {subtitle}
               </p>
             )}
           </div>
 
-          <div className="text-right">
+          <div className="text-right flex flex-col items-end gap-1.5">
             <p
-              className={`font-mono font-bold ${isSettled
-                ? "text-muted-foreground"
+              className={`font-black text-lg tracking-tighter ${isSettled
+                ? "text-muted-foreground/60"
                 : isAdvance
-                  ? "text-emerald-600"
-                  : "text-rose-500"
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-rose-600 dark:text-rose-400"
                 }`}
             >
               {formatAmount(amount, currency)}
             </p>
 
             <span
-              className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${isSettled
-                ? "bg-gray-100 text-gray-500"
+              className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em] border ${isSettled
+                ? "bg-muted text-muted-foreground border-transparent"
                 : isAdvance
-                  ? "bg-emerald-100 text-emerald-600"
-                  : "bg-rose-100 text-rose-500"
+                  ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
+                  : "bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20"
                 }`}
             >
               {status}

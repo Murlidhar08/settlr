@@ -26,54 +26,53 @@ export default function CashSummary({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="mt-6 rounded-3xl bg-background p-6 shadow-sm border"
+      className="mt-6 rounded-[2.5rem] bg-card p-8 shadow-xs border border-border/50 relative overflow-hidden"
     >
-      <p className="text-center text-xs uppercase text-muted-foreground font-bold tracking-widest">
-        Total Cash Balance
+      <p className="text-center text-xs font-black uppercase text-muted-foreground tracking-[0.3em] opacity-70">
+        Aggregate Cash Balance
       </p>
 
       <motion.h2
         initial={{ scale: 0.9 }}
         animate={{ scale: 1 }}
         transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-        className={`mt-2 text-center text-4xl font-extrabold lg:text-5xl ${isPositive ? "text-emerald-600" : "text-rose-600"
+        className={`mt-3 text-center text-5xl font-black lg:text-6xl tracking-tighter ${isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
           }`}
       >
         ₹{formatAmount(Math.abs(cashBalance))}
       </motion.h2>
 
-      <div className="mt-8 grid grid-cols-2 gap-4">
+      <div className="mt-10 grid grid-cols-2 gap-4">
         {/* Total In */}
         <motion.div
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ y: -2 }}
           whileTap={{ scale: 0.98 }}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
-          className="rounded-2xl bg-emerald-50/50 p-4 text-center border border-emerald-100"
+          className="rounded-[2rem] bg-emerald-50/50 dark:bg-emerald-500/5 p-6 text-center border border-emerald-100 dark:border-emerald-500/10 shadow-sm"
         >
-          <p className="text-xl font-bold text-emerald-600">
+          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
             +₹{formatAmount(totalIn)}
           </p>
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total In</span>
+          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Total Inflow</span>
         </motion.div>
 
         {/* Total Out */}
         <motion.div
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ y: -2 }}
           whileTap={{ scale: 0.98 }}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
-          className="rounded-2xl bg-rose-50/50 p-4 text-center border border-rose-100"
+          className="rounded-[2rem] bg-rose-50/50 dark:bg-rose-500/5 p-6 text-center border border-rose-100 dark:border-rose-500/10 shadow-sm"
         >
-          <p className="text-xl font-bold text-rose-600">
+          <p className="text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight">
             -₹{formatAmount(totalOut)}
           </p>
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Out</span>
+          <span className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-60">Total Outflow</span>
         </motion.div>
       </div>
     </motion.div>
   )
 }
-

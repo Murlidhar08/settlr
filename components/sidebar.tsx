@@ -36,27 +36,27 @@ const Sidebar = () => {
       {/* ================= Desktop Sidebar ================= */}
       <aside
         className={clsx(
-          "hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:flex-col border-r bg-white dark:bg-slate-900",
+          "hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:flex-col border-r bg-sidebar text-sidebar-foreground border-sidebar-border",
           "transition-[width] duration-300 ease-in-out",
           collapsed ? "w-20" : "w-64"
 
         )}
       >
         {/* Header */}
-        <div className="flex items-center gap-3 border-b px-4 py-5">
-          <div className="h-10 w-10 shrink-0 rounded-xl bg-[#2C3E50] text-white flex items-center justify-center">
+        <div className="flex items-center gap-3 border-b border-sidebar-border px-4 py-5">
+          <div className="h-10 w-10 shrink-0 rounded-xl bg-sidebar-primary text-sidebar-primary-foreground flex items-center justify-center shadow-lg shadow-sidebar-primary/20">
             <Wallet className="h-5 w-5" />
           </div>
 
           {!collapsed && (
-            <span className="text-xl font-bold whitespace-nowrap transition-opacity duration-200">
+            <span className="text-xl font-black tracking-tight whitespace-nowrap transition-opacity duration-200">
               {envClient.NEXT_PUBLIC_APP_NAME}
             </span>
           )}
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto px-2 py-6 space-y-1">
           {NAV_ITEMS.map((item) => {
             const active = !!pathname?.includes(item.href);
 
@@ -73,19 +73,19 @@ const Sidebar = () => {
         </nav>
 
         {/* Collapse Toggle */}
-        <div className="border-t p-3">
+        <div className="border-sidebar-border border-t p-3">
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all active:scale-95"
           >
-            {collapsed ? <ChevronRight /> : <ChevronLeft />}
-            {!collapsed && <span className="text-sm">Collapse</span>}
+            {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            {!collapsed && <span className="text-sm font-bold uppercase tracking-widest text-[10px]">Collapse</span>}
           </button>
         </div>
       </aside>
 
       {/* ================= Mobile Bottom Nav ================= */}
-      <nav className="fixed bottom-0 z-50 w-full border-t bg-white dark:bg-slate-900 pb-safe lg:hidden">
+      <nav className="fixed bottom-0 z-50 w-full border-t border-sidebar-border bg-sidebar/80 backdrop-blur-xl pb-safe lg:hidden">
         <div className="flex h-20 items-center justify-around">
           {NAV_ITEMS.map((item) => {
             const active = !!pathname?.includes(item.href);
@@ -121,27 +121,24 @@ function DesktopNavItem({ icon, label, active, collapsed, onClick }: desktopNavP
     <button
       onClick={onClick}
       className={clsx(
-        "group relative flex items-center rounded-xl px-3 py-3 font-medium transition-all duration-200 w-full",
+        "group relative flex items-center rounded-xl px-3 py-3 font-bold transition-all duration-300 w-full",
         active
-          ? "bg-slate-200 text-[#2C3E50] dark:bg-slate-800"
-          : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800",
-        collapsed ? "justify-center" : "gap-3 justify-start"
+          ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+          : "text-muted-foreground hover:bg-sidebar-accent/15 hover:text-sidebar-foreground",
+        collapsed ? "justify-center" : "gap-4 justify-start"
       )}
     >
-      {/* Active indicator */}
-      <span
-        className={clsx(
-          "absolute left-0 h-6 w-1 rounded-r bg-[#2C3E50] transition-opacity",
-          active ? "opacity-100" : "opacity-0"
-        )}
-      />
-
-      <span className="transition-transform duration-200 group-hover:scale-110">
+      <span className={clsx(
+        "transition-transform duration-300 group-hover:scale-110",
+        active
+          ? "text-sidebar-accent-foreground"
+          : "text-muted-foreground group-hover:text-sidebar-foreground dark:text-sidebar-foreground/70"
+      )}>
         {icon}
       </span>
 
       {!collapsed && (
-        <span className={clsx("whitespace-nowrap", active && "font-semibold")}>
+        <span className={clsx("whitespace-nowrap text-sm", active && "tracking-wide")}>
           {label}
         </span>
       )}
@@ -162,14 +159,14 @@ function MobileNavItem({ icon, label, active, onClick }: MobileNavItemProps) {
     <button
       onClick={onClick}
       className={clsx(
-        "flex flex-col items-center gap-1 transition-all duration-200 active:scale-90",
-        active ? "text-[#2C3E50]" : "text-slate-400"
+        "flex flex-col items-center gap-1 transition-all duration-300 active:scale-90 px-4",
+        active ? "text-sidebar-primary" : "text-muted-foreground"
       )}
     >
-      <span className={clsx("transition-transform", active && "scale-110")}>
+      <span className={clsx("transition-all duration-300", active ? "scale-110 drop-shadow-[0_0_8px_rgba(var(--sidebar-primary),0.5)]" : "opacity-70")}>
         {icon}
       </span>
-      <span className="text-xs font-medium">{label}</span>
+      <span className={clsx("text-[10px] font-black uppercase tracking-tighter", active && "tracking-widest")}>{label}</span>
     </button>
   );
 }
