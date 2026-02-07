@@ -114,7 +114,7 @@ export default function SettingsPage() {
         {/* USER */}
         <motion.div
           variants={itemVariants}
-          onClick={() => { router.push("/account") }}
+          onClick={() => { router.push("/profile") }}
           whileHover={{ y: -2 }}
           whileTap={{ scale: 0.98 }}
           className="flex items-center gap-4 p-5 rounded-3xl bg-card border shadow-sm cursor-pointer transition-shadow hover:shadow-md"
@@ -289,7 +289,7 @@ export default function SettingsPage() {
             variant="destructive"
             className="w-full h-14 rounded-2xl gap-3 font-black uppercase tracking-[0.2em] shadow-lg shadow-rose-200 dark:shadow-rose-950/20"
           >
-            <LogOut size={20} /> Log Out Account
+            <LogOut size={20} /> Log Out
           </Button>
         </motion.div>
 

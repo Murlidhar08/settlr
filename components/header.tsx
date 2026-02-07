@@ -20,7 +20,7 @@ const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
   // ------------------
   // Hanlders
   const handleRedirect = () => {
-    router.push("/account")
+    router.push("/profile")
   }
 
   return (
