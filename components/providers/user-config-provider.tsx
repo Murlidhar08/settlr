@@ -28,9 +28,19 @@ export function UserConfigProvider({ config, children }: { config: Omit<userSett
   const [theme, setThemeState] = useState<ThemeMode>(config.theme)
   const { setTheme: setNextTheme } = useTheme()
 
+  // Sync state with server config when it updates
+  useEffect(() => {
+    setThemeState(config.theme)
+  }, [config.theme])
+
   useEffect(() => {
     if (theme) {
-      setNextTheme(theme.toLowerCase())
+      const themeMap: Record<ThemeMode, string> = {
+        [ThemeMode.AUTO]: 'system',
+        [ThemeMode.LIGHT]: 'light',
+        [ThemeMode.DARK]: 'dark',
+      }
+      setNextTheme(themeMap[theme])
     }
   }, [theme, setNextTheme])
 

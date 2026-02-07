@@ -4,6 +4,7 @@ import packageJson from "@/package.json"
 import { prisma } from "@/lib/prisma";
 import { auth, getUserSession } from "@/lib/auth";
 import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { UserSettingsInput } from "@/types/user/UserSettingsInput";
 
@@ -12,7 +13,7 @@ export async function upsertUserSettings(data: UserSettingsInput) {
   if (!session?.user?.id) throw new Error("Unauthorized");
   const userId = session.user.id;
 
-  return prisma.userSettings.upsert({
+  const result = await prisma.userSettings.upsert({
     where: { userId },
     create: {
       userId: userId,
@@ -25,6 +26,9 @@ export async function upsertUserSettings(data: UserSettingsInput) {
       ...data,
     },
   });
+
+  revalidatePath("/", "layout");
+  return result;
 }
 
 export async function getUserSettings() {

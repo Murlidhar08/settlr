@@ -1,12 +1,17 @@
-import { getUserSession } from "./auth"
+import { prisma } from "./prisma";
+import { getUserSession } from "./auth";
 import { Currency, PaymentMode, ThemeMode } from "./generated/prisma/enums";
 
 export async function getUserConfig() {
   const session = await getUserSession()
-  if (!session?.session?.userSettings)
+  if (!session?.user?.id)
     return getDefaultConfig();
 
-  return session.session.userSettings;
+  const userSettings = await prisma.userSettings.findUnique({
+    where: { userId: session.user.id }
+  });
+
+  return userSettings ?? getDefaultConfig();
 }
 
 export function getDefaultConfig() {
