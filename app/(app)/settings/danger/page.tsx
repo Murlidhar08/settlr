@@ -2,45 +2,56 @@
 
 import { useSession } from "@/lib/auth-client";
 import { DangerModalBody } from "../components/danger-modal-body";
-import { Header } from "@/components/header";
-import { ChevronLeft } from "lucide-react";
+import { BackHeader } from "@/components/back-header";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DangerPage() {
     const router = useRouter();
     const { isPending } = useSession();
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
     if (isPending) {
-        return (
-            <div className="min-h-screen bg-background">
-                <Header
-                    title="Danger Zone"
-                    leftAction={
-                        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                            <ChevronLeft className="h-5 w-5" />
-                        </Button>
-                    }
-                />
-                <div className="mx-auto max-w-4xl p-6 mt-6 space-y-4">
-                    <div className="h-40 w-full animate-pulse rounded-2xl bg-muted" />
-                </div>
-            </div>
-        );
+        return <DangerSkeleton />;
     }
 
     return (
-        <div className="min-h-screen bg-background">
-            <Header
+        <div className="min-h-screen bg-background pb-20">
+            <BackHeader
                 title="Danger Zone"
-                leftAction={
-                    <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                        <ChevronLeft className="h-5 w-5" />
-                    </Button>
-                }
+                backUrl="/settings"
             />
-            <div className="mx-auto max-w-4xl p-6 mt-6">
+
+            <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="mx-auto max-w-lg p-6 mt-4"
+            >
                 <DangerModalBody />
+            </motion.div>
+        </div>
+    );
+}
+
+function DangerSkeleton() {
+    return (
+        <div className="min-h-screen bg-background">
+            <BackHeader title="Danger Zone" />
+            <div className="mx-auto max-w-lg p-6 mt-6 space-y-8">
+                <div className="space-y-4">
+                    <Skeleton className="h-48 w-full rounded-[2.5rem]" />
+                </div>
             </div>
         </div>
     );

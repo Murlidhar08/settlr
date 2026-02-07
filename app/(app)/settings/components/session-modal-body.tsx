@@ -1,18 +1,23 @@
 'use client'
 
-import { KeyRoundIcon, LockKeyhole, Monitor, Smartphone, Trash2 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Monitor, Smartphone, Trash2, Globe, ShieldQuestion } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { Session } from 'better-auth'
 import { UAParser } from 'ua-parser-js'
 import { useRouter } from 'next/navigation'
 import { BetterAuthActionButton } from '@/components/auth/better-auth-action-button'
 import { authClient } from '@/lib/auth-client'
+import { cn } from '@/lib/utils'
 
 interface SessionModalBodyProps {
     sessions: Session[]
     currentSessionToken?: string
 }
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { opacity: 1, y: 0 }
+};
 
 export function SessionModalBody({
     sessions,
@@ -30,19 +35,23 @@ export function SessionModalBody({
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-10">
             {currentSession && (
-                <SessionCard session={currentSession} isCurrentSession />
+                <div className="space-y-4">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Currently Active</h3>
+                    <SessionCard session={currentSession} isCurrentSession />
+                </div>
             )}
 
             <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">Other Active Sessions</h3>
+                <div className="flex items-center justify-between ml-2">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">Other Devices</h3>
 
                     {otherSessions.length > 0 && (
                         <BetterAuthActionButton
                             size="sm"
-                            variant="destructive"
+                            variant="outline"
+                            className="rounded-xl px-4 font-bold border-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all text-[11px] uppercase tracking-wider"
                             action={revokeOtherSessions}
                         >
                             Revoke All
@@ -51,11 +60,12 @@ export function SessionModalBody({
                 </div>
 
                 {otherSessions.length === 0 ? (
-                    <Card>
-                        <CardContent className="py-8 text-center text-muted-foreground">
-                            No other active sessions
-                        </CardContent>
-                    </Card>
+                    <motion.div
+                        variants={itemVariants}
+                        className="p-8 text-center bg-card/50 rounded-[2rem] border border-dashed border-muted-foreground/20 text-muted-foreground"
+                    >
+                        <p className="text-sm font-medium">No other active sessions found</p>
+                    </motion.div>
                 ) : (
                     <div className="space-y-3">
                         {otherSessions.map(session => (
@@ -78,17 +88,28 @@ function SessionCard({
     const router = useRouter()
     const ua = session.userAgent ? UAParser(session.userAgent) : null
 
+    function getBrowserIcon() {
+        const type = ua?.device.type;
+        if (type === 'mobile') return <Smartphone size={22} />;
+        if (type === 'tablet') return <Smartphone size={22} />;
+        return <Monitor size={22} />;
+    }
+
     function deviceLabel() {
-        if (!ua) return 'Unknown Device'
-        if (!ua.browser.name && !ua.os.name) return 'Unknown Device'
-        if (!ua.browser.name) return ua.os.name
-        if (!ua.os.name) return ua.browser.name
-        return `${ua.browser.name}, ${ua.os.name}`
+        if (!ua) return 'Unknown Browser'
+        const browser = ua.browser.name || 'Web Browser';
+        const os = ua.os.name || 'Unknown OS';
+        return `${browser} on ${os}`;
     }
 
     function format(date: Date) {
         return new Intl.DateTimeFormat(undefined, {
             dateStyle: 'medium',
+        }).format(new Date(date))
+    }
+
+    function getTime(date: Date) {
+        return new Intl.DateTimeFormat(undefined, {
             timeStyle: 'short',
         }).format(new Date(date))
     }
@@ -101,23 +122,39 @@ function SessionCard({
     }
 
     return (
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between py-4">
-                <CardTitle className="text-base">{deviceLabel()}</CardTitle>
-                {isCurrentSession && <Badge>Current</Badge>}
-            </CardHeader>
+        <motion.div
+            variants={itemVariants}
+            className={cn(
+                "group relative overflow-hidden p-6 rounded-[2.5rem] border transition-all duration-300",
+                isCurrentSession ? "bg-card shadow-sm border-primary/10" : "bg-card/50 hover:bg-card hover:shadow-md border-transparent hover:border-primary/5"
+            )}
+        >
+            <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-5">
+                    <div className={cn(
+                        "h-14 w-14 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110 shadow-sm",
+                        isCurrentSession ? "bg-primary/5 text-primary" : "bg-muted text-muted-foreground"
+                    )}>
+                        {getBrowserIcon()}
+                    </div>
 
-            <CardContent className="flex items-center justify-between pb-4">
-                <div className="flex items-center gap-3">
-                    {ua?.device.type === 'mobile' ? (
-                        <Smartphone className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                        <Monitor className="h-5 w-5 text-muted-foreground" />
-                    )}
-
-                    <div className="text-sm text-muted-foreground">
-                        <p>Created: {format(session.createdAt)}</p>
-                        <p>Expires: {format(session.expiresAt)}</p>
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                            <p className="font-bold text-lg leading-tight">{deviceLabel()}</p>
+                            {isCurrentSession && (
+                                <span className="bg-primary/10 text-primary text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full border border-primary/20">
+                                    Current
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium opacity-80">
+                            <div className="flex items-center gap-1">
+                                <Globe size={12} />
+                                <span>Session started: {format(session.createdAt)}</span>
+                            </div>
+                            <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                            <span>{getTime(session.createdAt)}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -125,14 +162,19 @@ function SessionCard({
                     <BetterAuthActionButton
                         size="icon"
                         variant="ghost"
-                        className="text-destructive hover:bg-destructive/10"
+                        className="h-12 w-12 rounded-2xl text-rose-500 hover:bg-rose-500/10 transition-colors"
                         action={revokeSession}
-                        successMessage="Session revoked"
+                        successMessage="Session Revoked"
                     >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="size-5" />
                     </BetterAuthActionButton>
                 )}
-            </CardContent>
-        </Card>
+            </div>
+
+            {isCurrentSession && (
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            )}
+        </motion.div>
     )
 }
+

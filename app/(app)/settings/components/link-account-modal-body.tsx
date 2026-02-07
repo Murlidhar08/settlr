@@ -1,7 +1,7 @@
 'use client'
 
-import { Link2Icon, LockKeyhole, Shield, Trash2, Plus } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Shield, Trash2, Plus, Link2 } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { BetterAuthActionButton } from '@/components/auth/better-auth-action-button'
 import {
     SUPPORTED_OAUTH_PROVIDER_DETAILS,
@@ -11,21 +11,29 @@ import {
 import { useRouter } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { authClient } from '@/lib/auth-client'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 type Account = Awaited<ReturnType<typeof auth.api.listUserAccounts>>[number]
 
+const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
+};
+
 export function LinkAccountModalBody({ currentAccounts }: { currentAccounts?: Account[] }) {
     return (
-        <div className="space-y-8">
-            <section className="space-y-3">
-                <h3 className="text-lg font-medium">Linked Accounts</h3>
+        <div className="space-y-10">
+            <section className="space-y-4">
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Active Connections</h3>
 
                 {currentAccounts?.length === 0 ? (
-                    <Card>
-                        <CardContent className="py-8 text-center text-muted-foreground">
-                            No linked accounts found
-                        </CardContent>
-                    </Card>
+                    <motion.div
+                        variants={itemVariants}
+                        className="p-8 text-center bg-card/50 rounded-3xl border border-dashed border-muted-foreground/20 text-muted-foreground"
+                    >
+                        <p className="text-sm font-medium">No accounts linked yet</p>
+                    </motion.div>
                 ) : (
                     <div className="space-y-3">
                         {currentAccounts?.map(account => (
@@ -39,8 +47,8 @@ export function LinkAccountModalBody({ currentAccounts }: { currentAccounts?: Ac
                 )}
             </section>
 
-            <section className="space-y-3">
-                <h3 className="text-lg font-medium">Link Other Accounts</h3>
+            <section className="space-y-4">
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Available Providers</h3>
 
                 <div className="grid gap-3">
                     {SUPPORTED_OAUTH_PROVIDERS.filter(
@@ -100,47 +108,58 @@ function AccountCard({
     }
 
     return (
-        <Card>
-            <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <providerDetails.Icon className="size-5" />
-                        <div>
-                            <p className="font-medium">{providerDetails.name}</p>
-                            {account ? (
-                                <p className="text-sm text-muted-foreground">
-                                    Linked on{" "}
-                                    {new Date(account.createdAt).toLocaleDateString()}
-                                </p>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">
-                                    Connect your {providerDetails.name} account
-                                </p>
-                            )}
-                        </div>
+        <motion.div
+            variants={itemVariants}
+            className="group relative overflow-hidden p-5 rounded-3xl bg-card border shadow-xs transition-all duration-300 hover:shadow-md hover:border-primary/20"
+        >
+            <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-4">
+                    <div className={cn(
+                        "h-12 w-12 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover:rotate-6 shadow-sm",
+                        account ? "bg-primary/5 text-primary" : "bg-muted text-muted-foreground"
+                    )}>
+                        <providerDetails.Icon className="size-6" />
                     </div>
-
-                    {account ? (
-                        <BetterAuthActionButton
-                            variant="destructive"
-                            size="sm"
-                            action={unlinkAccount}
-                        >
-                            <Trash2 className="size-4" />
-                            Unlink
-                        </BetterAuthActionButton>
-                    ) : (
-                        <BetterAuthActionButton
-                            variant="outline"
-                            size="sm"
-                            action={linkAccount}
-                        >
-                            <Plus className="size-4" />
-                            Link
-                        </BetterAuthActionButton>
-                    )}
+                    <div>
+                        <p className="font-bold text-base leading-tight">{providerDetails.name}</p>
+                        {account ? (
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60 mt-0.5">
+                                Verified
+                            </p>
+                        ) : (
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60 mt-0.5">
+                                Not Connected
+                            </p>
+                        )}
+                    </div>
                 </div>
-            </CardContent>
-        </Card>
+
+                {account ? (
+                    <BetterAuthActionButton
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl h-10 px-4 font-bold border-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all duration-300 active:scale-95"
+                        action={unlinkAccount}
+                    >
+                        <Trash2 className="size-4 mr-2" />
+                        Unlink
+                    </BetterAuthActionButton>
+                ) : (
+                    <BetterAuthActionButton
+                        variant="secondary"
+                        size="sm"
+                        className="rounded-xl h-10 px-4 font-black uppercase tracking-widest text-[10px] hover:bg-primary hover:text-white transition-all duration-300 active:scale-95 shadow-sm"
+                        action={linkAccount}
+                    >
+                        <Plus className="size-4 mr-2" />
+                        Connect
+                    </BetterAuthActionButton>
+                )}
+            </div>
+            {account && (
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/10 transition-colors" />
+            )}
+        </motion.div>
     )
 }
+
