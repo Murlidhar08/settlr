@@ -85,7 +85,7 @@ function AccountCard({
     function linkAccount() {
         return authClient.linkSocial({
             provider,
-            callbackURL: '/profile',
+            callbackURL: '/settings/link-account',
         })
     }
 
