@@ -289,7 +289,7 @@ export default function LoginPage() {
             <div className="absolute inset-0 bg-white/5 rounded-[4rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <Image
               src="/images/logo/dark_logo.svg"
-              alt="Settlr"
+              alt={envClient.NEXT_PUBLIC_APP_NAME}
               width={140}
               height={140}
               className="relative z-10 group-hover:scale-110 transition-transform duration-500 drop-shadow-2xl"

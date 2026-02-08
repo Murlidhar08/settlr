@@ -5,6 +5,7 @@ import { useSession } from "@/lib/auth-client"
 import { getInitials } from "@/utility/party"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { envClient } from "@/lib/env.client"
 import { motion, AnimatePresence } from "framer-motion"
 
 interface HeaderProps {
@@ -43,14 +44,14 @@ const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
             <div className="flex h-12 w-12 items-center justify-center lg:hidden group overflow-hidden relative" onClick={() => router.push("/")}>
               <Image
                 src="/images/logo/light_logo.svg"
-                alt="Settlr"
+                alt={envClient.NEXT_PUBLIC_APP_NAME}
                 width={40}
                 height={40}
                 className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
               />
               <Image
                 src="/images/logo/dark_logo.svg"
-                alt="Settlr"
+                alt={envClient.NEXT_PUBLIC_APP_NAME}
                 width={40}
                 height={40}
                 className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"

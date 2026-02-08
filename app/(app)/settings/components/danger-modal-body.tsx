@@ -44,7 +44,7 @@ export function DangerModalBody() {
                     <BetterAuthActionButton
                         requireAreYouSure
                         variant="destructive"
-                        className="w-full h-14 rounded-2xl font-black uppercase tracking-[0.1em] shadow-xl shadow-rose-500/20 hover:shadow-2xl hover:bg-rose-600 transition-all active:scale-[0.98]"
+                        className="w-full h-14 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-rose-500/20 hover:shadow-2xl hover:bg-rose-600 transition-all active:scale-[0.98]"
                         successMessage="Account deletion initiated. Check your email."
                         action={() =>
                             authClient.deleteUser({

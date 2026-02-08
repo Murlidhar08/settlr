@@ -1,3 +1,5 @@
+import { envServer } from '../env.server'
+
 export function getDeleteAccountEmailHtml(
   email: string,
   deleteUrl: string
@@ -21,7 +23,7 @@ export function getDeleteAccountEmailHtml(
             <tr>
               <td style="background:#18181b; padding:28px 40px; text-align:center;">
                 <span style="font-size:26px; font-weight:700; color:#ffffff; letter-spacing:0.5px;">
-                  Settlr
+                  ${envServer.NEXT_PUBLIC_APP_NAME}
                 </span>
               </td>
             </tr>
@@ -43,7 +45,7 @@ export function getDeleteAccountEmailHtml(
                 </p>
 
                 <p style="margin:0 0 18px;">
-                  A request was made to <strong>permanently delete</strong> the Settlr account associated with:
+                  A request was made to <strong>permanently delete</strong> the ${envServer.NEXT_PUBLIC_APP_NAME} account associated with:
                   <br />
                   <strong>${email}</strong>
                 </p>
@@ -99,7 +101,7 @@ export function getDeleteAccountEmailHtml(
             <tr>
               <td style="padding:24px 40px; background:#fafafa; border-top:1px solid #e5e7eb;">
                 <p style="margin:0; font-size:12px; line-height:18px; text-align:center; color:#9ca3af;">
-                  © ${new Date().getFullYear()} Settlr. All rights reserved.<br/>
+                  © ${new Date().getFullYear()} ${envServer.NEXT_PUBLIC_APP_NAME}. All rights reserved.<br/>
                   This is an automated email—please do not reply.
                 </p>
               </td>

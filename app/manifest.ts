@@ -1,10 +1,11 @@
 import type { MetadataRoute } from 'next'
+import { envClient } from '@/lib/env.client'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Settlr',
-    short_name: 'Settlr',
-    description: 'Settlr for managing personal finance',
+    name: envClient.NEXT_PUBLIC_APP_NAME,
+    short_name: envClient.NEXT_PUBLIC_APP_NAME,
+    description: envClient.NEXT_PUBLIC_APP_DESCRIPTION,
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',

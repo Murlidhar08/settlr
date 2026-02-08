@@ -1,3 +1,5 @@
+import { envServer } from "../env.server"
+
 export function getResetPasswordEmailHtml(
   email: string,
   resetUrl: string
@@ -22,7 +24,7 @@ export function getResetPasswordEmailHtml(
             <!-- BRAND HEADER -->
             <tr>
               <td style="background:#18181b; padding:28px 40px; text-align:center;">
-                <span style="font-size:26px; font-weight:700; color:#ffffff; letter-spacing:0.5px;">Settlr</span>
+                <span style="font-size:26px; font-weight:700; color:#ffffff; letter-spacing:0.5px;">${envServer.NEXT_PUBLIC_APP_NAME}</span>
               </td>
             </tr>
 
@@ -44,7 +46,7 @@ export function getResetPasswordEmailHtml(
                 </p>
 
                 <p style="margin:0 0 18px;">
-                  We received a request to reset the password for your Settlr account associated with:
+                  We received a request to reset the password for your ${envServer.NEXT_PUBLIC_APP_NAME} account associated with:
                   <strong>${email}</strong>
                 </p>
 
@@ -88,7 +90,7 @@ export function getResetPasswordEmailHtml(
             <tr>
               <td style="padding:24px 40px; background:#fafafa; border-top:1px solid #e5e7eb;">
                 <p style="margin:0; font-size:12px; color:#9ca3af; text-align:center; line-height:18px;">
-                  © ${new Date().getFullYear()} Settlr. All rights reserved.<br/>
+                  © ${new Date().getFullYear()} ${envServer.NEXT_PUBLIC_APP_NAME}. All rights reserved.<br/>
                   This is an automated message—please do not reply.
                 </p>
               </td>

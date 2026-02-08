@@ -48,14 +48,14 @@ const Sidebar = () => {
           <div className="h-10 w-10 shrink-0 flex items-center justify-center relative translate-y-px">
             <Image
               src="/images/logo/light_logo.svg"
-              alt="Settlr"
+              alt={envClient.NEXT_PUBLIC_APP_NAME}
               width={34}
               height={34}
               className="dark:hidden"
             />
             <Image
               src="/images/logo/dark_logo.svg"
-              alt="Settlr"
+              alt={envClient.NEXT_PUBLIC_APP_NAME}
               width={34}
               height={34}
               className="hidden dark:block"
