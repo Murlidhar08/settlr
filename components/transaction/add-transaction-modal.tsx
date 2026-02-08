@@ -191,7 +191,7 @@ export const AddTransactionModal = ({
                     <CalendarIcon size={12} /> Date
                   </Label>
                   <Popover open={dateOpen} onOpenChange={setDateOpen}>
-                    <PopoverTrigger asChild>
+                    <PopoverTrigger>
                       <Button
                         variant="outline"
                         className="h-14 w-full justify-between rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:hover:border-primary/50 transition-all"

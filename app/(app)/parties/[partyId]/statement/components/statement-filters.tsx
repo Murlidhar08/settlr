@@ -52,7 +52,7 @@ export default function StatementFilters() {
             <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                 {/* Direction Filter */}
                 <Popover>
-                    <PopoverTrigger asChild>
+                    <PopoverTrigger>
                         <Button
                             variant={currentDirection !== "All" ? "default" : "secondary"}
                             size="sm"
@@ -80,7 +80,7 @@ export default function StatementFilters() {
 
                 {/* Mode Filter */}
                 <Popover>
-                    <PopoverTrigger asChild>
+                    <PopoverTrigger>
                         <Button
                             variant={currentMode !== "All" ? "default" : "secondary"}
                             size="sm"
@@ -108,7 +108,7 @@ export default function StatementFilters() {
 
                 {/* Date Range Filter */}
                 <Popover>
-                    <PopoverTrigger asChild>
+                    <PopoverTrigger>
                         <Button
                             variant={currentStartDate || currentEndDate ? "default" : "secondary"}
                             size="sm"
