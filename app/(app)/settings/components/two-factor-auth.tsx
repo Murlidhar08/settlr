@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import { motion } from "framer-motion"
+import { ShieldCheck, Copy, RefreshCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { PasswordInput } from "@/components/ui/password-input"
@@ -35,6 +37,11 @@ type TwoFactorData = {
   totpURI: string
   backupCodes: string[]
 }
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 }
+};
 
 /* ========================================================= */
 /* MAIN COMPONENT */
@@ -93,17 +100,23 @@ export function TwoFactorAuth({ isEnabled }: { isEnabled: boolean }) {
   }
 
   return (
-    <form
+    <motion.form
+      initial="hidden"
+      animate="visible"
+      variants={itemVariants}
       onSubmit={handleSubmit(isEnabled ? disable2FA : enable2FA)}
-      className="space-y-4"
+      className="space-y-6"
     >
-      <div className="space-y-1">
-        <label className="text-sm font-medium">
-          Confirm your password
+      <div className="space-y-2">
+        <label className="ml-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground italic">
+          Confirm Your Password
         </label>
-        <PasswordInput {...register("password")} />
+        <PasswordInput
+          {...register("password")}
+          className="h-14 rounded-2xl bg-muted/10 border-muted-foreground/10 focus:bg-background transition-all"
+        />
         {errors.password && (
-          <p className="text-xs text-destructive">
+          <p className="ml-1 text-xs font-bold text-rose-500 italic">
             {errors.password.message}
           </p>
         )}
@@ -111,15 +124,17 @@ export function TwoFactorAuth({ isEnabled }: { isEnabled: boolean }) {
 
       <Button
         type="submit"
-        className="w-full"
-        variant={isEnabled ? "destructive" : "default"}
+        className={`w-full h-14 rounded-2xl font-black uppercase tracking-[0.1em] shadow-xl transition-all active:scale-[0.98] ${isEnabled
+          ? "bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/20"
+          : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20"
+          }`}
         disabled={isSubmitting}
       >
         <LoadingSwap isLoading={isSubmitting}>
-          {isEnabled ? "Disable 2FA" : "Enable 2FA"}
+          {isEnabled ? "Disable Protection" : "Initialize 2FA"}
         </LoadingSwap>
       </Button>
-    </form>
+    </motion.form>
   )
 }
 
@@ -148,7 +163,7 @@ function QRCodeVerify({
       { code: values.token },
       {
         onSuccess: () => {
-          toast.success("Two-factor authentication enabled")
+          toast.success("Security verification successful")
           setCompleted(true)
           router.refresh()
         },
@@ -161,60 +176,92 @@ function QRCodeVerify({
 
   if (completed) {
     return (
-      <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">
-          Save these recovery codes. Each code can be used once.
-        </p>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="space-y-6"
+      >
+        <div className="text-center space-y-2">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 mb-2">
+            <ShieldCheck size={28} />
+          </div>
+          <p className="font-bold text-lg">Safe Connection Established</p>
+          <p className="text-sm text-muted-foreground leading-relaxed px-4">
+            Store these recovery codes securely. They are the only way to access your account if you lose your device.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-2 gap-2 rounded-lg border bg-muted/40 p-3">
+        <div className="grid grid-cols-2 gap-3 p-4 rounded-3xl bg-muted/40 border border-muted-foreground/5 font-mono text-xs tracking-widest shadow-inner">
           {backupCodes.map(code => (
-            <span
+            <div
               key={code}
-              className="font-mono text-sm tracking-wider"
+              className="flex items-center justify-center p-3 rounded-xl bg-background border border-muted shadow-xs font-bold"
             >
               {code}
-            </span>
+            </div>
           ))}
         </div>
 
-        <Button onClick={onDone} variant="outline" className="w-full">
-          Done
-        </Button>
-      </div>
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1 h-12 rounded-2xl gap-2 font-bold" onClick={() => {
+            navigator.clipboard.writeText(backupCodes.join("\n"))
+            toast.success("Codes copied to clipboard")
+          }}>
+            <Copy size={16} /> Copy
+          </Button>
+          <Button onClick={onDone} className="flex-1 h-12 rounded-2xl font-black uppercase tracking-widest text-[10px]">
+            Complete Setup
+          </Button>
+        </div>
+      </motion.div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit(verifyCode)} className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        Scan the QR code using your authenticator app and enter the 6-digit code.
-      </p>
-
-      <div className="flex justify-center rounded-xl border bg-background p-4">
-        <QRCode size={180} value={totpURI} />
+    <motion.form
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      onSubmit={handleSubmit(verifyCode)}
+      className="space-y-8"
+    >
+      <div className="space-y-4 text-center">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary mb-2">
+          <RefreshCw size={24} className="animate-spin-slow" />
+        </div>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Scan the QR code with your authenticator app (like Authy or Google Authenticator) and enter the 6-digit sync code below.
+        </p>
       </div>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium">
-          Verification code
+      <div className="flex justify-center p-6 rounded-[2.5rem] bg-background border shadow-xl relative group">
+        <QRCode size={180} value={totpURI} />
+        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-[2.5rem]" />
+      </div>
+
+      <div className="space-y-2">
+        <label className="ml-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground italic">
+          Verification Sync Code
         </label>
         <Input
           {...register("token")}
           inputMode="numeric"
           autoComplete="one-time-code"
+          className="h-14 rounded-2xl bg-muted/10 border-muted-foreground/10 focus:bg-background transition-all text-center text-xl font-black tracking-[0.5em] pr-[0.5em]"
+          placeholder="000000"
         />
         {errors.token && (
-          <p className="text-xs text-destructive">
+          <p className="text-center text-xs font-bold text-rose-500 italic mt-2">
             {errors.token.message}
           </p>
         )}
       </div>
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button type="submit" className="w-full h-14 rounded-2xl font-black uppercase tracking-[0.1em] shadow-xl shadow-primary/20 hover:shadow-2xl transition-all active:scale-[0.98]" disabled={isSubmitting}>
         <LoadingSwap isLoading={isSubmitting}>
-          Verify & Enable
+          Establish Security Link
         </LoadingSwap>
       </Button>
-    </form>
+    </motion.form>
   )
 }
+

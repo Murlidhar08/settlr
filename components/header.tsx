@@ -3,48 +3,92 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSession } from "@/lib/auth-client"
 import { getInitials } from "@/utility/party"
-import { Wallet } from "lucide-react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { envClient } from "@/lib/env.client"
+import { motion, AnimatePresence } from "framer-motion"
 
 interface HeaderProps {
   title: string
   isProfile?: boolean
+  leftAction?: React.ReactNode
 }
 
-const Header = ({ title, isProfile }: HeaderProps) => {
-  isProfile = isProfile ?? true
+const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
   const router = useRouter()
   const { data: session } = useSession();
+  const showProfile = isProfile ?? true
 
-  // ------------------
-  // Hanlders
   const handleRedirect = () => {
-    router.push("/account")
+    router.push("/profile")
   }
 
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between bg-slate-200/80 dark:bg-slate-950/90 backdrop-blur px-6 py-4 mb-4">
-      <div className="flex">
-        <div className="flex items-center gap-3 lg:hidden">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2C3E50] text-white transition-transform hover:scale-105">
-            <Wallet className="h-5 w-5" />
-          </div>
-          <h1 className="text-2xl font-bold">{title}</h1>
-        </div>
+    <motion.header
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="sticky top-0 z-40 flex items-center justify-between bg-background/80 dark:bg-background/60 backdrop-blur-xl px-6 py-4 border-b border-border/90 shadow-[0_4px_30px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.9)]"
+    >
+      <div className="flex items-center gap-4">
+        {leftAction ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-center gap-4"
+          >
+            {leftAction}
+            <h1 className="text-xl font-black tracking-tight lg:text-3xl bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent">{title}</h1>
+          </motion.div>
+        ) : (
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center lg:hidden group overflow-hidden relative" onClick={() => router.push("/")}>
+              <Image
+                src="/images/logo/light_logo.svg"
+                alt={envClient.NEXT_PUBLIC_APP_NAME}
+                width={40}
+                height={40}
+                className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
+              />
+              <Image
+                src="/images/logo/dark_logo.svg"
+                alt={envClient.NEXT_PUBLIC_APP_NAME}
+                width={40}
+                height={40}
+                className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"
+              />
+            </div>
 
-        <div className="lg:flex items-center gap-3 hidden">
-          <h1 className="text-2xl font-bold">{title}</h1>
-        </div>
+            <motion.div
+              layoutId="header-title"
+              transition={{ type: "spring", bounce: 0.3 }}
+            >
+              <h1 className="text-2xl font-black -tracking-normal lg:text-4xl bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent">
+                {title}
+              </h1>
+            </motion.div>
+          </div>
+        )}
       </div>
 
-      {/* Profile */}
-      {isProfile && (
-        <Avatar onClick={handleRedirect} size="lg" className="ring-1 ring-background shadow-lg cursor-pointer">
-          <AvatarImage src={session?.user?.image || ''} />
-          <AvatarFallback>{getInitials(session?.user.name)}</AvatarFallback>
-        </Avatar>
+      {/* Profile Container */}
+      {showProfile && (
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="relative"
+        >
+          <Avatar
+            onClick={handleRedirect}
+            className="h-11 w-11 ring-2 ring-primary/20 ring-offset-4 ring-offset-background shadow-2xl cursor-pointer transition-all hover:ring-primary/40"
+          >
+            <AvatarImage src={session?.user?.image || ''} className="object-cover" />
+            <AvatarFallback className="bg-primary/5 text-primary text-xs font-black uppercase tracking-widest leading-none bg-linear-to-br from-primary/10 to-transparent">
+              {getInitials(session?.user?.name)}
+            </AvatarFallback>
+          </Avatar>
+        </motion.div>
       )}
-    </header>
+    </motion.header>
   )
 }
 

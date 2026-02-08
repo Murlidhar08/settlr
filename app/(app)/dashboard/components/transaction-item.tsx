@@ -23,35 +23,30 @@ export default function TransactionItem({
       href={`/transactions/${id}`}
       className="block focus:outline-none"
     >
-      <div className="group flex cursor-pointer items-center justify-between rounded-2xl border bg-white p-4 shadow-sm transition-all
-+ hover:-translate-y-0.5 hover:shadow-md
-+ focus-visible:ring-2 focus-visible:ring-emerald-500
-+ dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center gap-4">
-          <div
-            className={`flex h-12 w-12 items-center justify-center rounded-xl
+      <div className="group flex cursor-pointer items-center justify-between rounded-[2rem] border bg-card p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-lg hover:border-primary/20 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-primary/20">
+        <div className="flex items-center gap-5">
+          <div className={`flex h-14 w-14 items-center justify-center rounded-2xl transition-transform duration-500 group-hover:scale-110 shadow-sm
           ${positive
-                ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20"
-                : "bg-rose-50 text-rose-500 dark:bg-rose-900/20"
-              }`}
+              ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
+              : "bg-rose-50 text-rose-500 dark:bg-rose-500/10 dark:text-rose-400"
+            }`}
           >
             {icon}
           </div>
 
-          <div>
-            <p className="text-xs text-slate-500 group-hover:text-slate-600">
+          <div className="space-y-1">
+            <p className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">{title}</p>
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider opacity-70 group-hover:opacity-100 transition-opacity">
               {meta}
             </p>
-            <p className="font-semibold">{title}</p>
           </div>
         </div>
 
-        <p
-          className={`font-bold ${positive ? "text-emerald-600" : "text-rose-500"
-            }`}
-        >
-          {amount}
-        </p>
+        <div className="text-right">
+          <p className={`font-black text-lg ${positive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+            {amount}
+          </p>
+        </div>
       </div>
     </Link>
   );

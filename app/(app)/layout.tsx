@@ -8,6 +8,7 @@ import { getUserSession } from "@/lib/auth";
 import { Sidebar } from "@/components/sidebar";
 import { getDefaultConfig, getUserConfig } from "@/lib/user-config";
 import { UserConfigProvider } from "@/components/providers/user-config-provider";
+import { LayoutTransitions } from "@/components/layout-transitions";
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // User Config
@@ -21,17 +22,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <UserConfigProvider config={userConfig}>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
-        <div className="flex min-h-screen">
+      <div className="h-screen bg-background text-foreground transition-colors duration-300 overflow-hidden">
+        <div className="flex h-full">
           {/* Fixed Sidebar */}
           <Sidebar />
 
           {/* Main Content */}
-          <main className="flex-1 overflow-y-auto pb-24 bg-background transition-[width] duration-300 ease-in-out">
+          <LayoutTransitions>
             {children}
-          </main>
+          </LayoutTransitions>
         </div>
       </div>
     </UserConfigProvider>
   );
 }
+

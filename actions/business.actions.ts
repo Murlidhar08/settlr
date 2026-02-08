@@ -16,7 +16,7 @@ export async function addBusiness(name: string) {
     return null;
   }
 
-  await prisma.business.create({
+  const newBusiness = await prisma.business.create({
     data: {
       name: name,
       ownerId: session.user.id
@@ -24,7 +24,7 @@ export async function addBusiness(name: string) {
   });
 
   revalidatePath("/dashboard")
-  return true;
+  return newBusiness;
 }
 
 export async function switchBusiness(businessId: string, redirectTo?: string | null) {
@@ -59,3 +59,78 @@ export async function switchBusiness(businessId: string, redirectTo?: string | n
     return { success: false, error: "Internal Server Error" };
   }
 }
+
+export async function updateBusiness(id: string, name: string) {
+  if (!name) throw new Error("Business name is required");
+
+  const session = await getUserSession();
+  if (!session) return null;
+
+  const updated = await prisma.business.update({
+    where: {
+      id: id,
+      ownerId: session.user.id // Security check
+    },
+    data: { name }
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/business");
+  return updated;
+}
+
+export async function deleteBusiness(id: string) {
+  const session = await getUserSession();
+  if (!session) return null;
+
+  // Check if it's the only business - optional but recommended
+  const count = await prisma.business.count({
+    where: { ownerId: session.user.id }
+  });
+
+  if (count <= 1) {
+    throw new Error("You must have at least one business.");
+  }
+
+  await prisma.business.delete({
+    where: {
+      id: id,
+      ownerId: session.user.id // Security check
+    }
+  });
+
+  // If the deleted business was active, switch to another one
+  if (session.session.activeBusinessId === id) {
+    const other = await prisma.business.findFirst({
+      where: { ownerId: session.user.id }
+    });
+    if (other) {
+      await prisma.session.update({
+        where: { id: session.session.id },
+        data: { activeBusinessId: other.id }
+      });
+    }
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/business");
+  return { success: true };
+}
+
+export async function getBusinessList() {
+  const session = await getUserSession();
+
+  if (!session) {
+    console.error("User is not logged in.")
+    return null;
+  }
+
+  return await prisma.business?.findMany({
+    select: {
+      id: true,
+      name: true
+    },
+    where: { ownerId: session?.user.id }
+  });
+}
+

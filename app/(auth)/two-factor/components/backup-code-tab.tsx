@@ -2,9 +2,10 @@
 
 import { useForm } from "react-hook-form"
 import { useRouter } from "next/navigation"
+import { ShieldCheck } from "lucide-react"
+
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { LoadingSwap } from "@/components/ui/loading-swap"
 import { authClient } from "@/lib/auth-client"
 import { toast } from "sonner"
 
@@ -26,6 +27,7 @@ export function BackupCodeTab() {
       { code: values.code },
       {
         onSuccess: () => {
+          toast.success("Security bypass successful!")
           router.push("/")
         },
         onError: (error) => {
@@ -36,19 +38,25 @@ export function BackupCodeTab() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-1">
-        <label className="text-sm font-medium">
-          Backup code
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-6"
+    >
+      <div className="space-y-3">
+        <label className="text-sm font-bold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+          <ShieldCheck className="w-4 h-4" /> Backup Code
         </label>
-        <Input
-          {...register("code", {
-            required: "Backup code is required",
-          })}
-          placeholder="XXXX-XXXX"
-        />
+        <div className="relative group">
+          <Input
+            {...register("code", {
+              required: "Backup code is required",
+            })}
+            placeholder="XXXX-XXXX"
+            className="h-14 rounded-2xl pl-4 transition-all duration-300 bg-background border-muted-foreground/10 focus:ring-2 focus:ring-primary/20 focus:border-primary text-center font-mono text-lg uppercase"
+          />
+        </div>
         {errors.code && (
-          <p className="text-xs text-destructive">
+          <p className="text-xs font-medium text-destructive">
             {errors.code.message}
           </p>
         )}
@@ -57,13 +65,18 @@ export function BackupCodeTab() {
       <Button
         type="submit"
         variant="outline"
-        className="w-full"
+        className="rounded-2xl h-14 w-full font-bold border-muted-foreground/10 hover:bg-muted/50 transition-colors"
         disabled={isSubmitting}
       >
-        <LoadingSwap isLoading={isSubmitting}>
-          Verify Backup Code
-        </LoadingSwap>
+        {isSubmitting ? (
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+            Verifying...
+          </div>
+        ) : "Verify Backup Code"}
       </Button>
     </form>
   )
 }
+
+
