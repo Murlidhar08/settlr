@@ -3,13 +3,17 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner"
 import type { Viewport } from 'next'
+import { ThemeProvider } from "next-themes";
 
 // Style
 import "./globals.css";
 
 // Lib
 import { envClient } from "@/lib/env.client";
+
+// Components
 import { ConfirmProvider } from "@/components/providers/confirm-provider";
+import AppIconsMetaTags from "@/components/app-icons-metatags";
 
 const nunitoSans = Nunito_Sans({
   variable: '--font-sans',
@@ -28,7 +32,7 @@ const geistMono = Geist_Mono({
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'cyan' },
+    { media: '(prefers-color-scheme: light)', color: 'white' },
     { media: '(prefers-color-scheme: dark)', color: 'black' },
   ],
 }
@@ -40,22 +44,24 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Settlr",
+    title: envClient.NEXT_PUBLIC_APP_NAME,
   },
   icons: {
     icon: [
-      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+      { url: "images/logo/maskable_icon_x192.png", sizes: "192x192", type: "image/png" },
+      { url: "images/logo/maskable_icon_x512.png", sizes: "512x512", type: "image/png" },
     ],
-    apple: "/icons/icon-192x192.png",
+    apple: "images/logo/maskable_icon_x192.png",
   },
 };
 
-import { ThemeProvider } from "next-themes";
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={nunitoSans.variable} suppressHydrationWarning>
+      <head>
+        <AppIconsMetaTags />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}>
         <ThemeProvider
           attribute="class"
