@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
+import { cn } from "@/lib/utils"
 
 interface HeaderMenuItem {
   label: string
@@ -52,7 +53,7 @@ const BackHeader = ({
     <motion.header
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="sticky top-0 z-30 flex items-center justify-between bg-background/60 dark:bg-background/40 backdrop-blur-2xl px-6 py-5 border-b border-border/40"
+      className="sticky top-0 z-40 flex items-center justify-between bg-background/80 dark:bg-background/60 backdrop-blur-xl px-6 py-4 border-b border-border/40 shadow-[0_4px_30px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.2)]"
     >
       {/* Back Button */}
       <motion.div
@@ -62,8 +63,8 @@ const BackHeader = ({
         <Button
           onClick={handleBack}
           size="icon"
-          variant="ghost"
-          className="h-11 w-11 rounded-2xl bg-secondary/50 hover:bg-secondary/80 border border-border/50 shadow-sm transition-all"
+          variant="secondary"
+          className="h-11 w-11 rounded-2xl bg-secondary/80 hover:bg-secondary border border-border/50 shadow-sm transition-all text-foreground"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -73,7 +74,7 @@ const BackHeader = ({
       <div className="flex flex-1 flex-col items-center gap-1 mx-4 min-w-0">
         <motion.h2
           layoutId="back-header-title"
-          className="text-lg lg:text-2xl font-black tracking-tight truncate w-full text-center bg-linear-to-br from-foreground up-to-foreground/70 bg-clip-text text-transparent"
+          className="text-lg lg:text-2xl font-black tracking-tight truncate w-full text-center bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent"
         >
           {title}
         </motion.h2>
@@ -101,8 +102,8 @@ const BackHeader = ({
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   size="icon"
-                  variant="ghost"
-                  className="h-11 w-11 rounded-2xl bg-secondary/50 hover:bg-secondary/80 border border-border/50 shadow-sm transition-all"
+                  variant="secondary"
+                  className="h-11 w-11 rounded-2xl bg-secondary/80 hover:bg-secondary border border-border/50 shadow-sm transition-all text-foreground"
                 >
                   <EllipsisVertical className="h-5 w-5" />
                 </Button>
@@ -114,12 +115,12 @@ const BackHeader = ({
                 <DropdownMenuItem
                   key={index}
                   onClick={item.onClick}
-                  className={`rounded-xl px-4 py-3 text-sm font-bold transition-all focus:scale-[0.98] active:scale-95 ${item.destructive
-                    ? "text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-500/10 focus:text-rose-600"
-                    : "focus:bg-primary/5 focus:text-primary"
-                    }`}
+                  className={cn(
+                    "rounded-xl px-4 py-3 text-sm font-bold transition-all focus:scale-[0.98] active:scale-95 cursor-pointer",
+                    item.destructive && "text-rose-600 focus:text-rose-600"
+                  )}
                 >
-                  {item.icon && <span className="mr-3 text-lg">{item.icon}</span>}
+                  {item.icon && <span className="mr-2 opacity-80 group-focus/dropdown-menu-item:opacity-100 transition-opacity">{item.icon}</span>}
                   {item.label}
                 </DropdownMenuItem>
               ))}

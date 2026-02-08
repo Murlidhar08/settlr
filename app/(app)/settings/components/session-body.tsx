@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 interface SessionModalBodyProps {
     sessions: Session[]
     currentSessionToken?: string
+    onUpdate?: () => void
 }
 
 const itemVariants = {
@@ -22,6 +23,7 @@ const itemVariants = {
 export function SessionModalBody({
     sessions,
     currentSessionToken,
+    onUpdate,
 }: SessionModalBodyProps) {
     const router = useRouter()
 
@@ -30,7 +32,10 @@ export function SessionModalBody({
 
     function revokeOtherSessions() {
         return authClient.revokeOtherSessions(undefined, {
-            onSuccess: () => router.refresh(),
+            onSuccess: () => {
+                router.refresh()
+                onUpdate?.()
+            },
         })
     }
 
@@ -69,7 +74,7 @@ export function SessionModalBody({
                 ) : (
                     <div className="space-y-3">
                         {otherSessions.map(session => (
-                            <SessionCard key={session.id} session={session} />
+                            <SessionCard key={session.id} session={session} onUpdate={onUpdate} />
                         ))}
                     </div>
                 )}
@@ -80,9 +85,11 @@ export function SessionModalBody({
 
 function SessionCard({
     session,
+    onUpdate,
     isCurrentSession = false,
 }: {
     session: Session
+    onUpdate?: () => void
     isCurrentSession?: boolean
 }) {
     const router = useRouter()
@@ -117,7 +124,12 @@ function SessionCard({
     function revokeSession() {
         return authClient.revokeSession(
             { token: session.token },
-            { onSuccess: () => router.refresh() }
+            {
+                onSuccess: () => {
+                    router.refresh()
+                    onUpdate?.()
+                }
+            }
         )
     }
 

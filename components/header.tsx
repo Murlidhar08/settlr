@@ -27,7 +27,7 @@ const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
     <motion.header
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="sticky top-0 z-30 flex items-center justify-between bg-background/60 dark:bg-background/40 backdrop-blur-2xl px-6 py-5 border-b border-border/40"
+      className="sticky top-0 z-40 flex items-center justify-between bg-background/80 dark:bg-background/60 backdrop-blur-xl px-6 py-4 border-b border-border/90 shadow-[0_4px_30px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.9)]"
     >
       <div className="flex items-center gap-4">
         {leftAction ? (
@@ -37,7 +37,7 @@ const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
             className="flex items-center gap-4"
           >
             {leftAction}
-            <h1 className="text-xl font-black tracking-tight lg:text-3xl bg-linear-to-br from-foreground to-foreground/60 bg-clip-text text-transparent">{title}</h1>
+            <h1 className="text-xl font-black tracking-tight lg:text-3xl bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent">{title}</h1>
           </motion.div>
         ) : (
           <div className="flex items-center gap-4">
@@ -62,7 +62,7 @@ const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
               layoutId="header-title"
               transition={{ type: "spring", bounce: 0.3 }}
             >
-              <h1 className="text-2xl font-black tracking-tighter lg:text-4xl bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-black -tracking-normal lg:text-4xl bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent">
                 {title}
               </h1>
             </motion.div>

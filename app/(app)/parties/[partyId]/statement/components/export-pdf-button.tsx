@@ -36,7 +36,7 @@ export default function ExportPDFButton({
             const { default: autoTable } = await import("jspdf-autotable");
 
             const doc = new jsPDF();
-            const symbol = getCurrencySymbol(currency);
+            const symbol = currency === Currency.INR ? "" : getCurrencySymbol(currency);
 
             // Branding
             doc.setFontSize(30);
@@ -76,11 +76,11 @@ export default function ExportPDFButton({
                 body: [
                     ['Total Cash In (+)', `${symbol}${totalIn.toLocaleString()}`],
                     ['Total Cash Out (-)', `${symbol}${totalOut.toLocaleString()}`],
-                    ['Closing Balance', `${symbol}${balance.toLocaleString()}`]
+                    ['Closing Balance', `${balance < 0 ? '-' : ''}${symbol}${Math.abs(balance).toLocaleString()}`]
                 ],
                 theme: 'striped',
                 headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold' },
-                columnStyles: { 1: { halign: 'right', fontStyle: 'bold' } },
+                columnStyles: { 1: { halign: 'left', fontStyle: 'bold' } },
                 styles: { fontSize: 10, cellPadding: 5 },
                 didParseCell: (data) => {
                     if (data.section === 'body' && data.column.index === 1) {
@@ -105,7 +105,7 @@ export default function ExportPDFButton({
                 headStyles: { fillColor: [44, 62, 80], fontStyle: 'bold' },
                 bodyStyles: { textColor: [0, 0, 0] },
                 alternateRowStyles: { fillColor: [248, 250, 252] },
-                columnStyles: { 4: { halign: 'right', fontStyle: 'bold', fontSize: 10 } },
+                columnStyles: { 4: { halign: 'left', fontStyle: 'bold', fontSize: 10 } },
                 styles: { fontSize: 9, cellPadding: 3 },
                 didParseCell: (data) => {
                     if (data.section === 'body' && data.column.index === 4) {

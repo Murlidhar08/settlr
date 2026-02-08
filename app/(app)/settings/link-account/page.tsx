@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "@/lib/auth-client";
-import { LinkAccountModalBody } from "../components/link-account-modal-body";
+import { LinkAccountModalBody } from "../components/link-account-body";
 import { getCredientialAccounts } from "@/actions/user-settings.actions";
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/auth";

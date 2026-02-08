@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "@/lib/auth-client";
-import { SessionModalBody } from "../components/session-modal-body";
+import { SessionModalBody } from "../components/session-body";
 import { getListSessions } from "@/actions/user-settings.actions";
 import { useEffect, useState } from "react";
 import { Session } from "@/lib/generated/prisma/client";
@@ -16,11 +16,14 @@ export default function SessionManagementPage() {
     const [sessionsList, setSessionsList] = useState<Session[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const fetchSessions = async () => {
+        const res = await getListSessions();
+        if (res) setSessionsList(res as Session[]);
+        setLoading(false);
+    };
+
     useEffect(() => {
-        getListSessions().then((res) => {
-            if (res) setSessionsList(res as Session[]);
-            setLoading(false);
-        });
+        fetchSessions();
     }, []);
 
     const containerVariants = {
@@ -53,6 +56,7 @@ export default function SessionManagementPage() {
                 <SessionModalBody
                     sessions={sessionsList as any}
                     currentSessionToken={session?.session.token}
+                    onUpdate={fetchSessions}
                 />
             </motion.div>
         </div>

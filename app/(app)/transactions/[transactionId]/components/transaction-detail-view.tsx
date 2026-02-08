@@ -17,7 +17,7 @@ interface TransactionDetailViewProps {
 
 export function TransactionDetailView({ transaction, isIn }: TransactionDetailViewProps) {
     return (
-        <div className="min-h-screen bg-background relative overflow-hidden">
+        <div className="min-h-full bg-background relative">
             {/* Dynamic Animated Background */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 <motion.div
@@ -65,8 +65,8 @@ export function TransactionDetailView({ transaction, isIn }: TransactionDetailVi
                             animate={{ scale: 1, rotate: 0 }}
                             transition={{ type: "spring", stiffness: 200, damping: 15 }}
                             className={`flex h-24 w-24 items-center justify-center rounded-[2.5rem] shadow-2xl relative group ${isIn
-                                    ? "bg-emerald-500 text-white shadow-emerald-500/20"
-                                    : "bg-rose-500 text-white shadow-rose-500/20"
+                                ? "bg-emerald-500 text-white shadow-emerald-500/20"
+                                : "bg-rose-500 text-white shadow-rose-500/20"
                                 }`}
                         >
                             <div className="absolute inset-0 rounded-[2.5rem] bg-white/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -123,8 +123,8 @@ export function TransactionDetailView({ transaction, isIn }: TransactionDetailVi
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.6 }}
                                 className={`inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-xs font-black uppercase tracking-widest border ${isIn
-                                        ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
-                                        : "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
+                                    : "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20"
                                     }`}
                             >
                                 {isIn ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}

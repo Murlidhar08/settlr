@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "@/lib/auth-client";
-import { DangerModalBody } from "../components/danger-modal-body";
+import { DangerModalBody } from "../components/danger-body";
 import { BackHeader } from "@/components/back-header";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";

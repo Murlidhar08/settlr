@@ -15,7 +15,7 @@ export default function Page() {
       <Header title="Dashboard" />
 
       <div className="px-4">
-        <div className="mb-4">
+        <div className="my-4">
           <SwitchBusiness />
         </div>
 

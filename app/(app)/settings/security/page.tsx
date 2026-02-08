@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "@/lib/auth-client";
-import { SecurityModalBody } from "../components/security-modal-body";
+import { SecurityModalBody } from "../components/security-body";
 import { BackHeader } from "@/components/back-header";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
