@@ -41,6 +41,7 @@ import { signOut } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
+import { envClient } from "@/lib/env.client";
 import { getAppVersion, upsertUserSettings } from "@/actions/user-settings.actions";
 import { useSession } from "@/lib/auth-client";
 import { getInitials } from "@/utility/party";
@@ -298,7 +299,7 @@ export default function SettingsPage() {
           className="text-center space-y-2 opacity-50 pt-4"
         >
           <p className="text-[10px] font-black uppercase tracking-[0.3em]">Build Version {version}</p>
-          <p className="text-[9px] font-medium italic">© 2024 Settlr. All rights reserved.</p>
+          <p className="text-[9px] font-medium italic">© {new Date().getFullYear()} {envClient.NEXT_PUBLIC_APP_NAME}. All rights reserved.</p>
         </motion.div>
       </motion.div>
     </div >

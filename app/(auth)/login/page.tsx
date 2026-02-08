@@ -2,7 +2,7 @@
 
 // Packages
 import { useEffect, useState } from "react";
-import { Wallet, Mail, EyeOff, Eye, ShieldCheck } from "lucide-react";
+import { Mail, EyeOff, Eye, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // Lib
 import { authClient, signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth-client";
+import { envClient } from "@/lib/env.client";
 
 // Components
 import { Button } from "@/components/ui/button";
@@ -94,11 +95,36 @@ export default function LoginPage() {
       >
 
         {/* LOGO + BRAND */}
-        <motion.div variants={itemVariants as any} className="flex items-center gap-3 mb-6 group cursor-pointer">
-          <div className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
-            <Wallet className="w-6 h-6" />
+        <motion.div
+          variants={itemVariants as any}
+          className="flex items-center gap-4 mb-8 group cursor-pointer"
+          onClick={() => router.push("/")}
+        >
+          <div className="relative w-12 h-12 flex items-center justify-center">
+            <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-lg group-hover:bg-primary/20 transition-colors" />
+            <Image
+              src="/images/logo/light_logo.svg"
+              alt={envClient.NEXT_PUBLIC_APP_NAME}
+              width={48}
+              height={48}
+              className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
+            />
+            <Image
+              src="/images/logo/dark_logo.svg"
+              alt={envClient.NEXT_PUBLIC_APP_NAME}
+              width={48}
+              height={48}
+              className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"
+            />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-foreground to-foreground/70">Settlr</h1>
+          <div className="flex flex-col gap-0">
+            <h1 className="text-3xl font-black tracking-tight bg-clip-text text-transparent bg-linear-to-br from-foreground to-foreground/70 leading-none">
+              {envClient.NEXT_PUBLIC_APP_NAME}
+            </h1>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">
+              Finance
+            </p>
+          </div>
         </motion.div>
 
         {/* CENTER FORM AREA */}
@@ -250,16 +276,24 @@ export default function LoginPage() {
         <div className="relative z-10 text-center px-12 text-white">
           <motion.div
             animate={{
-              y: [0, -10, 0],
+              y: [0, -15, 0],
+              rotate: [0, 5, -5, 0],
             }}
             transition={{
-              duration: 4,
+              duration: 6,
               repeat: Infinity,
               ease: "easeInOut",
             }}
-            className="w-48 h-56 bg-white/10 backdrop-blur-3xl rounded-[3rem] flex flex-col items-center justify-center border border-white/20 shadow-2xl mx-auto mb-10 group"
+            className="w-56 h-56 bg-white/5 backdrop-blur-3xl rounded-[4rem] flex flex-col items-center justify-center border border-white/10 shadow-2xl mx-auto mb-10 group relative"
           >
-            <ShieldCheck className="w-20 h-20 text-white group-hover:scale-110 transition-transform duration-300" />
+            <div className="absolute inset-0 bg-white/5 rounded-[4rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <Image
+              src="/images/logo/dark_logo.svg"
+              alt="Settlr"
+              width={140}
+              height={140}
+              className="relative z-10 group-hover:scale-110 transition-transform duration-500 drop-shadow-2xl"
+            />
           </motion.div>
           <motion.h2
             initial={{ y: 20, opacity: 0 }}
@@ -275,7 +309,7 @@ export default function LoginPage() {
             transition={{ delay: 0.6 }}
             className="text-white/90 leading-relaxed text-lg max-w-md mx-auto font-medium"
           >
-            Settlr ensures enterprise-grade identity protection while keeping your bookkeeping experience intuitive.
+            {envClient.NEXT_PUBLIC_APP_NAME} ensures enterprise-grade identity protection while keeping your bookkeeping experience intuitive.
           </motion.p>
         </div>
       </motion.div>

@@ -14,6 +14,7 @@ import StatementSkeleton from "./components/statement-skeleton";
 import { getPartyStatement } from "@/actions/transaction.actions";
 import { TransactionDirection } from "@/lib/generated/prisma/enums";
 import { cn } from "@/lib/utils";
+import { envClient } from "@/lib/env.client";
 import { getInitials } from "@/utility/party";
 import { formatAmount } from "@/utility/transaction";
 import { getUserConfig } from "@/lib/user-config";
@@ -77,7 +78,7 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
             >
               <Avatar className="h-28 w-28 shadow-xl ring-4 ring-background">
                 <AvatarImage src={party.profileUrl ?? undefined} alt={party.name} />
-                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary text-4xl font-black uppercase text-primary-foreground">
+                <AvatarFallback className="bg-linear-to-br from-primary/20 to-primary text-4xl font-black uppercase text-primary-foreground">
                   {getInitials(party.name)}
                 </AvatarFallback>
               </Avatar>
@@ -167,7 +168,7 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
 
         <div className="mt-4 flex justify-center border-t border-muted pt-4">
           <p className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground/60 uppercase tracking-widest">
-            <Lock size={10} /> Secure Encryption • Settlr Cloud
+            <Lock size={10} /> Secure Encryption • {envClient.NEXT_PUBLIC_APP_NAME} Cloud
           </p>
         </div>
       </div>

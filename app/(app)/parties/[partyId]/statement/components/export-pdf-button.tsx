@@ -7,6 +7,7 @@ import { useState } from "react";
 import { getCurrencySymbol } from "@/utility/transaction";
 import { Currency } from "@/lib/generated/prisma/enums";
 import { toast } from "sonner";
+import { envClient } from "@/lib/env.client";
 
 interface ExportPDFButtonProps {
     party: any;
@@ -39,8 +40,8 @@ export default function ExportPDFButton({
 
             // Branding
             doc.setFontSize(30);
-            doc.setTextColor(59, 130, 246); // Settlr Blue
-            doc.text("Settlr", 105, 20, { align: "center" });
+            doc.setTextColor(59, 130, 246); // Brand Color
+            doc.text(envClient.NEXT_PUBLIC_APP_NAME, 105, 20, { align: "center" });
 
             doc.setFontSize(14);
             doc.setTextColor(100);
@@ -122,7 +123,7 @@ export default function ExportPDFButton({
                     doc.setFontSize(8);
                     doc.setTextColor(150);
                     doc.text(str, data.settings.margin.left, doc.internal.pageSize.height - 10);
-                    doc.text("Secure Statement powered by Settlr Business App", 196, doc.internal.pageSize.height - 10, { align: "right" });
+                    doc.text(`Secure Statement powered by ${envClient.NEXT_PUBLIC_APP_NAME} Business App`, 196, doc.internal.pageSize.height - 10, { align: "right" });
                 }
             });
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   LayoutDashboard,
   User2Icon,
@@ -44,8 +45,21 @@ const Sidebar = () => {
       >
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-sidebar-border px-4 py-5">
-          <div className="h-10 w-10 shrink-0 rounded-xl bg-sidebar-primary text-sidebar-primary-foreground flex items-center justify-center shadow-lg shadow-sidebar-primary/20">
-            <Wallet className="h-5 w-5" />
+          <div className="h-10 w-10 shrink-0 flex items-center justify-center relative translate-y-px">
+            <Image
+              src="/images/logo/light_logo.svg"
+              alt="Settlr"
+              width={34}
+              height={34}
+              className="dark:hidden"
+            />
+            <Image
+              src="/images/logo/dark_logo.svg"
+              alt="Settlr"
+              width={34}
+              height={34}
+              className="hidden dark:block"
+            />
           </div>
 
           {!collapsed && (

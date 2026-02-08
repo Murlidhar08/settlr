@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSession } from "@/lib/auth-client"
 import { getInitials } from "@/utility/party"
-import { Wallet } from "lucide-react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -40,9 +40,21 @@ const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
           </motion.div>
         ) : (
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-xl shadow-primary/20 lg:hidden group overflow-hidden relative">
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-              <Wallet className="h-6 w-6 relative z-10" />
+            <div className="flex h-12 w-12 items-center justify-center lg:hidden group overflow-hidden relative" onClick={() => router.push("/")}>
+              <Image
+                src="/images/logo/light_logo.svg"
+                alt="Settlr"
+                width={40}
+                height={40}
+                className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
+              />
+              <Image
+                src="/images/logo/dark_logo.svg"
+                alt="Settlr"
+                width={40}
+                height={40}
+                className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"
+              />
             </div>
 
             <motion.div

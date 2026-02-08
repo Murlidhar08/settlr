@@ -4,6 +4,7 @@ import { AlertTriangle, Trash2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { BetterAuthActionButton } from '@/components/auth/better-auth-action-button'
 import { authClient } from '@/lib/auth-client'
+import { envClient } from '@/lib/env.client'
 
 const itemVariants = {
     hidden: { opacity: 0, scale: 0.95 },
@@ -58,7 +59,7 @@ export function DangerModalBody() {
             </div>
 
             <p className="text-[10px] text-center text-muted-foreground font-medium uppercase tracking-[0.2em] opacity-40">
-                Settlr Security Protocol v1.4
+                {envClient.NEXT_PUBLIC_APP_NAME} Security Protocol v1.4
             </p>
         </motion.div>
     )

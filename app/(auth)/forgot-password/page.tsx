@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Mail, ShieldAlert, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import { envClient } from "@/lib/env.client";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -82,6 +84,39 @@ export default function ForgotPasswordPage() {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back
         </motion.button>
 
+        {/* LOGO + BRAND */}
+        <motion.div
+          variants={itemVariants as any}
+          className="flex items-center gap-4 mb-8 group cursor-pointer"
+          onClick={() => router.push("/")}
+        >
+          <div className="relative w-12 h-12 flex items-center justify-center">
+            <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-lg group-hover:bg-primary/20 transition-colors" />
+            <Image
+              src="/images/logo/light_logo.svg"
+              alt={envClient.NEXT_PUBLIC_APP_NAME}
+              width={48}
+              height={48}
+              className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
+            />
+            <Image
+              src="/images/logo/dark_logo.svg"
+              alt={envClient.NEXT_PUBLIC_APP_NAME}
+              width={48}
+              height={48}
+              className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"
+            />
+          </div>
+          <div className="flex flex-col gap-0">
+            <h1 className="text-3xl font-black tracking-tight bg-clip-text text-transparent bg-linear-to-br from-foreground to-foreground/70 leading-none">
+              {envClient.NEXT_PUBLIC_APP_NAME}
+            </h1>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">
+              Finance
+            </p>
+          </div>
+        </motion.div>
+
         {/* Center Card */}
         <div className="flex flex-col justify-center max-w-md mx-auto w-full flex-1">
           <AnimatePresence mode="wait">
@@ -123,7 +158,7 @@ export default function ForgotPasswordPage() {
                         exit={{ opacity: 0, height: 0 }}
                         className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive border border-destructive/20 flex items-center gap-3"
                       >
-                        <ShieldAlert className="w-5 h-5 flex-shrink-0" />
+                        <ShieldAlert className="w-5 h-5 shrink-0" />
                         <p>{error}</p>
                       </motion.div>
                     )}
@@ -205,6 +240,7 @@ export default function ForgotPasswordPage() {
         <div className="relative z-10 text-center px-12 text-white">
           <motion.div
             animate={{
+              y: [0, -15, 0],
               rotate: [0, 5, -5, 0],
             }}
             transition={{
@@ -212,9 +248,16 @@ export default function ForgotPasswordPage() {
               repeat: Infinity,
               ease: "easeInOut",
             }}
-            className="w-48 h-56 bg-white/10 backdrop-blur-3xl rounded-[3rem] flex flex-col items-center justify-center border border-white/20 shadow-2xl mx-auto mb-10 group"
+            className="w-56 h-56 bg-white/5 backdrop-blur-3xl rounded-[4rem] flex flex-col items-center justify-center border border-white/10 shadow-2xl mx-auto mb-10 group relative"
           >
-            <ShieldAlert className="w-20 h-20 text-white group-hover:scale-110 transition-transform duration-300" />
+            <div className="absolute inset-0 bg-white/5 rounded-[4rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <Image
+              src="/images/logo/dark_logo.svg"
+              alt={envClient.NEXT_PUBLIC_APP_NAME}
+              width={140}
+              height={140}
+              className="relative z-10 group-hover:scale-110 transition-transform duration-500 drop-shadow-2xl"
+            />
           </motion.div>
           <motion.h2
             initial={{ y: 20, opacity: 0 }}
@@ -230,7 +273,7 @@ export default function ForgotPasswordPage() {
             transition={{ delay: 0.6 }}
             className="text-white/90 leading-relaxed text-lg max-w-md mx-auto font-medium"
           >
-            Settlr ensures secure & seamless identity recovery while keeping
+            {envClient.NEXT_PUBLIC_APP_NAME} ensures secure & seamless identity recovery while keeping
             your bookkeeping data protected.
           </motion.p>
         </div>
