@@ -26,44 +26,85 @@ export default async function SummaryCard() {
   const endOfDay = new Date();
   endOfDay.setHours(23, 59, 59, 999);
 
-  const [transactions, todayTransactions] = await Promise.all([
-    prisma.transaction.findMany({
-      where: { businessId },
-      select: { amount: true, direction: true, mode: true, partyId: true },
+  // Parallel fetch: All-time stats and Today's stats using DB aggregation
+  // Parallel fetch: All-time stats and Today's stats using DB aggregation
+  const [cashStats, creditStats, todayStats] = await Promise.all([
+    // 1. All-time CASH (Liquidity)
+    prisma.transaction.groupBy({
+      by: ['direction'],
+      where: {
+        businessId,
+      },
+      _sum: { amount: true },
     }),
-    prisma.transaction.findMany({
+    // 2. All-time CREDIT (Receivables/Payables) - Must have a party
+    prisma.transaction.groupBy({
+      by: ['partyId', 'direction'],
+      where: {
+        businessId,
+        partyId: { not: null }
+      },
+      _sum: { amount: true },
+    }),
+    // 3. Today's CASH Flow (Cashbook only - no party)
+    prisma.transaction.groupBy({
+      by: ['direction'],
       where: {
         businessId,
         partyId: null,
         date: { gte: startOfDay, lte: endOfDay }
       },
-      select: { amount: true, direction: true }
+      _sum: { amount: true }
     })
-  ])
+  ]);
 
-  let receivable = 0
-  let payable = 0
+  let cashIn = 0;
+  let cashOut = 0;
+  let receivable = 0;
+  let payable = 0;
 
-  transactions.forEach((tx) => {
-    const amount = tx.amount.toNumber()
-    // CREDIT (ONLINE / BANK) with party
-    if (tx.mode !== PaymentMode.CASH && tx.partyId) {
-      if (tx.direction === TransactionDirection.IN)
-        receivable += amount
-      else
-        payable += amount
+  let todayIn = 0;
+  let todayOut = 0;
+
+  // Process Cash Stats
+  cashStats.forEach((stat) => {
+    const amount = stat._sum.amount ? stat._sum.amount.toNumber() : 0;
+    if (stat.direction === TransactionDirection.IN) cashIn += amount;
+    else cashOut += amount;
+  });
+
+  // Process Credit Stats (Net balance per party)
+  const partyBalances: Record<string, number> = {};
+
+  creditStats.forEach((stat) => {
+    if (!stat.partyId) return;
+    const amount = stat._sum.amount ? stat._sum.amount.toNumber() : 0;
+
+    // Logic: Net Balance = OUT (We gave) - IN (We got)
+    // Positive Net Balance = They owe us (Receivable)
+    // Negative Net Balance = We owe them (Payable)
+
+    const multiplier = stat.direction === TransactionDirection.OUT ? 1 : -1;
+    partyBalances[stat.partyId] = (partyBalances[stat.partyId] || 0) + (amount * multiplier);
+  });
+
+  // Sum up positive balances (Receivables) and negative balances (Payables)
+  Object.values(partyBalances).forEach(balance => {
+    if (balance > 0) {
+      receivable += balance;
+    } else {
+      payable += Math.abs(balance);
     }
-  })
+  });
 
-  let todayIn = 0
-  let todayOut = 0
-  todayTransactions.forEach(tx => {
-    const amount = tx.amount.toNumber()
-    if (tx.direction === TransactionDirection.IN) todayIn += amount
-    else todayOut += amount
-  })
+  // Process Today's Stats
+  todayStats.forEach((stat) => {
+    const amount = stat._sum.amount ? stat._sum.amount.toNumber() : 0;
+    if (stat.direction === TransactionDirection.IN) todayIn += amount;
+    else todayOut += amount;
+  });
 
-  const todayNetCash = todayIn - todayOut
+  const todayNetCash = todayIn - todayOut;
 
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -100,18 +141,18 @@ export default async function SummaryCard() {
 
       {/* Receivable */}
       <StatCard
-        title="Total Receivables"
-        amount={formatAmount(receivable, currency)}
-        subtitle="Customers owe you"
+        title="Receivables"
+        amount={formatAmount(Math.abs(receivable), currency)}
+        subtitle="You'll Get"
         icon={<MoveDownLeft />}
         positive
       />
 
       {/* Payable */}
       <StatCard
-        title="Total Payables"
-        amount={formatAmount(payable, currency)}
-        subtitle="You owe suppliers"
+        title="Payables"
+        amount={formatAmount(Math.abs(payable), currency)}
+        subtitle="You'll Give"
         icon={<MoveUpRight />}
         positive={false}
       />

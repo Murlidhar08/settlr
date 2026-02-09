@@ -47,6 +47,7 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
     ];
   }
 
+  // 1. Fetch parties without transactions
   const parties = await prisma.party.findMany({
     where,
     select: {
@@ -54,36 +55,52 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
       name: true,
       contactNo: true,
       profileUrl: true,
-      transactions: {
-        select: {
-          amount: true,
-          direction: true,
-          date: true
-        },
-      }
     },
     orderBy: {
       createdAt: "desc"
     }
   });
 
+  if (parties.length === 0) return [];
 
+  const partyIds = parties.map(p => p.id);
+
+  // 2. Fetch aggregated balances for these parties
+  const balances = await prisma.transaction.groupBy({
+    by: ['partyId', 'direction'],
+    where: {
+      businessId,
+      partyId: { in: partyIds }
+    },
+    _sum: { amount: true }
+  });
+
+  // 3. Map balances to parties
   return parties.map((party) => {
-    const pending = party.transactions.reduce(
-      (acc, tx) => {
-        return tx.direction === TransactionDirection.OUT
-          ? acc.minus(tx.amount)
-          : acc.plus(tx.amount);
-      },
-      new Prisma.Decimal(0)
-    );
+    // Find all balance entries for this party
+    const partyBalances = balances.filter(b => b.partyId === party.id);
+
+    let totalIn = new Prisma.Decimal(0);
+    let totalOut = new Prisma.Decimal(0);
+
+    partyBalances.forEach(b => {
+      const amount = b._sum.amount ? b._sum.amount : new Prisma.Decimal(0);
+      if (b.direction === TransactionDirection.IN) totalIn = totalIn.plus(amount);
+      else totalOut = totalOut.plus(amount);
+    });
+
+    // Net balance = IN (Receivable?) - OUT (Payable?)
+    // Wait, original logic was:
+    // OUT -> acc.minus(amount)
+    // IN -> acc.plus(amount)
+    const netBalance = totalIn.minus(totalOut); // Equivalent to IN - OUT
 
     return {
       id: party.id,
       name: party.name,
       contactNo: party.contactNo,
       profileUrl: party.profileUrl,
-      amount: Number(pending.toFixed(2)),
+      amount: Number(netBalance.toFixed(2)),
     };
   });
 }

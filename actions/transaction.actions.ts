@@ -159,20 +159,27 @@ export async function getCashbookTransactions(filters: {
     ].filter(Boolean);
   }
 
-  const transactions = await prisma.transaction.findMany({
-    where,
-    orderBy: [
-      { date: "desc" },
-      { createdAt: "desc" },
-    ],
-  });
+  const [transactions, stats] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      orderBy: [
+        { date: "desc" },
+        { createdAt: "desc" },
+      ],
+    }),
+    prisma.transaction.groupBy({
+      by: ['direction'],
+      where,
+      _sum: { amount: true }
+    })
+  ]);
 
   let totalIn = 0;
   let totalOut = 0;
 
-  transactions.forEach((tx) => {
-    const amount = Number(tx.amount);
-    if (tx.direction === "IN") totalIn += amount;
+  stats.forEach(stat => {
+    const amount = stat._sum.amount ? stat._sum.amount.toNumber() : 0;
+    if (stat.direction === "IN") totalIn += amount;
     else totalOut += amount;
   });
 
