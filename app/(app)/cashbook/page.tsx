@@ -16,7 +16,8 @@ interface CashbookPageProps {
   searchParams: Promise<{
     search?: string;
     category?: string;
-    date?: string;
+    startDate?: string;
+    endDate?: string;
   }>;
 }
 
@@ -27,8 +28,12 @@ export default async function CashbookPage({ searchParams }: CashbookPageProps) 
   let userConfig = await getUserConfig();
   userConfig = userConfig ?? getDefaultConfig();
 
-  // Default to today's date if no date is provided and no search/category is active
-  const effectiveDate = params.date || (!params.search && !params.category ? format(new Date(), "yyyy-MM-dd") : undefined);
+  const today = format(new Date(), "yyyy-MM-dd");
+
+  // Default to today's date range if no range is provided and no search/category is active
+  const hasOtherFilters = params.search || params.category;
+  const effectiveStartDate = params.startDate || (!hasOtherFilters ? today : undefined);
+  const effectiveEndDate = params.endDate || (!hasOtherFilters ? today : undefined);
 
   return (
     <div className="w-full bg-background min-h-screen">
@@ -36,7 +41,8 @@ export default async function CashbookPage({ searchParams }: CashbookPageProps) 
         <CashbookContent
           search={params.search}
           category={params.category}
-          date={effectiveDate}
+          startDate={effectiveStartDate}
+          endDate={effectiveEndDate}
           config={userConfig}
         />
       </Suspense>
@@ -47,18 +53,21 @@ export default async function CashbookPage({ searchParams }: CashbookPageProps) 
 async function CashbookContent({
   search,
   category,
-  date,
+  startDate,
+  endDate,
   config
 }: {
   search?: string;
   category?: string;
-  date?: string;
+  startDate?: string;
+  endDate?: string;
   config: any
 }) {
   const { transactions, totalIn, totalOut } = await getCashbookTransactions({
     search,
     category,
-    date,
+    startDate,
+    endDate,
   });
 
   const transactionsPromise = Promise.resolve(transactions);
@@ -70,7 +79,7 @@ async function CashbookContent({
       <div className="mx-auto w-full max-w-4xl px-6 pb-32">
         <CashSummary totalIn={totalIn} totalOut={totalOut} currency={config.currency} />
 
-        <CashFilters effectiveDate={date} />
+        <CashFilters effectiveStartDate={startDate} effectiveEndDate={endDate} />
 
         <div className="mt-6">
           <Suspense fallback={<div className="h-40 w-full animate-pulse bg-muted/20 rounded-2xl" />}>

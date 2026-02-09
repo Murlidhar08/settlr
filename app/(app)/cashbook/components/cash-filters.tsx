@@ -11,23 +11,27 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 
-export default function CashFilters({ effectiveDate }: { effectiveDate?: string }) {
+import { DateRange } from "react-day-picker";
+
+export default function CashFilters({
+    effectiveStartDate,
+    effectiveEndDate
+}: {
+    effectiveStartDate?: string;
+    effectiveEndDate?: string;
+}) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
     const currentSearch = searchParams.get("search") || "";
     const currentCategory = searchParams.get("category") || "All";
-    const currentDate = searchParams.get("date");
-
-    // Determine the label for the date button
-    const dateLabel = currentDate
-        ? format(new Date(currentDate), "dd MMM")
-        : (effectiveDate === format(new Date(), "yyyy-MM-dd") ? "Today" : "Date");
+    const startDate = searchParams.get("startDate") || effectiveStartDate;
+    const endDate = searchParams.get("endDate") || effectiveEndDate;
 
     const [searchValue, setSearchValue] = useState(currentSearch);
 
-    // Filter categories
+    // Categories
     const categories = ["All", "Cash", "Online"];
 
     const updateFilters = (updates: Record<string, string | null>) => {
@@ -38,6 +42,17 @@ export default function CashFilters({ effectiveDate }: { effectiveDate?: string 
         });
         router.push(`${pathname}?${params.toString()}` as any);
     };
+
+    // Date range label
+    const getDateLabel = () => {
+        if (!startDate) return "Select Dates";
+        if (startDate === endDate) {
+            return startDate === format(new Date(), "yyyy-MM-dd") ? "Today" : format(new Date(startDate), "dd MMM");
+        }
+        return `${format(new Date(startDate), "dd MMM")} - ${format(new Date(endDate || startDate), "dd MMM")}`;
+    };
+
+    const isDateActive = searchParams.get("startDate") || startDate === format(new Date(), "yyyy-MM-dd");
 
     // Debounce search
     useEffect(() => {
@@ -101,27 +116,35 @@ export default function CashFilters({ effectiveDate }: { effectiveDate?: string 
                     <PopoverTrigger
                         className={cn(
                             "inline-flex items-center justify-center h-8 rounded-full shrink-0 gap-2 text-sm font-medium transition-all px-4",
-                            currentDate ? "bg-primary text-primary-foreground px-6 shadow-md" : "bg-secondary text-secondary-foreground"
+                            isDateActive ? "bg-primary text-primary-foreground px-6 shadow-md" : "bg-secondary text-secondary-foreground"
                         )}
                     >
                         <CalendarIcon size={14} />
-                        {dateLabel}
+                        {getDateLabel()}
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden" align="start">
                         <Calendar
-                            mode="single"
-                            selected={currentDate ? new Date(currentDate) : undefined}
-                            onSelect={(date) => updateFilters({ date: date ? format(date, "yyyy-MM-dd") : null })}
+                            mode="range"
+                            selected={{
+                                from: startDate ? new Date(startDate) : undefined,
+                                to: endDate ? new Date(endDate) : undefined
+                            } as DateRange}
+                            onSelect={(range) => {
+                                updateFilters({
+                                    startDate: range?.from ? format(range.from, "yyyy-MM-dd") : null,
+                                    endDate: range?.to ? format(range.to, "yyyy-MM-dd") : null,
+                                });
+                            }}
                             initialFocus
                         />
                     </PopoverContent>
                 </Popover>
 
-                {currentDate && (
+                {(searchParams.get("startDate") || searchParams.get("endDate")) && (
                     <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => updateFilters({ date: null })}
+                        onClick={() => updateFilters({ startDate: null, endDate: null })}
                         className="rounded-full shrink-0 h-8 w-8 text-muted-foreground"
                     >
                         <X size={14} />

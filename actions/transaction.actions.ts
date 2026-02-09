@@ -107,7 +107,8 @@ export async function getRecentTransactions() {
 export async function getCashbookTransactions(filters: {
   category?: string;
   search?: string;
-  date?: string;
+  startDate?: string;
+  endDate?: string;
 }) {
   const session = await getUserSession();
   let businessId = session?.session.activeBusinessId;
@@ -134,17 +135,19 @@ export async function getCashbookTransactions(filters: {
     where.mode = { not: "CASH" };
   }
 
-  // Date filter (defaults to today if specified in the logic)
-  if (filters.date) {
-    const startOfDay = new Date(filters.date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(filters.date);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    where.date = {
-      gte: startOfDay,
-      lte: endOfDay,
-    };
+  // Date range filter
+  if (filters.startDate || filters.endDate) {
+    where.date = {};
+    if (filters.startDate) {
+      const start = new Date(filters.startDate);
+      start.setHours(0, 0, 0, 0);
+      where.date.gte = start;
+    }
+    if (filters.endDate) {
+      const end = new Date(filters.endDate || filters.startDate!);
+      end.setHours(23, 59, 59, 999);
+      where.date.lte = end;
+    }
   }
 
   // Search filter (description or amount)

@@ -21,33 +21,33 @@ export default async function SummaryCard() {
 
   if (!businessId) return null
 
-  const transactions = await prisma.transaction.findMany({
-    where: { businessId },
-    select: {
-      amount: true,
-      direction: true,
-      mode: true,
-    },
-  })
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999);
 
-  let cashIn = 0
-  let cashOut = 0
+  const [transactions, todayTransactions] = await Promise.all([
+    prisma.transaction.findMany({
+      where: { businessId },
+      select: { amount: true, direction: true, mode: true, partyId: true },
+    }),
+    prisma.transaction.findMany({
+      where: {
+        businessId,
+        partyId: null,
+        date: { gte: startOfDay, lte: endOfDay }
+      },
+      select: { amount: true, direction: true }
+    })
+  ])
+
   let receivable = 0
   let payable = 0
 
   transactions.forEach((tx) => {
     const amount = tx.amount.toNumber()
-
-    // CASH
-    if (tx.mode === PaymentMode.CASH) {
-      if (tx.direction === TransactionDirection.IN)
-        cashIn += amount
-      else
-        cashOut += amount
-    }
-
-    // CREDIT (ONLINE / BANK)
-    if (tx.mode !== PaymentMode.CASH) {
+    // CREDIT (ONLINE / BANK) with party
+    if (tx.mode !== PaymentMode.CASH && tx.partyId) {
       if (tx.direction === TransactionDirection.IN)
         receivable += amount
       else
@@ -55,20 +55,28 @@ export default async function SummaryCard() {
     }
   })
 
-  const netCash = cashIn - cashOut
+  let todayIn = 0
+  let todayOut = 0
+  todayTransactions.forEach(tx => {
+    const amount = tx.amount.toNumber()
+    if (tx.direction === TransactionDirection.IN) todayIn += amount
+    else todayOut += amount
+  })
+
+  const todayNetCash = todayIn - todayOut
 
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {/* Net Cash */}
+      {/* Today's Cash Flow */}
       <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 group dark:bg-slate-950 p-8 text-white shadow-2xl shadow-indigo-500/10 transition-all hover:-translate-y-1 hover:shadow-indigo-500/20 border border-white/5">
         <div className="absolute -top-20 -right-20 h-48 w-100 rounded-full bg-indigo-500/40 blur-3xl group-hover:bg-indigo-500/20 transition-colors" />
         <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent via-white/60 to-transparent" />
 
         <div className="relative z-10 flex justify-between items-start">
           <div className="space-y-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Current Liquidity</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Today&apos;s Cash Flow</p>
             <p className="text-4xl font-black tracking-tighter">
-              {formatAmount(netCash, currency)}
+              {formatAmount(todayNetCash, currency)}
             </p>
           </div>
           <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center backdrop-blur-md border border-white/10 shadow-inner group-hover:scale-110 transition-transform">
@@ -76,17 +84,17 @@ export default async function SummaryCard() {
           </div>
         </div>
 
-        <div className={`relative z-10 mt-6 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-wider backdrop-blur-md border ${netCash >= 0
+        <div className={`relative z-10 mt-6 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-wider backdrop-blur-md border ${todayNetCash >= 0
           ? "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"
           : "bg-rose-400/10 text-rose-400 border-rose-400/20"
           }`}
         >
-          {netCash >= 0 ? (
+          {todayNetCash >= 0 ? (
             <MoveUpRight className="h-3 w-3" />
           ) : (
             <MoveDownLeft className="h-3 w-3" />
           )}
-          {netCash >= 0 ? "Account Surplus" : "Account Deficit"}
+          {todayNetCash >= 0 ? "Daily Surplus" : "Daily Deficit"}
         </div>
       </div>
 
