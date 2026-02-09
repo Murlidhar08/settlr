@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Search, Calendar as CalendarIcon, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 
-export default function CashFilters() {
+export default function CashFilters({ effectiveDate }: { effectiveDate?: string }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -19,6 +19,11 @@ export default function CashFilters() {
     const currentSearch = searchParams.get("search") || "";
     const currentCategory = searchParams.get("category") || "All";
     const currentDate = searchParams.get("date");
+
+    // Determine the label for the date button
+    const dateLabel = currentDate
+        ? format(new Date(currentDate), "dd MMM")
+        : (effectiveDate === format(new Date(), "yyyy-MM-dd") ? "Today" : "Date");
 
     const [searchValue, setSearchValue] = useState(currentSearch);
 
@@ -100,7 +105,7 @@ export default function CashFilters() {
                         )}
                     >
                         <CalendarIcon size={14} />
-                        {currentDate ? format(new Date(currentDate), "dd MMM") : "Date"}
+                        {dateLabel}
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden" align="start">
                         <Calendar

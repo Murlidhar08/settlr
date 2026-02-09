@@ -76,10 +76,21 @@ export async function deleteTransaction(transactionId: string, partyId?: string)
 
 export async function getRecentTransactions() {
   const session = await getUserSession();
+  let businessId = session?.session.activeBusinessId;
+
+  if (!businessId && session?.user.id) {
+    const business = await prisma.business.findFirst({
+      where: { ownerId: session.user.id },
+      select: { id: true }
+    });
+    businessId = business?.id;
+  }
+
+  if (!businessId) return [];
 
   return await prisma.transaction.findMany({
     where: {
-      businessId: session?.session.activeBusinessId || "",
+      businessId: businessId,
     },
     orderBy: {
       date: "desc",
@@ -99,7 +110,17 @@ export async function getCashbookTransactions(filters: {
   date?: string;
 }) {
   const session = await getUserSession();
-  const businessId = session?.session.activeBusinessId || "";
+  let businessId = session?.session.activeBusinessId;
+
+  if (!businessId && session?.user.id) {
+    const business = await prisma.business.findFirst({
+      where: { ownerId: session.user.id },
+      select: { id: true }
+    });
+    businessId = business?.id;
+  }
+
+  if (!businessId) return { transactions: [], totalIn: 0, totalOut: 0 };
 
   const where: any = {
     businessId,

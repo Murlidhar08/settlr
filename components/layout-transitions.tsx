@@ -10,10 +10,10 @@ export function LayoutTransitions({ children }: { children: React.ReactNode }) {
         <AnimatePresence mode="wait">
             <motion.main
                 key={pathname}
-                initial={{ opacity: 0, y: 5 }}
+                initial={{ opacity: 0, y: 2 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
+                exit={{ opacity: 0, y: -2 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
                 className="flex-1 overflow-y-auto pb-24 bg-background transition-[width] duration-300 ease-in-out"
             >
                 {children}

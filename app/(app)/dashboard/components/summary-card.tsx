@@ -10,7 +10,15 @@ export default async function SummaryCard() {
   const session = await getUserSession();
   const { currency } = await getUserConfig();
 
-  const businessId = session?.session.activeBusinessId
+  let businessId = session?.session.activeBusinessId
+  if (!businessId && session?.user.id) {
+    const business = await prisma.business.findFirst({
+      where: { ownerId: session.user.id },
+      select: { id: true }
+    });
+    businessId = business?.id;
+  }
+
   if (!businessId) return null
 
   const transactions = await prisma.transaction.findMany({
