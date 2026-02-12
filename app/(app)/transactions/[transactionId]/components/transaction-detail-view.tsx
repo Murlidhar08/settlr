@@ -9,13 +9,17 @@ import { Button } from "@/components/ui/button"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
 import { DeleteTransactionButton } from "./delete-transaction-button"
 import { motion, AnimatePresence } from "framer-motion"
+import { Currency } from "@/lib/generated/prisma/enums"
+import { formatAmount, getCurrencySymbol } from "@/utility/transaction"
 
 interface TransactionDetailViewProps {
     transaction: any
     isIn: boolean
+    currency?: Currency
 }
 
-export function TransactionDetailView({ transaction, isIn }: TransactionDetailViewProps) {
+export function TransactionDetailView({ transaction, isIn, currency = Currency.INR }: TransactionDetailViewProps) {
+    const symbol = getCurrencySymbol(currency)
     return (
         <div className="min-h-full bg-background relative">
             {/* Dynamic Animated Background */}
@@ -31,8 +35,7 @@ export function TransactionDetailView({ transaction, isIn }: TransactionDetailVi
                         repeat: Infinity,
                         ease: "linear"
                     }}
-                    className={`absolute -top-1/2 -right-1/2 w-full h-full rounded-full blur-[120px] ${isIn ? "bg-emerald-500/10" : "bg-rose-500/10"
-                        }`}
+                    className={`absolute -top-1/2 -right-1/2 w-full h-full rounded-full blur-[120px] ${isIn ? "bg-emerald-500/10" : "bg-rose-500/10"}`}
                 />
                 <motion.div
                     animate={{
@@ -56,7 +59,7 @@ export function TransactionDetailView({ transaction, isIn }: TransactionDetailVi
                 <div className="space-y-12">
                     {/* STATUS SECTION */}
                     <motion.section
-                        initial={{ opacity: 0, y: 30 }}
+                        initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="flex flex-col items-center text-center space-y-4"
                     >
@@ -77,7 +80,7 @@ export function TransactionDetailView({ transaction, isIn }: TransactionDetailVi
                             <motion.h1
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                transition={{ delay: 0.2 }}
+                                transition={{ delay: 0.05 }}
                                 className="text-3xl font-black tracking-tighter lg:text-5xl"
                             >
                                 Transaction Verified
@@ -85,20 +88,22 @@ export function TransactionDetailView({ transaction, isIn }: TransactionDetailVi
                             <motion.p
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                transition={{ delay: 0.3 }}
+                                transition={{ delay: 0.1 }}
                                 className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60 flex items-center justify-center gap-2"
                             >
                                 <Clock className="h-3 w-3" />
-                                {format(new Date(transaction.createdAt), "dd MMM yyyy • hh:mm a")}
+                                <span suppressHydrationWarning>
+                                    {format(new Date(transaction.createdAt), "dd MMM yyyy • hh:mm a")}
+                                </span>
                             </motion.p>
                         </div>
                     </motion.section>
 
                     {/* AMOUNT CARD */}
                     <motion.section
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.4 }}
+                        transition={{ delay: 0.1 }}
                         className="relative group overflow-hidden rounded-[3rem] border border-border/50 bg-card p-10 text-center shadow-2xl transition-all hover:border-primary/20"
                     >
                         <div className={`absolute top-0 left-0 w-full h-1.5 ${isIn ? "bg-emerald-500" : "bg-rose-500"}`} />
@@ -108,20 +113,20 @@ export function TransactionDetailView({ transaction, isIn }: TransactionDetailVi
                         </p>
 
                         <motion.p
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
+                            transition={{ delay: 0.2 }}
                             className={`text-6xl font-black tracking-tighter lg:text-8xl ${isIn ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                                 }`}
                         >
-                            {isIn ? "+" : "-"}₹{Number(transaction.amount).toFixed(2)}
+                            {isIn ? "+" : "-"}{symbol}{Number(transaction.amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                         </motion.p>
 
                         <div className="mt-8 flex justify-center">
                             <motion.span
-                                initial={{ opacity: 0, y: 10 }}
+                                initial={{ opacity: 0, y: 5 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.6 }}
+                                transition={{ delay: 0.3 }}
                                 className={`inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-xs font-black uppercase tracking-widest border ${isIn
                                     ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
                                     : "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20"
@@ -135,9 +140,9 @@ export function TransactionDetailView({ transaction, isIn }: TransactionDetailVi
 
                     {/* DETAILS BOX */}
                     <motion.section
-                        initial={{ opacity: 0, y: 40 }}
+                        initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.7 }}
+                        transition={{ delay: 0.4 }}
                         className="rounded-[3rem] border border-border/50 bg-card/50 backdrop-blur-xl p-8 shadow-2xl space-y-8"
                     >
                         <DetailRow icon={<Hash className="h-4 w-4 text-primary" />} label="Reference ID">
@@ -195,7 +200,7 @@ export function TransactionDetailView({ transaction, isIn }: TransactionDetailVi
                         className="px-12 flex-1 h-16 rounded-full gap-4 font-black uppercase tracking-widest shadow-2xl shadow-primary/30 transition-all hover:shadow-primary/50 hover:-translate-y-1 active:scale-95 bg-primary text-primary-foreground"
                     >
                         <PenSquareIcon className="h-5 w-5" />
-                        Modify Record
+                        Update Record
                     </Button>
                 </AddTransactionModal>
             </FooterButtons>

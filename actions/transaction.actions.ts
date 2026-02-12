@@ -76,10 +76,21 @@ export async function deleteTransaction(transactionId: string, partyId?: string)
 
 export async function getRecentTransactions() {
   const session = await getUserSession();
+  let businessId = session?.session.activeBusinessId;
+
+  if (!businessId && session?.user.id) {
+    const business = await prisma.business.findFirst({
+      where: { ownerId: session.user.id },
+      select: { id: true }
+    });
+    businessId = business?.id;
+  }
+
+  if (!businessId) return [];
 
   return await prisma.transaction.findMany({
     where: {
-      businessId: session?.session.activeBusinessId || "",
+      businessId: businessId,
     },
     orderBy: {
       date: "desc",
@@ -96,10 +107,21 @@ export async function getRecentTransactions() {
 export async function getCashbookTransactions(filters: {
   category?: string;
   search?: string;
-  date?: string;
+  startDate?: string;
+  endDate?: string;
 }) {
   const session = await getUserSession();
-  const businessId = session?.session.activeBusinessId || "";
+  let businessId = session?.session.activeBusinessId;
+
+  if (!businessId && session?.user.id) {
+    const business = await prisma.business.findFirst({
+      where: { ownerId: session.user.id },
+      select: { id: true }
+    });
+    businessId = business?.id;
+  }
+
+  if (!businessId) return { transactions: [], totalIn: 0, totalOut: 0 };
 
   const where: any = {
     businessId,
@@ -113,17 +135,19 @@ export async function getCashbookTransactions(filters: {
     where.mode = { not: "CASH" };
   }
 
-  // Date filter (defaults to today if specified in the logic)
-  if (filters.date) {
-    const startOfDay = new Date(filters.date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(filters.date);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    where.date = {
-      gte: startOfDay,
-      lte: endOfDay,
-    };
+  // Date range filter
+  if (filters.startDate || filters.endDate) {
+    where.date = {};
+    if (filters.startDate) {
+      const start = new Date(filters.startDate);
+      start.setHours(0, 0, 0, 0);
+      where.date.gte = start;
+    }
+    if (filters.endDate) {
+      const end = new Date(filters.endDate || filters.startDate!);
+      end.setHours(23, 59, 59, 999);
+      where.date.lte = end;
+    }
   }
 
   // Search filter (description or amount)
@@ -135,20 +159,27 @@ export async function getCashbookTransactions(filters: {
     ].filter(Boolean);
   }
 
-  const transactions = await prisma.transaction.findMany({
-    where,
-    orderBy: [
-      { date: "desc" },
-      { createdAt: "desc" },
-    ],
-  });
+  const [transactions, stats] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      orderBy: [
+        { date: "desc" },
+        { createdAt: "desc" },
+      ],
+    }),
+    prisma.transaction.groupBy({
+      by: ['direction'],
+      where,
+      _sum: { amount: true }
+    })
+  ]);
 
   let totalIn = 0;
   let totalOut = 0;
 
-  transactions.forEach((tx) => {
-    const amount = Number(tx.amount);
-    if (tx.direction === "IN") totalIn += amount;
+  stats.forEach(stat => {
+    const amount = stat._sum.amount ? stat._sum.amount.toNumber() : 0;
+    if (stat.direction === "IN") totalIn += amount;
     else totalOut += amount;
   });
 

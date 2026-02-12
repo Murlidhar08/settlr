@@ -5,8 +5,11 @@ import { getRecentTransactions } from "@/actions/transaction.actions";
 import { format } from "date-fns";
 import { formatAmount } from "@/utility/transaction";
 
+import { getUserConfig } from "@/lib/user-config";
+
 export default async function RecentTransaction() {
   const recentTransactions = await getRecentTransactions();
+  const { currency } = await getUserConfig();
 
   // ---------------------
   // Functions
@@ -48,7 +51,7 @@ export default async function RecentTransaction() {
             icon={getTransactionIcon(tx.direction, tx.party?.name)}
             title={getTransactionTitle(tx.description, tx.direction, tx.party?.name)}
             meta={`${format(tx.date, "dd MMM")} • ${tx.mode}${tx.party?.name ? ` • ${tx.party.name}` : ""}`}
-            amount={formatAmount(Number(tx.amount), undefined, true, tx.direction)}
+            amount={formatAmount(Number(tx.amount), currency, true, tx.direction)}
             positive={positive}
           />
         );

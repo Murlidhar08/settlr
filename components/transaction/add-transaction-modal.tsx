@@ -51,8 +51,8 @@ export const AddTransactionModal = ({
     id: undefined,
     businessId: "",
     amount: "",
-    date: format(transactionData?.date || new Date(), "yyyy-MM-dd"),
-    time: format(transactionData?.date || new Date(), "HH:mm"),
+    date: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "yyyy-MM-dd"),
+    time: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "HH:mm"),
     description: "",
     mode: PaymentMode.CASH,
     direction,
@@ -66,8 +66,8 @@ export const AddTransactionModal = ({
         ...pre,
         ...transactionData,
         amount: Number(transactionData.amount),
-        date: format(transactionData?.date || new Date(), "yyyy-MM-dd"),
-        time: format(transactionData?.date || new Date(), "HH:mm"),
+        date: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "yyyy-MM-dd"),
+        time: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "HH:mm"),
       }))
     }
   }, [transactionData])
@@ -118,14 +118,14 @@ export const AddTransactionModal = ({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.08
+        staggerChildren: 0.04
       }
     }
   }
 
   const itemVariants = {
     hidden: { opacity: 0, y: 15 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } }
   }
 
   return (
@@ -181,7 +181,7 @@ export const AddTransactionModal = ({
                     )}
                   />
                 </div>
-                <div className="h-1 w-24 mx-auto bg-gradient-to-r from-transparent via-muted to-transparent rounded-full" />
+                <div className="h-1 w-24 mx-auto bg-linear-to-r from-transparent via-muted to-transparent rounded-full" />
               </motion.div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -287,13 +287,13 @@ export const AddTransactionModal = ({
               <Button
                 onClick={handleAddTransaction}
                 className={cn(
-                  "h-14 flex-[2] rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
+                  "h-14 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
                   isOut
                     ? "bg-rose-600 hover:bg-rose-700 shadow-rose-200"
                     : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
                 )}
               >
-                {isOut ? "Confirm Give" : "Confirm Win"}
+                {isOut ? "Confirm Give" : "Confirm Get"}
                 {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
               </Button>
             </div>

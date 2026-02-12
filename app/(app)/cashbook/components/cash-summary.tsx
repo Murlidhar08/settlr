@@ -1,19 +1,24 @@
-
 "use client"
 
 import { motion } from "framer-motion";
+import { Currency } from "@/lib/generated/prisma/enums";
+import { getCurrencySymbol } from "@/utility/transaction";
 
 interface CashSummaryProp {
   totalIn: number
   totalOut: number
+  currency?: Currency
 }
 
 export default function CashSummary({
   totalIn,
   totalOut,
+  currency = Currency.INR,
 }: CashSummaryProp) {
   const cashBalance = totalIn - totalOut
   const isPositive = cashBalance >= 0
+
+  const symbol = getCurrencySymbol(currency)
 
   const formatAmount = (value: number) =>
     value.toLocaleString("en-IN", {
@@ -39,7 +44,7 @@ export default function CashSummary({
         className={`mt-3 text-center text-5xl font-black lg:text-6xl tracking-tighter ${isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
           }`}
       >
-        ₹{formatAmount(Math.abs(cashBalance))}
+        {symbol}{formatAmount(Math.abs(cashBalance))}
       </motion.h2>
 
       <div className="mt-10 grid grid-cols-2 gap-4">
@@ -53,7 +58,7 @@ export default function CashSummary({
           className="rounded-[2rem] bg-emerald-50/50 dark:bg-emerald-500/5 p-6 text-center border border-emerald-100 dark:border-emerald-500/10 shadow-sm"
         >
           <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
-            +₹{formatAmount(totalIn)}
+            +{symbol}{formatAmount(totalIn)}
           </p>
           <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Total Inflow</span>
         </motion.div>
@@ -68,7 +73,7 @@ export default function CashSummary({
           className="rounded-[2rem] bg-rose-50/50 dark:bg-rose-500/5 p-6 text-center border border-rose-100 dark:border-rose-500/10 shadow-sm"
         >
           <p className="text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight">
-            -₹{formatAmount(totalOut)}
+            -{symbol}{formatAmount(totalOut)}
           </p>
           <span className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-60">Total Outflow</span>
         </motion.div>

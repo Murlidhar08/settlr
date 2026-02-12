@@ -11,6 +11,7 @@ const envSchema = zod.object({
   //  Better Auth
   BETTER_AUTH_SECRET: zod.string().nonempty(),
   BETTER_AUTH_URL: zod.string().nonempty(),
+  BETTER_AUTH_TRUSTED_ORIGINS: zod.string().optional(),
 
   //  Email Service
   SMTP_HOST: zod.string().nonempty(),
