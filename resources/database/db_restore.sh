@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Usage:
-#   ./restore.sh backupfile.sql
+#   ./db_restore.sh backupfile.sql
 
 # Check if filename is provided
 if [ -z "$1" ]; then
@@ -17,16 +17,24 @@ if [ ! -f "$SQL_FILE" ]; then
   exit 1
 fi
 
-# PostgreSQL credentials
+# PostgreSQL connection details
 PGUSER="root"
 PGHOST="localhost"
-PGDB="settlr_bkp"
+PGPORT="5432"
+PGDB="postgres"
 
-# Prompt for password
-echo "Restoring database '$PGDB' from '$SQL_FILE' ..."
-psql -U "$PGUSER" -h "$PGHOST" -d "$PGDB" -f "$SQL_FILE"
+export "root"
 
-# Print completion message
+echo "Restoring database '$PGDB' from '$SQL_FILE'..."
+
+psql \
+  -U "$PGUSER" \
+  -h "$PGHOST" \
+  -p "$PGPORT" \
+  -d "$PGDB" \
+  -f "$SQL_FILE"
+
+# Capture exit status
 if [ $? -eq 0 ]; then
   echo "✅ Restore completed successfully!"
 else
