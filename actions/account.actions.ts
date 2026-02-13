@@ -100,7 +100,7 @@ export async function createAccount(data: CreateAccountData) {
                 data: {
                     businessId,
                     name: "Opening Balance Adjustments",
-                    type: "OTHER", // Or EQUITY/CAPITAL
+                    type: "OPENING_BALANCE",
                     isSystem: true,
                 },
             });

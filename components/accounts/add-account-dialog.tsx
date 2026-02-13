@@ -33,8 +33,8 @@ import { AccountType } from "@/lib/generated/prisma/client";
 const formSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
     type: z.enum([
-        "CASH", "BANK", "PARTY", "EXPENSE", "INCOME", "CAPITAL", "LOAN", "FUND", "OTHER"
-    ] as [string, ...string[]]), // Zod enum trick for strict typing if needed, or just list them
+        "CASH", "BANK", "PARTY", "EXPENSE", "INCOME", "CAPITAL", "LOAN", "FUND", "DRAWINGS", "OTHER"
+    ] as [string, ...string[]]),
     openingBalance: z.coerce.number().optional(),
 });
 
@@ -120,6 +120,7 @@ export function AddAccountDialog() {
                                         <SelectItem value="CAPITAL">Capital</SelectItem>
                                         <SelectItem value="LOAN">Loan</SelectItem>
                                         <SelectItem value="FUND">Fund</SelectItem>
+                                        <SelectItem value="DRAWINGS">Drawings</SelectItem>
                                         <SelectItem value="OTHER">Other</SelectItem>
                                     </SelectContent>
                                 </Select>

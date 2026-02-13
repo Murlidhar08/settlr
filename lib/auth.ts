@@ -41,6 +41,10 @@ export const auth = betterAuth({
         type: "string",
         required: false
       },
+      activeBusinessId: {
+        type: "string",
+        required: false
+      }
     },
     deleteUser: {
       enabled: true,

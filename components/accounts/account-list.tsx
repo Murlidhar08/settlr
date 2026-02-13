@@ -107,7 +107,7 @@ export function AccountList({ accounts }: { accounts: AccountWithStats[] }) {
                                                 <div className="flex justify-between items-start mb-2">
                                                     <div>
                                                         <h4 className="font-semibold truncate pr-2">{account.name}</h4>
-                                                        <p className="text-xs text-muted-foreground capitalize">{account.type.toLowerCase()}</p>
+                                                        <p className="text-xs text-muted-foreground capitalize">{account.type.toLowerCase().replace('_', ' ')}</p>
                                                     </div>
                                                     <Badge variant={account.balance >= 0 ? "default" : "destructive"} className={cn("ml-auto tabular-nums", account.balance >= 0 ? "bg-green-500 hover:bg-green-600" : "")}>
                                                         {account.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}

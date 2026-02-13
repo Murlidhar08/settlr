@@ -14,6 +14,7 @@ datasource db {
 }
 
 // ENUMS
+// Application Enums
 enum PaymentMode {
   CASH
   ONLINE
@@ -31,22 +32,30 @@ enum ThemeMode {
   DARK
 }
 
+// Transaction Enums
+enum FinancialAccountType {
+  MONEY
+  PARTY
+  CATEGORY
+}
+
+enum MoneyType {
+  CASH
+  ONLINE
+  CHEQUE
+}
+
 enum PartyType {
   CUSTOMER
   SUPPLIER
-  BOTH
 }
 
-enum AccountType {
-  CASH
-  BANK
-  PARTY
-  EXPENSE
-  INCOME
-  CAPITAL
-  LOAN
-  FUND
-  OTHER
+enum CategoryType {
+  INCOME // +
+  EXPENSE // -
+  ASSET // =
+  EQUITY // ~
+  ADJUSTMENT // #
 }
 
 // ----------
@@ -55,13 +64,13 @@ enum AccountType {
 // BETTER AUTH TABLES
 
 model User {
-  id                String                @id
+  id                String        @id
   name              String
   email             String
-  emailVerified     Boolean               @default(false)
+  emailVerified     Boolean       @default(false)
   image             String?
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
   contactNo         String?
   address           String?
   sessions          Session[]
@@ -146,16 +155,14 @@ model TwoFactor {
 }
 
 // APPLICATION TABLES
-
 model UserSettings {
   userId String @id
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  currency       Currency    @default(INR)
-  dateFormat     String      @default("DD/MM/YYYY")
-  defaultPayment PaymentMode @default(CASH)
-  theme          ThemeMode   @default(AUTO)
-  createdAt      DateTime    @default(now())
+  currency   Currency  @default(INR)
+  dateFormat String    @default("DD/MM/YYYY")
+  theme      ThemeMode @default(AUTO)
+  createdAt  DateTime  @default(now())
 
   @@map("userSettings")
 }
@@ -171,25 +178,34 @@ model Business {
   transactions      Transaction[]
   parties           Party[]
 
+  @@index([ownerId])
   @@map("business")
 }
 
 model FinancialAccount {
-  id         String      @id @default(cuid())
+  id   String @id @default(cuid())
+  name String
+
   businessId String
-  business   Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  name       String
-  type       AccountType
-  partyId    String?
-  party      Party?      @relation(fields: [partyId], references: [id])
-  isSystem   Boolean     @default(false)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @default(now()) @updatedAt
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  type         FinancialAccountType
+  moneyType    MoneyType?
+  partyType    PartyType?
+  categoryType CategoryType?
+
+  partyId String?
+  party   Party?  @relation(fields: [partyId], references: [id])
+
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   sentTransactions     Transaction[] @relation("SentTransactions")
   receivedTransactions Transaction[] @relation("ReceivedTransactions")
 
   @@index([businessId])
+  @@index([partyId])
   @@map("financialAccount")
 }
 
@@ -199,12 +215,11 @@ model Party {
   business          Business           @relation(fields: [businessId], references: [id])
   name              String
   contactNo         String?
-  type              PartyType
   profileUrl        String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @default(now()) @updatedAt
-  transactions      Transaction[] // Kept for query convenience, but strictly linked via FinancialAccount usually
-  financialAccounts FinancialAccount[] // A party can have one or more accounts (usually one)
+  transactions      Transaction[]
+  financialAccounts FinancialAccount[]
 
   @@index([businessId])
   @@map("party")
@@ -227,13 +242,14 @@ model Transaction {
   toAccountId   String
   toAccount     FinancialAccount @relation("ReceivedTransactions", fields: [toAccountId], references: [id])
 
-  // Optional direct link to Party for easier querying if needed, though Account link is primary source of truth
   partyId String?
   party   Party?  @relation(fields: [partyId], references: [id])
 
   @@index([businessId])
-  @@index([date])
-  @@index([fromAccountId])
-  @@index([toAccountId])
+  @@index([businessId, date]) // Fast business-wide history
+  @@index([fromAccountId, date]) // Fast "Out" ledger
+  @@index([toAccountId, date]) // Fast "In" ledger
+  @@index([partyId, date]) // Fast Party statement
+  @@index([userId]) // Audit trail lookup
   @@map("transaction")
 }
