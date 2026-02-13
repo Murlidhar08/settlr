@@ -1,4 +1,5 @@
-import { Currency, TransactionDirection } from "@/lib/generated/prisma/enums";
+import { Currency } from "@/lib/generated/prisma/enums";
+import { TransactionDirection } from "@/types/enums";
 
 export const formatAmount = (
   amount: number,

@@ -9,7 +9,7 @@ import { BalanceCard } from './components/balance-card';
 // Lib
 import { prisma } from '@/lib/prisma'
 import { getUserSession } from '@/lib/auth'
-import { TransactionDirection } from '@/lib/generated/prisma/client'
+import { TransactionDirection } from '@/types/enums'
 import { TransactionList } from '@/components/transaction/transaction-list';
 import { FooterButtons } from '@/components/footer-buttons';
 import { AddTransactionModal } from '@/components/transaction/add-transaction-modal';
@@ -18,12 +18,14 @@ import { getUserConfig } from '@/lib/user-config';
 import { getCurrencySymbol } from '@/utility/transaction';
 import BackHeaderClient from './components/back-header-client';
 
+import { getPartyTransactions } from "@/actions/transaction.actions";
+
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;
   const session = await getUserSession();
   const userConfig = await getUserConfig()
 
-  const [party, transactions, stats] = await Promise.all([
+  const [party, transactionData] = await Promise.all([
     // 1. Fetch Party Details
     prisma.party.findFirst({
       where: { id: partyId },
@@ -34,46 +36,18 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
         contactNo: true,
       }
     }),
-    // 2. Fetch Transactions (List)
-    prisma.transaction.findMany({
-      where: {
-        businessId: session?.session.activeBusinessId || "",
-        partyId: partyId,
-      },
-      orderBy: [
-        { date: "desc" },
-        { createdAt: "desc" }
-      ]
-    }),
-    // 3. Fetch Aggregated Stats (Total In/Out) - Scalable way
-    prisma.transaction.groupBy({
-      by: ['direction'],
-      where: {
-        businessId: session?.session.activeBusinessId || "",
-        partyId: partyId,
-      },
-      _sum: { amount: true }
-    })
+    // 2. Fetch Transactions & Stats
+    getPartyTransactions(partyId)
   ]);
 
   if (!party) return <div>Party not found</div>;
 
+  const { transactions, totalIn, totalOut } = transactionData;
+
   const partyDetails = {
     ...party,
-    transactions: transactions.map(tra => ({
-      ...tra,
-      amount: tra.amount.toNumber()
-    }))
+    transactions
   };
-
-  let totalIn = 0;
-  let totalOut = 0;
-
-  stats.forEach((stat) => {
-    const amount = stat._sum.amount ? stat._sum.amount.toNumber() : 0;
-    if (stat.direction === TransactionDirection.IN) totalIn += amount;
-    else totalOut += amount;
-  });
 
   return (
     <div className="relative mx-auto min-h-screen max-w-full bg-background pb-28 lg:pb-16">

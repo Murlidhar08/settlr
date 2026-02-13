@@ -8,7 +8,7 @@ import { AddTransactionModal } from "@/components/transaction/add-transaction-mo
 import { FooterButtons } from "@/components/footer-buttons";
 import { Button } from "@/components/ui/button";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
-import { TransactionDirection } from "@/lib/generated/prisma/enums";
+import { TransactionDirection } from "@/types/enums";
 import { getCashbookTransactions } from "@/actions/transaction.actions";
 import { format } from "date-fns";
 

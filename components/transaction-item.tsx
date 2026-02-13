@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
-import { PaymentMode, TransactionDirection } from "@/lib/generated/prisma/enums"
+import { PaymentMode, TransactionDirection } from "@/types/enums"
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"

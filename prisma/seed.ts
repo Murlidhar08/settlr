@@ -157,123 +157,13 @@ async function main() {
   })
 
   // List of Party
-  const transactions = await prisma.transaction.createMany({
-    data: [
-      {
-        amount: "344.00",
-        businessId: "cmk2i4nnn0000k4vercnwxr8w",
-        date: "2026-01-05T18:30:00.000Z",
-        direction: "OUT",
-        mode: "CASH",
-        partyId: "cmk2i6xuz0004k4ve5hqq62kt",
-        userId: "UvOchG90zgQfSouPvYqg4kiNHqmifplu"
-      },
-      {
-        amount: "172.00",
-        businessId: "cmk2i4nnn0000k4vercnwxr8w",
-        date: "2026-01-05T18:30:00.000Z",
-        direction: "IN",
-        mode: "CASH",
-        partyId: "cmk2i6xuz0004k4ve5hqq62kt",
-        userId: "UvOchG90zgQfSouPvYqg4kiNHqmifplu"
-      },
-      {
-        amount: "622.00",
-        businessId: "cmk2i4nnn0000k4vercnwxr8w",
-        date: "2025-12-15T18:30:00.000Z",
-        direction: "OUT",
-        mode: "CASH",
-        partyId: "cmk2i6xuz0004k4ve5hqq62kt",
-        userId: "UvOchG90zgQfSouPvYqg4kiNHqmifplu"
-      },
-      {
-        amount: "65.00",
-        businessId: "cmk2i4nnn0000k4vercnwxr8w",
-        date: "2025-12-15T18:30:00.000Z",
-        direction: "IN",
-        mode: "CASH",
-        partyId: "cmk2i6xuz0004k4ve5hqq62kt",
-        userId: "UvOchG90zgQfSouPvYqg4kiNHqmifplu"
-      },
-      {
-        amount: "93.00",
-        businessId: "cmk2i4nnn0000k4vercnwxr8w",
-        date: "2025-12-11T18:30:00.000Z",
-        direction: "OUT",
-        mode: "CASH",
-        partyId: "cmk2i6xuz0004k4ve5hqq62kt",
-        userId: "UvOchG90zgQfSouPvYqg4kiNHqmifplu"
-      },
-      {
-        amount: "344.00",
-        businessId: "cmk2i4nnn0000k4vercnwxr8w",
-        date: "2026-01-05T18:30:00.000Z",
-        direction: "OUT",
-        mode: "CASH",
-        partyId: "cmk2i6xuz0004k4ve5hqq62kt",
-        userId: "UvOchG90zgQfSouPvYqg4kiNHqmifplu",
-        description: "Invoice #56"
-      },
-      {
-        amount: "822.00",
-        businessId: "cmk2i4nnn0000k4vercnwxr8w",
-        date: "2025-12-15T18:30:00.000Z",
-        direction: "IN",
-        mode: "CASH",
-        partyId: "cmk2i6xuz0004k4ve5hqq62kt",
-        userId: "UvOchG90zgQfSouPvYqg4kiNHqmifplu",
-        description: "Fruits"
-      },
-      {
-        amount: "344.00",
-        businessId: "cmk2i4nnn0000k4vercnwxr8w",
-        date: "2026-01-05T18:30:00.000Z",
-        direction: "IN",
-        mode: "CASH",
-        partyId: "cmk2i6xuz0004k4ve5hqq62kt",
-        userId: "UvOchG90zgQfSouPvYqg4kiNHqmifplu",
-        description: "Settled Up"
-      },
-      {
-        amount: "350.00",
-        businessId: "cmk2i4nnn0000k4vercnwxr8w",
-        date: "2026-01-01T18:30:00.000Z",
-        direction: "OUT",
-        mode: "CASH",
-        partyId: "cmk2i6xuz0004k4ve5hqq62kt",
-        userId: "UvOchG90zgQfSouPvYqg4kiNHqmifplu"
-      },
-      {
-        amount: "36.00",
-        businessId: "cmk2i4nnn0000k4vercnwxr8w",
-        date: "2026-01-05T18:30:00.000Z",
-        direction: "IN",
-        mode: "CASH",
-        partyId: "cmk2i6xuz0004k4ve5hqq62kt",
-        userId: "UvOchG90zgQfSouPvYqg4kiNHqmifplu"
-      },
-      {
-        amount: "40.00",
-        businessId: "cmk2i4nnn0000k4vercnwxr8w",
-        date: "2026-01-01T18:30:00.000Z",
-        direction: "OUT",
-        mode: "CASH",
-        partyId: "cmk2i6xuz0004k4ve5hqq62kt",
-        userId: "UvOchG90zgQfSouPvYqg4kiNHqmifplu"
-      },
-      {
-        amount: "650.00",
-        businessId: "cmk2i4nnn0000k4vercnwxr8w",
-        date: "2026-01-05T18:30:00.000Z",
-        direction: "IN",
-        mode: "CASH",
-        partyId: "cmk2iuv4f0005k4veu99yhtlg",
-        userId: "UvOchG90zgQfSouPvYqg4kiNHqmifplu"
-      },
-    ]
-  })
+  // const transactions = await prisma.transaction.createMany({
+  //   data: [
+  //     // ... (commenting out invalid data)
+  //   ]
+  // })
 
-  console.log({ business, devUser, userAccount, party, transactions });
+  console.log({ business, devUser, userAccount, party });
 }
 
 // Execution

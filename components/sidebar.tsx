@@ -9,6 +9,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Landmark,
 } from "lucide-react";
 import clsx from "clsx";
 import { useState } from "react";
@@ -22,6 +23,7 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", icon: <LayoutDashboard />, href: "/dashboard" },
+  { label: "Accounts", icon: <Landmark />, href: "/accounts" },
   { label: "Parties", icon: <User2Icon />, href: "/parties" },
   { label: "Cashbook", icon: <Wallet />, href: "/cashbook" },
   { label: "Settings", icon: <Settings />, href: "/settings" },

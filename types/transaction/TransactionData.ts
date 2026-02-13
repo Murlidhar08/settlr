@@ -1,4 +1,4 @@
-import { PaymentMode, TransactionDirection } from "@/lib/generated/prisma/client";
+import { PaymentMode, TransactionDirection } from "@/types/enums";
 
 export interface TransactionRes {
   id: string;

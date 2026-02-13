@@ -6,8 +6,8 @@ import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useState, useEffect, ReactNode } from "react"
-import { PaymentMode, TransactionDirection } from "@/lib/generated/prisma/enums"
-import { addTransaction } from "@/actions/transaction.actions"
+import { PaymentMode, TransactionDirection } from "@/types/enums"
+import { addSmartTransaction } from "@/actions/transaction.actions"
 import { Transaction } from "@/lib/generated/prisma/client"
 import { format } from "date-fns"
 
@@ -70,11 +70,11 @@ export const AddTransactionSheet = ({
     if (!data.amount)
       return toast.error("Amount is required!!")
 
-    await addTransaction({
+    await addSmartTransaction({
       ...data,
       amount: Number(data.amount),
       date: new Date(data.date),
-      description: data.description || null
+      description: data.description || null,
     })
     setOpen(false)
   }

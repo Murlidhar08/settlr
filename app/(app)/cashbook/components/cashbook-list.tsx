@@ -2,7 +2,7 @@
 
 import { use } from "react";
 import { TransactionList } from "@/components/transaction/transaction-list";
-import { TransactionDirection, PaymentMode } from "@/lib/generated/prisma/enums";
+import { TransactionDirection, PaymentMode } from "@/types/enums";
 import { motion, AnimatePresence } from "framer-motion";
 import { Transaction } from "@/lib/generated/prisma/client";
 

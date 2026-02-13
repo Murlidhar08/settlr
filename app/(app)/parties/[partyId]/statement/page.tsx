@@ -12,7 +12,7 @@ import StatementSkeleton from "./components/statement-skeleton";
 
 // Lib
 import { getPartyStatement } from "@/actions/transaction.actions";
-import { TransactionDirection } from "@/lib/generated/prisma/enums";
+import { TransactionDirection } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { envClient } from "@/lib/env.client";
 import { getInitials } from "@/utility/party";

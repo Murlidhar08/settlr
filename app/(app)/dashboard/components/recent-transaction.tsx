@@ -1,4 +1,4 @@
-import { TransactionDirection } from "@/lib/generated/prisma/enums";
+import { TransactionDirection } from "@/types/enums";
 import TransactionItem from "./transaction-item";
 import { ArrowDownLeft, ArrowUpRight, Wallet2 } from "lucide-react";
 import { getRecentTransactions } from "@/actions/transaction.actions";
@@ -18,7 +18,7 @@ export default async function RecentTransaction() {
       return description;
 
     if (!partyName) {
-      return "Cashbook"
+      return "Transaction"
     }
 
     return direction === TransactionDirection.IN
@@ -42,16 +42,24 @@ export default async function RecentTransaction() {
       )}
 
       {recentTransactions.map((tx) => {
-        const positive = tx.direction === TransactionDirection.IN;
+        // Deriving direction: 
+        // If money went TO a Cash/Bank account -> IN (Receipt)
+        // If money went FROM a Cash/Bank account -> OUT (Payment)
+        const isToCash = ["CASH", "BANK"].includes(tx.toAccount.type);
+        const direction = isToCash ? TransactionDirection.IN : TransactionDirection.OUT;
+
+        const positive = direction === TransactionDirection.IN;
+
+        const otherPartyName = isToCash ? tx.fromAccount.name : tx.toAccount.name;
 
         return (
           <TransactionItem
             key={tx.id}
             id={tx.id}
-            icon={getTransactionIcon(tx.direction, tx.party?.name)}
-            title={getTransactionTitle(tx.description, tx.direction, tx.party?.name)}
-            meta={`${format(tx.date, "dd MMM")} • ${tx.mode}${tx.party?.name ? ` • ${tx.party.name}` : ""}`}
-            amount={formatAmount(Number(tx.amount), currency, true, tx.direction)}
+            icon={getTransactionIcon(direction, tx.party?.name)}
+            title={getTransactionTitle(tx.description, direction, tx.party?.name)}
+            meta={`${format(tx.date, "dd MMM")} • ${otherPartyName}`}
+            amount={formatAmount(Number(tx.amount), currency, true, direction)}
             positive={positive}
           />
         );

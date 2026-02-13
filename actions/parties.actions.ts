@@ -3,7 +3,7 @@
 // Package
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { PartyType, TransactionDirection } from "@/lib/generated/prisma/enums";
+import { PartyType } from "@/lib/generated/prisma/enums";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { getUserSession } from "@/lib/auth";
 import { PartyInput, PartyRes } from "@/types/party/PartyRes";
@@ -47,7 +47,7 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
     ];
   }
 
-  // 1. Fetch parties without transactions
+  // 1. Fetch parties
   const parties = await prisma.party.findMany({
     where,
     select: {
@@ -65,35 +65,72 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
 
   const partyIds = parties.map(p => p.id);
 
-  // 2. Fetch aggregated balances for these parties
-  const balances = await prisma.transaction.groupBy({
-    by: ['partyId', 'direction'],
+  // 2. Resolve Financial Accounts for these parties (Map PartyId -> AccountId)
+  const partyAccounts = await prisma.financialAccount.findMany({
     where: {
       businessId,
       partyId: { in: partyIds }
     },
+    select: { id: true, partyId: true }
+  });
+
+  const partyIdToAccountId = new Map<string, string>();
+  const accountIdToPartyId = new Map<string, string>();
+  partyAccounts.forEach(acc => {
+    if (acc.partyId) {
+      partyIdToAccountId.set(acc.partyId, acc.id);
+      accountIdToPartyId.set(acc.id, acc.partyId);
+    }
+  });
+
+  const accountIds = partyAccounts.map(p => p.id);
+
+  if (accountIds.length === 0) {
+    return parties.map(p => ({
+      id: p.id,
+      name: p.name,
+      contactNo: p.contactNo,
+      profileUrl: p.profileUrl,
+      amount: 0,
+    }));
+  }
+
+  // 3. Aggregate Balances
+  // Debit (Dr) = Receiver = Party Recvd = You Gave = Increases Receivable
+  const debits = await prisma.transaction.groupBy({
+    by: ['toAccountId'],
+    where: { businessId, toAccountId: { in: accountIds } },
     _sum: { amount: true }
   });
 
-  // 3. Map balances to parties
+  // Credit (Cr) = Giver = Party Paid = You Got = Decreases Receivable
+  const credits = await prisma.transaction.groupBy({
+    by: ['fromAccountId'],
+    where: { businessId, fromAccountId: { in: accountIds } },
+    _sum: { amount: true }
+  });
+
+  // 4. Map balances to parties
   return parties.map((party) => {
-    // Find all balance entries for this party
-    const partyBalances = balances.filter(b => b.partyId === party.id);
+    const accId = partyIdToAccountId.get(party.id);
 
-    let totalIn = new Prisma.Decimal(0);
-    let totalOut = new Prisma.Decimal(0);
+    if (!accId) {
+      return {
+        id: party.id,
+        name: party.name,
+        contactNo: party.contactNo,
+        profileUrl: party.profileUrl,
+        amount: 0,
+      };
+    }
 
-    partyBalances.forEach(b => {
-      const amount = b._sum.amount ? b._sum.amount : new Prisma.Decimal(0);
-      if (b.direction === TransactionDirection.IN) totalIn = totalIn.plus(amount);
-      else totalOut = totalOut.plus(amount);
-    });
+    const totalDebit = debits.find(d => d.toAccountId === accId)?._sum.amount?.toNumber() || 0;
+    const totalCredit = credits.find(c => c.fromAccountId === accId)?._sum.amount?.toNumber() || 0;
 
-    // Net balance = IN (Receivable?) - OUT (Payable?)
-    // Wait, original logic was:
-    // OUT -> acc.minus(amount)
-    // IN -> acc.plus(amount)
-    const netBalance = totalIn.minus(totalOut); // Equivalent to IN - OUT
+    // Net Balance (Receivable perspective) = Debit - Credit
+    // If Result > 0: They Owe Us (Receivable)
+    // If Result < 0: We Owe Them (Payable)
+    const netBalance = totalDebit - totalCredit;
 
     return {
       id: party.id,
