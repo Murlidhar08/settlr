@@ -14,7 +14,7 @@ import { getVerificationEmailHtml } from "./templates/email-verification";
 import { getPasswordResetSuccessEmailHtml } from "./templates/email-password-reseted";
 import { getDeleteAccountEmailHtml } from "./templates/email-delete-account";
 import { headers } from "next/headers";
-import { Currency, PaymentMode, ThemeMode } from "./generated/prisma/enums";
+import { Currency, PaymentMode, ThemeMode, FinancialAccountType, MoneyType, CategoryType } from "./generated/prisma/enums";
 import { envServer } from "./env.server";
 
 export const auth = betterAuth({
@@ -29,7 +29,7 @@ export const auth = betterAuth({
     disableOriginCheck: true
   },
   database: prismaAdapter(prisma, {
-    provider: "postgresql", // or "mysql", "postgresql", ...etc
+    provider: "postgresql"
   }),
   user: {
     additionalFields: {
@@ -162,15 +162,61 @@ export const auth = betterAuth({
       }
     },
     afterEmailVerification: async (user) => {
-      // Add Default Business
-      await prisma.business.create({
-        data: {
-          name: "Default Business",
-          ownerId: user.id,
-        }
-      });
-
       console.log(`${user.email} has been successfully verified!`);
+    }
+  },
+  events: {
+    user: {
+      created: async ({ user }: { user: any }) => {
+        // Add Default Business with system accounts
+        await prisma.business.create({
+          data: {
+            name: "Default Business",
+            ownerId: user.id,
+            financialAccounts: {
+              create: [
+                {
+                  name: "Cash",
+                  type: FinancialAccountType.MONEY,
+                  moneyType: MoneyType.CASH,
+                  isSystem: true,
+                },
+                {
+                  name: "Opening Balance",
+                  type: FinancialAccountType.CATEGORY,
+                  categoryType: CategoryType.ADJUSTMENT,
+                  isSystem: true,
+                },
+                {
+                  name: "Owner Withdrawal",
+                  type: FinancialAccountType.CATEGORY,
+                  categoryType: CategoryType.EQUITY,
+                  isSystem: true,
+                },
+                {
+                  name: "Owner Investment",
+                  type: FinancialAccountType.CATEGORY,
+                  categoryType: CategoryType.EQUITY,
+                  isSystem: true,
+                },
+                {
+                  name: "Expense",
+                  type: FinancialAccountType.CATEGORY,
+                  categoryType: CategoryType.EXPENSE,
+                  isSystem: true,
+                },
+                {
+                  name: "Sales",
+                  type: FinancialAccountType.CATEGORY,
+                  categoryType: CategoryType.INCOME,
+                  isSystem: true,
+                },
+              ]
+            }
+          }
+        });
+        console.log(`Default setup completed for new user: ${user.email}`);
+      }
     }
   },
   socialProviders: {
