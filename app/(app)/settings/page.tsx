@@ -40,7 +40,7 @@ import { Header } from "@/components/header";
 import { signOut } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
+import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
 import { envClient } from "@/lib/env.client";
 import { getAppVersion, upsertUserSettings } from "@/actions/user-settings.actions";
 import { useSession } from "@/lib/auth-client";
@@ -54,7 +54,6 @@ export default function SettingsPage() {
 
   const [currency, setCurrency] = useState<Currency>(userConfig.currency);
   const [dateFormat, setDateFormat] = useState(userConfig.dateFormat);
-  const [paymentMode, setPaymentMode] = useState<PaymentMode>(userConfig.defaultPayment);
 
   const [version, setVersion] = useState<string>("Pending ...");
 
@@ -185,28 +184,6 @@ export default function SettingsPage() {
                 <SelectContent className="rounded-2xl shadow-2xl">
                   <SelectItem value="DD/MM/YYYY" className="rounded-lg font-medium">DD/MM/YYYY</SelectItem>
                   <SelectItem value="MM/DD/YYYY" className="rounded-lg font-medium">MM/DD/YYYY</SelectItem>
-                </SelectContent>
-              </Select>
-            </Row>
-
-            <Row icon={CreditCard} label="Default Payment">
-              <Select
-                value={paymentMode}
-                onValueChange={(value) => {
-                  if (!value) return
-                  const v = value as PaymentMode
-                  setPaymentMode(v)
-                  void upsertUserSettings({ defaultPayment: v })
-                  toast.success(`Default payment updated to ${v}`)
-                }}
-              >
-                <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="rounded-2xl shadow-2xl">
-                  {Object.values(PaymentMode).map((mode) => (
-                    <SelectItem key={mode} value={mode} className="rounded-lg font-medium capitalize">{mode.toLowerCase()}</SelectItem>
-                  ))}
                 </SelectContent>
               </Select>
             </Row>
@@ -383,43 +360,5 @@ function Row({ icon: Icon, label, children }: {
       <p className="flex-1 font-semibold">{label}</p>
       {children}
     </motion.div>
-  );
-}
-
-function ActionRow({
-  icon: Icon,
-  title,
-  subtitle,
-}: {
-  icon: React.ElementType;
-  title: string;
-  subtitle?: string;
-}) {
-  return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
-      className="w-full flex items-center gap-4 px-4 h-16 text-left"
-    >
-      <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-        <Icon size={16} />
-      </div>
-      <div className="flex-1">
-        <p className="font-semibold">{title}</p>
-        {subtitle && <p className="text-xs text-green-500">{subtitle}</p>}
-      </div>
-      <ChevronRight className="text-muted-foreground" />
-    </motion.button>
-  );
-}
-
-function LinkRow({ label }: { label: string }) {
-  return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
-      className="w-full flex items-center justify-between px-4 h-16"
-    >
-      <span className="font-medium">{label}</span>
-      <ExternalLink size={16} className="text-muted-foreground" />
-    </motion.button>
   );
 }
