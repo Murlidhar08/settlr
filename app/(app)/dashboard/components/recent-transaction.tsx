@@ -53,6 +53,8 @@ export default async function RecentTransaction() {
             meta={`${format(tx.date, "dd MMM")} • ${tx.mode}${tx.party?.name ? ` • ${tx.party.name}` : ""}`}
             amount={formatAmount(Number(tx.amount), currency, true, tx.direction)}
             positive={positive}
+            fromAccount={tx.fromAccount?.name}
+            toAccount={tx.toAccount?.name}
           />
         );
       })}

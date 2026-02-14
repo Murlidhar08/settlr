@@ -7,12 +7,16 @@ import { MoneyType, FinancialAccountType, CategoryType } from "@/lib/generated/p
 import { AddAccountModal } from "./add-account-modal"
 import { motion } from "framer-motion"
 
+import { useRouter } from "next/navigation"
+
 interface AccountCardProps {
     account: FinancialAccount
     index: number
 }
 
 export const AccountCard = ({ account, index }: AccountCardProps) => {
+    const router = useRouter()
+
     const getIcon = () => {
         switch (account.type) {
             case FinancialAccountType.MONEY:
@@ -37,7 +41,8 @@ export const AccountCard = ({ account, index }: AccountCardProps) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: index * 0.05 }}
             whileHover={{ y: -4 }}
-            className="group relative p-6 rounded-3xl border-2 bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5"
+            onClick={() => router.push(`/accounts/${account.id}` as any)}
+            className="group relative p-6 rounded-3xl border-2 bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 cursor-pointer"
         >
             <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
@@ -52,11 +57,15 @@ export const AccountCard = ({ account, index }: AccountCardProps) => {
                     </div>
                 </div>
 
-                <AddAccountModal accountData={account}>
-                    <div className="p-2 rounded-xl bg-muted/20 hover:bg-primary hover:text-primary-foreground opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
-                        <Edit2 size={14} />
+                {!account.isSystem && (
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <AddAccountModal accountData={account}>
+                            <div className="p-2 rounded-xl bg-muted/20 hover:bg-primary hover:text-primary-foreground opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                                <Edit2 size={14} />
+                            </div>
+                        </AddAccountModal>
                     </div>
-                </AddAccountModal>
+                )}
             </div>
 
             {/* Decorative background element */}

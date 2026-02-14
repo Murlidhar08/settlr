@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 interface TransactionItemProps {
   id: string,
@@ -8,6 +9,8 @@ interface TransactionItemProps {
   meta: string;
   amount: string;
   positive: boolean;
+  fromAccount?: string;
+  toAccount?: string;
 }
 
 export default function TransactionItem({
@@ -17,6 +20,8 @@ export default function TransactionItem({
   meta,
   amount,
   positive,
+  fromAccount,
+  toAccount,
 }: TransactionItemProps) {
   return (
     <Link
@@ -36,9 +41,18 @@ export default function TransactionItem({
 
           <div className="space-y-1">
             <p className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">{title}</p>
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider opacity-70 group-hover:opacity-100 transition-opacity">
-              {meta}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider opacity-70 group-hover:opacity-100 transition-opacity">
+                {meta}
+              </p>
+              {(fromAccount || toAccount) && (
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted/50 text-[9px] font-black uppercase tracking-tighter text-muted-foreground/60">
+                  <span className="truncate max-w-[60px]">{fromAccount}</span>
+                  <ArrowRight size={8} />
+                  <span className="truncate max-w-[60px] text-foreground/50">{toAccount}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

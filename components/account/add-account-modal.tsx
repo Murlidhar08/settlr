@@ -22,6 +22,8 @@ interface AddAccountModalProps {
     title?: string
     accountData?: FinancialAccount
     children: ReactNode
+    openInternal?: boolean
+    setOpenInternal?: (open: boolean) => void
 }
 
 const SUBTYPES_CONFIG: Record<FinancialAccountType, any> = {
@@ -63,8 +65,15 @@ export const AddAccountModal = ({
     title = "Add Account",
     accountData,
     children,
+    openInternal,
+    setOpenInternal,
 }: AddAccountModalProps) => {
-    const [open, setOpen] = useState(false)
+    const [openState, setOpenState] = useState(false)
+    const open = openInternal !== undefined ? openInternal : openState
+    const setOpen = (val: boolean) => {
+        if (setOpenInternal) setOpenInternal(val)
+        else setOpenState(val)
+    }
     const [loading, setLoading] = useState(false)
     const router = useRouter()
 
@@ -147,9 +156,11 @@ export const AddAccountModal = ({
 
     return (
         <>
-            <div onClick={() => setOpen(true)} className="inline-block cursor-pointer active:scale-95 transition-transform">
-                {children}
-            </div>
+            {children && (
+                <div onClick={() => setOpen(true)} className="inline-block cursor-pointer active:scale-95 transition-transform">
+                    {children}
+                </div>
+            )}
 
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetContent

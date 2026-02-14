@@ -8,4 +8,7 @@ export interface TransactionRes {
   direction: TransactionDirection;
   description: string | null;
   createdAt: Date;
+  fromAccount?: { name: string, type: string };
+  toAccount?: { name: string, type: string };
+  party?: { name: string };
 }

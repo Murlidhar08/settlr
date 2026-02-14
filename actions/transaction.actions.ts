@@ -104,6 +104,12 @@ export async function getRecentTransactions() {
       party: {
         select: { name: true },
       },
+      fromAccount: {
+        select: { name: true, type: true }
+      },
+      toAccount: {
+        select: { name: true, type: true }
+      }
     },
   });
 }
@@ -170,6 +176,10 @@ export async function getCashbookTransactions(filters: {
         { date: "desc" },
         { createdAt: "desc" },
       ],
+      include: {
+        fromAccount: { select: { name: true, type: true } },
+        toAccount: { select: { name: true, type: true } }
+      }
     }),
     prisma.transaction.groupBy({
       by: ['direction'],
@@ -241,6 +251,10 @@ export async function getPartyStatement(partyId: string, filters: {
   const transactions = await prisma.transaction.findMany({
     where,
     orderBy: { date: "desc" },
+    include: {
+      fromAccount: { select: { name: true, type: true } },
+      toAccount: { select: { name: true, type: true } }
+    }
   });
 
   const party = await prisma.party.findUnique({
@@ -249,6 +263,41 @@ export async function getPartyStatement(partyId: string, filters: {
 
   return {
     party,
+    transactions: transactions.map(tx => ({ ...tx, amount: Number(tx.amount) })),
+  };
+}
+
+export async function getAccountTransactions(accountId: string) {
+  const session = await getUserSession();
+  const businessId = session?.session.activeBusinessId || "";
+
+  const account = await prisma.financialAccount.findUnique({
+    where: { id: accountId, businessId },
+  });
+
+  if (!account) {
+    throw new Error("Account not found");
+  }
+
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      businessId,
+      OR: [
+        { fromAccountId: accountId },
+        { toAccountId: accountId },
+      ],
+    },
+    orderBy: { date: "desc" },
+    include: {
+      fromAccount: { select: { name: true, type: true } },
+      toAccount: { select: { name: true, type: true } },
+      party: { select: { name: true } }
+    }
+  });
+
+  return {
+    account,
+    totalTransactions: transactions.length,
     transactions: transactions.map(tx => ({ ...tx, amount: Number(tx.amount) })),
   };
 }

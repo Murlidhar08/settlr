@@ -71,6 +71,8 @@ const TransactionList = ({ transactions }: transactionListProp) => {
                   amount={formatAmount(transaction.amount, currency, true, transaction.direction)}
                   type={transaction.direction}
                   mode={transaction.mode}
+                  fromAccount={transaction.fromAccount?.name}
+                  toAccount={transaction.toAccount?.name}
                 />
               ))}
             </TransactionGroup>

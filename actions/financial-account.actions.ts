@@ -58,6 +58,14 @@ export async function updateFinancialAccount(id: string, data: {
         throw new Error("Unauthorized");
     }
 
+    const existing = await prisma.financialAccount.findUnique({
+        where: { id, businessId: session.session.activeBusinessId }
+    });
+
+    if (existing?.isSystem) {
+        throw new Error("System accounts cannot be modified");
+    }
+
     const account = await prisma.financialAccount.update({
         where: {
             id,
@@ -74,6 +82,14 @@ export async function deleteFinancialAccount(id: string) {
     const session = await getUserSession();
     if (!session || !session.session.activeBusinessId) {
         throw new Error("Unauthorized");
+    }
+
+    const existing = await prisma.financialAccount.findUnique({
+        where: { id, businessId: session.session.activeBusinessId }
+    });
+
+    if (existing?.isSystem) {
+        throw new Error("System accounts cannot be deleted");
     }
 
     // Check if account has transactions before deleting? 
@@ -100,4 +116,38 @@ export async function deleteFinancialAccount(id: string) {
 
     revalidatePath("/accounts");
     return { success: true };
+}
+
+export async function getFinancialAccountsWithBalance() {
+    const session = await getUserSession();
+    if (!session || !session.session.activeBusinessId) {
+        return [];
+    }
+    const businessId = session.session.activeBusinessId;
+
+    const accounts = await prisma.financialAccount.findMany({
+        where: { businessId },
+        orderBy: { createdAt: "desc" },
+    });
+
+    const transactions = await prisma.transaction.findMany({
+        where: { businessId },
+        select: {
+            amount: true,
+            fromAccountId: true,
+            toAccountId: true,
+        },
+    });
+
+    const balances: Record<string, number> = {};
+    transactions.forEach(tx => {
+        const amount = Number(tx.amount);
+        balances[tx.fromAccountId] = (balances[tx.fromAccountId] || 0) - amount;
+        balances[tx.toAccountId] = (balances[tx.toAccountId] || 0) + amount;
+    });
+
+    return accounts.map(acc => ({
+        ...acc,
+        balance: balances[acc.id] || 0,
+    }));
 }

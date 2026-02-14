@@ -20,7 +20,8 @@ export default async function AccountsPage() {
 }
 
 async function AccountsContent() {
-    const accounts = await getFinancialAccounts();
+    const allAccounts = await getFinancialAccounts();
+    const accounts = allAccounts.filter(a => a.partyId === null);
 
     const groupedAccounts = {
         [FinancialAccountType.MONEY]: accounts.filter(a => a.type === FinancialAccountType.MONEY),
