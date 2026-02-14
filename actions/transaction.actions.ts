@@ -26,6 +26,8 @@ export async function addTransaction(transactionData: Transaction, pathToRevalid
         direction: transactionData.direction,
         partyId: transactionData.partyId,
         userId: transactionData.userId,
+        fromAccountId: transactionData.fromAccountId,
+        toAccountId: transactionData.toAccountId,
       },
     });
   }
@@ -42,6 +44,8 @@ export async function addTransaction(transactionData: Transaction, pathToRevalid
         direction: transactionData.direction,
         partyId: transactionData.partyId,
         userId: session?.user.id || "",
+        fromAccountId: transactionData.fromAccountId,
+        toAccountId: transactionData.toAccountId,
       },
     });
   }

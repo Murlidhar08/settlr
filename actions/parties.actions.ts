@@ -3,7 +3,7 @@
 // Package
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { PartyType, TransactionDirection } from "@/lib/generated/prisma/enums";
+import { FinancialAccountType, PartyType, TransactionDirection } from "@/lib/generated/prisma/enums";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { getUserSession } from "@/lib/auth";
 import { PartyInput, PartyRes } from "@/types/party/PartyRes";
@@ -16,17 +16,37 @@ export async function addParties(partyData: PartyInput): Promise<boolean> {
     return false;
   }
 
-  await prisma.party.create({
-    data: {
-      businessId: session.session.activeBusinessId,
-      contactNo: partyData.contactNo,
-      name: partyData.name,
-      type: partyData.type,
-    },
-  });
+  const businessId = session.session.activeBusinessId;
 
-  revalidatePath("/parties")
-  return true;
+  try {
+    await prisma.$transaction(async (tx) => {
+      const party = await tx.party.create({
+        data: {
+          businessId: businessId,
+          contactNo: partyData.contactNo,
+          name: partyData.name,
+          type: partyData.type,
+        },
+      });
+
+      await tx.financialAccount.create({
+        data: {
+          name: `${party.name.toLowerCase().replace(/\s+/g, '_')}_Leger`,
+          businessId: businessId,
+          type: FinancialAccountType.PARTY,
+          partyType: party.type,
+          partyId: party.id,
+        },
+      });
+    });
+
+    revalidatePath("/parties")
+    revalidatePath("/accounts")
+    return true;
+  } catch (error) {
+    console.error("Failed to add party and account:", error);
+    return false;
+  }
 }
 
 export async function getPartyList(type: PartyType, search?: string): Promise<PartyRes[]> {
@@ -90,10 +110,7 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
     });
 
     // Net balance = IN (Receivable?) - OUT (Payable?)
-    // Wait, original logic was:
-    // OUT -> acc.minus(amount)
-    // IN -> acc.plus(amount)
-    const netBalance = totalIn.minus(totalOut); // Equivalent to IN - OUT
+    const netBalance = totalIn.minus(totalOut);
 
     return {
       id: party.id,
@@ -104,6 +121,7 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
     };
   });
 }
+
 export async function updateParty(partyId: string, partyData: Partial<PartyInput>): Promise<boolean> {
   const session = await getUserSession();
 
@@ -135,9 +153,6 @@ export async function deleteParty(partyId: string): Promise<boolean> {
     return false;
   }
 
-  // Cascading delete is handled by code to be safe, 
-  // or you can rely on DB schema if onDelete: Cascade is set.
-  // We'll do it manually to ensure all associated transactions are gone.
   await prisma.$transaction([
     prisma.transaction.deleteMany({
       where: {
