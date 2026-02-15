@@ -57,7 +57,7 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
 
   const where: any = {
     businessId,
-    type: { in: [type, PartyType.BOTH] },
+    type: { in: [type] },
   };
 
   if (search) {
