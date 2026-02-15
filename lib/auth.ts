@@ -108,9 +108,7 @@ export const auth = betterAuth({
     // Send password reset successfully mail
     onPasswordReset: async ({ user }) => {
       try {
-        // TODO: SEND DYANAMIC URL BASED ON ACCESS DOMAIN
-        // const appUrl = envServer.NEXT_PUBLIC_APP_URL;
-        const appUrl = "";
+        const appUrl = envServer.BETTER_AUTH_URL;
         const emailHtml = getPasswordResetSuccessEmailHtml(user.email, appUrl);
 
         const { data, error } = await sendMail({
@@ -163,60 +161,6 @@ export const auth = betterAuth({
     },
     afterEmailVerification: async (user) => {
       console.log(`${user.email} has been successfully verified!`);
-    }
-  },
-  events: {
-    user: {
-      created: async ({ user }: { user: any }) => {
-        // Add Default Business with system accounts
-        await prisma.business.create({
-          data: {
-            name: "Default Business",
-            ownerId: user.id,
-            financialAccounts: {
-              create: [
-                {
-                  name: "Cash",
-                  type: FinancialAccountType.MONEY,
-                  moneyType: MoneyType.CASH,
-                  isSystem: true,
-                },
-                {
-                  name: "Opening Balance",
-                  type: FinancialAccountType.CATEGORY,
-                  categoryType: CategoryType.ADJUSTMENT,
-                  isSystem: true,
-                },
-                {
-                  name: "Owner Withdrawal",
-                  type: FinancialAccountType.CATEGORY,
-                  categoryType: CategoryType.EQUITY,
-                  isSystem: true,
-                },
-                {
-                  name: "Owner Investment",
-                  type: FinancialAccountType.CATEGORY,
-                  categoryType: CategoryType.EQUITY,
-                  isSystem: true,
-                },
-                {
-                  name: "Expense",
-                  type: FinancialAccountType.CATEGORY,
-                  categoryType: CategoryType.EXPENSE,
-                  isSystem: true,
-                },
-                {
-                  name: "Sales",
-                  type: FinancialAccountType.CATEGORY,
-                  categoryType: CategoryType.INCOME,
-                  isSystem: true,
-                },
-              ]
-            }
-          }
-        });
-        console.log(`Default setup completed for new user: ${user.email}`);
-      }
     }
   },
   socialProviders: {
@@ -302,7 +246,72 @@ export const auth = betterAuth({
     admin({
       defaultRole: "user"
     })
-  ]
+  ],
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          if (!user?.id) return;
+
+          // Check if business already exists
+          const existing = await prisma.business.findFirst({
+            where: { ownerId: user.id }
+          });
+
+          if (existing) return;
+
+          // Add Default Business with system accounts
+          await prisma.business.create({
+            data: {
+              name: `${user.name || "Default"} Business`,
+              ownerId: user.id,
+              financialAccounts: {
+                create: [
+                  {
+                    name: "Cash",
+                    type: FinancialAccountType.MONEY,
+                    moneyType: MoneyType.CASH,
+                    isSystem: true,
+                  },
+                  {
+                    name: "Opening Balance",
+                    type: FinancialAccountType.CATEGORY,
+                    categoryType: CategoryType.ADJUSTMENT,
+                    isSystem: true,
+                  },
+                  {
+                    name: "Owner Withdrawal",
+                    type: FinancialAccountType.CATEGORY,
+                    categoryType: CategoryType.EQUITY,
+                    isSystem: true,
+                  },
+                  {
+                    name: "Owner Investment",
+                    type: FinancialAccountType.CATEGORY,
+                    categoryType: CategoryType.EQUITY,
+                    isSystem: true,
+                  },
+                  {
+                    name: "Expense",
+                    type: FinancialAccountType.CATEGORY,
+                    categoryType: CategoryType.EXPENSE,
+                    isSystem: true,
+                  },
+                  {
+                    name: "Sales",
+                    type: FinancialAccountType.CATEGORY,
+                    categoryType: CategoryType.INCOME,
+                    isSystem: true,
+                  },
+                ]
+              }
+            }
+          });
+          console.log(`Default setup completed for new user: ${user.email}`);
+        },
+      },
+    }
+  }
 });
 
 export type Auth = typeof auth;
