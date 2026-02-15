@@ -1,10 +1,7 @@
-import { PaymentMode } from "@/lib/generated/prisma/client";
-
 export interface TransactionRes {
   id: string;
   amount: number;
   date: Date;
-  mode: PaymentMode;
   description: string | null;
   createdAt: Date;
   fromAccountId: string;

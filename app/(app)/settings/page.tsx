@@ -7,7 +7,6 @@ import {
   PaintbrushIcon,
   DollarSign,
   Calendar,
-  CreditCard,
   CloudUpload,
   Download,
   ExternalLink,

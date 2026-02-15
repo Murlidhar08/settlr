@@ -15,11 +15,6 @@ datasource db {
 
 // ENUMS
 // Application Enums
-enum PaymentMode {
-  CASH
-  ONLINE
-}
-
 enum Currency {
   INR
   USD
@@ -160,11 +155,10 @@ model UserSettings {
   userId String @id
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  currency       Currency    @default(INR)
-  dateFormat     String      @default("DD/MM/YYYY")
-  defaultPayment PaymentMode @default(CASH)
-  theme          ThemeMode   @default(AUTO)
-  createdAt      DateTime    @default(now())
+  currency   Currency  @default(INR)
+  dateFormat String    @default("DD/MM/YYYY")
+  theme      ThemeMode @default(AUTO)
+  createdAt  DateTime  @default(now())
 
   @@map("userSettings")
 }

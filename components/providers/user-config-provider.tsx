@@ -1,12 +1,11 @@
 "use client"
 
-import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums"
+import { Currency, ThemeMode } from "@/lib/generated/prisma/enums"
 import { createContext, useContext } from "react"
 
 interface userSettings {
   currency: Currency,
   dateFormat: string,
-  defaultPayment: PaymentMode,
   theme: ThemeMode,
   setTheme: (theme: ThemeMode) => void,
 }

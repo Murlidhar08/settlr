@@ -14,7 +14,7 @@ import { getVerificationEmailHtml } from "./templates/email-verification";
 import { getPasswordResetSuccessEmailHtml } from "./templates/email-password-reseted";
 import { getDeleteAccountEmailHtml } from "./templates/email-delete-account";
 import { headers } from "next/headers";
-import { Currency, PaymentMode, ThemeMode, FinancialAccountType, MoneyType, CategoryType } from "./generated/prisma/enums";
+import { Currency, ThemeMode, FinancialAccountType, MoneyType, CategoryType } from "./generated/prisma/enums";
 import { envServer } from "./env.server";
 
 export const auth = betterAuth({
@@ -211,7 +211,6 @@ export const auth = betterAuth({
             select: {
               currency: true,
               dateFormat: true,
-              defaultPayment: true,
               theme: true,
             },
           },
@@ -229,7 +228,6 @@ export const auth = betterAuth({
           userSettings: {
             currency: settings?.currency ?? Currency.INR,
             dateFormat: settings?.dateFormat ?? "DD/MM/YYYY",
-            defaultPayment: settings?.defaultPayment ?? PaymentMode.CASH,
             theme: settings?.theme ?? ThemeMode.AUTO,
           },
         },
