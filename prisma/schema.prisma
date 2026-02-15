@@ -53,7 +53,7 @@ enum MoneyType {
 enum PartyType {
   CUSTOMER
   SUPPLIER
-  BOTH
+  OTHER
 }
 
 enum CategoryType {
