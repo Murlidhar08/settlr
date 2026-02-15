@@ -44,7 +44,7 @@ const SUBTYPES_CONFIG: Record<FinancialAccountType, any> = {
         icons: {
             [PartyType.CUSTOMER]: User2,
             [PartyType.SUPPLIER]: Truck,
-            [PartyType.BOTH]: Users,
+            [PartyType.OTHER]: Users,
         }
     },
     [FinancialAccountType.CATEGORY]: {

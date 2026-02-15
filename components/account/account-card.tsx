@@ -1,9 +1,12 @@
 "use client"
 
-import { Wallet, Banknote, Landmark, CreditCard, Edit2, User2, TrendingUp, TrendingDown, Tag, Plus } from "lucide-react"
+import {
+    Wallet, Banknote, Landmark, CreditCard, Edit2, User2, Users, Truck,
+    TrendingUp, TrendingDown, Briefcase, Scale, Settings2, Tag
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { FinancialAccount } from "@/lib/generated/prisma/client"
-import { MoneyType, FinancialAccountType, CategoryType } from "@/lib/generated/prisma/enums"
+import { MoneyType, FinancialAccountType, CategoryType, PartyType } from "@/lib/generated/prisma/enums"
 import { AddAccountModal } from "./add-account-modal"
 import { motion } from "framer-motion"
 
@@ -18,20 +21,30 @@ export const AccountCard = ({ account, index }: AccountCardProps) => {
     const router = useRouter()
 
     const getIcon = () => {
+        const size = 24;
         switch (account.type) {
             case FinancialAccountType.MONEY:
-                if (account.moneyType === MoneyType.CASH) return <Banknote size={24} className="text-emerald-500" />;
-                if (account.moneyType === MoneyType.ONLINE) return <Landmark size={24} className="text-blue-500" />;
-                if (account.moneyType === MoneyType.CHEQUE) return <CreditCard size={24} className="text-amber-500" />;
-                return <Wallet size={24} className="text-primary" />;
+                if (account.moneyType === MoneyType.CASH) return <Banknote size={size} className="text-emerald-500" />;
+                if (account.moneyType === MoneyType.ONLINE) return <Landmark size={size} className="text-blue-500" />;
+                if (account.moneyType === MoneyType.CHEQUE) return <CreditCard size={size} className="text-amber-500" />;
+                return <Wallet size={size} className="text-primary" />;
+
             case FinancialAccountType.PARTY:
-                return <User2 size={24} className="text-indigo-500" />;
+                if (account.partyType === PartyType.CUSTOMER) return <User2 size={size} className="text-indigo-500" />;
+                if (account.partyType === PartyType.SUPPLIER) return <Truck size={size} className="text-orange-500" />;
+                if (account.partyType === PartyType.OTHER) return <Users size={size} className="text-slate-500" />;
+                return <User2 size={size} className="text-indigo-500" />;
+
             case FinancialAccountType.CATEGORY:
-                if (account.categoryType === CategoryType.INCOME) return <TrendingUp size={24} className="text-emerald-500" />;
-                if (account.categoryType === CategoryType.EXPENSE) return <TrendingDown size={24} className="text-rose-500" />;
-                return <Tag size={24} className="text-primary" />;
+                if (account.categoryType === CategoryType.INCOME) return <TrendingUp size={size} className="text-emerald-500" />;
+                if (account.categoryType === CategoryType.EXPENSE) return <TrendingDown size={size} className="text-rose-500" />;
+                if (account.categoryType === CategoryType.ASSET) return <Briefcase size={size} className="text-sky-500" />;
+                if (account.categoryType === CategoryType.EQUITY) return <Scale size={size} className="text-violet-500" />;
+                if (account.categoryType === CategoryType.ADJUSTMENT) return <Settings2 size={size} className="text-muted-foreground" />;
+                return <Tag size={size} className="text-primary" />;
+
             default:
-                return <Wallet size={24} className="text-primary" />;
+                return <Wallet size={size} className="text-primary" />;
         }
     };
 

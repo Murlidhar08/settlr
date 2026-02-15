@@ -13,9 +13,17 @@ import {
     Landmark,
     Banknote,
     Tag,
-    User2
+    User2,
+    Users,
+    Truck,
+    TrendingUp,
+    TrendingDown,
+    Briefcase,
+    Scale,
+    Settings2,
+    CreditCard
 } from "lucide-react";
-import { FinancialAccountType, MoneyType, CategoryType } from "@/lib/generated/prisma/enums";
+import { FinancialAccountType, MoneyType, CategoryType, PartyType } from "@/lib/generated/prisma/enums";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -45,17 +53,30 @@ async function AccountContent({ accountId }: { accountId: string }) {
     const balance = totalIn - totalOut;
 
     const getIcon = () => {
+        const size = 32;
         switch (account.type) {
             case FinancialAccountType.MONEY:
-                if (account.moneyType === MoneyType.CASH) return <Banknote size={32} className="text-emerald-500" />;
-                if (account.moneyType === MoneyType.ONLINE) return <Landmark size={32} className="text-blue-500" />;
-                return <Wallet size={32} className="text-primary" />;
+                if (account.moneyType === MoneyType.CASH) return <Banknote size={size} className="text-emerald-500" />;
+                if (account.moneyType === MoneyType.ONLINE) return <Landmark size={size} className="text-blue-500" />;
+                if (account.moneyType === MoneyType.CHEQUE) return <CreditCard size={size} className="text-amber-500" />;
+                return <Wallet size={size} className="text-primary" />;
+
             case FinancialAccountType.PARTY:
-                return <User2 size={32} className="text-indigo-500" />;
+                if (account.partyType === PartyType.CUSTOMER) return <User2 size={size} className="text-indigo-500" />;
+                if (account.partyType === PartyType.SUPPLIER) return <Truck size={size} className="text-orange-500" />;
+                if (account.partyType === PartyType.OTHER) return <Users size={size} className="text-slate-500" />;
+                return <User2 size={size} className="text-indigo-500" />;
+
             case FinancialAccountType.CATEGORY:
-                return <Tag size={32} className="text-primary" />;
+                if (account.categoryType === CategoryType.INCOME) return <TrendingUp size={size} className="text-emerald-500" />;
+                if (account.categoryType === CategoryType.EXPENSE) return <TrendingDown size={size} className="text-rose-500" />;
+                if (account.categoryType === CategoryType.ASSET) return <Briefcase size={size} className="text-sky-500" />;
+                if (account.categoryType === CategoryType.EQUITY) return <Scale size={size} className="text-violet-500" />;
+                if (account.categoryType === CategoryType.ADJUSTMENT) return <Settings2 size={size} className="text-muted-foreground" />;
+                return <Tag size={size} className="text-primary" />;
+
             default:
-                return <Wallet size={32} className="text-primary" />;
+                return <Wallet size={size} className="text-primary" />;
         }
     };
 
