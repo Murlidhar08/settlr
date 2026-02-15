@@ -39,7 +39,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
     // 2. Fetch Transactions (List)
     prisma.transaction.findMany({
       where: {
-        businessId: session?.session.activeBusinessId || "",
+        businessId: session?.user.activeBusinessId || "",
         partyId: partyId,
       },
       orderBy: [
@@ -50,7 +50,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
     // 3. Fetch transactions for aggregation (since direction column is gone)
     prisma.transaction.findMany({
       where: {
-        businessId: session?.session.activeBusinessId || "",
+        businessId: session?.user.activeBusinessId || "",
         partyId: partyId,
       },
       select: {

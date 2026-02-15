@@ -11,12 +11,12 @@ import { PartyInput, PartyRes } from "@/types/party/PartyRes";
 export async function addParties(partyData: PartyInput): Promise<boolean> {
   const session = await getUserSession();
 
-  if (!session || !session.session.activeBusinessId) {
+  if (!session || !session.user.activeBusinessId) {
     console.error("User is not logged in.")
     return false;
   }
 
-  const businessId = session.session.activeBusinessId;
+  const businessId = session.user.activeBusinessId;
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -50,7 +50,7 @@ export async function addParties(partyData: PartyInput): Promise<boolean> {
 
 export async function getPartyList(type: PartyType, search?: string): Promise<PartyRes[]> {
   const session = await getUserSession();
-  const businessId = session?.session?.activeBusinessId;
+  const businessId = session?.user?.activeBusinessId;
   if (!businessId)
     return [];
 
@@ -148,14 +148,14 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
 export async function updateParty(partyId: string, partyData: Partial<PartyInput>): Promise<boolean> {
   const session = await getUserSession();
 
-  if (!session || !session.session.activeBusinessId) {
+  if (!session || !session.user.activeBusinessId) {
     return false;
   }
 
   await prisma.party.update({
     where: {
       id: partyId,
-      businessId: session.session.activeBusinessId
+      businessId: session.user.activeBusinessId
     },
     data: {
       name: partyData.name,
@@ -171,11 +171,11 @@ export async function updateParty(partyId: string, partyData: Partial<PartyInput
 export async function deleteParty(partyId: string): Promise<boolean> {
   const session = await getUserSession();
 
-  if (!session || !session.session.activeBusinessId) {
+  if (!session || !session.user.activeBusinessId) {
     return false;
   }
 
-  const businessId = session.session.activeBusinessId;
+  const businessId = session.user.activeBusinessId;
 
   // Check if transactions exist
   const transactionCount = await prisma.transaction.count({

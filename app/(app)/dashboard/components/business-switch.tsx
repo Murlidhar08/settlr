@@ -49,7 +49,7 @@ export default function SwitchBusiness() {
       if (!list.length) return
 
       const activeBusinessId =
-        sessionRes.data?.session?.activeBusinessId
+        sessionRes.data?.user?.activeBusinessId
 
       const active =
         list.find(b => b.id === activeBusinessId) ?? list[0]

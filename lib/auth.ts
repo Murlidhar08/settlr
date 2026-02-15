@@ -41,6 +41,10 @@ export const auth = betterAuth({
         type: "string",
         required: false
       },
+      activeBusinessId: {
+        type: "string",
+        required: false
+      }
     },
     deleteUser: {
       enabled: true,
@@ -179,12 +183,6 @@ export const auth = betterAuth({
     //   enabled: true,
     //   maxAge: 10 // 1 Minute
     // },
-    additionalFields: {
-      activeBusinessId: {
-        type: "string",
-        required: false
-      }
-    },
   },
   plugins: [
     nextCookies(),
@@ -195,13 +193,14 @@ export const auth = betterAuth({
         select: {
           contactNo: true,
           address: true,
+          activeBusinessId: true,
           twoFactorEnabled: true,
 
           // current session context
           sessions: {
             where: { id: session.id },
             select: {
-              activeBusinessId: true,
+              id: true,
             },
             take: 1,
           },
@@ -217,13 +216,12 @@ export const auth = betterAuth({
         },
       })
 
-      const activeBusinessId = dbUser?.sessions?.[0]?.activeBusinessId ?? null
+      const activeBusinessId = dbUser?.activeBusinessId ?? null
       const settings = dbUser?.userSettings
 
       return {
         session: {
           ...session,
-          activeBusinessId,
 
           userSettings: {
             currency: settings?.currency ?? Currency.INR,
@@ -234,6 +232,7 @@ export const auth = betterAuth({
 
         user: {
           ...user,
+          activeBusinessId: activeBusinessId,
           contactNo: dbUser?.contactNo,
           address: dbUser?.address,
           twoFactorEnabled: dbUser?.twoFactorEnabled ?? false,
@@ -259,7 +258,7 @@ export const auth = betterAuth({
           if (existing) return;
 
           // Add Default Business with system accounts
-          await prisma.business.create({
+          const defaultBusiness = await prisma.business.create({
             data: {
               name: `${user.name || "Default"} Business`,
               ownerId: user.id,
@@ -304,6 +303,12 @@ export const auth = betterAuth({
                 ]
               }
             }
+          });
+
+          // Set activeBusinessId for the new user
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { activeBusinessId: defaultBusiness.id }
           });
           console.log(`Default setup completed for new user: ${user.email}`);
         },

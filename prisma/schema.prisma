@@ -28,6 +28,7 @@ enum ThemeMode {
 }
 
 // Transaction Enums
+
 enum FinancialAccountType {
   MONEY
   PARTY
@@ -74,6 +75,7 @@ model User {
   createdBusinesses Business[]
   userSettings      UserSettings?
   transactions      Transaction[]
+  activeBusinessId  String?
 
   twoFactorEnabled Boolean?    @default(false)
   twofactors       TwoFactor[]
@@ -88,16 +90,15 @@ model User {
 }
 
 model Session {
-  id               String   @id
-  expiresAt        DateTime
-  token            String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  ipAddress        String?
-  userAgent        String?
-  userId           String
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  activeBusinessId String?
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   impersonatedBy String?
 

@@ -7,13 +7,13 @@ import { FinancialAccountType, MoneyType, PartyType, CategoryType } from "@/lib/
 
 export async function getFinancialAccounts() {
     const session = await getUserSession();
-    if (!session || !session.session.activeBusinessId) {
+    if (!session || !session.user.activeBusinessId) {
         return [];
     }
 
     return await prisma.financialAccount.findMany({
         where: {
-            businessId: session.session.activeBusinessId,
+            businessId: session.user.activeBusinessId,
             isActive: true,
         },
         orderBy: {
@@ -31,14 +31,14 @@ export async function addFinancialAccount(data: {
     partyId?: string | null;
 }) {
     const session = await getUserSession();
-    if (!session || !session.session.activeBusinessId) {
+    if (!session || !session.user.activeBusinessId) {
         throw new Error("Unauthorized");
     }
 
     const account = await prisma.financialAccount.create({
         data: {
             ...data,
-            businessId: session.session.activeBusinessId,
+            businessId: session.user.activeBusinessId,
         },
     });
 
@@ -55,12 +55,12 @@ export async function updateFinancialAccount(id: string, data: {
     partyId?: string | null;
 }) {
     const session = await getUserSession();
-    if (!session || !session.session.activeBusinessId) {
+    if (!session || !session.user.activeBusinessId) {
         throw new Error("Unauthorized");
     }
 
     const existing = await prisma.financialAccount.findUnique({
-        where: { id, businessId: session.session.activeBusinessId }
+        where: { id, businessId: session.user.activeBusinessId }
     });
 
     if (existing?.isSystem) {
@@ -74,7 +74,7 @@ export async function updateFinancialAccount(id: string, data: {
     const account = await prisma.financialAccount.update({
         where: {
             id,
-            businessId: session.session.activeBusinessId,
+            businessId: session.user.activeBusinessId,
         },
         data,
     });
@@ -85,12 +85,12 @@ export async function updateFinancialAccount(id: string, data: {
 
 export async function deleteFinancialAccount(id: string) {
     const session = await getUserSession();
-    if (!session || !session.session.activeBusinessId) {
+    if (!session || !session.user.activeBusinessId) {
         throw new Error("Unauthorized");
     }
 
     const existing = await prisma.financialAccount.findUnique({
-        where: { id, businessId: session.session.activeBusinessId }
+        where: { id, businessId: session.user.activeBusinessId }
     });
 
     if (existing?.isSystem) {
@@ -111,7 +111,7 @@ export async function deleteFinancialAccount(id: string) {
     if (transactionCount > 0) {
         // Soft delete if transactions exist
         await prisma.financialAccount.update({
-            where: { id, businessId: session.session.activeBusinessId },
+            where: { id, businessId: session.user.activeBusinessId },
             data: { isActive: false }
         });
         revalidatePath("/accounts");
@@ -121,7 +121,7 @@ export async function deleteFinancialAccount(id: string) {
     await prisma.financialAccount.delete({
         where: {
             id,
-            businessId: session.session.activeBusinessId,
+            businessId: session.user.activeBusinessId,
         },
     });
 
@@ -131,10 +131,10 @@ export async function deleteFinancialAccount(id: string) {
 
 export async function getFinancialAccountsWithBalance() {
     const session = await getUserSession();
-    if (!session || !session.session.activeBusinessId) {
+    if (!session || !session.user.activeBusinessId) {
         return [];
     }
-    const businessId = session.session.activeBusinessId;
+    const businessId = session.user.activeBusinessId;
 
     const accounts = await prisma.financialAccount.findMany({
         where: { businessId, isActive: true },

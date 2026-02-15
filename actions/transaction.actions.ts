@@ -10,11 +10,11 @@ import { revalidatePath } from "next/cache";
 export async function addTransaction(transactionData: any, pathToRevalidate?: string) {
   const session = await getUserSession();
 
-  if (!session?.session.activeBusinessId) {
+  if (!session?.user.activeBusinessId) {
     throw new Error("No active business found in session");
   }
 
-  const businessId = session.session.activeBusinessId;
+  const businessId = session.user.activeBusinessId;
   const userId = session.user.id;
 
   // Validation
@@ -114,14 +114,14 @@ export async function addTransaction(transactionData: any, pathToRevalidate?: st
 export async function deleteTransaction(transactionId: string, partyId?: string) {
   const session = await getUserSession()
 
-  if (!session?.session.activeBusinessId) {
+  if (!session?.user.activeBusinessId) {
     throw new Error("Unauthorized")
   }
 
   await prisma.transaction.delete({
     where: {
       id: transactionId,
-      businessId: session.session.activeBusinessId,
+      businessId: session.user.activeBusinessId,
     },
   })
 
@@ -135,7 +135,7 @@ export async function deleteTransaction(transactionId: string, partyId?: string)
 
 export async function getRecentTransactions() {
   const session = await getUserSession();
-  let businessId = session?.session.activeBusinessId;
+  let businessId = session?.user.activeBusinessId;
 
   if (!businessId && session?.user.id) {
     const business = await prisma.business.findFirst({
@@ -181,7 +181,7 @@ export async function getCashbookTransactions(filters: {
   endDate?: string;
 }) {
   const session = await getUserSession();
-  let businessId = session?.session.activeBusinessId;
+  let businessId = session?.user.activeBusinessId;
 
   if (!businessId && session?.user.id) {
     const business = await prisma.business.findFirst({
@@ -273,7 +273,7 @@ export async function getPartyStatement(partyId: string, filters: {
   endDate?: string;
 }) {
   const session = await getUserSession();
-  const businessId = session?.session.activeBusinessId || "";
+  const businessId = session?.user.activeBusinessId || "";
 
   const where: any = {
     businessId,
@@ -331,7 +331,7 @@ export async function getPartyStatement(partyId: string, filters: {
 
 export async function getAccountTransactions(accountId: string) {
   const session = await getUserSession();
-  const businessId = session?.session.activeBusinessId || "";
+  const businessId = session?.user.activeBusinessId || "";
 
   const account = await prisma.financialAccount.findUnique({
     where: { id: accountId, businessId },

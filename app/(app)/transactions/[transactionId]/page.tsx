@@ -8,13 +8,13 @@ export default async function TransactionDetailPage({ params }: { params: Promis
   const transactionId = (await params).transactionId;
   const session = await getUserSession()
 
-  if (!session?.session.activeBusinessId)
+  if (!session?.user.activeBusinessId)
     notFound()
 
   const transaction = await prisma.transaction.findFirst({
     where: {
       id: transactionId,
-      businessId: session.session.activeBusinessId,
+      businessId: session.user.activeBusinessId,
     },
     include: {
       party: { select: { id: true, name: true } },
