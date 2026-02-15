@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma"
 import { getUserSession } from "@/lib/auth"
-import { TransactionDirection, PaymentMode } from "@/lib/generated/prisma/enums"
 import { MoveDownLeft, MoveUpRight, PiggyBank } from "lucide-react"
 import StatCard from "./status-card"
 import { formatAmount } from "@/utility/transaction"
@@ -28,80 +27,60 @@ export default async function SummaryCard() {
 
   // Parallel fetch: All-time stats and Today's stats using DB aggregation
   // Parallel fetch: All-time stats and Today's stats using DB aggregation
-  const [cashStats, creditStats, todayStats] = await Promise.all([
-    // 1. All-time CASH (Liquidity)
-    prisma.transaction.groupBy({
-      by: ['direction'],
-      where: {
-        businessId,
-      },
-      _sum: { amount: true },
-    }),
-    // 2. All-time CREDIT (Receivables/Payables) - Must have a party
-    prisma.transaction.groupBy({
-      by: ['partyId', 'direction'],
-      where: {
-        businessId,
-        partyId: { not: null }
-      },
-      _sum: { amount: true },
-    }),
-    // 3. Today's CASH Flow (Cashbook only - no party)
-    prisma.transaction.groupBy({
-      by: ['direction'],
-      where: {
-        businessId,
-        partyId: null,
-        date: { gte: startOfDay, lte: endOfDay }
-      },
-      _sum: { amount: true }
-    })
-  ]);
-
-  let cashIn = 0;
-  let cashOut = 0;
-  let receivable = 0;
-  let payable = 0;
-
-  let todayIn = 0;
-  let todayOut = 0;
-
-  // Process Cash Stats
-  cashStats.forEach((stat) => {
-    const amount = stat._sum.amount ? stat._sum.amount.toNumber() : 0;
-    if (stat.direction === TransactionDirection.IN) cashIn += amount;
-    else cashOut += amount;
+  // 1. Fetch all financial accounts for the business
+  const accounts = await prisma.financialAccount.findMany({
+    where: { businessId },
+    select: { id: true, type: true, partyId: true }
   });
 
-  // Process Credit Stats (Net balance per party)
-  const partyBalances: Record<string, number> = {};
+  const moneyAccIds = new Set(accounts.filter(a => a.type === "MONEY").map(a => a.id));
+  const partyAccs = accounts.filter(a => a.type === "PARTY");
 
-  creditStats.forEach((stat) => {
-    if (!stat.partyId) return;
-    const amount = stat._sum.amount ? stat._sum.amount.toNumber() : 0;
-
-    // Logic: Net Balance = OUT (We gave) - IN (We got)
-    // Positive Net Balance = They owe us (Receivable)
-    // Negative Net Balance = We owe them (Payable)
-
-    const multiplier = stat.direction === TransactionDirection.OUT ? 1 : -1;
-    partyBalances[stat.partyId] = (partyBalances[stat.partyId] || 0) + (amount * multiplier);
-  });
-
-  // Sum up positive balances (Receivables) and negative balances (Payables)
-  Object.values(partyBalances).forEach(balance => {
-    if (balance > 0) {
-      receivable += balance;
-    } else {
-      payable += Math.abs(balance);
+  // 2. Fetch all transactions (for a production app, we should use aggregation, but for now we calculate net stats)
+  const transactions = await prisma.transaction.findMany({
+    where: { businessId },
+    select: {
+      amount: true,
+      fromAccountId: true,
+      toAccountId: true,
+      partyId: true,
+      date: true
     }
   });
 
-  // Process Today's Stats
-  todayStats.forEach((stat) => {
-    const amount = stat._sum.amount ? stat._sum.amount.toNumber() : 0;
-    if (stat.direction === TransactionDirection.IN) todayIn += amount;
-    else todayOut += amount;
+  let receivable = 0;
+  let payable = 0;
+  let todayIn = 0;
+  let todayOut = 0;
+
+  // Process Party Balances for Receivables/Payables
+  const partyToAccId = new Map(partyAccs.map(a => [a.partyId!, a.id]));
+  const partyBalances: Record<string, number> = {};
+
+  transactions.forEach(tx => {
+    // Today's Cash Flow logic
+    if (tx.date >= startOfDay && tx.date <= endOfDay) {
+      if (moneyAccIds.has(tx.toAccountId)) todayIn += Number(tx.amount);
+      if (moneyAccIds.has(tx.fromAccountId)) todayOut += Number(tx.amount);
+    }
+
+    // Party Balance logic
+    if (tx.partyId) {
+      const pAccId = partyToAccId.get(tx.partyId);
+      if (pAccId) {
+        if (tx.toAccountId === pAccId) {
+          partyBalances[tx.partyId] = (partyBalances[tx.partyId] || 0) + Number(tx.amount);
+        }
+        if (tx.fromAccountId === pAccId) {
+          partyBalances[tx.partyId] = (partyBalances[tx.partyId] || 0) - Number(tx.amount);
+        }
+      }
+    }
+  });
+
+  Object.values(partyBalances).forEach(balance => {
+    if (balance > 0) receivable += balance;
+    else if (balance < 0) payable += Math.abs(balance);
   });
 
   const todayNetCash = todayIn - todayOut;

@@ -3,7 +3,7 @@
 // Package
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { FinancialAccountType, PartyType, TransactionDirection } from "@/lib/generated/prisma/enums";
+import { FinancialAccountType, PartyType } from "@/lib/generated/prisma/enums";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { getUserSession } from "@/lib/auth";
 import { PartyInput, PartyRes } from "@/types/party/PartyRes";
@@ -24,8 +24,7 @@ export async function addParties(partyData: PartyInput): Promise<boolean> {
         data: {
           businessId: businessId,
           contactNo: partyData.contactNo,
-          name: partyData.name,
-          type: partyData.type,
+          name: partyData.name
         },
       });
 
@@ -34,7 +33,7 @@ export async function addParties(partyData: PartyInput): Promise<boolean> {
           name: `${party.name.toLowerCase().replace(/\s+/g, '_')}_Leger`,
           businessId: businessId,
           type: FinancialAccountType.PARTY,
-          partyType: party.type,
+          partyType: partyData.type,
           partyId: party.id,
         },
       });
@@ -57,7 +56,13 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
 
   const where: any = {
     businessId,
-    type: { in: [type] },
+    isActive: true,
+    financialAccounts: {
+      some: {
+        partyType: type,
+        isActive: true
+      }
+    }
   };
 
   if (search) {
@@ -85,28 +90,46 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
 
   const partyIds = parties.map(p => p.id);
 
-  // 2. Fetch aggregated balances for these parties
-  const balances = await prisma.transaction.groupBy({
-    by: ['partyId', 'direction'],
+  // 2. Fetch all transactions for these parties and their financial accounts
+  const transactions = await prisma.transaction.findMany({
     where: {
       businessId,
       partyId: { in: partyIds }
     },
-    _sum: { amount: true }
+    select: {
+      partyId: true,
+      amount: true,
+      fromAccountId: true,
+      toAccountId: true,
+    }
   });
 
-  // 3. Map balances to parties
+  // 3. Get party financial accounts
+  const partyAccounts = await prisma.financialAccount.findMany({
+    where: {
+      businessId,
+      partyId: { in: partyIds }
+    },
+    select: {
+      id: true,
+      partyId: true
+    }
+  });
+
+  const accountMap = new Map(partyAccounts.map(a => [a.partyId!, a.id]));
+
+  // 4. Map balances to parties
   return parties.map((party) => {
-    // Find all balance entries for this party
-    const partyBalances = balances.filter(b => b.partyId === party.id);
+    const pAccId = accountMap.get(party.id);
+    const pTransactions = transactions.filter(t => t.partyId === party.id);
 
     let totalIn = new Prisma.Decimal(0);
     let totalOut = new Prisma.Decimal(0);
 
-    partyBalances.forEach(b => {
-      const amount = b._sum.amount ? b._sum.amount : new Prisma.Decimal(0);
-      if (b.direction === TransactionDirection.IN) totalIn = totalIn.plus(amount);
-      else totalOut = totalOut.plus(amount);
+    pTransactions.forEach(t => {
+      const amount = t.amount;
+      if (t.toAccountId === pAccId) totalIn = totalIn.plus(amount);
+      if (t.fromAccountId === pAccId) totalOut = totalOut.plus(amount);
     });
 
     // Net balance = IN (Receivable?) - OUT (Payable?)
@@ -137,7 +160,6 @@ export async function updateParty(partyId: string, partyData: Partial<PartyInput
     data: {
       name: partyData.name,
       contactNo: partyData.contactNo,
-      type: partyData.type,
     },
   });
 
@@ -153,18 +175,36 @@ export async function deleteParty(partyId: string): Promise<boolean> {
     return false;
   }
 
+  const businessId = session.session.activeBusinessId;
+
+  // Check if transactions exist
+  const transactionCount = await prisma.transaction.count({
+    where: { partyId, businessId }
+  });
+
+  if (transactionCount > 0) {
+    // Soft delete if transactions exist
+    await prisma.$transaction([
+      prisma.party.update({
+        where: { id: partyId, businessId },
+        data: { isActive: false }
+      }),
+      prisma.financialAccount.updateMany({
+        where: { partyId, businessId },
+        data: { isActive: false }
+      })
+    ]);
+    revalidatePath("/parties");
+    return true;
+  }
+
+  // Hard delete if no transactions
   await prisma.$transaction([
-    prisma.transaction.deleteMany({
-      where: {
-        partyId: partyId,
-        businessId: session.session.activeBusinessId
-      }
+    prisma.financialAccount.deleteMany({
+      where: { partyId, businessId }
     }),
     prisma.party.delete({
-      where: {
-        id: partyId,
-        businessId: session.session.activeBusinessId
-      }
+      where: { id: partyId, businessId }
     })
   ]);
 

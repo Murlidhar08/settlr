@@ -2,20 +2,23 @@
 
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
-import { PaymentMode, TransactionDirection } from "@/lib/generated/prisma/enums"
 import { ArrowDownLeft, ArrowUpRight, ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { formatAmount } from "@/utility/transaction"
 
 interface TransactionProp {
   transactionId: string,
   title: string,
   subtitle: string,
   amount: string,
-  mode: PaymentMode
-  type: TransactionDirection,
+  accountId?: string | null,
+  fromAccountId: string,
+  toAccountId: string,
   fromAccount?: string,
-  toAccount?: string
+  toAccount?: string,
+  fromAccountType?: string,
+  toAccountType?: string,
 }
 
 const TransactionItem = ({
@@ -23,12 +26,18 @@ const TransactionItem = ({
   title,
   subtitle,
   amount,
-  type,
-  mode,
+  accountId,
+  fromAccountId,
+  toAccountId,
   fromAccount,
-  toAccount
+  toAccount,
+  fromAccountType,
+  toAccountType,
 }: TransactionProp) => {
-  const isIn = type === TransactionDirection.IN
+  // Determine direction based on the current context account
+  const isIn = accountId
+    ? accountId === toAccountId // If viewing an account, it's IN if that account received the money
+    : toAccountType === "MONEY" // Fallback: if toAccount is MONEY, it's a general IN
 
   return (
     <Link href={`/transactions/${transactionId}`} className="block p-1 outline-none group">
@@ -59,7 +68,6 @@ const TransactionItem = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{mode}</span>
 
               {(fromAccount || toAccount) && (
                 <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground/70">
@@ -80,7 +88,7 @@ const TransactionItem = ({
                 isIn ? "text-emerald-600" : "text-rose-600"
               )}
             >
-              {amount}
+              {formatAmount(Number(amount.replace(/[^0-9.-]+/g, "")), undefined, true, isIn ? 'IN' : 'OUT')}
             </p>
           </div>
         </Card>

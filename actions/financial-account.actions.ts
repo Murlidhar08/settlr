@@ -14,6 +14,7 @@ export async function getFinancialAccounts() {
     return await prisma.financialAccount.findMany({
         where: {
             businessId: session.session.activeBusinessId,
+            isActive: true,
         },
         orderBy: {
             createdAt: "desc",
@@ -66,6 +67,10 @@ export async function updateFinancialAccount(id: string, data: {
         throw new Error("System accounts cannot be modified");
     }
 
+    if (existing?.type !== data.type) {
+        throw new Error("Account type cannot be changed. Please create a new account or perform a migration.");
+    }
+
     const account = await prisma.financialAccount.update({
         where: {
             id,
@@ -104,7 +109,13 @@ export async function deleteFinancialAccount(id: string) {
     });
 
     if (transactionCount > 0) {
-        throw new Error("Cannot delete account with transactions");
+        // Soft delete if transactions exist
+        await prisma.financialAccount.update({
+            where: { id, businessId: session.session.activeBusinessId },
+            data: { isActive: false }
+        });
+        revalidatePath("/accounts");
+        return { success: true, message: "Account deactivated as it has transaction history." };
     }
 
     await prisma.financialAccount.delete({
@@ -126,7 +137,7 @@ export async function getFinancialAccountsWithBalance() {
     const businessId = session.session.activeBusinessId;
 
     const accounts = await prisma.financialAccount.findMany({
-        where: { businessId },
+        where: { businessId, isActive: true },
         orderBy: { createdAt: "desc" },
     });
 

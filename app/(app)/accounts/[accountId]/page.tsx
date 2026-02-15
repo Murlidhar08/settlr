@@ -3,6 +3,9 @@ import { Header } from "@/components/header";
 import BackAccountHeaderClient from "./components/back-account-header-client";
 import { getAccountTransactions } from "@/actions/transaction.actions";
 import { TransactionList } from "@/components/transaction/transaction-list";
+import { FooterButtons } from "@/components/footer-buttons";
+import { AddTransactionModal } from "@/components/transaction/add-transaction-modal";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
     Wallet,
@@ -145,9 +148,45 @@ async function AccountContent({ accountId }: { accountId: string }) {
                         <div className="h-1 w-8 bg-primary rounded-full" />
                         <h2 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/70">Statement Entries</h2>
                     </div>
-                    <TransactionList transactions={transactions as any} />
+                    <TransactionList
+                        transactions={transactions as any}
+                        accountId={accountId}
+                    />
                 </div>
             </div>
+            <FooterButtons>
+                {/* OUT Button */}
+                <AddTransactionModal
+                    title="Transfer Out"
+                    accountId={accountId}
+                    direction="OUT"
+                    path={`/accounts/${accountId}`}
+                >
+                    <Button
+                        size="lg"
+                        className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                    >
+                        <ArrowUpRight className="h-5 w-5" />
+                        Account Out
+                    </Button>
+                </AddTransactionModal>
+
+                {/* IN Button */}
+                <AddTransactionModal
+                    title="Transfer In"
+                    accountId={accountId}
+                    direction="IN"
+                    path={`/accounts/${accountId}`}
+                >
+                    <Button
+                        size="lg"
+                        className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                    >
+                        <ArrowDownLeft className="h-5 w-5" />
+                        Account In
+                    </Button>
+                </AddTransactionModal>
+            </FooterButtons>
         </div>
     );
 }

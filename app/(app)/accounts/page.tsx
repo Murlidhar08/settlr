@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Header } from "@/components/header";
-import { getFinancialAccounts } from "@/actions/financial-account.actions";
+import { getFinancialAccountsWithBalance } from "@/actions/financial-account.actions";
 import { AddAccountModal } from "@/components/account/add-account-modal";
 import { AccountCard } from "@/components/account/account-card";
 import { AccountsSkeleton } from "@/components/account/accounts-skeleton";
@@ -20,7 +20,7 @@ export default async function AccountsPage() {
 }
 
 async function AccountsContent() {
-    const allAccounts = await getFinancialAccounts();
+    const allAccounts = await getFinancialAccountsWithBalance();
     const accounts = allAccounts.filter(a => a.partyId === null);
 
     const groupedAccounts = {

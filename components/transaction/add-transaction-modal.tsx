@@ -6,10 +6,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useState, useEffect, ReactNode } from "react"
-import { PaymentMode, TransactionDirection, FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { addTransaction } from "@/actions/transaction.actions"
 import { getFinancialAccountsWithBalance } from "@/actions/financial-account.actions"
 import { Transaction, FinancialAccount } from "@/lib/generated/prisma/client"
+import { FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { format } from "date-fns"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
@@ -30,14 +30,16 @@ interface TransactionProps {
   title: string
   children: ReactNode
   partyId?: string | null
-  transactionData?: Transaction
-  direction?: TransactionDirection,
+  accountId?: string | null
+  transactionData?: any
+  direction?: 'IN' | 'OUT'
   path?: string
 }
 
 export const AddTransactionModal = ({
   title,
   partyId,
+  accountId,
   transactionData,
   direction,
   path,
@@ -49,7 +51,7 @@ export const AddTransactionModal = ({
   const [loadingAccounts, setLoadingAccounts] = useState(false)
 
   const router = useRouter()
-  const isOut = direction === TransactionDirection.OUT;
+  const isOut = direction === 'OUT';
 
   const [uiSelectedAccountId, setUiSelectedAccountId] = useState<string>("")
   const [linkedAccountId, setLinkedAccountId] = useState<string>("")
@@ -61,8 +63,6 @@ export const AddTransactionModal = ({
     date: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "yyyy-MM-dd"),
     time: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "HH:mm"),
     description: "",
-    mode: PaymentMode.CASH,
-    direction: direction || TransactionDirection.OUT,
     partyId: partyId || null,
     fromAccountId: "",
     toAccountId: "",
@@ -96,24 +96,39 @@ export const AddTransactionModal = ({
             const moneyAccounts = accs.filter(a => a.type === FinancialAccountType.MONEY)
             let firstMoneyAcc = moneyAccounts[0]?.id || ""
 
-            // Cashbook specific logic: Default to 'CASH' money account
-            if (path === "/cashbook") {
-              const cashAcc = moneyAccounts.find(a => a.moneyType === "CASH")
-              if (cashAcc) firstMoneyAcc = cashAcc.id
+            // Specific logic if accountId or partyId is provided
+            const currentAccId = accountId || (partyId ? accs.find(a => a.partyId === partyId)?.id : null)
+
+            if (currentAccId) {
+              const currentAcc = accs.find(a => a.id === currentAccId)
+              if (currentAcc?.type === FinancialAccountType.MONEY) {
+                setUiSelectedAccountId(currentAccId)
+                const linked = (partyId ? accs.find(a => a.partyId === partyId)?.id : null) || accs.find(a => a.type === FinancialAccountType.CATEGORY)?.id || ""
+                setLinkedAccountId(linked)
+                setData((pre: any) => ({
+                  ...pre,
+                  fromAccountId: isOut ? currentAccId : linked,
+                  toAccountId: isOut ? linked : currentAccId,
+                }))
+              } else {
+                setLinkedAccountId(currentAccId)
+                setUiSelectedAccountId(firstMoneyAcc)
+                setData((pre: any) => ({
+                  ...pre,
+                  fromAccountId: isOut ? firstMoneyAcc : currentAccId,
+                  toAccountId: isOut ? currentAccId : firstMoneyAcc,
+                }))
+              }
+            } else {
+              const categoryAcc = accs.find(a => a.type === FinancialAccountType.CATEGORY)?.id || ""
+              setUiSelectedAccountId(firstMoneyAcc)
+              setLinkedAccountId(categoryAcc)
+              setData((pre: any) => ({
+                ...pre,
+                fromAccountId: isOut ? firstMoneyAcc : categoryAcc,
+                toAccountId: isOut ? categoryAcc : firstMoneyAcc,
+              }))
             }
-
-            const partyAcc = partyId ? accs.find(a => a.partyId === partyId)?.id || "" : ""
-            const categoryAcc = !partyAcc ? accs.find(a => a.type === FinancialAccountType.CATEGORY)?.id || "" : ""
-            const linked = partyAcc || categoryAcc
-
-            setUiSelectedAccountId(firstMoneyAcc)
-            setLinkedAccountId(linked)
-
-            setData((pre: any) => ({
-              ...pre,
-              fromAccountId: isOut ? firstMoneyAcc : linked,
-              toAccountId: isOut ? linked : firstMoneyAcc,
-            }))
           }
         } catch (err) {
           toast.error("Failed to load accounts")
@@ -135,6 +150,18 @@ export const AddTransactionModal = ({
     }))
   }
 
+  const handlePartnerChange = (val: string | null) => {
+    if (!val) return
+    setLinkedAccountId(val)
+    const partnerAcc = allAccounts.find(a => a.id === val);
+    setData((pre: any) => ({
+      ...pre,
+      fromAccountId: isOut ? uiSelectedAccountId : val,
+      toAccountId: isOut ? val : uiSelectedAccountId,
+      partyId: partnerAcc?.partyId || null
+    }))
+  }
+
   const handleAddTransaction = async () => {
     if (!data.amount || isNaN(Number(data.amount))) {
       return toast.error("Please enter a valid amount")
@@ -146,13 +173,12 @@ export const AddTransactionModal = ({
 
     try {
       const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
-      const selectedAcc = allAccounts.find(a => a.id === uiSelectedAccountId)
-
-      const mode = selectedAcc?.moneyType === "ONLINE" ? PaymentMode.ONLINE : PaymentMode.CASH
+      if (isNaN(combinedDateTime.getTime())) {
+        return toast.error("Please enter a valid date and time")
+      }
 
       await addTransaction({
         ...data,
-        mode,
         amount: Number(data.amount),
         date: combinedDateTime,
         description: data.description || null
@@ -173,8 +199,6 @@ export const AddTransactionModal = ({
         date: format(new Date(), "yyyy-MM-dd"),
         time: format(new Date(), "HH:mm"),
         description: "",
-        mode: PaymentMode.CASH,
-        direction: direction || TransactionDirection.OUT,
         partyId: partyId || null,
         fromAccountId: "",
         toAccountId: "",
@@ -304,7 +328,41 @@ export const AddTransactionModal = ({
                 </motion.div>
 
                 {/* Money Account Selection - Hidden in Cashbook */}
-                {path !== "/cashbook" && (
+                {/* Partner Account Selection (Category/Party) */}
+                {(!partyId) && (
+                  <motion.div variants={itemVariants} className="col-span-full space-y-2">
+                    <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
+                      <Wallet size={12} /> {isOut ? "Payment For (Category/Party)" : "Source (Category/Party)"}
+                    </Label>
+                    <Select
+                      value={linkedAccountId}
+                      onValueChange={handlePartnerChange}
+                    >
+                      <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
+                        <SelectValue placeholder="Select Category or Party">
+                          {allAccounts.find(a => a.id === linkedAccountId)?.name}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
+                        {allAccounts
+                          .filter(acc => acc.type !== FinancialAccountType.MONEY)
+                          .map(acc => (
+                            <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/10 rounded-xl cursor-pointer">
+                              <div className="flex flex-col">
+                                <span className="font-bold text-sm">{acc.name}</span>
+                                <span className="text-[10px] text-muted-foreground/60 italic">
+                                  {acc.partyType || acc.categoryType || acc.type}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </motion.div>
+                )}
+
+                {/* Money Account Selection */}
+                {(path !== "/cashbook" || !accountId) && (
                   <motion.div variants={itemVariants} className="col-span-full space-y-2">
                     <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
                       <Wallet size={12} /> {isOut ? "Pay From Account" : "Receive In Account"}
@@ -313,34 +371,20 @@ export const AddTransactionModal = ({
                       value={uiSelectedAccountId}
                       onValueChange={handleAccountChange}
                     >
-                      <SelectTrigger className="h-20 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background hover:text-foreground active:text-foreground">
+                      <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
                         <SelectValue placeholder="Choose Account">
                           {allAccounts.find(a => a.id === uiSelectedAccountId)?.name}
                         </SelectValue>
                       </SelectTrigger>
-                      <SelectContent className="rounded-2xl shadow-xl max-h-[400px]">
+                      <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
                         {allAccounts
-                          .filter(acc => {
-                            // Filter 1: If Pay From (OUT), hide accounts with 0 or less balance
-                            if (isOut && acc.type === FinancialAccountType.MONEY && acc.balance <= 0) {
-                              return false
-                            }
-                            return true
-                          })
+                          .filter(acc => acc.type === FinancialAccountType.MONEY)
                           .map(acc => (
-                            <SelectItem key={acc.id} value={acc.id} className="py-4 px-4 focus:bg-primary/75 hover:bg-primary rounded-xl cursor-pointer transition-colors group">
-                              <div className="flex flex-col w-full gap-1">
-                                <div className="flex items-center justify-between w-full">
-                                  <span className="font-bold text-sm">{acc.name}</span>
-                                  <span className={cn(
-                                    "font-bold text-xs tabular-nums text-muted-foreground",
-                                    acc.balance > 0 ? "text-emerald-600" : acc.balance < 0 ? "text-rose-600" : ""
-                                  )}>
-                                    ₹{Math.abs(acc.balance).toLocaleString()}
-                                  </span>
-                                </div>
-                                <span className="text-[10px] text-muted-foreground/60 transition-colors group-hover:text-primary/70">
-                                  {acc.moneyType || acc.partyType || acc.categoryType || acc.type}
+                            <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/10 rounded-xl cursor-pointer">
+                              <div className="flex justify-between items-center w-full gap-4">
+                                <span>{acc.name}</span>
+                                <span className="text-xs font-bold tabular-nums text-muted-foreground">
+                                  ₹{acc.balance.toLocaleString()}
                                 </span>
                               </div>
                             </SelectItem>

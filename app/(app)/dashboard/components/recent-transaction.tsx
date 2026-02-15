@@ -1,4 +1,3 @@
-import { TransactionDirection } from "@/lib/generated/prisma/enums";
 import TransactionItem from "./transaction-item";
 import { ArrowDownLeft, ArrowUpRight, Wallet2 } from "lucide-react";
 import { getRecentTransactions } from "@/actions/transaction.actions";
@@ -13,7 +12,7 @@ export default async function RecentTransaction() {
 
   // ---------------------
   // Functions
-  const getTransactionTitle = (description: string | null, direction: TransactionDirection, partyName?: string) => {
+  const getTransactionTitle = (description: string | null, toAccountType: string, partyName?: string) => {
     if (description && description.trim().length > 0)
       return description;
 
@@ -21,15 +20,15 @@ export default async function RecentTransaction() {
       return "Cashbook"
     }
 
-    return direction === TransactionDirection.IN
+    return toAccountType === "MONEY"
       ? "Payment Received"
       : "Payment Sent";
   };
 
-  const getTransactionIcon = (direction: TransactionDirection, partyName?: string) => {
+  const getTransactionIcon = (toAccountType: string, partyName?: string) => {
     if (!partyName) return <Wallet2 />
 
-    return direction == TransactionDirection.OUT
+    return toAccountType !== "MONEY"
       ? <ArrowUpRight /> : <ArrowDownLeft />
   }
 
@@ -42,16 +41,16 @@ export default async function RecentTransaction() {
       )}
 
       {recentTransactions.map((tx) => {
-        const positive = tx.direction === TransactionDirection.IN;
+        const positive = tx.toAccount?.type === "MONEY";
 
         return (
           <TransactionItem
             key={tx.id}
             id={tx.id}
-            icon={getTransactionIcon(tx.direction, tx.party?.name)}
-            title={getTransactionTitle(tx.description, tx.direction, tx.party?.name)}
-            meta={`${format(tx.date, "dd MMM")} • ${tx.mode}${tx.party?.name ? ` • ${tx.party.name}` : ""}`}
-            amount={formatAmount(Number(tx.amount), currency, true, tx.direction)}
+            icon={getTransactionIcon(tx.toAccount?.type as string, tx.party?.name)}
+            title={getTransactionTitle(tx.description, tx.toAccount?.type as string, tx.party?.name)}
+            meta={`${format(tx.date, "dd MMM")}${tx.party?.name ? ` • ${tx.party.name}` : ""}`}
+            amount={formatAmount(Number(tx.amount), currency, true)}
             positive={positive}
             fromAccount={tx.fromAccount?.name}
             toAccount={tx.toAccount?.name}

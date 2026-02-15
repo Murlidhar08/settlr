@@ -1,6 +1,5 @@
 "use client"
 
-import { TransactionDirection } from "@/lib/generated/prisma/enums"
 import { format } from "date-fns"
 import { Check, PenSquareIcon, ArrowDownLeft, ArrowUpRight, Clock, Hash, CreditCard } from "lucide-react"
 import { BackHeader } from "@/components/back-header"
@@ -168,9 +167,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
 
                         <div className="h-px bg-linear-to-r from-transparent via-border to-transparent" />
 
-                        <DetailRow icon={<div className="h-2 w-2 rounded-full bg-primary" />} label="Payment Instrument">
-                            <span className="font-black text-lg tracking-tight uppercase text-primary/80">{transaction.mode}</span>
-                        </DetailRow>
+                        {/* Payment Instrument removed as mode is gone */}
 
                         {transaction.description && (
                             <>
@@ -192,7 +189,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                 <AddTransactionModal
                     title="Edit Transaction"
                     transactionData={transaction}
-                    direction={transaction.direction}
+                    direction={isIn ? 'IN' : 'OUT'}
                     partyId={transaction.partyId}
                 >
                     <Button

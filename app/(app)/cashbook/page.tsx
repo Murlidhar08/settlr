@@ -8,7 +8,6 @@ import { AddTransactionModal } from "@/components/transaction/add-transaction-mo
 import { FooterButtons } from "@/components/footer-buttons";
 import { Button } from "@/components/ui/button";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
-import { TransactionDirection } from "@/lib/generated/prisma/enums";
 import { getCashbookTransactions } from "@/actions/transaction.actions";
 import { format } from "date-fns";
 
@@ -91,7 +90,7 @@ async function CashbookContent({
       <FooterButtons>
         <AddTransactionModal
           title="Add Transaction"
-          direction={TransactionDirection.OUT}
+          direction="OUT"
           path="/cashbook"
         >
           <Button size="lg" className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
@@ -102,7 +101,7 @@ async function CashbookContent({
 
         <AddTransactionModal
           title="Add Transaction"
-          direction={TransactionDirection.IN}
+          direction="IN"
           path="/cashbook"
         >
           <Button

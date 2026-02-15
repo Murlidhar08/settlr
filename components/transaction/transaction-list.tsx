@@ -9,6 +9,7 @@ import { useUserConfig } from "@/components/providers/user-config-provider";
 interface transactionListProp {
   transactions: TransactionRes[]
   partyId?: string | null
+  accountId?: string | null
 }
 
 function groupTransactionsByDate(transactions: TransactionRes[]) {
@@ -46,7 +47,7 @@ function TransactionGroup({ label, children }: { label: string; children: React.
   )
 }
 
-const TransactionList = ({ transactions }: transactionListProp) => {
+const TransactionList = ({ transactions, accountId }: transactionListProp) => {
   const { currency } = useUserConfig();
   return (
     <div className="flex flex-col gap-4 px-1">
@@ -68,11 +69,14 @@ const TransactionList = ({ transactions }: transactionListProp) => {
                   transactionId={transaction.id}
                   title={transaction.description || ""}
                   subtitle={format(transaction.date, "hh:mm a")}
-                  amount={formatAmount(transaction.amount, currency, true, transaction.direction)}
-                  type={transaction.direction}
-                  mode={transaction.mode}
+                  amount={formatAmount(transaction.amount, currency, true)}
+                  accountId={accountId}
+                  fromAccountId={transaction.fromAccountId}
+                  toAccountId={transaction.toAccountId}
                   fromAccount={transaction.fromAccount?.name}
                   toAccount={transaction.toAccount?.name}
+                  fromAccountType={transaction.fromAccount?.type}
+                  toAccountType={transaction.toAccount?.type}
                 />
               ))}
             </TransactionGroup>

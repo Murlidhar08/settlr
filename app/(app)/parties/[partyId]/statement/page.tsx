@@ -6,13 +6,13 @@ import { BadgeCheck, Lock, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 // Components
 import { Card } from "@/components/ui/card";
 import { BackHeader } from "@/components/back-header";
+import { prisma } from "@/lib/prisma";
 import StatementFilters from "./components/statement-filters";
 import ExportPDFButton from "./components/export-pdf-button";
 import StatementSkeleton from "./components/statement-skeleton";
 
 // Lib
 import { getPartyStatement } from "@/actions/transaction.actions";
-import { TransactionDirection } from "@/lib/generated/prisma/enums";
 import { cn } from "@/lib/utils";
 import { envClient } from "@/lib/env.client";
 import { getInitials } from "@/utility/party";
@@ -48,12 +48,19 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
 
   if (!party) return <div>Party not found</div>;
 
+  // Get party financial account
+  const partyAccount = await prisma.financialAccount.findFirst({
+    where: { partyId, businessId: party.businessId! },
+    select: { id: true }
+  });
+  const pAccId = partyAccount?.id;
+
   const totalIn = transactions
-    .filter(t => t.direction === TransactionDirection.IN)
+    .filter(t => t.toAccountId === pAccId)
     .reduce((sum, t) => sum + t.amount, 0);
 
   const totalOut = transactions
-    .filter(t => t.direction === TransactionDirection.OUT)
+    .filter(t => t.fromAccountId === pAccId)
     .reduce((sum, t) => sum + t.amount, 0);
 
   const balance = totalIn - totalOut;
@@ -128,6 +135,7 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
                         tx={tx}
                         currency={currency}
                         index={i}
+                        pAccId={pAccId!}
                       />
                     ))}
                   </div>
@@ -143,12 +151,12 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
         <div className="mb-6 grid grid-cols-2 gap-4 h-24">
           <Metric
             label="Total Cash In"
-            value={formatAmount(totalIn, currency, false, TransactionDirection.IN)}
+            value={formatAmount(totalIn, currency, false)}
             positive
           />
           <Metric
             label="Total Cash Out"
-            value={formatAmount(totalOut, currency, false, TransactionDirection.OUT)}
+            value={formatAmount(totalOut, currency, false)}
           />
         </div>
 
@@ -187,8 +195,8 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
   );
 }
 
-function TransactionCard({ tx, currency, index }: { tx: any, currency: any, index: number }) {
-  const isReceived = tx.direction === TransactionDirection.IN;
+function TransactionCard({ tx, currency, index, pAccId }: { tx: any, currency: any, index: number, pAccId: string }) {
+  const isReceived = tx.toAccountId === pAccId;
 
   return (
     <motion.div

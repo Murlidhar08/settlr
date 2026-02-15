@@ -9,7 +9,6 @@ import { BalanceCard } from './components/balance-card';
 // Lib
 import { prisma } from '@/lib/prisma'
 import { getUserSession } from '@/lib/auth'
-import { TransactionDirection } from '@/lib/generated/prisma/client'
 import { TransactionList } from '@/components/transaction/transaction-list';
 import { FooterButtons } from '@/components/footer-buttons';
 import { AddTransactionModal } from '@/components/transaction/add-transaction-modal';
@@ -30,8 +29,11 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
       select: {
         id: true,
         name: true,
-        type: true,
         contactNo: true,
+        financialAccounts: {
+          select: { id: true, partyType: true },
+          take: 1
+        }
       }
     }),
     // 2. Fetch Transactions (List)
@@ -45,14 +47,17 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
         { createdAt: "desc" }
       ]
     }),
-    // 3. Fetch Aggregated Stats (Total In/Out) - Scalable way
-    prisma.transaction.groupBy({
-      by: ['direction'],
+    // 3. Fetch transactions for aggregation (since direction column is gone)
+    prisma.transaction.findMany({
       where: {
         businessId: session?.session.activeBusinessId || "",
         partyId: partyId,
       },
-      _sum: { amount: true }
+      select: {
+        amount: true,
+        fromAccountId: true,
+        toAccountId: true,
+      }
     })
   ]);
 
@@ -60,19 +65,22 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
 
   const partyDetails = {
     ...party,
+    type: (party as any).financialAccounts[0]?.partyType,
     transactions: transactions.map(tra => ({
       ...tra,
       amount: tra.amount.toNumber()
     }))
   };
 
-  let totalIn = 0;
-  let totalOut = 0;
+  const partyAccountId = (party as any).financialAccounts[0]?.id;
 
-  stats.forEach((stat) => {
-    const amount = stat._sum.amount ? stat._sum.amount.toNumber() : 0;
-    if (stat.direction === TransactionDirection.IN) totalIn += amount;
-    else totalOut += amount;
+  let totalIn = 0; // Money coming to the party (we owe them more)
+  let totalOut = 0; // Money going from the party (they owe us more)
+
+  stats.forEach((tra) => {
+    const amount = tra.amount.toNumber();
+    if (tra.toAccountId === partyAccountId) totalIn += amount;
+    if (tra.fromAccountId === partyAccountId) totalOut += amount;
   });
 
   return (
@@ -114,7 +122,8 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
             {/* Tasaction List */}
             <TransactionList
               partyId={partyDetails?.id}
-              transactions={partyDetails?.transactions ?? []}
+              accountId={partyAccountId}
+              transactions={partyDetails?.transactions as any}
             />
           </section>
 
@@ -122,11 +131,12 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
 
         {/* Bottom Action Footer */}
         <FooterButtons>
-          {/* YOU GAVE */}
+          {/* YOU GAVE -> Money goes TO Party (from MONEY to PARTY) */}
           <AddTransactionModal
-            title="Add Transaction"
+            title="You Gave"
+            direction="OUT"
             partyId={partyId}
-            direction={TransactionDirection.OUT}
+            accountId={partyAccountId}
             path={`/parties/${partyId}`}
           >
             <Button size="lg" className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
@@ -135,11 +145,12 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
             </Button>
           </AddTransactionModal>
 
-          {/* YOU GET */}
+          {/* YOU GET -> Money comes FROM Party (from PARTY to MONEY) */}
           <AddTransactionModal
-            title="Add Transaction"
+            title="You Get"
+            direction="IN"
             partyId={partyId}
-            direction={TransactionDirection.IN}
+            accountId={partyAccountId}
             path={`/parties/${partyId}`}
           >
             <Button

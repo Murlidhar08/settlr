@@ -13,7 +13,7 @@ import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 
 interface AccountCardProps {
-    account: FinancialAccount
+    account: FinancialAccount & { balance: number }
     index: number
 }
 
@@ -55,30 +55,35 @@ export const AccountCard = ({ account, index }: AccountCardProps) => {
             transition={{ duration: 0.4, delay: index * 0.05 }}
             whileHover={{ y: -4 }}
             onClick={() => router.push(`/accounts/${account.id}` as any)}
-            className="group relative p-6 rounded-3xl border-2 bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 cursor-pointer"
+            className="group relative p-5 rounded-[2rem] border-2 bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 cursor-pointer"
         >
-            <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                    <div className="h-14 w-14 rounded-2xl bg-muted/30 flex items-center justify-center group-hover:bg-primary/5 group-hover:scale-110 transition-all duration-500">
+            <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-4 min-w-0">
+                    <div className="h-12 w-12 shrink-0 rounded-2xl bg-muted/30 flex items-center justify-center group-hover:bg-primary/5 group-hover:scale-110 transition-all duration-500">
                         {getIcon()}
                     </div>
-                    <div>
-                        <h3 className="text-lg font-black tracking-tight">{account.name}</h3>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                    <div className="min-w-0">
+                        <h3 className="text-base font-black tracking-tight truncate">{account.name}</h3>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 truncate">
                             {account.moneyType || account.partyType || account.categoryType || account.type}
                         </p>
                     </div>
                 </div>
 
-                {!account.isSystem && (
-                    <div onClick={(e) => e.stopPropagation()}>
-                        <AddAccountModal accountData={account}>
-                            <div className="p-2 rounded-xl bg-muted/20 hover:bg-primary hover:text-primary-foreground opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
-                                <Edit2 size={14} />
-                            </div>
-                        </AddAccountModal>
-                    </div>
-                )}
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                    <p className={`text-lg font-black tracking-tighter tabular-nums ${account.balance > 0 ? "text-emerald-500" : account.balance < 0 ? "text-rose-500" : ""}`}>
+                        ₹{account.balance.toLocaleString("en-IN", { minimumFractionDigits: 0 })}
+                    </p>
+                    {!account.isSystem && (
+                        <div onClick={(e) => e.stopPropagation()}>
+                            <AddAccountModal accountData={account}>
+                                <div className="p-1.5 rounded-lg bg-muted/20 hover:bg-primary hover:text-primary-foreground opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                                    <Edit2 size={12} />
+                                </div>
+                            </AddAccountModal>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Decorative background element */}
