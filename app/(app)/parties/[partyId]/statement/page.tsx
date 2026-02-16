@@ -55,6 +55,8 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
   });
   const pAccId = partyAccount?.id;
 
+  // totalIn: Money User Gave (Into Party Account)
+  // totalOut: Money User Got (From Party Account)
   const totalIn = transactions
     .filter(t => t.toAccountId === pAccId)
     .reduce((sum, t) => sum + t.amount, 0);
@@ -150,13 +152,13 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
       <div className="mx-auto max-w-4xl p-6">
         <div className="mb-6 grid grid-cols-2 gap-4 h-24">
           <Metric
-            label="Total Cash In"
+            label="Total Paid"
             value={formatAmount(totalIn, currency, false)}
-            positive
           />
           <Metric
-            label="Total Cash Out"
+            label="Total Received"
             value={formatAmount(totalOut, currency, false)}
+            positive
           />
         </div>
 
@@ -196,7 +198,10 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
 }
 
 function TransactionCard({ tx, currency, index, pAccId }: { tx: any, currency: any, index: number, pAccId: string }) {
-  const isReceived = tx.toAccountId === pAccId;
+  // From user perspective:
+  // Money to Party account = Paid (OUT)
+  // Money from Party account = Got (IN)
+  const isIn = tx.fromAccountId === pAccId;
 
   return (
     <motion.div
@@ -210,13 +215,13 @@ function TransactionCard({ tx, currency, index, pAccId }: { tx: any, currency: a
         <div className="flex items-center gap-4">
           <div className={cn(
             "flex h-12 w-12 items-center justify-center rounded-2xl transition-all",
-            isReceived ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30"
+            isIn ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30"
           )}>
-            {isReceived ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
+            {isIn ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
           </div>
           <div>
             <p className="font-bold text-foreground">
-              {tx.description || (isReceived ? "Payment Received" : "Payment Sent")}
+              {tx.description || (isIn ? "Payment Received" : "Payment Sent")}
             </p>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground border">
@@ -230,7 +235,7 @@ function TransactionCard({ tx, currency, index, pAccId }: { tx: any, currency: a
         </div>
         <p className={cn(
           "text-lg font-black tabular-nums tracking-tight",
-          isReceived ? "text-emerald-600" : "text-rose-600"
+          isIn ? "text-emerald-600" : "text-rose-600"
         )}>
           {formatAmount(tx.amount, currency)}
         </p>

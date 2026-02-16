@@ -10,6 +10,7 @@ interface transactionListProp {
   transactions: TransactionRes[]
   partyId?: string | null
   accountId?: string | null
+  accountType?: string | null
 }
 
 function groupTransactionsByDate(transactions: TransactionRes[]) {
@@ -47,7 +48,7 @@ function TransactionGroup({ label, children }: { label: string; children: React.
   )
 }
 
-const TransactionList = ({ transactions, accountId }: transactionListProp) => {
+const TransactionList = ({ transactions, accountId, accountType }: transactionListProp) => {
   const { currency } = useUserConfig();
   return (
     <div className="flex flex-col gap-4 px-1">
@@ -71,6 +72,7 @@ const TransactionList = ({ transactions, accountId }: transactionListProp) => {
                   subtitle={format(transaction.date, "hh:mm a")}
                   amount={formatAmount(transaction.amount, currency, true)}
                   accountId={accountId}
+                  accountType={accountType}
                   fromAccountId={transaction.fromAccountId}
                   toAccountId={transaction.toAccountId}
                   fromAccount={transaction.fromAccount?.name}

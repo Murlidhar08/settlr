@@ -4,6 +4,7 @@
 import { prisma } from "@/lib/prisma";
 import { getUserSession } from "@/lib/auth";
 import { Transaction, Prisma } from "@/lib/generated/prisma/client";
+import { MoneyType, FinancialAccountType, CategoryType } from "@/lib/generated/prisma/enums";
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache";
 
@@ -41,8 +42,8 @@ export async function addTransaction(transactionData: any, pathToRevalidate?: st
   }
 
   // 3. CATEGORY TO CATEGORY RESTRICTION
-  if (fromAccount.type === "CATEGORY" && toAccount.type === "CATEGORY") {
-    if (fromAccount.categoryType !== "ADJUSTMENT" && toAccount.categoryType !== "ADJUSTMENT") {
+  if (fromAccount.type === FinancialAccountType.CATEGORY && toAccount.type === FinancialAccountType.CATEGORY) {
+    if (fromAccount.categoryType !== CategoryType.ADJUSTMENT && toAccount.categoryType !== CategoryType.ADJUSTMENT) {
       throw new Error("Direct Category to Category transfers are only allowed for Adjustments.");
     }
   }
@@ -199,15 +200,15 @@ export async function getCashbookTransactions(filters: {
   };
 
   // Category filter (Cash/Online) - Based on Account MoneyType
-  if (filters.category === "Cash") {
+  if (filters.category === MoneyType.CASH) {
     where.OR = [
-      { fromAccount: { moneyType: "CASH" } },
-      { toAccount: { moneyType: "CASH" } }
+      { fromAccount: { moneyType: MoneyType.CASH } },
+      { toAccount: { moneyType: MoneyType.CASH } }
     ];
-  } else if (filters.category === "Online") {
+  } else if (filters.category === MoneyType.ONLINE) {
     where.OR = [
-      { fromAccount: { moneyType: "ONLINE" } },
-      { toAccount: { moneyType: "ONLINE" } }
+      { fromAccount: { moneyType: MoneyType.ONLINE } },
+      { toAccount: { moneyType: MoneyType.ONLINE } }
     ];
   }
 
@@ -252,8 +253,8 @@ export async function getCashbookTransactions(filters: {
 
   transactions.forEach(tx => {
     const amount = Number(tx.amount);
-    if (tx.toAccount.type === "MONEY") totalIn += amount;
-    if (tx.fromAccount.type === "MONEY") totalOut += amount;
+    if (tx.toAccount.type === FinancialAccountType.MONEY) totalIn += amount;
+    if (tx.fromAccount.type === FinancialAccountType.MONEY) totalOut += amount;
   });
 
   return {

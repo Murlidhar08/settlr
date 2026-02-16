@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { MoneyType } from "@/lib/generated/prisma/enums";
 
 import { DateRange } from "react-day-picker";
 
@@ -32,7 +33,7 @@ export default function CashFilters({
     const [searchValue, setSearchValue] = useState(currentSearch);
 
     // Categories
-    const categories = ["All", "Cash", "Online"];
+    const categories = ["All", MoneyType.CASH, MoneyType.ONLINE];
 
     const updateFilters = (updates: Record<string, string | null>) => {
         const params = new URLSearchParams(searchParams.toString());

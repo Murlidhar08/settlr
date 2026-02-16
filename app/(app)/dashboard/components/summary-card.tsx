@@ -4,6 +4,7 @@ import { MoveDownLeft, MoveUpRight, PiggyBank } from "lucide-react"
 import StatCard from "./status-card"
 import { formatAmount } from "@/utility/transaction"
 import { getUserConfig } from "@/lib/user-config"
+import { FinancialAccountType } from "@/lib/generated/prisma/enums"
 
 export default async function SummaryCard() {
   const session = await getUserSession();
@@ -33,8 +34,8 @@ export default async function SummaryCard() {
     select: { id: true, type: true, partyId: true }
   });
 
-  const moneyAccIds = new Set(accounts.filter(a => a.type === "MONEY").map(a => a.id));
-  const partyAccs = accounts.filter(a => a.type === "PARTY");
+  const moneyAccIds = new Set(accounts.filter(a => a.type === FinancialAccountType.MONEY).map(a => a.id));
+  const partyAccs = accounts.filter(a => a.type === FinancialAccountType.PARTY);
 
   // 2. Fetch all transactions (for a production app, we should use aggregation, but for now we calculate net stats)
   const transactions = await prisma.transaction.findMany({

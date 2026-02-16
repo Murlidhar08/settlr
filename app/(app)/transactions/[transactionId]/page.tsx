@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { getUserSession } from "@/lib/auth"
 import { TransactionDetailView } from "./components/transaction-detail-view"
 import { getUserConfig } from "@/lib/user-config"
+import { FinancialAccountType } from "@/lib/generated/prisma/enums"
 
 export default async function TransactionDetailPage({ params }: { params: Promise<{ transactionId: string }> }) {
   const transactionId = (await params).transactionId;
@@ -26,7 +27,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
   if (!transaction)
     notFound()
 
-  const isIn = (transaction.toAccount as any).type === "MONEY"
+  const isIn = (transaction.toAccount as any).type === FinancialAccountType.MONEY
   const { currency } = await getUserConfig()
 
   return <TransactionDetailView transaction={JSON.parse(JSON.stringify(transaction))} isIn={isIn} currency={currency} />

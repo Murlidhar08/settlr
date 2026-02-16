@@ -16,6 +16,8 @@ import { Button } from '@/components/ui/button';
 import { getUserConfig } from '@/lib/user-config';
 import { getCurrencySymbol } from '@/utility/transaction';
 import BackHeaderClient from './components/back-header-client';
+import { TransactionDirection } from '@/types/transaction/TransactionDirection';
+import { FinancialAccountType } from '@/lib/generated/prisma/enums';
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;
@@ -74,8 +76,8 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
 
   const partyAccountId = (party as any).financialAccounts[0]?.id;
 
-  let totalIn = 0; // Money coming to the party (we owe them more)
-  let totalOut = 0; // Money going from the party (they owe us more)
+  let totalIn = 0; // Money I Gave (In to Party)
+  let totalOut = 0; // Money I Got (Out from Party)
 
   stats.forEach((tra) => {
     const amount = tra.amount.toNumber();
@@ -123,6 +125,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
             <TransactionList
               partyId={partyDetails?.id}
               accountId={partyAccountId}
+              accountType={FinancialAccountType.PARTY}
               transactions={partyDetails?.transactions as any}
             />
           </section>
@@ -134,7 +137,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
           {/* YOU GAVE -> Money goes TO Party (from MONEY to PARTY) */}
           <AddTransactionModal
             title="You Gave"
-            direction="OUT"
+            direction={TransactionDirection.OUT}
             partyId={partyId}
             accountId={partyAccountId}
             path={`/parties/${partyId}`}
@@ -148,7 +151,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
           {/* YOU GET -> Money comes FROM Party (from PARTY to MONEY) */}
           <AddTransactionModal
             title="You Get"
-            direction="IN"
+            direction={TransactionDirection.IN}
             partyId={partyId}
             accountId={partyAccountId}
             path={`/parties/${partyId}`}

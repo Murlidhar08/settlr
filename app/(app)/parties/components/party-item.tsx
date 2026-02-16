@@ -32,10 +32,10 @@ const PartyItem = ({
   const { currency } = useUserConfig();
   const avatarColor = useMemo(() => getRandomAvatarColor(), [])
 
-  const isAdvance = amount > 0
+  const isReceive = amount > 0
   const isSettled = amount === 0
 
-  const status = isSettled ? "Settled" : isAdvance ? "Advance" : "Due"
+  const status = isSettled ? "Settled" : isReceive ? "To Receive" : "To Pay"
 
   return (
     <>
@@ -74,7 +74,7 @@ const PartyItem = ({
             <p
               className={`font-black text-lg tracking-tighter ${isSettled
                 ? "text-muted-foreground/60"
-                : isAdvance
+                : isReceive
                   ? "text-emerald-600 dark:text-emerald-400"
                   : "text-rose-600 dark:text-rose-400"
                 }`}
@@ -85,7 +85,7 @@ const PartyItem = ({
             <span
               className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em] border ${isSettled
                 ? "bg-muted text-muted-foreground border-transparent"
-                : isAdvance
+                : isReceive
                   ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
                   : "bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20"
                 }`}

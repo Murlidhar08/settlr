@@ -27,8 +27,8 @@ import {
     CreditCard
 } from "lucide-react";
 import { FinancialAccountType, MoneyType, CategoryType, PartyType } from "@/lib/generated/prisma/enums";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { TransactionDirection } from "@/types/transaction/TransactionDirection";
 
 export default async function AccountDetailsPage({ params }: { params: Promise<{ accountId: string }> }) {
     const { accountId } = await params;
@@ -151,6 +151,7 @@ async function AccountContent({ accountId }: { accountId: string }) {
                     <TransactionList
                         transactions={transactions as any}
                         accountId={accountId}
+                        accountType={account.type}
                     />
                 </div>
             </div>
@@ -159,7 +160,7 @@ async function AccountContent({ accountId }: { accountId: string }) {
                 <AddTransactionModal
                     title="Transfer Out"
                     accountId={accountId}
-                    direction="OUT"
+                    direction={TransactionDirection.OUT}
                     path={`/accounts/${accountId}`}
                 >
                     <Button
@@ -175,7 +176,7 @@ async function AccountContent({ accountId }: { accountId: string }) {
                 <AddTransactionModal
                     title="Transfer In"
                     accountId={accountId}
-                    direction="IN"
+                    direction={TransactionDirection.IN}
                     path={`/accounts/${accountId}`}
                 >
                     <Button

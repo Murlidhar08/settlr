@@ -13,6 +13,7 @@ interface TransactionProp {
   subtitle: string,
   amount: string,
   accountId?: string | null,
+  accountType?: string | null,
   fromAccountId: string,
   toAccountId: string,
   fromAccount?: string,
@@ -27,6 +28,7 @@ const TransactionItem = ({
   subtitle,
   amount,
   accountId,
+  accountType,
   fromAccountId,
   toAccountId,
   fromAccount,
@@ -35,9 +37,15 @@ const TransactionItem = ({
   toAccountType,
 }: TransactionProp) => {
   // Determine direction based on the current context account
-  const isIn = accountId
+  let isIn = accountId
     ? accountId === toAccountId // If viewing an account, it's IN if that account received the money
     : toAccountType === "MONEY" // Fallback: if toAccount is MONEY, it's a general IN
+
+  // Flip perspective if we are viewing a non-money account (Party or Category)
+  // From user perspective, money going TO a Party is an OUTFLOW.
+  if (accountId && accountType && accountType !== "MONEY") {
+    isIn = !isIn
+  }
 
   return (
     <Link href={`/transactions/${transactionId}`} className="block p-1 outline-none group">

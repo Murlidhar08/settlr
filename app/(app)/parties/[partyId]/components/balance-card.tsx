@@ -73,17 +73,17 @@ export function BalanceCard({
           {/* Totals */}
           <div className="flex gap-12 pt-2">
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Total Recieved</span>
-              <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
-                +{currency}
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Total Paid</span>
+              <span className="text-xl font-black text-rose-500 dark:text-rose-400 tracking-tight">
+                -{currency}
                 {formatAmount(totalIn)}
               </span>
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Total Paid</span>
-              <span className="text-xl font-black text-rose-500 dark:text-rose-400 tracking-tight">
-                -{currency}
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Total Received</span>
+              <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
+                +{currency}
                 {formatAmount(totalOut)}
               </span>
             </div>

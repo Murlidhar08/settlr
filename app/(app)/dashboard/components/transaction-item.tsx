@@ -8,7 +8,7 @@ interface TransactionItemProps {
   title: string;
   meta: string;
   amount: string;
-  positive: boolean;
+  type: 'in' | 'out' | 'neutral';
   fromAccount?: string;
   toAccount?: string;
 }
@@ -19,10 +19,13 @@ export default function TransactionItem({
   title,
   meta,
   amount,
-  positive,
+  type,
   fromAccount,
   toAccount,
 }: TransactionItemProps) {
+  const isNeutral = type === 'neutral';
+  const isIn = type === 'in';
+
   return (
     <Link
       href={`/transactions/${id}`}
@@ -31,9 +34,11 @@ export default function TransactionItem({
       <div className="group flex cursor-pointer items-center justify-between rounded-[2rem] border bg-card p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-lg hover:border-primary/20 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-primary/20">
         <div className="flex items-center gap-5">
           <div className={`flex h-14 w-14 items-center justify-center rounded-2xl transition-transform duration-500 group-hover:scale-110 shadow-sm
-          ${positive
+          ${isIn
               ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
-              : "bg-rose-50 text-rose-500 dark:bg-rose-500/10 dark:text-rose-400"
+              : isNeutral
+                ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                : "bg-rose-50 text-rose-500 dark:bg-rose-500/10 dark:text-rose-400"
             }`}
           >
             {icon}
@@ -57,8 +62,11 @@ export default function TransactionItem({
         </div>
 
         <div className="text-right">
-          <p className={`font-black text-lg ${positive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
-            {amount}
+          <p className={`font-black text-lg ${isIn ? "text-emerald-600 dark:text-emerald-400" :
+              isNeutral ? "text-indigo-600 dark:text-indigo-400" :
+                "text-rose-600 dark:text-rose-400"
+            }`}>
+            {isIn ? "+" : isNeutral ? "" : "-"}{amount}
           </p>
         </div>
       </div>

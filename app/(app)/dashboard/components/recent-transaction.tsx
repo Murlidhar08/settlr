@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { formatAmount } from "@/utility/transaction";
 
 import { getUserConfig } from "@/lib/user-config";
+import { FinancialAccountType } from "@/lib/generated/prisma/enums";
 
 export default async function RecentTransaction() {
   const recentTransactions = await getRecentTransactions();
@@ -12,46 +13,66 @@ export default async function RecentTransaction() {
 
   // ---------------------
   // Functions
-  const getTransactionTitle = (description: string | null, toAccountType: string, partyName?: string) => {
-    if (description && description.trim().length > 0)
-      return description;
+  const getTransactionTitle = (tx: any) => {
+    if (tx.description && tx.description.trim().length > 0)
+      return tx.description;
 
-    if (!partyName) {
-      return "Cashbook"
+    const fromType = tx.fromAccount?.type;
+    const toType = tx.toAccount?.type;
+
+    if (fromType === FinancialAccountType.MONEY && toType === FinancialAccountType.MONEY) {
+      return `Transfer: ${tx.fromAccount.name} to ${tx.toAccount.name}`;
     }
 
-    return toAccountType === "MONEY"
+    if (!tx.party?.name) {
+      return "Cashbook Entry"
+    }
+
+    return toType === FinancialAccountType.MONEY
       ? "Payment Received"
       : "Payment Sent";
   };
 
-  const getTransactionIcon = (toAccountType: string, partyName?: string) => {
-    if (!partyName) return <Wallet2 />
+  const getTransactionIcon = (tx: any) => {
+    const fromType = tx.fromAccount?.type;
+    const toType = tx.toAccount?.type;
 
-    return toAccountType !== "MONEY"
+    if (fromType === FinancialAccountType.MONEY && toType === FinancialAccountType.MONEY) {
+      return <Wallet2 className="text-indigo-500" />
+    }
+
+    if (!tx.party?.name) return <Wallet2 />
+
+    return toType !== FinancialAccountType.MONEY
       ? <ArrowUpRight /> : <ArrowDownLeft />
   }
 
   return (
     <div className="space-y-3">
       {recentTransactions.length === 0 && (
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 text-center py-8">
           No transactions yet
         </p>
       )}
 
       {recentTransactions.map((tx) => {
-        const positive = tx.toAccount?.type === "MONEY";
+        const isFromMoney = tx.fromAccount?.type === FinancialAccountType.MONEY;
+        const isToMoney = tx.toAccount?.type === FinancialAccountType.MONEY;
+
+        let type: 'in' | 'out' | 'neutral' = 'neutral';
+        if (isToMoney && !isFromMoney) type = 'in';
+        else if (isFromMoney && !isToMoney) type = 'out';
+        else if (isFromMoney && isToMoney) type = 'neutral';
 
         return (
           <TransactionItem
             key={tx.id}
             id={tx.id}
-            icon={getTransactionIcon(tx.toAccount?.type as string, tx.party?.name)}
-            title={getTransactionTitle(tx.description, tx.toAccount?.type as string, tx.party?.name)}
+            icon={getTransactionIcon(tx)}
+            title={getTransactionTitle(tx)}
             meta={`${format(tx.date, "dd MMM")}${tx.party?.name ? ` • ${tx.party.name}` : ""}`}
-            amount={formatAmount(Number(tx.amount), currency, true)}
-            positive={positive}
+            amount={formatAmount(Number(tx.amount), currency, false)}
+            type={type}
             fromAccount={tx.fromAccount?.name}
             toAccount={tx.toAccount?.name}
           />
