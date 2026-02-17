@@ -41,7 +41,14 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                 description={account?.moneyType || account?.categoryType || account?.type}
                 backUrl={'/accounts' as any}
                 menuItems={
-                    account.isSystem ? [] : [
+                    account.isSystem ? [
+                        {
+                            icon: <Pencil size={18} />,
+                            label: "Rename",
+                            onClick: () => setIsEditing(true),
+                            destructive: false
+                        }
+                    ] : [
                         {
                             icon: <Pencil size={18} />,
                             label: "Edit",

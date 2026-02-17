@@ -64,10 +64,15 @@ export async function updateFinancialAccount(id: string, data: {
     });
 
     if (existing?.isSystem) {
-        throw new Error("System accounts cannot be modified");
-    }
-
-    if (existing?.type !== data.type) {
+        // For system accounts, we only allow updating the name.
+        // We prevent updating type, types, or any other metadata.
+        if (existing.type !== data.type ||
+            existing.moneyType !== data.moneyType ||
+            existing.partyType !== data.partyType ||
+            existing.categoryType !== data.categoryType) {
+            throw new Error("System account properties (Type/Category) cannot be modified. Only renaming is allowed.");
+        }
+    } else if (existing?.type !== data.type) {
         throw new Error("Account type cannot be changed. Please create a new account or perform a migration.");
     }
 

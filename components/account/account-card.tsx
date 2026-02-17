@@ -74,15 +74,13 @@ export const AccountCard = ({ account, index }: AccountCardProps) => {
                     <p className={`text-lg font-black tracking-tighter tabular-nums ${account.balance > 0 ? "text-emerald-500" : account.balance < 0 ? "text-rose-500" : ""}`}>
                         ₹{account.balance.toLocaleString("en-IN", { minimumFractionDigits: 0 })}
                     </p>
-                    {!account.isSystem && (
-                        <div onClick={(e) => e.stopPropagation()}>
-                            <AddAccountModal accountData={account}>
-                                <div className="p-1.5 rounded-lg bg-muted/20 hover:bg-primary hover:text-primary-foreground opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
-                                    <Edit2 size={12} />
-                                </div>
-                            </AddAccountModal>
-                        </div>
-                    )}
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <AddAccountModal accountData={account}>
+                            <div className="p-1.5 rounded-lg bg-muted/20 hover:bg-primary hover:text-primary-foreground opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                                <Edit2 size={12} />
+                            </div>
+                        </AddAccountModal>
+                    </div>
                 </div>
             </div>
 

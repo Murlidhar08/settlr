@@ -217,6 +217,7 @@ export const AddAccountModal = ({
                                     ].map((type) => (
                                         <button
                                             key={type.id}
+                                            disabled={accountData?.isSystem}
                                             onClick={() => {
                                                 const config = SUBTYPES_CONFIG[type.id];
                                                 setData({
@@ -232,7 +233,8 @@ export const AddAccountModal = ({
                                                 "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all active:scale-95",
                                                 data.type === type.id
                                                     ? "bg-primary/5 border-primary text-primary shadow-sm"
-                                                    : "bg-background border-muted hover:border-primary/30 text-muted-foreground"
+                                                    : "bg-background border-muted hover:border-primary/30 text-muted-foreground",
+                                                accountData?.isSystem && "opacity-50 cursor-not-allowed"
                                             )}
                                         >
                                             <type.icon size={20} />
@@ -262,12 +264,14 @@ export const AddAccountModal = ({
                                             return (
                                                 <button
                                                     key={value}
+                                                    disabled={accountData?.isSystem}
                                                     onClick={() => setData({ ...data, [field]: value })}
                                                     className={cn(
                                                         "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all active:scale-95 text-center",
                                                         data[field as keyof typeof data] === value
                                                             ? "bg-primary/5 border-primary text-primary shadow-sm"
-                                                            : "bg-background border-muted hover:border-primary/30 text-muted-foreground"
+                                                            : "bg-background border-muted hover:border-primary/30 text-muted-foreground",
+                                                        accountData?.isSystem && "opacity-50 cursor-not-allowed"
                                                     )}
                                                 >
                                                     <Icon size={20} />
