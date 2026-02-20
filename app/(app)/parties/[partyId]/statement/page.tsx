@@ -21,6 +21,10 @@ import { getUserConfig } from "@/lib/user-config";
 import * as motion from "framer-motion/client";
 import { FooterButtons } from "@/components/footer-buttons";
 
+import { TransactionDirection } from "@/types/transaction/TransactionDirection";
+import { getTransactionPerspective } from "@/lib/transaction-logic";
+import { FinancialAccountType } from "@/lib/generated/prisma/enums";
+
 interface PageProps {
   params: Promise<{ partyId: string }>;
   searchParams: Promise<{
@@ -55,17 +59,26 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
   });
   const pAccId = partyAccount?.id;
 
-  // totalIn: Money User Gave (Into Party Account)
-  // totalOut: Money User Got (From Party Account)
-  const totalIn = transactions
-    .filter(t => t.toAccountId === pAccId)
-    .reduce((sum, t) => sum + t.amount, 0);
+  // Calculate totals using perspective-aware logic
+  let totalGave = 0; // Money flows TO the party (OUT from us)
+  let totalGot = 0;  // Money flows FROM the party (IN to us)
 
-  const totalOut = transactions
-    .filter(t => t.fromAccountId === pAccId)
-    .reduce((sum, t) => sum + t.amount, 0);
+  transactions.forEach(t => {
+    const perspective = getTransactionPerspective(
+      t.toAccountId,
+      t.fromAccountId,
+      pAccId!,
+      FinancialAccountType.PARTY
+    );
 
-  const balance = totalIn - totalOut;
+    if (perspective === TransactionDirection.OUT) {
+      totalGave += t.amount;
+    } else {
+      totalGot += t.amount;
+    }
+  });
+
+  const balance = totalGave - totalGot;
 
   const grouped = groupTransactions(transactions);
 
@@ -153,11 +166,11 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
         <div className="mb-6 grid grid-cols-2 gap-4 h-24">
           <Metric
             label="Total Paid"
-            value={formatAmount(totalIn, currency, false)}
+            value={formatAmount(totalGave, currency, false)}
           />
           <Metric
             label="Total Received"
-            value={formatAmount(totalOut, currency, false)}
+            value={formatAmount(totalGot, currency, false)}
             positive
           />
         </div>
@@ -187,8 +200,8 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
         <ExportPDFButton
           party={party}
           transactions={transactions}
-          totalIn={totalIn}
-          totalOut={totalOut}
+          totalIn={totalGave}
+          totalOut={totalGot}
           balance={balance}
           currency={currency}
         />
@@ -198,10 +211,14 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
 }
 
 function TransactionCard({ tx, currency, index, pAccId }: { tx: any, currency: any, index: number, pAccId: string }) {
-  // From user perspective:
-  // Money to Party account = Paid (OUT)
-  // Money from Party account = Got (IN)
-  const isIn = tx.fromAccountId === pAccId;
+  const direction = getTransactionPerspective(
+    tx.toAccountId,
+    tx.fromAccountId,
+    pAccId,
+    FinancialAccountType.PARTY
+  );
+
+  const isIn = direction === TransactionDirection.IN;
 
   return (
     <motion.div
@@ -224,9 +241,6 @@ function TransactionCard({ tx, currency, index, pAccId }: { tx: any, currency: a
               {tx.description || (isIn ? "Payment Received" : "Payment Sent")}
             </p>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground border">
-                {tx.mode}
-              </span>
               <span className="text-xs text-muted-foreground/80 font-medium">
                 {format(tx.date, "dd MMM")} • {format(tx.date, "hh:mm a")}
               </span>
@@ -243,6 +257,7 @@ function TransactionCard({ tx, currency, index, pAccId }: { tx: any, currency: a
     </motion.div>
   );
 }
+
 
 function Metric({ label, value, positive }: { label: string; value: string; positive?: boolean }) {
   return (

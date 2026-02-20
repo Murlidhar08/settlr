@@ -6,6 +6,8 @@ import { ArrowDownLeft, ArrowUpRight, ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { formatAmount } from "@/utility/transaction"
+import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { getTransactionPerspective } from "@/lib/transaction-logic"
 
 interface TransactionProp {
   transactionId: string,
@@ -36,16 +38,15 @@ const TransactionItem = ({
   fromAccountType,
   toAccountType,
 }: TransactionProp) => {
-  // Determine direction based on the current context account
-  let isIn = accountId
-    ? accountId === toAccountId // If viewing an account, it's IN if that account received the money
-    : toAccountType === "MONEY" // Fallback: if toAccount is MONEY, it's a general IN
+  // Determine direction based on the current context account using unified logic
+  const direction = getTransactionPerspective(
+    toAccountId,
+    fromAccountId,
+    accountId || "",
+    accountType || "MONEY"
+  );
 
-  // Flip perspective if we are viewing a non-money account (Party or Category)
-  // From user perspective, money going TO a Party is an OUTFLOW.
-  if (accountId && accountType && accountType !== "MONEY") {
-    isIn = !isIn
-  }
+  const isIn = direction === TransactionDirection.IN;
 
   return (
     <Link href={`/transactions/${transactionId}`} className="block p-1 outline-none group">

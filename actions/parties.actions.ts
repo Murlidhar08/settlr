@@ -7,6 +7,8 @@ import { FinancialAccountType, PartyType } from "@/lib/generated/prisma/enums";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { getUserSession } from "@/lib/auth";
 import { PartyInput, PartyRes } from "@/types/party/PartyRes";
+import { getTransactionPerspective } from "@/lib/transaction-logic";
+import { TransactionDirection } from "@/types/transaction/TransactionDirection";
 
 export async function addParties(partyData: PartyInput): Promise<boolean> {
   const session = await getUserSession();
@@ -123,17 +125,28 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
     const pAccId = accountMap.get(party.id);
     const pTransactions = transactions.filter(t => t.partyId === party.id);
 
-    let totalIn = new Prisma.Decimal(0);
-    let totalOut = new Prisma.Decimal(0);
+    let totalGave = new Prisma.Decimal(0);
+    let totalGot = new Prisma.Decimal(0);
 
     pTransactions.forEach(t => {
-      const amount = t.amount;
-      if (t.toAccountId === pAccId) totalIn = totalIn.plus(amount);
-      if (t.fromAccountId === pAccId) totalOut = totalOut.plus(amount);
+      const perspective = getTransactionPerspective(
+        t.toAccountId,
+        t.fromAccountId,
+        pAccId!,
+        FinancialAccountType.PARTY
+      );
+
+      if (perspective === TransactionDirection.OUT) {
+        totalGave = totalGave.plus(t.amount);
+      } else {
+        totalGot = totalGot.plus(t.amount);
+      }
     });
 
-    // Net balance = IN (Receivable?) - OUT (Payable?)
-    const netBalance = totalIn.minus(totalOut);
+    // Net balance = GAVE - GOT
+    // If > 0, we have given more = We need to Receive
+    // If < 0, we have gotten more = We need to Pay
+    const netBalance = totalGave.minus(totalGot);
 
     return {
       id: party.id,

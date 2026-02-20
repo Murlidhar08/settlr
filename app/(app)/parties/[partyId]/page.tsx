@@ -18,13 +18,14 @@ import { getCurrencySymbol } from '@/utility/transaction';
 import BackHeaderClient from './components/back-header-client';
 import { TransactionDirection } from '@/types/transaction/TransactionDirection';
 import { FinancialAccountType } from '@/lib/generated/prisma/enums';
+import { getTransactionPerspective } from '@/lib/transaction-logic';
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;
   const session = await getUserSession();
   const userConfig = await getUserConfig()
 
-  const [party, transactions, stats] = await Promise.all([
+  const [party, transactions] = await Promise.all([
     // 1. Fetch Party Details
     prisma.party.findFirst({
       where: { id: partyId },
@@ -44,46 +45,53 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
         businessId: session?.user.activeBusinessId || "",
         partyId: partyId,
       },
+      include: {
+        fromAccount: { select: { id: true, name: true, type: true } },
+        toAccount: { select: { id: true, name: true, type: true } },
+      },
       orderBy: [
         { date: "desc" },
         { createdAt: "desc" }
       ]
     }),
-    // 3. Fetch transactions for aggregation (since direction column is gone)
-    prisma.transaction.findMany({
-      where: {
-        businessId: session?.user.activeBusinessId || "",
-        partyId: partyId,
-      },
-      select: {
-        amount: true,
-        fromAccountId: true,
-        toAccountId: true,
-      }
-    })
   ]);
 
   if (!party) return <div>Party not found</div>;
 
+  const partyAccountId = (party as any).financialAccounts[0]?.id;
+
+  // Calculate Stats
+  let totalGave = 0; // Money flows TO the party
+  let totalGot = 0;  // Money flows FROM the party
+
+  const formattedTransactions = transactions.map(tra => {
+    const amount = tra.amount.toNumber();
+
+    // Determine direction relative to the party account using our unified utility
+    const perspective = getTransactionPerspective(
+      tra.toAccountId,
+      tra.fromAccountId,
+      partyAccountId,
+      FinancialAccountType.PARTY
+    );
+
+    if (perspective === TransactionDirection.OUT) {
+      totalGave += amount;
+    } else {
+      totalGot += amount;
+    }
+
+    return {
+      ...tra,
+      amount: amount
+    };
+  });
+
   const partyDetails = {
     ...party,
     type: (party as any).financialAccounts[0]?.partyType,
-    transactions: transactions.map(tra => ({
-      ...tra,
-      amount: tra.amount.toNumber()
-    }))
+    transactions: formattedTransactions
   };
-
-  const partyAccountId = (party as any).financialAccounts[0]?.id;
-
-  let totalIn = 0; // Money I Gave (In to Party)
-  let totalOut = 0; // Money I Got (Out from Party)
-
-  stats.forEach((tra) => {
-    const amount = tra.amount.toNumber();
-    if (tra.toAccountId === partyAccountId) totalIn += amount;
-    if (tra.fromAccountId === partyAccountId) totalOut += amount;
-  });
 
   return (
     <div className="relative mx-auto min-h-screen max-w-full bg-background pb-28 lg:pb-16">
@@ -98,8 +106,8 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
         <main className="flex-1 overflow-y-auto pb-24">
           {/* Balance Card */}
           <BalanceCard
-            totalIn={totalIn}
-            totalOut={totalOut}
+            totalIn={totalGave}
+            totalOut={totalGot}
             currency={getCurrencySymbol(userConfig.currency)}
           />
 
@@ -148,9 +156,9 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
             </Button>
           </AddTransactionModal>
 
-          {/* YOU GET -> Money comes FROM Party (from PARTY to MONEY) */}
+          {/* YOU GOT -> Money comes FROM Party (from PARTY to MONEY) */}
           <AddTransactionModal
-            title="You Get"
+            title="You Got"
             direction={TransactionDirection.IN}
             partyId={partyId}
             accountId={partyAccountId}
@@ -161,7 +169,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
               className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
             >
               <ArrowDownLeft className="h-5 w-5" />
-              You Get
+              You Got
             </Button>
           </AddTransactionModal>
         </FooterButtons>
@@ -169,3 +177,4 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
     </div>
   )
 }
+
