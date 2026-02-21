@@ -53,6 +53,28 @@ export function getPartyTransactionPerspective(
         : TransactionDirection.IN;
 }
 
+/**
+ * Perspective from the business owner's overall view (Cashbook level).
+ * Focuses on money movement.
+ */
+export function getBusinessTransactionPerspective(
+    toAccountType?: string,
+    fromAccountType?: string
+): TransactionDirection | undefined {
+    if (toAccountType === FinancialAccountType.MONEY && fromAccountType !== FinancialAccountType.MONEY) {
+        return TransactionDirection.IN;
+    }
+    if (fromAccountType === FinancialAccountType.MONEY && toAccountType !== FinancialAccountType.MONEY) {
+        return TransactionDirection.OUT;
+    }
+
+    // Default fallback: If it's entering a MONEY account, it's IN.
+    if (toAccountType === FinancialAccountType.MONEY) return TransactionDirection.IN;
+    if (fromAccountType === FinancialAccountType.MONEY) return TransactionDirection.OUT;
+
+    return undefined;
+}
+
 
 /**
  * ------------------------------------------------------------

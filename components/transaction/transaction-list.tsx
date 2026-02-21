@@ -79,6 +79,7 @@ const TransactionList = ({ transactions, accountId, accountType }: transactionLi
                   toAccount={transaction.toAccount?.name}
                   fromAccountType={transaction.fromAccount?.type}
                   toAccountType={transaction.toAccount?.type}
+                  partyName={transaction.party?.name}
                 />
               ))}
             </TransactionGroup>

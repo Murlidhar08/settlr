@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { formatAmount } from "@/utility/transaction"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
-import { getTransactionPerspective, getPartyTransactionPerspective } from "@/lib/transaction-logic"
+import { getTransactionPerspective, getPartyTransactionPerspective, getBusinessTransactionPerspective } from "@/lib/transaction-logic"
 
 interface TransactionProp {
   transactionId: string,
@@ -22,6 +22,7 @@ interface TransactionProp {
   toAccount?: string,
   fromAccountType?: string,
   toAccountType?: string,
+  partyName?: string,
 }
 
 const TransactionItem = ({
@@ -37,13 +38,18 @@ const TransactionItem = ({
   toAccount,
   fromAccountType,
   toAccountType,
+  partyName,
 }: TransactionProp) => {
   // Determine direction based on the current context account using unified logic
-  const direction = accountType === "PARTY"
-    ? getPartyTransactionPerspective(toAccountId, fromAccountId, accountId || "")
-    : getTransactionPerspective(toAccountId, fromAccountId, accountId || "");
+  const direction = accountId
+    ? (accountType === "PARTY"
+      ? getPartyTransactionPerspective(toAccountId, fromAccountId, accountId)
+      : getTransactionPerspective(toAccountId, fromAccountId, accountId))
+    : getBusinessTransactionPerspective(toAccountType, fromAccountType);
 
   const isIn = direction === TransactionDirection.IN;
+
+  const displayTitle = title || partyName || (isIn ? "Payment Received" : "Payment Sent");
 
   return (
     <Link href={`/transactions/${transactionId}`} className="block p-1 outline-none group">
@@ -69,7 +75,7 @@ const TransactionItem = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <p className="truncate text-sm font-bold lg:text-base text-foreground">
-                {title || (isIn ? "Payment Received" : "Payment Sent")}
+                {displayTitle}
               </p>
             </div>
 

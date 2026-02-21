@@ -196,7 +196,6 @@ export async function getCashbookTransactions(filters: {
 
   const where: any = {
     businessId,
-    partyId: null, // Cashbook transactions are those without a party
   };
 
   // Category filter (Cash/Online) - Based on Account MoneyType
@@ -244,7 +243,8 @@ export async function getCashbookTransactions(filters: {
     ],
     include: {
       fromAccount: { select: { name: true, type: true } },
-      toAccount: { select: { name: true, type: true } }
+      toAccount: { select: { name: true, type: true } },
+      party: { select: { name: true } }
     }
   });
 
