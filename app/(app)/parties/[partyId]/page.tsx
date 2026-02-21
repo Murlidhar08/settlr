@@ -18,7 +18,7 @@ import { getCurrencySymbol } from '@/utility/transaction';
 import BackHeaderClient from './components/back-header-client';
 import { TransactionDirection } from '@/types/transaction/TransactionDirection';
 import { FinancialAccountType } from '@/lib/generated/prisma/enums';
-import { getTransactionPerspective, calculateAccountStats } from '@/lib/transaction-logic';
+import { calculateAccountStats } from '@/lib/transaction-logic';
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;
@@ -56,13 +56,14 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
     }),
   ]);
 
-  if (!party) return <div>Party not found</div>;
+  if (!party)
+    return <div>Party not found</div>;
 
   const partyAccountId = (party as any).financialAccounts[0]?.id;
-  const stats = calculateAccountStats(transactions, partyAccountId);
+  const stats = calculateAccountStats(transactions, partyAccountId, FinancialAccountType.PARTY);
 
-  const totalGave = stats.totalIn; // Money flows INTO the party account (We Gave)
-  const totalGot = stats.totalOut; // Money flows OUT OF the party account (We Got)
+  const totalReceived = stats.totalIn; // Money flows FROM the party (We Received)
+  const totalPaid = stats.totalOut; // Money flows TO the party (We Paid)
 
   const formattedTransactions = transactions.map(tra => ({
     ...tra,
@@ -88,8 +89,8 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
         <main className="flex-1 overflow-y-auto pb-24">
           {/* Balance Card */}
           <BalanceCard
-            totalIn={totalGave}
-            totalOut={totalGot}
+            totalReceived={totalReceived}
+            totalPaid={totalPaid}
             currency={getCurrencySymbol(userConfig.currency)}
           />
 
@@ -124,9 +125,9 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
 
         {/* Bottom Action Footer */}
         <FooterButtons>
-          {/* YOU GAVE -> Money goes TO Party (from MONEY to PARTY) */}
+          {/* YOU PAY -> Money goes TO Party (from MONEY to PARTY) */}
           <AddTransactionModal
-            title="You Gave"
+            title="You Pay"
             direction={TransactionDirection.OUT}
             partyId={partyId}
             accountId={partyAccountId}
@@ -134,13 +135,13 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
           >
             <Button size="lg" className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
               <ArrowUpRight className="h-5 w-5" />
-              You Gave
+              You Pay
             </Button>
           </AddTransactionModal>
 
-          {/* YOU GOT -> Money comes FROM Party (from PARTY to MONEY) */}
+          {/* YOU RECEIVE -> Money comes FROM Party (from PARTY to MONEY) */}
           <AddTransactionModal
-            title="You Got"
+            title="You Receive"
             direction={TransactionDirection.IN}
             partyId={partyId}
             accountId={partyAccountId}
@@ -151,7 +152,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
               className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
             >
               <ArrowDownLeft className="h-5 w-5" />
-              You Got
+              You Receive
             </Button>
           </AddTransactionModal>
         </FooterButtons>

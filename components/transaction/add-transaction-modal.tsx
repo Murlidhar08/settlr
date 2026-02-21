@@ -476,7 +476,7 @@ export const AddTransactionModal = ({
                     : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
                 )}
               >
-                {isOut ? "Confirm Give" : "Confirm Get"}
+                {isOut ? "Confirm Pay" : "Confirm Receive"}
                 {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
               </Button>
             </div>

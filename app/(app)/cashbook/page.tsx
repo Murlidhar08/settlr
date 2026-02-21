@@ -96,7 +96,7 @@ async function CashbookContent({
         >
           <Button size="lg" className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
             <ArrowUpRight className="h-5 w-5" />
-            You Gave
+            You Pay
           </Button>
         </AddTransactionModal>
 
@@ -110,11 +110,10 @@ async function CashbookContent({
             className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
           >
             <ArrowDownLeft className="h-5 w-5" />
-            You Get
+            You Receive
           </Button>
         </AddTransactionModal>
       </FooterButtons>
     </div>
   );
 }
-

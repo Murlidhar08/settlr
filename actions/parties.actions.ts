@@ -88,7 +88,8 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
     }
   });
 
-  if (parties.length === 0) return [];
+  if (parties.length === 0)
+    return [];
 
   const partyIds = parties.map(p => p.id);
 
@@ -125,14 +126,16 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
     const pAccId = accountMap.get(party.id);
     const pTransactions = transactions.filter(t => t.partyId === party.id);
 
-    const { totalIn, totalOut, balance } = calculateAccountStats(pTransactions, pAccId!);
+    const { totalIn, totalOut, balance } = calculateAccountStats(pTransactions, pAccId!, FinancialAccountType.PARTY);
 
+    // Negative balance in stats = Paid > Received (because of perspective flip)
+    // We want the 'amount' to be positive for 'To Collect' (Paid > Received)
     return {
       id: party.id,
       name: party.name,
       contactNo: party.contactNo,
       profileUrl: party.profileUrl,
-      amount: Number(balance.toFixed(2)),
+      amount: Number((-balance).toFixed(2)),
     };
   });
 }

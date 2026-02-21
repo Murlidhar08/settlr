@@ -5,8 +5,8 @@ import { Separator } from "@/components/ui/separator";
 import clsx from "clsx";
 
 interface BalanceCardProps {
-  totalIn: number;
-  totalOut: number;
+  totalReceived: number;
+  totalPaid: number;
   currency?: string;
 }
 
@@ -17,11 +17,11 @@ const formatAmount = (amount: number) =>
   });
 
 export function BalanceCard({
-  totalIn,
-  totalOut,
+  totalReceived,
+  totalPaid,
   currency = "₹",
 }: BalanceCardProps) {
-  const netBalance = totalIn - totalOut;
+  const netBalance = totalReceived - totalPaid;
 
   const isReceive = netBalance > 0;
   const isPay = netBalance < 0;
@@ -73,18 +73,18 @@ export function BalanceCard({
           {/* Totals */}
           <div className="flex gap-12 pt-2">
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Total Paid</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">You Pay</span>
               <span className="text-xl font-black text-rose-500 dark:text-rose-400 tracking-tight">
                 -{currency}
-                {formatAmount(totalIn)}
+                {formatAmount(totalPaid)}
               </span>
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Total Received</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">You Receive</span>
               <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
                 +{currency}
-                {formatAmount(totalOut)}
+                {formatAmount(totalReceived)}
               </span>
             </div>
           </div>

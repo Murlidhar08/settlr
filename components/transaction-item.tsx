@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { formatAmount } from "@/utility/transaction"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
-import { getTransactionPerspective } from "@/lib/transaction-logic"
+import { getTransactionPerspective, getPartyTransactionPerspective } from "@/lib/transaction-logic"
 
 interface TransactionProp {
   transactionId: string,
@@ -39,11 +39,9 @@ const TransactionItem = ({
   toAccountType,
 }: TransactionProp) => {
   // Determine direction based on the current context account using unified logic
-  const direction = getTransactionPerspective(
-    toAccountId,
-    fromAccountId,
-    accountId || ""
-  );
+  const direction = accountType === "PARTY"
+    ? getPartyTransactionPerspective(toAccountId, fromAccountId, accountId || "")
+    : getTransactionPerspective(toAccountId, fromAccountId, accountId || "");
 
   const isIn = direction === TransactionDirection.IN;
 

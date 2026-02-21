@@ -19,33 +19,37 @@ import { TransactionDirection } from "@/types/transaction/TransactionDirection";
 
 
 /**
- * Determines transaction direction from the perspective
- * of a specific account.
- *
- * @param toAccountId   Account receiving money
- * @param fromAccountId Account sending money
- * @param contextAccountId Account we are viewing
- *
- * @returns IN | OUT | undefined (if unrelated)
+ * Technically correct transaction direction from the perspective of an account.
+ * IN: Money enters the account
+ * OUT: Money leaves the account
  */
 export function getTransactionPerspective(
     toAccountId: string,
     fromAccountId: string,
-    contextAccountId: string
+    contextAccountId: string,
 ): TransactionDirection | undefined {
-
-    // Money is flowing INTO this account
-    if (toAccountId === contextAccountId) {
-        return TransactionDirection.IN;
-    }
-
-    // Money is flowing OUT OF this account
-    if (fromAccountId === contextAccountId) {
-        return TransactionDirection.OUT;
-    }
-
-    // Transaction not related to this account
+    if (toAccountId === contextAccountId) return TransactionDirection.IN;
+    if (fromAccountId === contextAccountId) return TransactionDirection.OUT;
     return undefined;
+}
+
+/**
+ * Logically correct direction for Party transactions (Business-Centric).
+ * Since sending money to a party is an entry in their book (IN), 
+ * it is logically an OUTFLOW from the business.
+ */
+export function getPartyTransactionPerspective(
+    toAccountId: string,
+    fromAccountId: string,
+    partyAccountId: string
+): TransactionDirection | undefined {
+    const raw = getTransactionPerspective(toAccountId, fromAccountId, partyAccountId);
+    if (!raw) return undefined;
+
+    // Flip the direction: IN(to party) => OUT(from business)
+    return raw === TransactionDirection.IN
+        ? TransactionDirection.OUT
+        : TransactionDirection.IN;
 }
 
 
@@ -63,17 +67,16 @@ export function getTransactionPerspective(
  */
 export function calculateAccountStats(
     transactions: any[],
-    accountId: string
+    accountId: string,
+    accountType?: string
 ) {
     let totalIn = 0;
     let totalOut = 0;
 
     for (const tx of transactions) {
-        const direction = getTransactionPerspective(
-            tx.toAccountId,
-            tx.fromAccountId,
-            accountId
-        );
+        const direction = accountType === "PARTY"
+            ? getPartyTransactionPerspective(tx.toAccountId, tx.fromAccountId, accountId)
+            : getTransactionPerspective(tx.toAccountId, tx.fromAccountId, accountId);
 
         // Skip unrelated transactions
         if (!direction) continue;
@@ -117,14 +120,13 @@ export function getSignedAmount(
         fromAccountId: string;
         amount: number;
     },
-    accountId: string
+    accountId: string,
+    accountType?: string
 ): number | undefined {
 
-    const direction = getTransactionPerspective(
-        transaction.toAccountId,
-        transaction.fromAccountId,
-        accountId
-    );
+    const direction = accountType === "PARTY"
+        ? getPartyTransactionPerspective(transaction.toAccountId, transaction.fromAccountId, accountId)
+        : getTransactionPerspective(transaction.toAccountId, transaction.fromAccountId, accountId);
 
     if (!direction) return undefined;
 

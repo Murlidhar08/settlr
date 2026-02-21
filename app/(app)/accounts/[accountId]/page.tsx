@@ -46,7 +46,7 @@ export default async function AccountDetailsPage({ params }: { params: Promise<{
 async function AccountContent({ accountId }: { accountId: string }) {
     const { account, transactions } = await getAccountTransactions(accountId);
 
-    const { totalIn, totalOut, balance } = calculateAccountStats(transactions, accountId);
+    const { totalIn, totalOut, balance } = calculateAccountStats(transactions, accountId, account.type);
 
     const getIcon = () => {
         const size = 32;

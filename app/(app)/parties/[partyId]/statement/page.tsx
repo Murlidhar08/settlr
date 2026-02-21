@@ -22,7 +22,7 @@ import * as motion from "framer-motion/client";
 import { FooterButtons } from "@/components/footer-buttons";
 
 import { TransactionDirection } from "@/types/transaction/TransactionDirection";
-import { getTransactionPerspective } from "@/lib/transaction-logic";
+import { getPartyTransactionPerspective } from "@/lib/transaction-logic";
 import { FinancialAccountType } from "@/lib/generated/prisma/enums";
 
 interface PageProps {
@@ -60,25 +60,24 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
   const pAccId = partyAccount?.id;
 
   // Calculate totals using perspective-aware logic
-  let totalGave = 0; // Money flows TO the party (OUT from us)
-  let totalGot = 0;  // Money flows FROM the party (IN to us)
+  let totalPaid = 0; // Money flows TO the party (OUT from us)
+  let totalReceived = 0;  // Money flows FROM the party (IN to us)
 
   transactions.forEach(t => {
-    const perspective = getTransactionPerspective(
+    const perspective = getPartyTransactionPerspective(
       t.toAccountId,
       t.fromAccountId,
-      pAccId!,
-      FinancialAccountType.PARTY
+      pAccId!
     );
 
     if (perspective === TransactionDirection.OUT) {
-      totalGave += t.amount;
+      totalPaid += t.amount;
     } else {
-      totalGot += t.amount;
+      totalReceived += t.amount;
     }
   });
 
-  const balance = totalGave - totalGot;
+  const balance = totalPaid - totalReceived;
 
   const grouped = groupTransactions(transactions);
 
@@ -165,12 +164,12 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
       <div className="mx-auto max-w-4xl p-6">
         <div className="mb-6 grid grid-cols-2 gap-4 h-24">
           <Metric
-            label="Total Paid"
-            value={formatAmount(totalGave, currency, false)}
+            label="You Pay"
+            value={formatAmount(totalPaid, currency, false)}
           />
           <Metric
-            label="Total Received"
-            value={formatAmount(totalGot, currency, false)}
+            label="You Receive"
+            value={formatAmount(totalReceived, currency, false)}
             positive
           />
         </div>
@@ -200,8 +199,8 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
         <ExportPDFButton
           party={party}
           transactions={transactions}
-          totalIn={totalGave}
-          totalOut={totalGot}
+          totalIn={totalPaid}
+          totalOut={totalReceived}
           balance={balance}
           currency={currency}
         />
@@ -211,11 +210,10 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
 }
 
 function TransactionCard({ tx, currency, index, pAccId }: { tx: any, currency: any, index: number, pAccId: string }) {
-  const direction = getTransactionPerspective(
+  const direction = getPartyTransactionPerspective(
     tx.toAccountId,
     tx.fromAccountId,
-    pAccId,
-    FinancialAccountType.PARTY
+    pAccId
   );
 
   const isIn = direction === TransactionDirection.IN;
