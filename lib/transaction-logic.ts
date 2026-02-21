@@ -1,4 +1,5 @@
 import { TransactionDirection } from "@/types/transaction/TransactionDirection";
+import { FinancialAccountType } from "./generated/prisma/enums";
 
 /**
  * ------------------------------------------------------------
@@ -74,22 +75,19 @@ export function calculateAccountStats(
     let totalOut = 0;
 
     for (const tx of transactions) {
-        const direction = accountType === "PARTY"
+        const direction = accountType === FinancialAccountType.PARTY
             ? getPartyTransactionPerspective(tx.toAccountId, tx.fromAccountId, accountId)
             : getTransactionPerspective(tx.toAccountId, tx.fromAccountId, accountId);
 
-        // Skip unrelated transactions
         if (!direction) continue;
 
         const amount = Number(tx.amount) || 0;
 
-        if (direction === TransactionDirection.IN) {
+        if (direction === TransactionDirection.IN)
             totalIn += amount;
-        }
 
-        if (direction === TransactionDirection.OUT) {
+        if (direction === TransactionDirection.OUT)
             totalOut += amount;
-        }
     }
 
     return {
