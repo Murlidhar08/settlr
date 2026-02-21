@@ -7,6 +7,7 @@ interface userSettings {
   currency: Currency,
   dateFormat: string,
   timeFormat: string,
+  language: string,
   theme: ThemeMode,
   setTheme: (theme: ThemeMode) => void,
 }

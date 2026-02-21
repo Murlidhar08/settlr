@@ -4,5 +4,6 @@ export interface UserSettingsInput {
   currency?: Currency
   dateFormat?: string
   timeFormat?: string
+  language?: string
   theme?: ThemeMode
 }

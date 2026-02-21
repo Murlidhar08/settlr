@@ -8,6 +8,7 @@ import {
   DollarSign,
   Calendar,
   Clock,
+  Languages,
   CloudUpload,
   Download,
   ExternalLink,
@@ -46,6 +47,7 @@ import { getAppVersion, upsertUserSettings } from "@/actions/user-settings.actio
 import { useSession } from "@/lib/auth-client";
 import { getInitials } from "@/utility/party";
 import { useUserConfig } from "@/components/providers/user-config-provider";
+import { t } from "@/lib/languages/i18n";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -55,6 +57,7 @@ export default function SettingsPage() {
   const [currency, setCurrency] = useState<Currency>(userConfig.currency);
   const [dateFormat, setDateFormat] = useState(userConfig.dateFormat);
   const [timeFormat, setTimeFormat] = useState(userConfig.timeFormat);
+  const [language, setLanguage] = useState(userConfig.language);
 
   const [version, setVersion] = useState<string>("Pending ...");
 
@@ -104,7 +107,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title="Settings" />
+      <Header title={t("settings.title", language)} />
 
       <motion.div
         variants={containerVariants}
@@ -144,8 +147,8 @@ export default function SettingsPage() {
 
         {/* GENERAL */}
         <motion.div variants={itemVariants}>
-          <Section title="General Preferences">
-            <Row icon={DollarSign} label="Currency">
+          <Section title={t("settings.general", language)}>
+            <Row icon={DollarSign} label={t("settings.currency", language)}>
               <Select
                 value={currency}
                 onValueChange={(value) => {
@@ -169,7 +172,7 @@ export default function SettingsPage() {
               </Select>
             </Row>
 
-            <Row icon={Calendar} label="Date Format">
+            <Row icon={Calendar} label={t("settings.date_format", language)}>
               <Select
                 value={dateFormat}
                 onValueChange={(value) => {
@@ -191,7 +194,7 @@ export default function SettingsPage() {
               </Select>
             </Row>
 
-            <Row icon={Clock} label="Time Format">
+            <Row icon={Clock} label={t("settings.time_format", language)}>
               <Select
                 value={timeFormat}
                 onValueChange={(value) => {
@@ -210,12 +213,32 @@ export default function SettingsPage() {
                 </SelectContent>
               </Select>
             </Row>
+
+            <Row icon={Languages} label={t("settings.language", language)}>
+              <Select
+                value={language}
+                onValueChange={(value) => {
+                  if (!value) return
+                  setLanguage(value)
+                  void upsertUserSettings({ language: value })
+                  toast.success(`Language updated`)
+                }}
+              >
+                <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl shadow-2xl">
+                  <SelectItem value="en" className="rounded-lg font-medium">English</SelectItem>
+                  <SelectItem value="hi" className="rounded-lg font-medium">Hindi</SelectItem>
+                </SelectContent>
+              </Select>
+            </Row>
           </Section>
         </motion.div>
 
         {/* APPEARANCE */}
         <motion.div variants={itemVariants}>
-          <Section title="Appearance">
+          <Section title={t("settings.appearance", language)}>
             <div className="flex items-center justify-between px-5 h-20 w-full group">
               <div className="flex items-center justify-between h-full gap-4 flex-1">
                 <div className="flex items-center gap-4">
@@ -290,7 +313,8 @@ export default function SettingsPage() {
             variant="destructive"
             className="w-full h-14 rounded-2xl gap-3 font-black uppercase tracking-[0.2em] shadow-lg shadow-rose-200 dark:shadow-rose-950/20"
           >
-            <LogOut size={20} /> Log Out
+            <LogOut size={20} />
+            {t("settings.logout", language)}
           </Button>
         </motion.div>
 

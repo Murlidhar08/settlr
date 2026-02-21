@@ -19,6 +19,7 @@ export function getDefaultConfig() {
     currency: Currency.INR,
     dateFormat: "dd/MM/yyyy",
     timeFormat: "hh:mm a",
+    language: "en",
     theme: ThemeMode.AUTO,
   }
 }

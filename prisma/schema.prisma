@@ -159,6 +159,7 @@ model UserSettings {
   currency   Currency  @default(INR)
   dateFormat String    @default("dd/MM/yyyy")
   timeFormat String    @default("hh:mm a")
+  language   String    @default("en")
   theme      ThemeMode @default(AUTO)
   createdAt  DateTime  @default(now())
 

@@ -20,6 +20,7 @@ export async function upsertUserSettings(data: UserSettingsInput) {
       currency: data.currency ?? Currency.INR,
       dateFormat: data.dateFormat ?? "dd/MM/yyyy",
       timeFormat: data.timeFormat ?? "hh:mm a",
+      language: data.language ?? "en",
       theme: data.theme ?? ThemeMode.AUTO,
     },
     update: {
