@@ -7,6 +7,8 @@ import { Suspense } from "react";
 import CustomersTab from "./components/customers-tab";
 import { PartyFilters } from "./components/party-filters";
 import * as motion from "framer-motion/client";
+import { getUserConfig } from "@/lib/user-config";
+import { t } from "@/lib/languages/i18n";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -14,6 +16,7 @@ interface PageProps {
 
 export default async function Parties({ searchParams }: PageProps) {
   const params = await searchParams;
+  const { language } = await getUserConfig();
   const currentTab = typeof params.tab === 'string' ? params.tab : "customers";
   const searchQuery = typeof params.search === 'string' ? params.search : "";
 
@@ -21,7 +24,7 @@ export default async function Parties({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title="Parties" />
+      <Header title={t("parties.title", language)} />
 
       <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6">
         <PartyFilters />

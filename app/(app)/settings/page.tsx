@@ -228,8 +228,8 @@ export default function SettingsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl shadow-2xl">
-                  <SelectItem value="en" className="rounded-lg font-medium">English</SelectItem>
-                  <SelectItem value="hi" className="rounded-lg font-medium">Hindi</SelectItem>
+                  <SelectItem value="en" className="rounded-lg font-medium">{t("languages.en", language)}</SelectItem>
+                  <SelectItem value="hi" className="rounded-lg font-medium">{t("languages.hi", language)}</SelectItem>
                 </SelectContent>
               </Select>
             </Row>

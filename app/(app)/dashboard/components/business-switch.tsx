@@ -12,6 +12,8 @@ import {
   switchBusiness,
 } from "@/actions/business.actions"
 import { authClient } from "@/lib/auth-client"
+import { useUserConfig } from "@/components/providers/user-config-provider"
+import { t } from "@/lib/languages/i18n"
 
 /* ========================================================= */
 /* TYPES */
@@ -27,6 +29,7 @@ interface Business {
 /* ========================================================= */
 
 export default function SwitchBusiness() {
+  const { language } = useUserConfig()
   const router = useRouter()
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null)
   const [businesses, setBusinesses] = useState<Business[]>([])
@@ -82,7 +85,7 @@ export default function SwitchBusiness() {
     <>
       <Popover open={popOpen} onOpenChange={setPopOpen}>
         <PopoverTrigger className="group flex min-w-0 items-center gap-2">
-          <span className="text-muted-foreground hidden sm:inline">Business -</span>
+          <span className="text-muted-foreground hidden sm:inline">{t("business.label", language)} -</span>
 
           <span className="truncate text-xl font-semibold tracking-tight">
             {selectedBusiness?.name ?? "..."}
@@ -100,7 +103,7 @@ export default function SwitchBusiness() {
               className="space-y-1"
             >
               <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                Switch Business
+                {t("business.switch", language)}
               </div>
 
               {businesses.map(business => {
@@ -138,7 +141,7 @@ export default function SwitchBusiness() {
                 }}
               >
                 <Settings2 className="h-4 w-4" />
-                Manage Business
+                {t("business.manage", language)}
               </Button>
             </motion.div>
           </AnimatePresence>

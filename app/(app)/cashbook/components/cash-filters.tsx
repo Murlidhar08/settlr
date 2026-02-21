@@ -13,6 +13,8 @@ import { format } from "date-fns";
 import { MoneyType } from "@/lib/generated/prisma/enums";
 
 import { DateRange } from "react-day-picker";
+import { useUserConfig } from "@/components/providers/user-config-provider";
+import { t } from "@/lib/languages/i18n";
 
 export default function CashFilters({
     effectiveStartDate,
@@ -21,6 +23,7 @@ export default function CashFilters({
     effectiveStartDate?: string;
     effectiveEndDate?: string;
 }) {
+    const { language } = useUserConfig();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -46,9 +49,9 @@ export default function CashFilters({
 
     // Date range label
     const getDateLabel = () => {
-        if (!startDate) return "Select Dates";
+        if (!startDate) return t("common.select_dates", language);
         if (startDate === endDate) {
-            return startDate === format(new Date(), "yyyy-MM-dd") ? "Today" : format(new Date(startDate), "dd MMM");
+            return startDate === format(new Date(), "yyyy-MM-dd") ? t("common.today", language) : format(new Date(startDate), "dd MMM");
         }
         return `${format(new Date(startDate), "dd MMM")} - ${format(new Date(endDate || startDate), "dd MMM")}`;
     };
@@ -75,7 +78,7 @@ export default function CashFilters({
             >
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
                 <Input
-                    placeholder="Search description or amount..."
+                    placeholder={t("common.search_cashbook", language)}
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
                     className="h-12 rounded-full pl-10 pr-10"
@@ -107,7 +110,7 @@ export default function CashFilters({
                             currentCategory === item ? "px-6 shadow-md" : "px-4"
                         )}
                     >
-                        {item}
+                        {item === "All" ? t("common.all", language) : item}
                     </Button>
                 ))}
 

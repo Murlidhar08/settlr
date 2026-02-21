@@ -7,10 +7,11 @@ import { getUserConfig } from "@/lib/user-config"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { getTransactionPerspective } from "@/lib/transaction-logic"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { t } from "@/lib/languages/i18n"
 
 export default async function SummaryCard() {
   const session = await getUserSession();
-  const { currency } = await getUserConfig();
+  const { currency, language } = await getUserConfig();
 
   let businessId = session?.user.activeBusinessId
   if (!businessId && session?.user.id) {
@@ -99,7 +100,7 @@ export default async function SummaryCard() {
 
         <div className="relative z-10 flex justify-between items-start">
           <div className="space-y-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Today&apos;s Cash Flow</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">{t("dashboard.cash_flow", language)}</p>
             <p className="text-4xl font-black tracking-tighter">
               {formatAmount(todayNetCash, currency)}
             </p>
@@ -119,24 +120,24 @@ export default async function SummaryCard() {
           ) : (
             <MoveDownLeft className="h-3 w-3" />
           )}
-          {todayNetCash >= 0 ? "Daily Surplus" : "Daily Deficit"}
+          {todayNetCash >= 0 ? t("dashboard.surplus", language) : t("dashboard.deficit", language)}
         </div>
       </div>
 
       {/* Receivable */}
       <StatCard
-        title="Receivables"
+        title={t("dashboard.receivables", language)}
         amount={formatAmount(Math.abs(receivable), currency)}
-        subtitle="You'll Get"
+        subtitle={t("dashboard.you_get", language)}
         icon={<MoveDownLeft />}
         positive
       />
 
       {/* Payable */}
       <StatCard
-        title="Payables"
+        title={t("dashboard.payables", language)}
         amount={formatAmount(Math.abs(payable), currency)}
-        subtitle="You'll Give"
+        subtitle={t("dashboard.you_give", language)}
         icon={<MoveUpRight />}
         positive={false}
       />

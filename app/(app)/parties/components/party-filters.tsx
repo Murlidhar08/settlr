@@ -6,8 +6,11 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
+import { useUserConfig } from "@/components/providers/user-config-provider"
+import { t } from "@/lib/languages/i18n"
 
 export function PartyFilters() {
+    const { language } = useUserConfig()
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -45,7 +48,7 @@ export function PartyFilters() {
             >
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
                 <Input
-                    placeholder="Search name, phone..."
+                    placeholder={t("common.search_parties", language)}
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
                     className="h-12 rounded-full pl-10 bg-muted/50 border-none focus-visible:ring-2 focus-visible:ring-primary/20 transition-all shadow-sm"
@@ -62,13 +65,13 @@ export function PartyFilters() {
                         value="customers"
                         className="rounded-xl font-bold uppercase tracking-widest text-[10px] data-[state=active]:bg-background data-[state=active]:shadow-md transition-all h-12"
                     >
-                        Customers
+                        {t("parties.customers", language)}
                     </TabsTrigger>
                     <TabsTrigger
                         value="suppliers"
                         className="rounded-xl font-bold uppercase tracking-widest text-[10px] data-[state=active]:bg-background data-[state=active]:shadow-md transition-all h-12"
                     >
-                        Suppliers
+                        {t("parties.suppliers", language)}
                     </TabsTrigger>
                 </TabsList>
             </Tabs>

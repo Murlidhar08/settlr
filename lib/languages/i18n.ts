@@ -8,7 +8,7 @@ export const translations: Record<Language, any> = {
     hi,
 };
 
-export const t = (key: string, lang: string = "en"): string => {
+export const t = (key: string, lang: string = "en", params?: Record<string, string>): string => {
     const language = (lang as Language) || "en";
     const keys = key.split(".");
     let value = translations[language];
@@ -21,5 +21,13 @@ export const t = (key: string, lang: string = "en"): string => {
         }
     }
 
-    return typeof value === 'string' ? value : key;
+    if (typeof value !== 'string') return key;
+
+    if (params) {
+        Object.entries(params).forEach(([k, v]) => {
+            value = (value as string).replace(`{${k}}`, v);
+        });
+    }
+
+    return value;
 };

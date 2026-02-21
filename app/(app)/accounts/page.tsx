@@ -8,18 +8,22 @@ import { Button } from "@/components/ui/button";
 import { Plus, Wallet } from "lucide-react";
 
 import { FinancialAccountType } from "@/lib/generated/prisma/enums";
+import { getUserConfig } from "@/lib/user-config";
+import { t } from "@/lib/languages/i18n";
 
 export default async function AccountsPage() {
+    const { language } = await getUserConfig();
+
     return (
         <div className="w-full bg-background min-h-screen">
             <Suspense fallback={<AccountsSkeleton />}>
-                <AccountsContent />
+                <AccountsContent language={language} />
             </Suspense>
         </div>
     );
 }
 
-async function AccountsContent() {
+async function AccountsContent({ language }: { language: string }) {
     const allAccounts = await getFinancialAccountsWithBalance();
     const accounts = allAccounts.filter(a => a.partyId === null);
 
@@ -30,26 +34,26 @@ async function AccountsContent() {
     };
 
     const sections = [
-        { type: FinancialAccountType.MONEY, title: "Money Accounts", subtitle: "Cash & Bank Balances" },
-        { type: FinancialAccountType.PARTY, title: "Party Accounts", subtitle: "Customers & Suppliers" },
-        { type: FinancialAccountType.CATEGORY, title: "Business Accounts", subtitle: "Categories & Internal" },
+        { type: FinancialAccountType.MONEY, title: t("accounts.money_title", language), subtitle: t("accounts.money_subtitle", language) },
+        { type: FinancialAccountType.PARTY, title: t("accounts.party_title", language), subtitle: t("accounts.party_subtitle", language) },
+        { type: FinancialAccountType.CATEGORY, title: t("accounts.business_title", language), subtitle: t("accounts.business_subtitle", language) },
     ];
 
     return (
         <div className="w-full bg-background pb-28">
-            <Header title="Accounts" />
+            <Header title={t("accounts.title", language)} />
 
             <div className="mx-auto w-full max-w-4xl px-6 py-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-16">
                     <div>
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 ml-1 mb-1">Portfolio Overview</h2>
-                        <p className="text-3xl font-black tracking-tight">{accounts.length} Total Accounts</p>
+                        <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 ml-1 mb-1">{t("accounts.overview", language)}</h2>
+                        <p className="text-3xl font-black tracking-tight">{t("accounts.total", language, { count: accounts.length.toString() })}</p>
                     </div>
 
                     <AddAccountModal>
                         <Button className="h-14 sm:h-16 px-8 rounded-2xl gap-3 font-black uppercase tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all text-xs">
                             <Plus size={20} className="stroke-3" />
-                            New Account
+                            {t("accounts.new", language)}
                         </Button>
                     </AddAccountModal>
                 </div>
@@ -63,12 +67,12 @@ async function AccountsContent() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-2xl font-black">No accounts found</p>
-                            <p className="text-muted-foreground font-medium max-w-xs mx-auto">Track your cash, bank balances, and digital wallets in one place.</p>
+                            <p className="text-2xl font-black">{t("accounts.not_found", language)}</p>
+                            <p className="text-muted-foreground font-medium max-w-xs mx-auto">{t("accounts.description", language)}</p>
                         </div>
                         <AddAccountModal>
                             <Button variant="outline" className="h-12 rounded-xl border-2 font-bold px-6">
-                                Get Started
+                                {t("accounts.get_started", language)}
                             </Button>
                         </AddAccountModal>
                     </div>

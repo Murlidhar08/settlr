@@ -6,10 +6,11 @@ import { formatAmount, formatDate } from "@/utility/transaction";
 
 import { getUserConfig } from "@/lib/user-config";
 import { FinancialAccountType } from "@/lib/generated/prisma/enums";
+import { t } from "@/lib/languages/i18n";
 
 export default async function RecentTransaction() {
   const recentTransactions = await getRecentTransactions();
-  const { currency, dateFormat } = await getUserConfig();
+  const { currency, dateFormat, language } = await getUserConfig();
 
   // ---------------------
   // Functions
@@ -21,16 +22,19 @@ export default async function RecentTransaction() {
     const toType = tx.toAccount?.type;
 
     if (fromType === FinancialAccountType.MONEY && toType === FinancialAccountType.MONEY) {
-      return `Transfer: ${tx.fromAccount.name} to ${tx.toAccount.name}`;
+      return t("transactions.transfer", language, {
+        from: tx.fromAccount.name,
+        to: tx.toAccount.name
+      });
     }
 
     if (!tx.party?.name) {
-      return "Cashbook Entry"
+      return t("transactions.cashbook", language);
     }
 
     return toType === FinancialAccountType.MONEY
-      ? "Payment Received"
-      : "Payment Sent";
+      ? t("transactions.payment_received", language)
+      : t("transactions.payment_sent", language);
   };
 
   const getTransactionIcon = (tx: any) => {
@@ -51,7 +55,7 @@ export default async function RecentTransaction() {
     <div className="space-y-3">
       {recentTransactions.length === 0 && (
         <p className="text-sm text-slate-500 text-center py-8">
-          No transactions yet
+          {t("dashboard.no_transactions", language)}
         </p>
       )}
 
