@@ -5,6 +5,8 @@ import StatCard from "./status-card"
 import { formatAmount } from "@/utility/transaction"
 import { getUserConfig } from "@/lib/user-config"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
+import { getTransactionPerspective } from "@/lib/transaction-logic"
+import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 
 export default async function SummaryCard() {
   const session = await getUserSession();
@@ -59,21 +61,23 @@ export default async function SummaryCard() {
   const partyBalances: Record<string, number> = {};
 
   transactions.forEach(tx => {
-    // Today's Cash Flow logic
+    const amount = Number(tx.amount);
+
+    // Today's Cash Flow logic (relative to all money accounts)
     if (tx.date >= startOfDay && tx.date <= endOfDay) {
-      if (moneyAccIds.has(tx.toAccountId)) todayIn += Number(tx.amount);
-      if (moneyAccIds.has(tx.fromAccountId)) todayOut += Number(tx.amount);
+      if (moneyAccIds.has(tx.toAccountId)) todayIn += amount;
+      if (moneyAccIds.has(tx.fromAccountId)) todayOut += amount;
     }
 
     // Party Balance logic
     if (tx.partyId) {
       const pAccId = partyToAccId.get(tx.partyId);
       if (pAccId) {
-        if (tx.toAccountId === pAccId) {
-          partyBalances[tx.partyId] = (partyBalances[tx.partyId] || 0) + Number(tx.amount);
-        }
-        if (tx.fromAccountId === pAccId) {
-          partyBalances[tx.partyId] = (partyBalances[tx.partyId] || 0) - Number(tx.amount);
+        const perspective = getTransactionPerspective(tx.toAccountId, tx.fromAccountId, pAccId);
+        if (perspective === TransactionDirection.IN) {
+          partyBalances[tx.partyId] = (partyBalances[tx.partyId] || 0) + amount;
+        } else if (perspective === TransactionDirection.OUT) {
+          partyBalances[tx.partyId] = (partyBalances[tx.partyId] || 0) - amount;
         }
       }
     }

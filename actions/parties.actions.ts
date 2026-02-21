@@ -7,7 +7,7 @@ import { FinancialAccountType, PartyType } from "@/lib/generated/prisma/enums";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { getUserSession } from "@/lib/auth";
 import { PartyInput, PartyRes } from "@/types/party/PartyRes";
-import { getTransactionPerspective } from "@/lib/transaction-logic";
+import { getTransactionPerspective, calculateAccountStats } from "@/lib/transaction-logic";
 import { TransactionDirection } from "@/types/transaction/TransactionDirection";
 
 export async function addParties(partyData: PartyInput): Promise<boolean> {
@@ -125,35 +125,14 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
     const pAccId = accountMap.get(party.id);
     const pTransactions = transactions.filter(t => t.partyId === party.id);
 
-    let totalGave = new Prisma.Decimal(0);
-    let totalGot = new Prisma.Decimal(0);
-
-    pTransactions.forEach(t => {
-      const perspective = getTransactionPerspective(
-        t.toAccountId,
-        t.fromAccountId,
-        pAccId!,
-        FinancialAccountType.PARTY
-      );
-
-      if (perspective === TransactionDirection.OUT) {
-        totalGave = totalGave.plus(t.amount);
-      } else {
-        totalGot = totalGot.plus(t.amount);
-      }
-    });
-
-    // Net balance = GAVE - GOT
-    // If > 0, we have given more = We need to Receive
-    // If < 0, we have gotten more = We need to Pay
-    const netBalance = totalGave.minus(totalGot);
+    const { totalIn, totalOut, balance } = calculateAccountStats(pTransactions, pAccId!);
 
     return {
       id: party.id,
       name: party.name,
       contactNo: party.contactNo,
       profileUrl: party.profileUrl,
-      amount: Number(netBalance.toFixed(2)),
+      amount: Number(balance.toFixed(2)),
     };
   });
 }

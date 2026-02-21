@@ -29,6 +29,7 @@ import {
 import { FinancialAccountType, MoneyType, CategoryType, PartyType } from "@/lib/generated/prisma/enums";
 import { cn } from "@/lib/utils";
 import { TransactionDirection } from "@/types/transaction/TransactionDirection";
+import { calculateAccountStats } from "@/lib/transaction-logic";
 
 export default async function AccountDetailsPage({ params }: { params: Promise<{ accountId: string }> }) {
     const { accountId } = await params;
@@ -45,15 +46,7 @@ export default async function AccountDetailsPage({ params }: { params: Promise<{
 async function AccountContent({ accountId }: { accountId: string }) {
     const { account, transactions } = await getAccountTransactions(accountId);
 
-    const totalIn = transactions
-        .filter(t => t.toAccountId === accountId)
-        .reduce((sum, t) => sum + t.amount, 0);
-
-    const totalOut = transactions
-        .filter(t => t.fromAccountId === accountId)
-        .reduce((sum, t) => sum + t.amount, 0);
-
-    const balance = totalIn - totalOut;
+    const { totalIn, totalOut, balance } = calculateAccountStats(transactions, accountId);
 
     const getIcon = () => {
         const size = 32;

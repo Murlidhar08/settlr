@@ -42,8 +42,7 @@ const TransactionItem = ({
   const direction = getTransactionPerspective(
     toAccountId,
     fromAccountId,
-    accountId || "",
-    accountType || "MONEY"
+    accountId || ""
   );
 
   const isIn = direction === TransactionDirection.IN;

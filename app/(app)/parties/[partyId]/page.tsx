@@ -18,7 +18,7 @@ import { getCurrencySymbol } from '@/utility/transaction';
 import BackHeaderClient from './components/back-header-client';
 import { TransactionDirection } from '@/types/transaction/TransactionDirection';
 import { FinancialAccountType } from '@/lib/generated/prisma/enums';
-import { getTransactionPerspective } from '@/lib/transaction-logic';
+import { getTransactionPerspective, calculateAccountStats } from '@/lib/transaction-logic';
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;
@@ -59,33 +59,15 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
   if (!party) return <div>Party not found</div>;
 
   const partyAccountId = (party as any).financialAccounts[0]?.id;
+  const stats = calculateAccountStats(transactions, partyAccountId);
 
-  // Calculate Stats
-  let totalGave = 0; // Money flows TO the party
-  let totalGot = 0;  // Money flows FROM the party
+  const totalGave = stats.totalIn; // Money flows INTO the party account (We Gave)
+  const totalGot = stats.totalOut; // Money flows OUT OF the party account (We Got)
 
-  const formattedTransactions = transactions.map(tra => {
-    const amount = tra.amount.toNumber();
-
-    // Determine direction relative to the party account using our unified utility
-    const perspective = getTransactionPerspective(
-      tra.toAccountId,
-      tra.fromAccountId,
-      partyAccountId,
-      FinancialAccountType.PARTY
-    );
-
-    if (perspective === TransactionDirection.OUT) {
-      totalGave += amount;
-    } else {
-      totalGot += amount;
-    }
-
-    return {
-      ...tra,
-      amount: amount
-    };
-  });
+  const formattedTransactions = transactions.map(tra => ({
+    ...tra,
+    amount: tra.amount.toNumber()
+  }));
 
   const partyDetails = {
     ...party,

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { getCashbookTransactions } from "@/actions/transaction.actions";
 import { format } from "date-fns";
+import { TransactionDirection } from "@/types/transaction/TransactionDirection";
 
 interface CashbookPageProps {
   searchParams: Promise<{
@@ -90,7 +91,7 @@ async function CashbookContent({
       <FooterButtons>
         <AddTransactionModal
           title="Add Transaction"
-          direction="OUT"
+          direction={TransactionDirection.OUT}
           path="/cashbook"
         >
           <Button size="lg" className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
@@ -101,7 +102,7 @@ async function CashbookContent({
 
         <AddTransactionModal
           title="Add Transaction"
-          direction="IN"
+          direction={TransactionDirection.IN}
           path="/cashbook"
         >
           <Button

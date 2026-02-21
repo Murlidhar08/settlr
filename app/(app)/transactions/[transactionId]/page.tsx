@@ -4,6 +4,8 @@ import { getUserSession } from "@/lib/auth"
 import { TransactionDetailView } from "./components/transaction-detail-view"
 import { getUserConfig } from "@/lib/user-config"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
+import { getTransactionPerspective } from "@/lib/transaction-logic"
+import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 
 export default async function TransactionDetailPage({ params }: { params: Promise<{ transactionId: string }> }) {
   const transactionId = (await params).transactionId;
@@ -27,8 +29,20 @@ export default async function TransactionDetailPage({ params }: { params: Promis
   if (!transaction)
     notFound()
 
-  const isIn = (transaction.toAccount as any).type === FinancialAccountType.MONEY
   const { currency } = await getUserConfig()
+
+  // Determine perspective: If party exists, use its account, else use toAccount if it's MONEY
+  const contextId = transaction.toAccount.type === FinancialAccountType.MONEY
+    ? transaction.toAccountId
+    : transaction.fromAccountId;
+
+  const perspective = getTransactionPerspective(
+    transaction.toAccountId,
+    transaction.fromAccountId,
+    contextId
+  );
+
+  const isIn = perspective === TransactionDirection.IN;
 
   return <TransactionDetailView transaction={JSON.parse(JSON.stringify(transaction))} isIn={isIn} currency={currency} />
 }

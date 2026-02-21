@@ -1,75 +1,171 @@
 import { TransactionDirection } from "@/types/transaction/TransactionDirection";
 
 /**
- * Determines the direction of a transaction from the perspective of a specific account.
- * 
- * @param toAccountId The ID of the account receiving the money
- * @param fromAccountId The ID of the account sending the money
- * @param contextAccountId The ID of the account from whose perspective we are viewing the transaction
- * @param contextAccountType The type of the context account (MONEY, PARTY, CATEGORY)
- * @returns IN if money is flowing into the context's "pocket", OUT if it's flowing out.
+ * ------------------------------------------------------------
+ * CORE RULE (Settlr Accounting Standard)
+ * ------------------------------------------------------------
+ *
+ * IN  = Money flows INTO this account
+ * OUT = Money flows OUT OF this account
+ *
+ * No account-type flipping.
+ * Works for MONEY, PARTY, CATEGORY, EQUITY, ASSET, etc.
+ *
+ * Double-entry guarantee:
+ * One account will always be IN
+ * One account will always be OUT
+ * ------------------------------------------------------------
+ */
+
+
+/**
+ * Determines transaction direction from the perspective
+ * of a specific account.
+ *
+ * @param toAccountId   Account receiving money
+ * @param fromAccountId Account sending money
+ * @param contextAccountId Account we are viewing
+ *
+ * @returns IN | OUT | undefined (if unrelated)
  */
 export function getTransactionPerspective(
     toAccountId: string,
     fromAccountId: string,
-    contextAccountId: string,
-    contextAccountType?: string
-): TransactionDirection {
-    // Base logic: Is money arriving at our doorstep?
-    const isTargetOfFlow = toAccountId === contextAccountId;
+    contextAccountId: string
+): TransactionDirection | undefined {
 
-    // Flip logic: 
-    // For MONEY accounts (Cash/Bank), "In" meant we received money (+).
-    // For PARTY accounts (Ledgers), "In" meant they received money. 
-    // But from OUR perspective on a Party page: 
-    // - They receive money = We GAVE = OUT (-)
-    // - They send money = We GOT = IN (+)
-
-    const isNonMoneyAccount = contextAccountType && contextAccountType !== "MONEY";
-
-    if (isNonMoneyAccount) {
-        // If it's a party/category, we flip it.
-        // Flow TO them means flow OUT from us.
-        return isTargetOfFlow ? TransactionDirection.OUT : TransactionDirection.IN;
+    // Money is flowing INTO this account
+    if (toAccountId === contextAccountId) {
+        return TransactionDirection.IN;
     }
 
-    // For Money accounts, Flow TO us means IN.
-    return isTargetOfFlow ? TransactionDirection.IN : TransactionDirection.OUT;
+    // Money is flowing OUT OF this account
+    if (fromAccountId === contextAccountId) {
+        return TransactionDirection.OUT;
+    }
+
+    // Transaction not related to this account
+    return undefined;
 }
 
+
 /**
- * Calculates aggregate totals for a list of transactions relative to a specific account.
+ * ------------------------------------------------------------
+ * Calculate totals for a specific account
+ * ------------------------------------------------------------
+ *
+ * Used for:
+ * - Cashbook page
+ * - Party ledger
+ * - Category summary
+ * - Bank account
+ * - Owner equity
  */
 export function calculateAccountStats(
     transactions: any[],
-    accountId: string,
-    accountType?: string
+    accountId: string
 ) {
-    let totalIn = 0;  // Money coming in to the business perspective
-    let totalOut = 0; // Money going out from the business perspective
+    let totalIn = 0;
+    let totalOut = 0;
 
-    transactions.forEach((tx) => {
-        const amount = Number(tx.amount);
+    for (const tx of transactions) {
         const direction = getTransactionPerspective(
             tx.toAccountId,
             tx.fromAccountId,
-            accountId,
-            accountType
+            accountId
         );
+
+        // Skip unrelated transactions
+        if (!direction) continue;
+
+        const amount = Number(tx.amount) || 0;
 
         if (direction === TransactionDirection.IN) {
             totalIn += amount;
-        } else {
+        }
+
+        if (direction === TransactionDirection.OUT) {
             totalOut += amount;
         }
-    });
+    }
 
     return {
         totalIn,
         totalOut,
         balance: totalIn - totalOut,
-        // Human readable aliases
+
+        // Human-readable aliases
         totalReceived: totalIn,
-        totalPaid: totalOut
+        totalPaid: totalOut,
     };
+}
+
+
+/**
+ * ------------------------------------------------------------
+ * Get signed amount for a transaction (useful for ledgers)
+ * ------------------------------------------------------------
+ *
+ * Returns:
+ * +amount  → IN
+ * -amount  → OUT
+ * undefined → unrelated
+ */
+export function getSignedAmount(
+    transaction: {
+        toAccountId: string;
+        fromAccountId: string;
+        amount: number;
+    },
+    accountId: string
+): number | undefined {
+
+    const direction = getTransactionPerspective(
+        transaction.toAccountId,
+        transaction.fromAccountId,
+        accountId
+    );
+
+    if (!direction) return undefined;
+
+    const amount = Number(transaction.amount) || 0;
+
+    return direction === TransactionDirection.IN
+        ? amount
+        : -amount;
+}
+
+
+/**
+ * ------------------------------------------------------------
+ * Utility: Check if transaction belongs to account
+ * ------------------------------------------------------------
+ */
+export function isTransactionRelatedToAccount(
+    transaction: {
+        toAccountId: string;
+        fromAccountId: string;
+    },
+    accountId: string
+): boolean {
+    return (
+        transaction.toAccountId === accountId ||
+        transaction.fromAccountId === accountId
+    );
+}
+
+
+/**
+ * ------------------------------------------------------------
+ * Utility: Detect Self Transfer (Account to same account)
+ * ------------------------------------------------------------
+ *
+ * Normally should never happen.
+ * Safe guard for data integrity.
+ */
+export function isSelfTransfer(
+    toAccountId: string,
+    fromAccountId: string
+): boolean {
+    return toAccountId === fromAccountId;
 }
