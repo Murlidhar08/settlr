@@ -6,6 +6,7 @@ import { createContext, useContext } from "react"
 interface userSettings {
   currency: Currency,
   dateFormat: string,
+  timeFormat: string,
   theme: ThemeMode,
   setTheme: (theme: ThemeMode) => void,
 }

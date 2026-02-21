@@ -30,6 +30,8 @@ import { FinancialAccountType, MoneyType, CategoryType, PartyType } from "@/lib/
 import { cn } from "@/lib/utils";
 import { TransactionDirection } from "@/types/transaction/TransactionDirection";
 import { calculateAccountStats } from "@/lib/transaction-logic";
+import { getUserConfig } from "@/lib/user-config";
+import { getCurrencySymbol } from "@/utility/transaction";
 
 export default async function AccountDetailsPage({ params }: { params: Promise<{ accountId: string }> }) {
     const { accountId } = await params;
@@ -45,6 +47,8 @@ export default async function AccountDetailsPage({ params }: { params: Promise<{
 
 async function AccountContent({ accountId }: { accountId: string }) {
     const { account, transactions } = await getAccountTransactions(accountId);
+    const userConfig = await getUserConfig();
+    const symbol = getCurrencySymbol(userConfig.currency);
 
     const { totalIn, totalOut, balance } = calculateAccountStats(transactions, accountId, account.type);
 
@@ -94,7 +98,7 @@ async function AccountContent({ accountId }: { accountId: string }) {
                             "text-3xl font-black tabular-nums",
                             balance >= 0 ? "text-emerald-600" : "text-rose-600"
                         )}>
-                            ₹{Math.abs(balance).toLocaleString()}
+                            {symbol}{Math.abs(balance).toLocaleString()}
                             <span className="text-xs font-bold ml-1 opacity-60">
                                 {balance >= 0 ? "CR" : "DR"}
                             </span>
@@ -108,7 +112,7 @@ async function AccountContent({ accountId }: { accountId: string }) {
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600/60">Total In</span>
                         </div>
-                        <p className="text-3xl font-black text-emerald-600 tabular-nums">₹{totalIn.toLocaleString()}</p>
+                        <p className="text-3xl font-black text-emerald-600 tabular-nums">{symbol}{totalIn.toLocaleString()}</p>
                     </Card>
 
                     <Card className="p-6 rounded-3xl border-2 flex flex-col gap-4 bg-rose-50/50 border-rose-100 dark:bg-rose-950/20 dark:border-rose-900/40">
@@ -118,7 +122,7 @@ async function AccountContent({ accountId }: { accountId: string }) {
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-rose-600/60">Total Out</span>
                         </div>
-                        <p className="text-3xl font-black text-rose-600 tabular-nums">₹{totalOut.toLocaleString()}</p>
+                        <p className="text-3xl font-black text-rose-600 tabular-nums">{symbol}{totalOut.toLocaleString()}</p>
                     </Card>
                 </div>
 

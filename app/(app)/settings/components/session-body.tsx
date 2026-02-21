@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation'
 import { BetterAuthActionButton } from '@/components/auth/better-auth-action-button'
 import { authClient } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
+import { formatDate } from '@/utility/transaction'
+import { useUserConfig } from '@/components/providers/user-config-provider'
 
 interface SessionModalBodyProps {
     sessions: Session[]
@@ -92,6 +94,7 @@ function SessionCard({
     onUpdate?: () => void
     isCurrentSession?: boolean
 }) {
+    const { dateFormat } = useUserConfig()
     const router = useRouter()
     const ua = session.userAgent ? UAParser(session.userAgent) : null
 
@@ -110,9 +113,7 @@ function SessionCard({
     }
 
     function format(date: Date) {
-        return new Intl.DateTimeFormat(undefined, {
-            dateStyle: 'medium',
-        }).format(new Date(date))
+        return formatDate(date, dateFormat)
     }
 
     function getTime(date: Date) {

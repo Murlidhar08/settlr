@@ -210,6 +210,7 @@ export const auth = betterAuth({
             select: {
               currency: true,
               dateFormat: true,
+              timeFormat: true,
               theme: true,
             },
           },
@@ -225,7 +226,8 @@ export const auth = betterAuth({
 
           userSettings: {
             currency: settings?.currency ?? Currency.INR,
-            dateFormat: settings?.dateFormat ?? "DD/MM/YYYY",
+            dateFormat: settings?.dateFormat ?? "dd/MM/yyyy",
+            timeFormat: settings?.timeFormat ?? "hh:mm a",
             theme: settings?.theme ?? ThemeMode.AUTO,
           },
         },

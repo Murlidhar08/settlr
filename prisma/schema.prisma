@@ -157,7 +157,8 @@ model UserSettings {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   currency   Currency  @default(INR)
-  dateFormat String    @default("DD/MM/YYYY")
+  dateFormat String    @default("dd/MM/yyyy")
+  timeFormat String    @default("hh:mm a")
   theme      ThemeMode @default(AUTO)
   createdAt  DateTime  @default(now())
 

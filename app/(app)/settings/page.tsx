@@ -7,6 +7,7 @@ import {
   PaintbrushIcon,
   DollarSign,
   Calendar,
+  Clock,
   CloudUpload,
   Download,
   ExternalLink,
@@ -53,6 +54,7 @@ export default function SettingsPage() {
 
   const [currency, setCurrency] = useState<Currency>(userConfig.currency);
   const [dateFormat, setDateFormat] = useState(userConfig.dateFormat);
+  const [timeFormat, setTimeFormat] = useState(userConfig.timeFormat);
 
   const [version, setVersion] = useState<string>("Pending ...");
 
@@ -181,8 +183,30 @@ export default function SettingsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl shadow-2xl">
-                  <SelectItem value="DD/MM/YYYY" className="rounded-lg font-medium">DD/MM/YYYY</SelectItem>
-                  <SelectItem value="MM/DD/YYYY" className="rounded-lg font-medium">MM/DD/YYYY</SelectItem>
+                  <SelectItem value="dd/MM/yyyy" className="rounded-lg font-medium">DD/MM/YYYY</SelectItem>
+                  <SelectItem value="MM/dd/yyyy" className="rounded-lg font-medium">MM/DD/YYYY</SelectItem>
+                  <SelectItem value="yyyy-MM-dd" className="rounded-lg font-medium">YYYY-MM-DD</SelectItem>
+                  <SelectItem value="dd MMM, yyyy" className="rounded-lg font-medium">DD MMM, YYYY</SelectItem>
+                </SelectContent>
+              </Select>
+            </Row>
+
+            <Row icon={Clock} label="Time Format">
+              <Select
+                value={timeFormat}
+                onValueChange={(value) => {
+                  if (!value) return
+                  setTimeFormat(value)
+                  void upsertUserSettings({ timeFormat: value })
+                  toast.success(`Time format updated`)
+                }}
+              >
+                <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl shadow-2xl">
+                  <SelectItem value="hh:mm a" className="rounded-lg font-medium">12 Hour</SelectItem>
+                  <SelectItem value="HH:mm" className="rounded-lg font-medium">24 Hour</SelectItem>
                 </SelectContent>
               </Select>
             </Row>

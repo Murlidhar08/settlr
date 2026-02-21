@@ -18,7 +18,8 @@ export async function upsertUserSettings(data: UserSettingsInput) {
     create: {
       userId: userId,
       currency: data.currency ?? Currency.INR,
-      dateFormat: data.dateFormat ?? "DD/MM/YYYY",
+      dateFormat: data.dateFormat ?? "dd/MM/yyyy",
+      timeFormat: data.timeFormat ?? "hh:mm a",
       theme: data.theme ?? ThemeMode.AUTO,
     },
     update: {

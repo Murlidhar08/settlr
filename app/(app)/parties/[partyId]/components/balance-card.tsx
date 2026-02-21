@@ -19,7 +19,7 @@ const formatAmount = (amount: number) =>
 export function BalanceCard({
   totalReceived,
   totalPaid,
-  currency = "₹",
+  currency,
 }: BalanceCardProps) {
   const netBalance = totalReceived - totalPaid;
 

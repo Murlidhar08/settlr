@@ -17,7 +17,8 @@ export async function getUserConfig() {
 export function getDefaultConfig() {
   return {
     currency: Currency.INR,
-    dateFormat: "DD/MM/YYYY",
+    dateFormat: "dd/MM/yyyy",
+    timeFormat: "hh:mm a",
     theme: ThemeMode.AUTO,
   }
 }

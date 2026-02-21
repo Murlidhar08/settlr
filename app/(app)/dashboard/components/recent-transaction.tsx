@@ -2,14 +2,14 @@ import TransactionItem from "./transaction-item";
 import { ArrowDownLeft, ArrowUpRight, Wallet2 } from "lucide-react";
 import { getRecentTransactions } from "@/actions/transaction.actions";
 import { format } from "date-fns";
-import { formatAmount } from "@/utility/transaction";
+import { formatAmount, formatDate } from "@/utility/transaction";
 
 import { getUserConfig } from "@/lib/user-config";
 import { FinancialAccountType } from "@/lib/generated/prisma/enums";
 
 export default async function RecentTransaction() {
   const recentTransactions = await getRecentTransactions();
-  const { currency } = await getUserConfig();
+  const { currency, dateFormat } = await getUserConfig();
 
   // ---------------------
   // Functions
@@ -70,7 +70,7 @@ export default async function RecentTransaction() {
             id={tx.id}
             icon={getTransactionIcon(tx)}
             title={getTransactionTitle(tx)}
-            meta={`${format(tx.date, "dd MMM")}${tx.party?.name ? ` • ${tx.party.name}` : ""}`}
+            meta={formatDate(tx.date, dateFormat)}
             amount={formatAmount(Number(tx.amount), currency, false)}
             type={type}
             fromAccount={tx.fromAccount?.name}

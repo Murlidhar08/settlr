@@ -16,7 +16,7 @@ import { getPartyStatement } from "@/actions/transaction.actions";
 import { cn } from "@/lib/utils";
 import { envClient } from "@/lib/env.client";
 import { getInitials } from "@/utility/party";
-import { formatAmount } from "@/utility/transaction";
+import { formatAmount, formatDate, formatTime } from "@/utility/transaction";
 import { getUserConfig } from "@/lib/user-config";
 import * as motion from "framer-motion/client";
 import { FooterButtons } from "@/components/footer-buttons";
@@ -47,7 +47,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 }
 
 async function StatementContent({ partyId, filters }: { partyId: string, filters: any }) {
-  const { currency } = await getUserConfig();
+  const { currency, dateFormat, timeFormat } = await getUserConfig();
   const { party, transactions } = await getPartyStatement(partyId, filters);
 
   if (!party) return <div>Party not found</div>;
@@ -79,7 +79,7 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
 
   const balance = totalPaid - totalReceived;
 
-  const grouped = groupTransactions(transactions);
+  const grouped = groupTransactions(transactions, dateFormat);
 
   return (
     <div className="min-h-screen bg-background pb-40">
@@ -148,6 +148,8 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
                         key={tx.id}
                         tx={tx}
                         currency={currency}
+                        dateFormat={dateFormat}
+                        timeFormat={timeFormat}
                         index={i}
                         pAccId={pAccId!}
                       />
@@ -209,7 +211,7 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
   );
 }
 
-function TransactionCard({ tx, currency, index, pAccId }: { tx: any, currency: any, index: number, pAccId: string }) {
+function TransactionCard({ tx, currency, dateFormat, timeFormat, index, pAccId }: { tx: any, currency: any, dateFormat: string, timeFormat: string, index: number, pAccId: string }) {
   const direction = getPartyTransactionPerspective(
     tx.toAccountId,
     tx.fromAccountId,
@@ -240,7 +242,7 @@ function TransactionCard({ tx, currency, index, pAccId }: { tx: any, currency: a
             </p>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-xs text-muted-foreground/80 font-medium">
-                {format(tx.date, "dd MMM")} • {format(tx.date, "hh:mm a")}
+                {formatDate(tx.date, dateFormat)} • {formatTime(tx.date, timeFormat)}
               </span>
             </div>
           </div>
@@ -276,14 +278,14 @@ function Metric({ label, value, positive }: { label: string; value: string; posi
   );
 }
 
-function groupTransactions(transactions: any[]) {
+function groupTransactions(transactions: any[], dateFormat: string) {
   const groups: Record<string, any[]> = {};
 
   transactions.forEach(tx => {
     let label = "";
     if (isToday(tx.date)) label = "Today";
     else if (isYesterday(tx.date)) label = "Yesterday";
-    else label = format(tx.date, "dd MMM, yyyy");
+    else label = formatDate(tx.date, dateFormat);
 
     if (!groups[label]) groups[label] = [];
     groups[label].push(tx);
