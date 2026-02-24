@@ -7,17 +7,18 @@ export function LayoutTransitions({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
 
     return (
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="popLayout" initial={false}>
             <motion.main
                 key={pathname}
-                initial={{ opacity: 0, y: 2 }}
+                initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -2 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
                 className="flex-1 overflow-y-auto pb-24 bg-background transition-[width] duration-300 ease-in-out"
             >
                 {children}
             </motion.main>
         </AnimatePresence>
+
     );
 }

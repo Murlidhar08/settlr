@@ -1,5 +1,7 @@
 // Packages
 import { betterAuth } from "better-auth";
+import { cache } from "react";
+
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { admin, customSession, lastLoginMethod, twoFactor } from "better-auth/plugins"
@@ -323,8 +325,9 @@ export const auth = betterAuth({
 
 export type Auth = typeof auth;
 
-export const getUserSession = async () => {
+export const getUserSession = cache(async () => {
   return await auth.api.getSession({
     headers: await headers()
   });
-};
+});
+
