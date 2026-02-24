@@ -6,6 +6,7 @@ export default {
         date_format: "दिनांक प्रारूप",
         time_format: "समय प्रारूप",
         language: "भाषा",
+        developer_mode: "डेवलपर मोड",
         appearance: "सजावट",
         logout: "लॉग आउट",
     },

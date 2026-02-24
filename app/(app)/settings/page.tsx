@@ -20,6 +20,7 @@ import {
   LockKeyhole,
   KeyRoundIcon,
   Trash2Icon,
+  Terminal,
 } from "lucide-react";
 import {
   Avatar,
@@ -39,7 +40,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/header";
 import { signOut } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
 import { envClient } from "@/lib/env.client";
@@ -58,6 +59,10 @@ export default function SettingsPage() {
   const [dateFormat, setDateFormat] = useState(userConfig.dateFormat);
   const [timeFormat, setTimeFormat] = useState(userConfig.timeFormat);
   const [language, setLanguage] = useState(userConfig.language);
+  const [isDevMode, setIsDevMode] = useState(false);
+
+  const searchParams = useSearchParams();
+  const isDebug = searchParams.get("debug") === "true";
 
   const [version, setVersion] = useState<string>("Pending ...");
 
@@ -69,6 +74,10 @@ export default function SettingsPage() {
 
     getAppVersion().then(res => setVersion(res));
     initialized.current = true;
+
+    // Load dev mode from localStorage
+    const savedDevMode = localStorage.getItem("dev_mode") === "true";
+    setIsDevMode(savedDevMode);
   }, [isPending, session]);
 
   if (isPending)
@@ -214,25 +223,48 @@ export default function SettingsPage() {
               </Select>
             </Row>
 
-            <Row icon={Languages} label={t("settings.language", language)}>
-              <Select
-                value={language}
-                onValueChange={(value) => {
-                  if (!value) return
-                  setLanguage(value)
-                  void upsertUserSettings({ language: value })
-                  toast.success(`Language updated`)
-                }}
-              >
-                <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="rounded-2xl shadow-2xl">
-                  <SelectItem value="en" className="rounded-lg font-medium">{t("languages.en", language)}</SelectItem>
-                  <SelectItem value="hi" className="rounded-lg font-medium">{t("languages.hi", language)}</SelectItem>
-                </SelectContent>
-              </Select>
-            </Row>
+            {isDebug && (
+              <Row icon={Terminal} label={t("settings.developer_mode", language)}>
+                <Button
+                  variant={isDevMode ? "default" : "outline"}
+                  size="sm"
+                  className={cn(
+                    "rounded-xl font-bold px-6",
+                    isDevMode && "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                  )}
+                  onClick={() => {
+                    const newValue = !isDevMode;
+                    setIsDevMode(newValue);
+                    localStorage.setItem("dev_mode", String(newValue));
+                    toast.success(`Developer mode ${newValue ? "enabled" : "disabled"}`);
+                  }}
+                >
+                  {isDevMode ? "ON" : "OFF"}
+                </Button>
+              </Row>
+            )}
+
+            {isDevMode && (
+              <Row icon={Languages} label={t("settings.language", language)}>
+                <Select
+                  value={language}
+                  onValueChange={(value) => {
+                    if (!value) return
+                    setLanguage(value)
+                    void upsertUserSettings({ language: value })
+                    toast.success(`Language updated`)
+                  }}
+                >
+                  <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl shadow-2xl">
+                    <SelectItem value="en" className="rounded-lg font-medium">{t("languages.en", language)}</SelectItem>
+                    <SelectItem value="hi" className="rounded-lg font-medium">{t("languages.hi", language)}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Row>
+            )}
           </Section>
         </motion.div>
 

@@ -6,6 +6,7 @@ export default {
         date_format: "Date Format",
         time_format: "Time Format",
         language: "Language",
+        developer_mode: "Developer Mode",
         appearance: "Appearance",
         logout: "Logout",
     },
