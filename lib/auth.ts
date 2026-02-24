@@ -277,12 +277,6 @@ export const auth = betterAuth({
                     isSystem: true,
                   },
                   {
-                    name: "Opening Balance",
-                    type: FinancialAccountType.CATEGORY,
-                    categoryType: CategoryType.ADJUSTMENT,
-                    isSystem: true,
-                  },
-                  {
                     name: "Owner Withdrawal",
                     type: FinancialAccountType.CATEGORY,
                     categoryType: CategoryType.EQUITY,
