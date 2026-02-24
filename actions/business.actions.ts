@@ -36,15 +36,15 @@ export async function switchBusiness(businessId: string, redirectTo?: string | n
   }
 
   // 2. Optimization: Skip if already active
-  if (!businessId || session.session.activeBusinessId === businessId) {
+  if (!businessId || session.user.activeBusinessId === businessId) {
     return { success: true };
   }
 
   try {
-    // 3. Update the Session record in the database
+    // 3. Update the User record in the database
     // Better-Auth will pick this up on the next request/validation
-    await prisma.session.update({
-      where: { id: session.session.id },
+    await prisma.user.update({
+      where: { id: session.user.id },
       data: { activeBusinessId: businessId },
     });
 
@@ -100,13 +100,13 @@ export async function deleteBusiness(id: string) {
   });
 
   // If the deleted business was active, switch to another one
-  if (session.session.activeBusinessId === id) {
+  if (session.user.activeBusinessId === id) {
     const other = await prisma.business.findFirst({
       where: { ownerId: session.user.id }
     });
     if (other) {
-      await prisma.session.update({
-        where: { id: session.session.id },
+      await prisma.user.update({
+        where: { id: session.user.id },
         data: { activeBusinessId: other.id }
       });
     }

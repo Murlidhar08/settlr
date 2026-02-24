@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import {
   LayoutDashboard,
@@ -9,10 +10,13 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  LandmarkIcon,
 } from "lucide-react";
 import clsx from "clsx";
 import { useState } from "react";
 import { envClient } from "@/lib/env.client";
+import { useUserConfig } from "./providers/user-config-provider";
+import { t } from "@/lib/languages/i18n";
 
 type NavItem = {
   label: string;
@@ -20,17 +24,18 @@ type NavItem = {
   href: string;
 };
 
-const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", icon: <LayoutDashboard />, href: "/dashboard" },
-  { label: "Parties", icon: <User2Icon />, href: "/parties" },
-  { label: "Cashbook", icon: <Wallet />, href: "/cashbook" },
-  { label: "Settings", icon: <Settings />, href: "/settings" },
-];
-
 const Sidebar = () => {
+  const { language } = useUserConfig();
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
+
+  const navItems: NavItem[] = [
+    { label: t("nav.dashboard", language), icon: <LayoutDashboard />, href: "/dashboard" },
+    { label: t("nav.accounts", language), icon: <LandmarkIcon />, href: "/accounts" },
+    { label: t("nav.parties", language), icon: <User2Icon />, href: "/parties" },
+    { label: t("nav.cashbook", language), icon: <Wallet />, href: "/cashbook" },
+    { label: t("nav.settings", language), icon: <Settings />, href: "/settings" },
+  ];
 
   return (
     <>
@@ -71,8 +76,8 @@ const Sidebar = () => {
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-2 py-6 space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const active = !!pathname?.includes(item.href);
+          {navItems.map((item) => {
+            const active = pathname?.startsWith(item.href);
 
             return (
               <DesktopNavItem
@@ -80,7 +85,6 @@ const Sidebar = () => {
                 {...item}
                 active={active}
                 collapsed={collapsed}
-                onClick={() => router.push(item.href as any)}
               />
             );
           })}
@@ -93,7 +97,7 @@ const Sidebar = () => {
             className="flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all active:scale-95"
           >
             {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-            {!collapsed && <span className="text-sm font-bold uppercase tracking-widest text-[10px]">Collapse</span>}
+            {!collapsed && <span className="text-sm font-bold uppercase tracking-widest text-[10px]">{t("sidebar.collapse", language)}</span>}
           </button>
         </div>
       </aside>
@@ -101,15 +105,14 @@ const Sidebar = () => {
       {/* ================= Mobile Bottom Nav ================= */}
       <nav className="fixed bottom-0 z-50 w-full border-t border-sidebar-border bg-sidebar/80 backdrop-blur-xl pb-safe lg:hidden">
         <div className="flex h-20 items-center justify-around">
-          {NAV_ITEMS.map((item) => {
-            const active = !!pathname?.includes(item.href);
+          {navItems.map((item) => {
+            const active = pathname?.startsWith(item.href);
 
             return (
               <MobileNavItem
                 key={item.href}
                 {...item}
                 active={active}
-                onClick={() => router.push(item.href as any)}
               />
             );
           })}
@@ -127,13 +130,13 @@ interface desktopNavProps {
   label: string;
   active: boolean;
   collapsed: boolean;
-  onClick: () => void;
+  href: string;
 }
 
-function DesktopNavItem({ icon, label, active, collapsed, onClick }: desktopNavProps) {
+function DesktopNavItem({ icon, label, active, collapsed, href }: desktopNavProps) {
   return (
-    <button
-      onClick={onClick}
+    <Link
+      href={href as any}
       className={clsx(
         "group relative flex items-center rounded-xl px-3 py-3 font-bold transition-all duration-300 w-full",
         active
@@ -156,7 +159,7 @@ function DesktopNavItem({ icon, label, active, collapsed, onClick }: desktopNavP
           {label}
         </span>
       )}
-    </button>
+    </Link>
   );
 }
 
@@ -165,13 +168,13 @@ interface MobileNavItemProps {
   icon: React.ReactNode;
   label: string;
   active: boolean;
-  onClick: () => void;
+  href: string;
 }
 
-function MobileNavItem({ icon, label, active, onClick }: MobileNavItemProps) {
+function MobileNavItem({ icon, label, active, href }: MobileNavItemProps) {
   return (
-    <button
-      onClick={onClick}
+    <Link
+      href={href as any}
       className={clsx(
         "flex flex-col items-center gap-1 transition-all duration-300 active:scale-90 px-4",
         active ? "text-sidebar-primary" : "text-muted-foreground"
@@ -181,8 +184,9 @@ function MobileNavItem({ icon, label, active, onClick }: MobileNavItemProps) {
         {icon}
       </span>
       <span className={clsx("text-[10px] font-black uppercase tracking-tighter", active && "tracking-widest")}>{label}</span>
-    </button>
+    </Link>
   );
 }
+
 
 export { Sidebar }

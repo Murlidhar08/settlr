@@ -1,4 +1,5 @@
 import { ThemeToggle } from "@/components/theme-toggle";
+import { BuildVersion } from "@/components/auth/build-version";
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,6 +10,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
       <div className="min-h-screen flex items-center justify-center">
         {children}
       </div>
+      <BuildVersion />
     </div>
   );
 }

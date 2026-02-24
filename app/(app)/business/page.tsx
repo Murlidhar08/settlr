@@ -53,7 +53,7 @@ export default function BusinessPage() {
         ])
 
         setBusinesses(list as Business[] || [])
-        setActiveId(sessionRes.data?.session?.activeBusinessId || null)
+        setActiveId(sessionRes.data?.user?.activeBusinessId || null)
         setIsLoading(false)
     }
 

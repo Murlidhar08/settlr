@@ -7,7 +7,8 @@ import {
   PaintbrushIcon,
   DollarSign,
   Calendar,
-  CreditCard,
+  Clock,
+  Languages,
   CloudUpload,
   Download,
   ExternalLink,
@@ -19,6 +20,7 @@ import {
   LockKeyhole,
   KeyRoundIcon,
   Trash2Icon,
+  Terminal,
 } from "lucide-react";
 import {
   Avatar,
@@ -38,14 +40,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/header";
 import { signOut } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
+import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
 import { envClient } from "@/lib/env.client";
 import { getAppVersion, upsertUserSettings } from "@/actions/user-settings.actions";
 import { useSession } from "@/lib/auth-client";
 import { getInitials } from "@/utility/party";
 import { useUserConfig } from "@/components/providers/user-config-provider";
+import { t } from "@/lib/languages/i18n";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -54,7 +57,12 @@ export default function SettingsPage() {
 
   const [currency, setCurrency] = useState<Currency>(userConfig.currency);
   const [dateFormat, setDateFormat] = useState(userConfig.dateFormat);
-  const [paymentMode, setPaymentMode] = useState<PaymentMode>(userConfig.defaultPayment);
+  const [timeFormat, setTimeFormat] = useState(userConfig.timeFormat);
+  const [language, setLanguage] = useState(userConfig.language);
+  const [isDevMode, setIsDevMode] = useState(false);
+
+  const searchParams = useSearchParams();
+  const isDebug = searchParams.get("debug") === "true";
 
   const [version, setVersion] = useState<string>("Pending ...");
 
@@ -66,6 +74,10 @@ export default function SettingsPage() {
 
     getAppVersion().then(res => setVersion(res));
     initialized.current = true;
+
+    // Load dev mode from localStorage
+    const savedDevMode = localStorage.getItem("dev_mode") === "true";
+    setIsDevMode(savedDevMode);
   }, [isPending, session]);
 
   if (isPending)
@@ -104,7 +116,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title="Settings" />
+      <Header title={t("settings.title", language)} />
 
       <motion.div
         variants={containerVariants}
@@ -144,8 +156,8 @@ export default function SettingsPage() {
 
         {/* GENERAL */}
         <motion.div variants={itemVariants}>
-          <Section title="General Preferences">
-            <Row icon={DollarSign} label="Currency">
+          <Section title={t("settings.general", language)}>
+            <Row icon={DollarSign} label={t("settings.currency", language)}>
               <Select
                 value={currency}
                 onValueChange={(value) => {
@@ -169,7 +181,7 @@ export default function SettingsPage() {
               </Select>
             </Row>
 
-            <Row icon={Calendar} label="Date Format">
+            <Row icon={Calendar} label={t("settings.date_format", language)}>
               <Select
                 value={dateFormat}
                 onValueChange={(value) => {
@@ -183,39 +195,82 @@ export default function SettingsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl shadow-2xl">
-                  <SelectItem value="DD/MM/YYYY" className="rounded-lg font-medium">DD/MM/YYYY</SelectItem>
-                  <SelectItem value="MM/DD/YYYY" className="rounded-lg font-medium">MM/DD/YYYY</SelectItem>
+                  <SelectItem value="dd/MM/yyyy" className="rounded-lg font-medium">DD/MM/YYYY</SelectItem>
+                  <SelectItem value="MM/dd/yyyy" className="rounded-lg font-medium">MM/DD/YYYY</SelectItem>
+                  <SelectItem value="yyyy-MM-dd" className="rounded-lg font-medium">YYYY-MM-DD</SelectItem>
+                  <SelectItem value="dd MMM, yyyy" className="rounded-lg font-medium">DD MMM, YYYY</SelectItem>
                 </SelectContent>
               </Select>
             </Row>
 
-            <Row icon={CreditCard} label="Default Payment">
+            <Row icon={Clock} label={t("settings.time_format", language)}>
               <Select
-                value={paymentMode}
+                value={timeFormat}
                 onValueChange={(value) => {
                   if (!value) return
-                  const v = value as PaymentMode
-                  setPaymentMode(v)
-                  void upsertUserSettings({ defaultPayment: v })
-                  toast.success(`Default payment updated to ${v}`)
+                  setTimeFormat(value)
+                  void upsertUserSettings({ timeFormat: value })
+                  toast.success(`Time format updated`)
                 }}
               >
                 <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl shadow-2xl">
-                  {Object.values(PaymentMode).map((mode) => (
-                    <SelectItem key={mode} value={mode} className="rounded-lg font-medium capitalize">{mode.toLowerCase()}</SelectItem>
-                  ))}
+                  <SelectItem value="hh:mm a" className="rounded-lg font-medium">12 Hour</SelectItem>
+                  <SelectItem value="HH:mm" className="rounded-lg font-medium">24 Hour</SelectItem>
                 </SelectContent>
               </Select>
             </Row>
+
+            {isDebug && (
+              <Row icon={Terminal} label={t("settings.developer_mode", language)}>
+                <Button
+                  variant={isDevMode ? "default" : "outline"}
+                  size="sm"
+                  className={cn(
+                    "rounded-xl font-bold px-6",
+                    isDevMode && "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                  )}
+                  onClick={() => {
+                    const newValue = !isDevMode;
+                    setIsDevMode(newValue);
+                    localStorage.setItem("dev_mode", String(newValue));
+                    toast.success(`Developer mode ${newValue ? "enabled" : "disabled"}`);
+                  }}
+                >
+                  {isDevMode ? "ON" : "OFF"}
+                </Button>
+              </Row>
+            )}
+
+            {isDevMode && (
+              <Row icon={Languages} label={t("settings.language", language)}>
+                <Select
+                  value={language}
+                  onValueChange={(value) => {
+                    if (!value) return
+                    setLanguage(value)
+                    void upsertUserSettings({ language: value })
+                    toast.success(`Language updated`)
+                  }}
+                >
+                  <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl shadow-2xl">
+                    <SelectItem value="en" className="rounded-lg font-medium">{t("languages.en", language)}</SelectItem>
+                    <SelectItem value="hi" className="rounded-lg font-medium">{t("languages.hi", language)}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Row>
+            )}
           </Section>
         </motion.div>
 
         {/* APPEARANCE */}
         <motion.div variants={itemVariants}>
-          <Section title="Appearance">
+          <Section title={t("settings.appearance", language)}>
             <div className="flex items-center justify-between px-5 h-20 w-full group">
               <div className="flex items-center justify-between h-full gap-4 flex-1">
                 <div className="flex items-center gap-4">
@@ -290,7 +345,8 @@ export default function SettingsPage() {
             variant="destructive"
             className="w-full h-14 rounded-2xl gap-3 font-black uppercase tracking-[0.2em] shadow-lg shadow-rose-200 dark:shadow-rose-950/20"
           >
-            <LogOut size={20} /> Log Out
+            <LogOut size={20} />
+            {t("settings.logout", language)}
           </Button>
         </motion.div>
 
@@ -383,43 +439,5 @@ function Row({ icon: Icon, label, children }: {
       <p className="flex-1 font-semibold">{label}</p>
       {children}
     </motion.div>
-  );
-}
-
-function ActionRow({
-  icon: Icon,
-  title,
-  subtitle,
-}: {
-  icon: React.ElementType;
-  title: string;
-  subtitle?: string;
-}) {
-  return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
-      className="w-full flex items-center gap-4 px-4 h-16 text-left"
-    >
-      <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-        <Icon size={16} />
-      </div>
-      <div className="flex-1">
-        <p className="font-semibold">{title}</p>
-        {subtitle && <p className="text-xs text-green-500">{subtitle}</p>}
-      </div>
-      <ChevronRight className="text-muted-foreground" />
-    </motion.button>
-  );
-}
-
-function LinkRow({ label }: { label: string }) {
-  return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
-      className="w-full flex items-center justify-between px-4 h-16"
-    >
-      <span className="font-medium">{label}</span>
-      <ExternalLink size={16} className="text-muted-foreground" />
-    </motion.button>
   );
 }

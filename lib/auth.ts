@@ -1,5 +1,7 @@
 // Packages
 import { betterAuth } from "better-auth";
+import { cache } from "react";
+
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { admin, customSession, lastLoginMethod, twoFactor } from "better-auth/plugins"
@@ -14,7 +16,7 @@ import { getVerificationEmailHtml } from "./templates/email-verification";
 import { getPasswordResetSuccessEmailHtml } from "./templates/email-password-reseted";
 import { getDeleteAccountEmailHtml } from "./templates/email-delete-account";
 import { headers } from "next/headers";
-import { Currency, PaymentMode, ThemeMode } from "./generated/prisma/enums";
+import { Currency, ThemeMode, FinancialAccountType, MoneyType, CategoryType } from "./generated/prisma/enums";
 import { envServer } from "./env.server";
 
 export const auth = betterAuth({
@@ -29,7 +31,7 @@ export const auth = betterAuth({
     disableOriginCheck: true
   },
   database: prismaAdapter(prisma, {
-    provider: "postgresql", // or "mysql", "postgresql", ...etc
+    provider: "postgresql"
   }),
   user: {
     additionalFields: {
@@ -41,6 +43,10 @@ export const auth = betterAuth({
         type: "string",
         required: false
       },
+      activeBusinessId: {
+        type: "string",
+        required: false
+      }
     },
     deleteUser: {
       enabled: true,
@@ -108,9 +114,7 @@ export const auth = betterAuth({
     // Send password reset successfully mail
     onPasswordReset: async ({ user }) => {
       try {
-        // TODO: SEND DYANAMIC URL BASED ON ACCESS DOMAIN
-        // const appUrl = envServer.NEXT_PUBLIC_APP_URL;
-        const appUrl = "";
+        const appUrl = envServer.BETTER_AUTH_URL;
         const emailHtml = getPasswordResetSuccessEmailHtml(user.email, appUrl);
 
         const { data, error } = await sendMail({
@@ -162,14 +166,6 @@ export const auth = betterAuth({
       }
     },
     afterEmailVerification: async (user) => {
-      // Add Default Business
-      await prisma.business.create({
-        data: {
-          name: "Default Business",
-          ownerId: user.id,
-        }
-      });
-
       console.log(`${user.email} has been successfully verified!`);
     }
   },
@@ -189,12 +185,6 @@ export const auth = betterAuth({
     //   enabled: true,
     //   maxAge: 10 // 1 Minute
     // },
-    additionalFields: {
-      activeBusinessId: {
-        type: "string",
-        required: false
-      }
-    },
   },
   plugins: [
     nextCookies(),
@@ -205,13 +195,14 @@ export const auth = betterAuth({
         select: {
           contactNo: true,
           address: true,
+          activeBusinessId: true,
           twoFactorEnabled: true,
 
           // current session context
           sessions: {
             where: { id: session.id },
             select: {
-              activeBusinessId: true,
+              id: true,
             },
             take: 1,
           },
@@ -221,31 +212,33 @@ export const auth = betterAuth({
             select: {
               currency: true,
               dateFormat: true,
-              defaultPayment: true,
+              timeFormat: true,
+              language: true,
               theme: true,
             },
           },
         },
       })
 
-      const activeBusinessId = dbUser?.sessions?.[0]?.activeBusinessId ?? null
+      const activeBusinessId = dbUser?.activeBusinessId ?? null
       const settings = dbUser?.userSettings
 
       return {
         session: {
           ...session,
-          activeBusinessId,
 
           userSettings: {
             currency: settings?.currency ?? Currency.INR,
-            dateFormat: settings?.dateFormat ?? "DD/MM/YYYY",
-            defaultPayment: settings?.defaultPayment ?? PaymentMode.CASH,
+            dateFormat: settings?.dateFormat ?? "dd/MM/yyyy",
+            timeFormat: settings?.timeFormat ?? "hh:mm a",
+            language: settings?.language ?? "en",
             theme: settings?.theme ?? ThemeMode.AUTO,
           },
         },
 
         user: {
           ...user,
+          activeBusinessId: activeBusinessId,
           contactNo: dbUser?.contactNo,
           address: dbUser?.address,
           twoFactorEnabled: dbUser?.twoFactorEnabled ?? false,
@@ -256,13 +249,79 @@ export const auth = betterAuth({
     admin({
       defaultRole: "user"
     })
-  ]
+  ],
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          if (!user?.id) return;
+
+          // Check if business already exists
+          const existing = await prisma.business.findFirst({
+            where: { ownerId: user.id }
+          });
+
+          if (existing) return;
+
+          // Add Default Business with system accounts
+          const defaultBusiness = await prisma.business.create({
+            data: {
+              name: `${user.name || "Default"} Business`,
+              ownerId: user.id,
+              financialAccounts: {
+                create: [
+                  {
+                    name: "Cash",
+                    type: FinancialAccountType.MONEY,
+                    moneyType: MoneyType.CASH,
+                    isSystem: true,
+                  },
+                  {
+                    name: "Owner Withdrawal",
+                    type: FinancialAccountType.CATEGORY,
+                    categoryType: CategoryType.EQUITY,
+                    isSystem: true,
+                  },
+                  {
+                    name: "Owner Investment",
+                    type: FinancialAccountType.CATEGORY,
+                    categoryType: CategoryType.EQUITY,
+                    isSystem: true,
+                  },
+                  {
+                    name: "Expense",
+                    type: FinancialAccountType.CATEGORY,
+                    categoryType: CategoryType.EXPENSE,
+                    isSystem: true,
+                  },
+                  {
+                    name: "Sales",
+                    type: FinancialAccountType.CATEGORY,
+                    categoryType: CategoryType.INCOME,
+                    isSystem: true,
+                  },
+                ]
+              }
+            }
+          });
+
+          // Set activeBusinessId for the new user
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { activeBusinessId: defaultBusiness.id }
+          });
+          console.log(`Default setup completed for new user: ${user.email}`);
+        },
+      },
+    }
+  }
 });
 
 export type Auth = typeof auth;
 
-export const getUserSession = async () => {
+export const getUserSession = cache(async () => {
   return await auth.api.getSession({
     headers: await headers()
   });
-};
+});
+
