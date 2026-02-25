@@ -1,5 +1,4 @@
 // Packages
-import { Header } from "@/components/header";
 import { PartyType } from "@/lib/generated/prisma/enums";
 import { Suspense } from "react";
 
@@ -24,7 +23,6 @@ export default async function Parties({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title={t("parties.title", language)} />
 
       <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6">
         <PartyFilters />

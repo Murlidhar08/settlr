@@ -38,7 +38,6 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Header } from "@/components/header";
 import { signOut } from "@/lib/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -116,7 +115,6 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title={t("settings.title", language)} />
 
       <motion.div
         variants={containerVariants}
@@ -365,7 +363,6 @@ export default function SettingsPage() {
 function SettingsSkeleton() {
   return (
     <div className="min-h-screen bg-background">
-      <Header title="Settings" />
       <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6">
         <div className="h-24 w-full animate-pulse rounded-2xl bg-muted" />
         <div className="space-y-4">

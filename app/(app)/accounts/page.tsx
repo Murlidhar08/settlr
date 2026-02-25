@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Header } from "@/components/header";
+
 import { getFinancialAccountsWithBalance } from "@/actions/financial-account.actions";
 import { AddAccountModal } from "@/components/account/add-account-modal";
 import { AccountCard } from "@/components/account/account-card";
@@ -41,8 +41,6 @@ async function AccountsContent({ language }: { language: string }) {
 
     return (
         <div className="w-full bg-background pb-28">
-            <Header title={t("accounts.title", language)} />
-
             <div className="mx-auto w-full max-w-4xl px-6 py-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-16">
                     <div>

@@ -2,10 +2,10 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Calendar as CalendarIcon, X } from "lucide-react";
+import { Search, Calendar as CalendarIcon, X, Loader2 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState, useTransition } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -27,13 +27,30 @@ export default function CashFilters({
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const [isPending, startTransition] = useTransition();
 
     const currentSearch = searchParams.get("search") || "";
     const currentCategory = searchParams.get("category") || "All";
-    const startDate = searchParams.get("startDate") || effectiveStartDate;
-    const endDate = searchParams.get("endDate") || effectiveEndDate;
+    const currentStartDate = searchParams.get("startDate") || effectiveStartDate;
+    const currentEndDate = searchParams.get("endDate") || effectiveEndDate;
 
     const [searchValue, setSearchValue] = useState(currentSearch);
+
+    // Optimistic states for instant feedback
+    const [optCategory, setOptCategory] = useState(currentCategory);
+    const [optDateRange, setOptDateRange] = useState<{ from?: string, to?: string }>({
+        from: currentStartDate,
+        to: currentEndDate
+    });
+
+    // Sync optimistic state with actual URL state
+    useEffect(() => {
+        setOptCategory(currentCategory);
+    }, [currentCategory]);
+
+    useEffect(() => {
+        setOptDateRange({ from: currentStartDate, to: currentEndDate });
+    }, [currentStartDate, currentEndDate]);
 
     // Categories
     const categories = ["All", MoneyType.CASH, MoneyType.ONLINE];
@@ -44,19 +61,25 @@ export default function CashFilters({
             if (value) params.set(key, value);
             else params.delete(key);
         });
-        router.push(`${pathname}?${params.toString()}` as any);
+
+        startTransition(() => {
+            router.push(`${pathname}?${params.toString()}` as any, { scroll: false });
+        });
     };
 
     // Date range label
     const getDateLabel = () => {
-        if (!startDate) return t("common.select_dates", language);
-        if (startDate === endDate) {
-            return startDate === format(new Date(), "yyyy-MM-dd") ? t("common.today", language) : format(new Date(startDate), "dd MMM");
+        const start = optDateRange.from;
+        const end = optDateRange.to;
+
+        if (!start) return t("common.select_dates", language);
+        if (start === end) {
+            return start === format(new Date(), "yyyy-MM-dd") ? t("common.today", language) : format(new Date(start), "dd MMM");
         }
-        return `${format(new Date(startDate), "dd MMM")} - ${format(new Date(endDate || startDate), "dd MMM")}`;
+        return `${format(new Date(start), "dd MMM")} - ${format(new Date(end || start), "dd MMM")}`;
     };
 
-    const isDateActive = searchParams.get("startDate") || startDate === format(new Date(), "yyyy-MM-dd");
+    const isDateActive = !!searchParams.get("startDate") || (optDateRange.from === format(new Date(), "yyyy-MM-dd") && optDateRange.to === format(new Date(), "yyyy-MM-dd"));
 
     // Debounce search
     useEffect(() => {
@@ -76,21 +99,31 @@ export default function CashFilters({
                 animate={{ opacity: 1, y: 0 }}
                 className="relative"
             >
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
-                <Input
-                    placeholder={t("common.search_cashbook", language)}
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    className="h-12 rounded-full pl-10 pr-10"
-                />
-                {searchValue && (
-                    <button
-                        onClick={() => setSearchValue("")}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                        <X size={16} />
-                    </button>
-                )}
+                <div className="relative group">
+                    <Search className={cn(
+                        "absolute left-4 top-1/2 -translate-y-1/2 size-4 transition-colors",
+                        isPending ? "text-primary animate-pulse" : "text-muted-foreground"
+                    )} />
+                    <Input
+                        placeholder={t("common.search_cashbook", language)}
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                        className="h-12 rounded-2xl pl-11 pr-11 bg-muted/30 border-2 border-transparent focus:border-primary/20 focus:bg-background transition-all shadow-sm font-medium"
+                    />
+                    <AnimatePresence>
+                        {searchValue && (
+                            <motion.button
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                onClick={() => setSearchValue("")}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-muted rounded-full"
+                            >
+                                <X size={14} />
+                            </motion.button>
+                        )}
+                    </AnimatePresence>
+                </div>
             </motion.div>
 
             <motion.div
@@ -102,41 +135,54 @@ export default function CashFilters({
                 {categories.map((item) => (
                     <Button
                         key={item}
-                        variant={currentCategory === item ? "default" : "secondary"}
+                        variant={optCategory === item ? "default" : "secondary"}
                         size="sm"
-                        onClick={() => updateFilters({ category: item })}
+                        onClick={() => {
+                            setOptCategory(item);
+                            updateFilters({ category: item === "All" ? null : item });
+                        }}
                         className={cn(
-                            "rounded-full shrink-0 transition-all duration-300",
-                            currentCategory === item ? "px-6 shadow-md" : "px-4"
+                            "rounded-xl shrink-0 transition-all duration-300 h-10 font-bold uppercase tracking-widest text-[10px]",
+                            optCategory === item ? "px-6 shadow-lg shadow-primary/20" : "px-4 bg-muted/40 hover:bg-muted"
                         )}
                     >
                         {item === "All" ? t("common.all", language) : item}
                     </Button>
                 ))}
 
-                <div className="h-6 w-px bg-border mx-1" />
+                <div className="h-6 w-px bg-border/50 mx-1 shrink-0" />
 
                 <Popover>
                     <PopoverTrigger
-                        className={cn(
-                            "inline-flex items-center justify-center h-8 rounded-full shrink-0 gap-2 text-sm font-medium transition-all px-4",
-                            isDateActive ? "bg-primary text-primary-foreground px-6 shadow-md" : "bg-secondary text-secondary-foreground"
-                        )}
-                    >
-                        <CalendarIcon size={14} />
-                        {getDateLabel()}
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden" align="start">
+                        render={
+                            <Button
+                                variant={isDateActive ? "default" : "secondary"}
+                                size="sm"
+                                className={cn(
+                                    "rounded-xl shrink-0 gap-2 font-bold uppercase tracking-widest text-[10px] h-10 transition-all",
+                                    isDateActive ? "px-6 shadow-lg shadow-primary/20" : "px-4 bg-muted/40 hover:bg-muted"
+                                )}
+                            >
+                                <CalendarIcon size={14} className={isPending && isDateActive ? "animate-pulse" : ""} />
+                                {getDateLabel()}
+                            </Button>
+                        }
+                    />
+
+                    <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden shadow-2xl border-0" align="start">
                         <Calendar
                             mode="range"
                             selected={{
-                                from: startDate ? new Date(startDate) : undefined,
-                                to: endDate ? new Date(endDate) : undefined
+                                from: optDateRange.from ? new Date(optDateRange.from) : undefined,
+                                to: optDateRange.to ? new Date(optDateRange.to) : undefined
                             } as DateRange}
                             onSelect={(range) => {
+                                const start = range?.from ? format(range.from, "yyyy-MM-dd") : null;
+                                const end = range?.to ? format(range.to, "yyyy-MM-dd") : null;
+                                setOptDateRange({ from: start || undefined, to: end || undefined });
                                 updateFilters({
-                                    startDate: range?.from ? format(range.from, "yyyy-MM-dd") : null,
-                                    endDate: range?.to ? format(range.to, "yyyy-MM-dd") : null,
+                                    startDate: start,
+                                    endDate: end,
                                 });
                             }}
                             initialFocus
@@ -144,19 +190,41 @@ export default function CashFilters({
                     </PopoverContent>
                 </Popover>
 
-                {(searchParams.get("startDate") || searchParams.get("endDate")) && (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => updateFilters({ startDate: null, endDate: null })}
-                        className="rounded-full shrink-0 h-8 w-8 text-muted-foreground"
+                <AnimatePresence>
+                    {(searchParams.get("startDate") || searchParams.get("endDate")) && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.5, x: -10 }}
+                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.5, x: -10 }}
+                        >
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                    setOptDateRange({ from: effectiveStartDate, to: effectiveEndDate });
+                                    updateFilters({ startDate: null, endDate: null });
+                                }}
+                                className="rounded-full shrink-0 h-8 w-8 text-muted-foreground hover:bg-muted"
+                            >
+                                <X size={14} />
+                            </Button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {isPending && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="ml-auto"
                     >
-                        <X size={14} />
-                    </Button>
+                        <Loader2 className="size-4 text-primary animate-spin" />
+                    </motion.div>
                 )}
             </motion.div>
         </div>
     );
 }
+
 
 

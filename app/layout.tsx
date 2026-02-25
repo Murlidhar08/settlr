@@ -14,6 +14,8 @@ import { envClient } from "@/lib/env.client";
 // Components
 import { ConfirmProvider } from "@/components/providers/confirm-provider";
 import AppIconsMetaTags from "@/components/app-icons-metatags";
+import NextTopLoader from 'nextjs-toploader';
+
 
 const nunitoSans = Nunito_Sans({
   variable: '--font-sans',
@@ -69,7 +71,19 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           enableSystem
           disableTransitionOnChange
         >
+          <NextTopLoader
+            color="oklch(0.541 0.281 293.009)"
+            initialPosition={0.08}
+            crawlSpeed={200}
+            height={3}
+            crawl={true}
+            showSpinner={false}
+            easing="ease"
+            speed={200}
+            shadow="0 0 10px oklch(0.541 0.281 293.009),0 0 5px oklch(0.541 0.281 293.009)"
+          />
           <ConfirmProvider>
+
             {children}
 
             {/* Toast Container */}
