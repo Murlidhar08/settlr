@@ -17,7 +17,6 @@ interface PartyListProp {
 
 export default async function CustomersTab({ partyType, search }: PartyListProp) {
   const partiesPromise = getPartyList(partyType, search);
-
   const { currency } = await getUserConfig();
 
   return (

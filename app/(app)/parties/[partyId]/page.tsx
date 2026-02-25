@@ -77,7 +77,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
   };
 
   return (
-    <div className="relative mx-auto min-h-screen max-w-full bg-background pb-28 lg:pb-16">
+    <div className="relative min-h-screen max-w-full bg-background pb-28 lg:pb-16">
 
       {/* Top App Bar */}
       <BackHeaderClient

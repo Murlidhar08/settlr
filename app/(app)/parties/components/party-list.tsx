@@ -44,16 +44,27 @@ const PartyList = ({ partyType, promise }: PartyListProp) => {
 
       {!partyLst?.length && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex flex-col items-center justify-center py-12 space-y-3 opacity-60"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center justify-center py-24 px-6 text-center space-y-4"
         >
-          <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center text-3xl">👤</div>
-          <p className="text-sm font-medium text-muted-foreground">
-            No {partyType.toLowerCase()} found matching your search
-          </p>
+          <div className="relative">
+            <div className="h-24 w-24 bg-muted/30 rounded-full flex items-center justify-center text-5xl">🔭</div>
+            <div className="absolute -top-1 -right-1 h-8 w-8 bg-background rounded-full flex items-center justify-center shadow-sm border border-border/50">
+              <span className="text-sm">❓</span>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-xl font-black tracking-tight underline decoration-primary/20 decoration-4 underline-offset-4 uppercase">
+              No {partyType.toLowerCase()} found
+            </h3>
+            <p className="text-sm font-medium text-muted-foreground/60 max-w-[250px] mx-auto leading-relaxed uppercase tracking-wider text-[10px]">
+              We couldn't find any results for your search. Try checking for typos or use a broader term.
+            </p>
+          </div>
         </motion.div>
       )}
+
     </div>
   )
 }

@@ -24,19 +24,31 @@ export function AppHeader() {
         setMounted(true);
     }, []);
 
-    if (!mounted) return null;
-
     // Find the exact match or the parent match
-    // For now, we only handle top-level routes as per user request to "change title text based on url"
     const translationKey = ROUTE_TITLE_MAP[pathname];
-
-    // If no translation key found, it might be a subpage (which likely uses BackHeader)
-    // For subpages, we might want to hide this global header
     const isTopLevelRoute = !!translationKey;
 
-    if (!isTopLevelRoute) return null;
+    // Only show header (or its skeleton) if it's a designated top-level route
+    if (!isTopLevelRoute)
+        return null;
+
+    if (!mounted) {
+        return (
+            <header className="sticky top-0 z-40 flex items-center justify-between bg-background/80 dark:bg-background/60 backdrop-blur-xl px-6 py-4 border-b border-border/90">
+                <div className="flex items-center gap-4">
+                    {/* Logo area skeleton for mobile */}
+                    <div className="h-10 w-10 rounded-xl bg-muted animate-pulse lg:hidden" />
+                    {/* Title skeleton */}
+                    <div className="h-8 w-32 bg-muted rounded-lg animate-pulse lg:h-10 lg:w-48" />
+                </div>
+                {/* Profile skeleton */}
+                <div className="h-11 w-11 rounded-full bg-muted animate-pulse" />
+            </header>
+        );
+    }
 
     return (
         <Header title={t(translationKey, language)} />
     );
 }
+

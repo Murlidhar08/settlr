@@ -83,5 +83,3 @@ export default function BalanceCard({ promise, currency }: BalanceCardProps) {
         </section>
     );
 }
-
-

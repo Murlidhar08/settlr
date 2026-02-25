@@ -36,21 +36,65 @@ export default async function CashbookPage({ searchParams }: CashbookPageProps) 
   const effectiveEndDate = params.endDate || (!hasOtherFilters ? today : undefined);
 
   return (
-    <div className="w-full bg-background min-h-screen">
-      <Suspense fallback={<CashbookSkeleton />}>
-        <CashbookContent
-          search={params.search}
-          category={params.category}
-          startDate={effectiveStartDate}
-          endDate={effectiveEndDate}
-          config={userConfig}
-        />
-      </Suspense>
+    <div className="w-full bg-background min-h-screen pt-12">
+      <div className="mx-auto w-full max-w-4xl px-6 pb-32">
+        <CashFilters effectiveStartDate={effectiveStartDate} effectiveEndDate={effectiveEndDate} />
+
+        <Suspense
+          key={`${params.search}-${params.category}-${effectiveStartDate}-${effectiveEndDate}`}
+          fallback={
+            <div className="space-y-8 mt-8">
+              <div className="h-32 w-full animate-pulse bg-muted rounded-[2.5rem]" />
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-20 w-full animate-pulse bg-muted rounded-2xl" />
+                ))}
+              </div>
+            </div>
+          }
+        >
+          <CashbookResults
+            search={params.search}
+            category={params.category}
+            startDate={effectiveStartDate}
+            endDate={effectiveEndDate}
+            config={userConfig}
+          />
+        </Suspense>
+      </div>
+
+
+      <FooterButtons>
+        <AddTransactionModal
+          title={t("cashbook.add_transaction", userConfig.language)}
+          direction={TransactionDirection.OUT}
+          path="/cashbook"
+        >
+          <Button size="lg" className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+            <ArrowUpRight className="h-5 w-5" />
+            {t("cashbook.you_pay", userConfig.language)}
+          </Button>
+        </AddTransactionModal>
+
+        <AddTransactionModal
+          title={t("cashbook.add_transaction", userConfig.language)}
+          direction={TransactionDirection.IN}
+          path="/cashbook"
+        >
+          <Button
+            size="lg"
+            className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <ArrowDownLeft className="h-5 w-5" />
+            {t("cashbook.you_receive", userConfig.language)}
+          </Button>
+        </AddTransactionModal>
+      </FooterButtons>
     </div>
   );
 }
 
-async function CashbookContent({
+async function CashbookResults({
   search,
   category,
   startDate,
@@ -73,46 +117,17 @@ async function CashbookContent({
   const transactionsPromise = Promise.resolve(transactions);
 
   return (
-    <div className="w-full bg-background pb-28">
+    <div className="mt-8 space-y-8">
+      <CashSummary totalIn={totalIn} totalOut={totalOut} currency={config.currency} />
 
-      <div className="mx-auto w-full max-w-4xl px-6 pb-32">
-        <CashSummary totalIn={totalIn} totalOut={totalOut} currency={config.currency} />
-
-        <CashFilters effectiveStartDate={startDate} effectiveEndDate={endDate} />
-
-        <div className="mt-6">
-          <Suspense fallback={<div className="h-40 w-full animate-pulse bg-muted/20 rounded-2xl" />}>
-            <CashbookList promise={transactionsPromise} />
-          </Suspense>
-        </div>
+      <div>
+        <p className="mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+          Transactions
+        </p>
+        <CashbookList promise={transactionsPromise} />
       </div>
-
-      <FooterButtons>
-        <AddTransactionModal
-          title={t("cashbook.add_transaction", config.language)}
-          direction={TransactionDirection.OUT}
-          path="/cashbook"
-        >
-          <Button size="lg" className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
-            <ArrowUpRight className="h-5 w-5" />
-            {t("cashbook.you_pay", config.language)}
-          </Button>
-        </AddTransactionModal>
-
-        <AddTransactionModal
-          title={t("cashbook.add_transaction", config.language)}
-          direction={TransactionDirection.IN}
-          path="/cashbook"
-        >
-          <Button
-            size="lg"
-            className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
-          >
-            <ArrowDownLeft className="h-5 w-5" />
-            {t("cashbook.you_receive", config.language)}
-          </Button>
-        </AddTransactionModal>
-      </FooterButtons>
     </div>
   );
 }
+
+

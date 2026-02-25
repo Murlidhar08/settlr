@@ -4,9 +4,10 @@
 import { useState, useEffect, ReactNode } from "react"
 import { CalendarIcon, Wallet, Paperclip, ChevronDownIcon, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2 } from "lucide-react"
 import { format } from "date-fns"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { Loader2 } from "lucide-react"
 
 // Components
 import { Button } from "@/components/ui/button"
@@ -54,6 +55,8 @@ export const AddTransactionModal = ({
   const [dateOpen, setDateOpen] = useState(false)
   const [allAccounts, setAllAccounts] = useState<(FinancialAccount & { balance: number })[]>([])
   const [loadingAccounts, setLoadingAccounts] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [showAccountControls, setShowAccountControls] = useState(false)
 
   const router = useRouter()
   const isOut = direction === TransactionDirection.OUT;
@@ -197,6 +200,7 @@ export const AddTransactionModal = ({
       return toast.error("Please select both accounts")
     }
 
+    setIsSaving(true)
     try {
       const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
       if (isNaN(combinedDateTime.getTime())) {
@@ -234,6 +238,8 @@ export const AddTransactionModal = ({
       setPartnerAccountId("")
     } catch (error) {
       toast.error("Failed to save transaction")
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -377,68 +383,92 @@ export const AddTransactionModal = ({
                   />
                 </motion.div>
 
-                {/* Money Account Selection */}
-                {/* Hide if account is fixed (ACCOUNT mode) or if there's only one money account to choose from */}
-                {!(mode === 'ACCOUNT') && (moneyAccounts.length > 1 || !moneyAccountId) && (
-                  <motion.div variants={itemVariants} className="col-span-full space-y-2">
-                    <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
-                      <Wallet size={12} /> {moneyLabel}
-                    </Label>
-                    <Select
-                      value={moneyAccountId}
-                      onValueChange={(val) => val && setMoneyAccountId(val)}
+                {/* Advanced Controls Toggle */}
+                <motion.div variants={itemVariants} className="col-span-full pt-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-px flex-1 bg-border/40" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAccountControls(!showAccountControls)}
+                      className="rounded-xl px-4 py-1.5 h-auto text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-primary hover:bg-primary/5 transition-all"
                     >
-                      <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
-                        <SelectValue placeholder="Choose Account">
-                          {allAccounts.find(a => a.id === moneyAccountId)?.name}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
-                        {moneyAccounts.map(acc => (
-                          <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/10 rounded-xl cursor-pointer">
-                            <div className="flex justify-between items-center w-full gap-4">
-                              <span>{acc.name}</span>
-                              <span className="text-xs font-bold tabular-nums text-muted-foreground">
-                                ₹{acc.balance.toLocaleString()}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </motion.div>
-                )}
+                      {showAccountControls ? "Hide Account Details" : "Adjust Accounts"}
+                    </Button>
+                    <div className="h-px flex-1 bg-border/40" />
+                  </div>
+                </motion.div>
 
-                {/* Partner Account Selection (Category/Transfer) */}
-                {mode !== 'PARTY' && (partnerOptions.length > 1 || !partnerAccountId) && (
-                  <motion.div variants={itemVariants} className="col-span-full space-y-2">
-                    <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
-                      <Wallet size={12} /> {partnerLabel}
-                    </Label>
-                    <Select
-                      value={partnerAccountId}
-                      onValueChange={(val) => val && setPartnerAccountId(val)}
+                <AnimatePresence>
+                  {showAccountControls && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="col-span-full space-y-6 overflow-hidden"
                     >
-                      <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
-                        <SelectValue placeholder="Select Category or Account">
-                          {allAccounts.find(a => a.id === partnerAccountId)?.name}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
-                        {partnerOptions.map(acc => (
-                          <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/10 rounded-xl cursor-pointer">
-                            <div className="flex flex-col">
-                              <span className="font-bold text-sm">{acc.name}</span>
-                              <span className="text-[10px] text-muted-foreground/60 italic">
-                                {acc.partyType || acc.categoryType || acc.type}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </motion.div>
-                )}
+                      {/* Money Account Selection */}
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
+                          <Wallet size={12} /> {moneyLabel}
+                        </Label>
+                        <Select
+                          value={moneyAccountId}
+                          onValueChange={(val) => val && setMoneyAccountId(val)}
+                        >
+                          <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
+                            <SelectValue placeholder="Choose Account">
+                              {allAccounts.find(a => a.id === moneyAccountId)?.name}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
+                            {moneyAccounts.map(acc => (
+                              <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/10 rounded-xl cursor-pointer">
+                                <div className="flex justify-between items-center w-full gap-4">
+                                  <span>{acc.name}</span>
+                                  <span className="text-xs font-bold tabular-nums text-muted-foreground">
+                                    ₹{acc.balance.toLocaleString()}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Partner Account Selection (Category/Transfer) */}
+                      {mode !== 'PARTY' && (
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
+                            <Wallet size={12} /> {partnerLabel}
+                          </Label>
+                          <Select
+                            value={partnerAccountId}
+                            onValueChange={(val) => val && setPartnerAccountId(val)}
+                          >
+                            <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
+                              <SelectValue placeholder="Select Category or Account">
+                                {allAccounts.find(a => a.id === partnerAccountId)?.name}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
+                              {partnerOptions.map(acc => (
+                                <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/10 rounded-xl cursor-pointer">
+                                  <div className="flex flex-col">
+                                    <span className="font-bold text-sm">{acc.name}</span>
+                                    <span className="text-[10px] text-muted-foreground/60 italic">
+                                      {acc.partyType || acc.categoryType || acc.type}
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Note */}
@@ -468,7 +498,7 @@ export const AddTransactionModal = ({
               </Button>
               <Button
                 onClick={handleAddTransaction}
-                disabled={loadingAccounts}
+                disabled={loadingAccounts || isSaving}
                 className={cn(
                   "h-14 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
                   isOut
@@ -476,8 +506,17 @@ export const AddTransactionModal = ({
                     : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
                 )}
               >
-                {isOut ? "Confirm Pay" : "Confirm Receive"}
-                {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
+                {isSaving ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Recording...
+                  </>
+                ) : (
+                  <>
+                    {isOut ? "Confirm Pay" : "Confirm Receive"}
+                    {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
+                  </>
+                )}
               </Button>
             </div>
           </div>
