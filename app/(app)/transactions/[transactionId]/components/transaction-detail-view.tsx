@@ -1,6 +1,5 @@
 "use client"
 
-import { TransactionDirection } from "@/lib/generated/prisma/enums"
 import { format } from "date-fns"
 import { Check, PenSquareIcon, ArrowDownLeft, ArrowUpRight, Clock, Hash, CreditCard } from "lucide-react"
 import { BackHeader } from "@/components/back-header"
@@ -10,7 +9,9 @@ import { AddTransactionModal } from "@/components/transaction/add-transaction-mo
 import { DeleteTransactionButton } from "./delete-transaction-button"
 import { motion, AnimatePresence } from "framer-motion"
 import { Currency } from "@/lib/generated/prisma/enums"
-import { formatAmount, getCurrencySymbol } from "@/utility/transaction"
+import { formatAmount, getCurrencySymbol, formatDate, formatTime } from "@/utility/transaction"
+import { useUserConfig } from "@/components/providers/user-config-provider"
+import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 
 interface TransactionDetailViewProps {
     transaction: any
@@ -19,7 +20,8 @@ interface TransactionDetailViewProps {
 }
 
 export function TransactionDetailView({ transaction, isIn, currency = Currency.INR }: TransactionDetailViewProps) {
-    const symbol = getCurrencySymbol(currency)
+    const { dateFormat, timeFormat, currency: configCurrency } = useUserConfig()
+    const symbol = getCurrencySymbol(configCurrency)
     return (
         <div className="min-h-full bg-background relative">
             {/* Dynamic Animated Background */}
@@ -93,7 +95,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                             >
                                 <Clock className="h-3 w-3" />
                                 <span suppressHydrationWarning>
-                                    {format(new Date(transaction.createdAt), "dd MMM yyyy • hh:mm a")}
+                                    {formatDate(transaction.date, dateFormat)} • {formatTime(transaction.date, timeFormat)}
                                 </span>
                             </motion.p>
                         </div>
@@ -119,7 +121,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                             className={`text-6xl font-black tracking-tighter lg:text-8xl ${isIn ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                                 }`}
                         >
-                            {isIn ? "+" : "-"}{symbol}{Number(transaction.amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                            {formatAmount(transaction.amount, configCurrency, true, isIn ? 'IN' : 'OUT')}
                         </motion.p>
 
                         <div className="mt-8 flex justify-center">
@@ -168,9 +170,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
 
                         <div className="h-px bg-linear-to-r from-transparent via-border to-transparent" />
 
-                        <DetailRow icon={<div className="h-2 w-2 rounded-full bg-primary" />} label="Payment Instrument">
-                            <span className="font-black text-lg tracking-tight uppercase text-primary/80">{transaction.mode}</span>
-                        </DetailRow>
+                        {/* Payment Instrument removed as mode is gone */}
 
                         {transaction.description && (
                             <>
@@ -192,7 +192,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                 <AddTransactionModal
                     title="Edit Transaction"
                     transactionData={transaction}
-                    direction={transaction.direction}
+                    direction={isIn ? TransactionDirection.IN : TransactionDirection.OUT}
                     partyId={transaction.partyId}
                 >
                     <Button

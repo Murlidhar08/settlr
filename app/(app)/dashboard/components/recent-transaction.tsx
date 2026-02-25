@@ -1,58 +1,84 @@
-import { TransactionDirection } from "@/lib/generated/prisma/enums";
 import TransactionItem from "./transaction-item";
 import { ArrowDownLeft, ArrowUpRight, Wallet2 } from "lucide-react";
 import { getRecentTransactions } from "@/actions/transaction.actions";
 import { format } from "date-fns";
-import { formatAmount } from "@/utility/transaction";
+import { formatAmount, formatDate } from "@/utility/transaction";
 
 import { getUserConfig } from "@/lib/user-config";
+import { FinancialAccountType } from "@/lib/generated/prisma/enums";
+import { t } from "@/lib/languages/i18n";
 
 export default async function RecentTransaction() {
   const recentTransactions = await getRecentTransactions();
-  const { currency } = await getUserConfig();
+  const { currency, dateFormat, language } = await getUserConfig();
 
   // ---------------------
   // Functions
-  const getTransactionTitle = (description: string | null, direction: TransactionDirection, partyName?: string) => {
-    if (description && description.trim().length > 0)
-      return description;
+  const getTransactionTitle = (tx: any) => {
+    if (tx.description && tx.description.trim().length > 0)
+      return tx.description;
 
-    if (!partyName) {
-      return "Cashbook"
+    const fromType = tx.fromAccount?.type;
+    const toType = tx.toAccount?.type;
+
+    if (fromType === FinancialAccountType.MONEY && toType === FinancialAccountType.MONEY) {
+      return t("transactions.transfer", language, {
+        from: tx.fromAccount.name,
+        to: tx.toAccount.name
+      });
     }
 
-    return direction === TransactionDirection.IN
-      ? "Payment Received"
-      : "Payment Sent";
+    if (!tx.party?.name) {
+      return t("transactions.cashbook", language);
+    }
+
+    return toType === FinancialAccountType.MONEY
+      ? t("transactions.payment_received", language)
+      : t("transactions.payment_sent", language);
   };
 
-  const getTransactionIcon = (direction: TransactionDirection, partyName?: string) => {
-    if (!partyName) return <Wallet2 />
+  const getTransactionIcon = (tx: any) => {
+    const fromType = tx.fromAccount?.type;
+    const toType = tx.toAccount?.type;
 
-    return direction == TransactionDirection.OUT
+    if (fromType === FinancialAccountType.MONEY && toType === FinancialAccountType.MONEY) {
+      return <Wallet2 className="text-indigo-500" />
+    }
+
+    if (!tx.party?.name) return <Wallet2 />
+
+    return toType !== FinancialAccountType.MONEY
       ? <ArrowUpRight /> : <ArrowDownLeft />
   }
 
   return (
     <div className="space-y-3">
       {recentTransactions.length === 0 && (
-        <p className="text-sm text-slate-500">
-          No transactions yet
+        <p className="text-sm text-slate-500 text-center py-8">
+          {t("dashboard.no_transactions", language)}
         </p>
       )}
 
       {recentTransactions.map((tx) => {
-        const positive = tx.direction === TransactionDirection.IN;
+        const isFromMoney = tx.fromAccount?.type === FinancialAccountType.MONEY;
+        const isToMoney = tx.toAccount?.type === FinancialAccountType.MONEY;
+
+        let type: 'in' | 'out' | 'neutral' = 'neutral';
+        if (isToMoney && !isFromMoney) type = 'in';
+        else if (isFromMoney && !isToMoney) type = 'out';
+        else if (isFromMoney && isToMoney) type = 'neutral';
 
         return (
           <TransactionItem
             key={tx.id}
             id={tx.id}
-            icon={getTransactionIcon(tx.direction, tx.party?.name)}
-            title={getTransactionTitle(tx.description, tx.direction, tx.party?.name)}
-            meta={`${format(tx.date, "dd MMM")} • ${tx.mode}${tx.party?.name ? ` • ${tx.party.name}` : ""}`}
-            amount={formatAmount(Number(tx.amount), currency, true, tx.direction)}
-            positive={positive}
+            icon={getTransactionIcon(tx)}
+            title={getTransactionTitle(tx)}
+            meta={formatDate(tx.date, dateFormat)}
+            amount={formatAmount(Number(tx.amount), currency, false)}
+            type={type}
+            fromAccount={tx.fromAccount?.name}
+            toAccount={tx.toAccount?.name}
           />
         );
       })}

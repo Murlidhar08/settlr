@@ -3,36 +3,14 @@
 import { format, isToday, isYesterday } from "date-fns";
 import { TransactionItem } from "@/components/transaction-item";
 import { TransactionRes } from "@/types/transaction/TransactionData";
-import { formatAmount } from "@/utility/transaction";
+import { formatAmount, formatDate, formatTime } from "@/utility/transaction";
 import { useUserConfig } from "@/components/providers/user-config-provider";
 
 interface transactionListProp {
   transactions: TransactionRes[]
   partyId?: string | null
-}
-
-function groupTransactionsByDate(transactions: TransactionRes[]) {
-  const groups: Record<string, TransactionRes[]> = {};
-
-  for (const tx of transactions) {
-    let label = "";
-
-    if (isToday(tx.date)) {
-      label = "TODAY";
-    } else if (isYesterday(tx.date)) {
-      label = "YESTERDAY";
-    } else {
-      label = format(tx.date, "dd MMM, yyyy");
-    }
-
-    if (!groups[label]) {
-      groups[label] = [];
-    }
-
-    groups[label].push(tx);
-  }
-
-  return groups;
+  accountId?: string | null
+  accountType?: string | null
 }
 
 function TransactionGroup({ label, children }: { label: string; children: React.ReactNode }) {
@@ -46,8 +24,33 @@ function TransactionGroup({ label, children }: { label: string; children: React.
   )
 }
 
-const TransactionList = ({ transactions }: transactionListProp) => {
-  const { currency } = useUserConfig();
+const TransactionList = ({ transactions, accountId, accountType }: transactionListProp) => {
+  const { currency, dateFormat, timeFormat } = useUserConfig();
+
+  function groupTransactionsByDate(transactions: TransactionRes[]) {
+    const groups: Record<string, TransactionRes[]> = {};
+
+    for (const tx of transactions) {
+      let label = "";
+
+      if (isToday(tx.date)) {
+        label = "TODAY";
+      } else if (isYesterday(tx.date)) {
+        label = "YESTERDAY";
+      } else {
+        label = formatDate(tx.date, dateFormat);
+      }
+
+      if (!groups[label]) {
+        groups[label] = [];
+      }
+
+      groups[label].push(tx);
+    }
+
+    return groups;
+  }
+
   return (
     <div className="flex flex-col gap-4 px-1">
       {/* No Records */}
@@ -67,10 +70,17 @@ const TransactionList = ({ transactions }: transactionListProp) => {
                   key={transaction.id}
                   transactionId={transaction.id}
                   title={transaction.description || ""}
-                  subtitle={format(transaction.date, "hh:mm a")}
-                  amount={formatAmount(transaction.amount, currency, true, transaction.direction)}
-                  type={transaction.direction}
-                  mode={transaction.mode}
+                  subtitle={formatTime(transaction.date, timeFormat)}
+                  amount={formatAmount(transaction.amount, currency, true)}
+                  accountId={accountId}
+                  accountType={accountType}
+                  fromAccountId={transaction.fromAccountId}
+                  toAccountId={transaction.toAccountId}
+                  fromAccount={transaction.fromAccount?.name}
+                  toAccount={transaction.toAccount?.name}
+                  fromAccountType={transaction.fromAccount?.type}
+                  toAccountType={transaction.toAccount?.type}
+                  partyName={transaction.party?.name}
                 />
               ))}
             </TransactionGroup>

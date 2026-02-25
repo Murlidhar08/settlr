@@ -6,20 +6,24 @@ import { BadgeCheck, Lock, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 // Components
 import { Card } from "@/components/ui/card";
 import { BackHeader } from "@/components/back-header";
+import { prisma } from "@/lib/prisma";
 import StatementFilters from "./components/statement-filters";
 import ExportPDFButton from "./components/export-pdf-button";
 import StatementSkeleton from "./components/statement-skeleton";
 
 // Lib
 import { getPartyStatement } from "@/actions/transaction.actions";
-import { TransactionDirection } from "@/lib/generated/prisma/enums";
 import { cn } from "@/lib/utils";
 import { envClient } from "@/lib/env.client";
 import { getInitials } from "@/utility/party";
-import { formatAmount } from "@/utility/transaction";
+import { formatAmount, formatDate, formatTime } from "@/utility/transaction";
 import { getUserConfig } from "@/lib/user-config";
 import * as motion from "framer-motion/client";
 import { FooterButtons } from "@/components/footer-buttons";
+
+import { TransactionDirection } from "@/types/transaction/TransactionDirection";
+import { getPartyTransactionPerspective } from "@/lib/transaction-logic";
+import { FinancialAccountType } from "@/lib/generated/prisma/enums";
 
 interface PageProps {
   params: Promise<{ partyId: string }>;
@@ -43,22 +47,39 @@ export default async function Page({ params, searchParams }: PageProps) {
 }
 
 async function StatementContent({ partyId, filters }: { partyId: string, filters: any }) {
-  const { currency } = await getUserConfig();
+  const { currency, dateFormat, timeFormat } = await getUserConfig();
   const { party, transactions } = await getPartyStatement(partyId, filters);
 
   if (!party) return <div>Party not found</div>;
 
-  const totalIn = transactions
-    .filter(t => t.direction === TransactionDirection.IN)
-    .reduce((sum, t) => sum + t.amount, 0);
+  // Get party financial account
+  const partyAccount = await prisma.financialAccount.findFirst({
+    where: { partyId, businessId: party.businessId! },
+    select: { id: true }
+  });
+  const pAccId = partyAccount?.id;
 
-  const totalOut = transactions
-    .filter(t => t.direction === TransactionDirection.OUT)
-    .reduce((sum, t) => sum + t.amount, 0);
+  // Calculate totals using perspective-aware logic
+  let totalPaid = 0; // Money flows TO the party (OUT from us)
+  let totalReceived = 0;  // Money flows FROM the party (IN to us)
 
-  const balance = totalIn - totalOut;
+  transactions.forEach(t => {
+    const perspective = getPartyTransactionPerspective(
+      t.toAccountId,
+      t.fromAccountId,
+      pAccId!
+    );
 
-  const grouped = groupTransactions(transactions);
+    if (perspective === TransactionDirection.OUT) {
+      totalPaid += t.amount;
+    } else {
+      totalReceived += t.amount;
+    }
+  });
+
+  const balance = totalPaid - totalReceived;
+
+  const grouped = groupTransactions(transactions, dateFormat);
 
   return (
     <div className="min-h-screen bg-background pb-40">
@@ -127,7 +148,10 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
                         key={tx.id}
                         tx={tx}
                         currency={currency}
+                        dateFormat={dateFormat}
+                        timeFormat={timeFormat}
                         index={i}
+                        pAccId={pAccId!}
                       />
                     ))}
                   </div>
@@ -142,13 +166,13 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
       <div className="mx-auto max-w-4xl p-6">
         <div className="mb-6 grid grid-cols-2 gap-4 h-24">
           <Metric
-            label="Total Cash In"
-            value={formatAmount(totalIn, currency, false, TransactionDirection.IN)}
-            positive
+            label="You Pay"
+            value={formatAmount(totalPaid, currency, false)}
           />
           <Metric
-            label="Total Cash Out"
-            value={formatAmount(totalOut, currency, false, TransactionDirection.OUT)}
+            label="You Receive"
+            value={formatAmount(totalReceived, currency, false)}
+            positive
           />
         </div>
 
@@ -177,8 +201,8 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
         <ExportPDFButton
           party={party}
           transactions={transactions}
-          totalIn={totalIn}
-          totalOut={totalOut}
+          totalIn={totalPaid}
+          totalOut={totalReceived}
           balance={balance}
           currency={currency}
         />
@@ -187,8 +211,14 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
   );
 }
 
-function TransactionCard({ tx, currency, index }: { tx: any, currency: any, index: number }) {
-  const isReceived = tx.direction === TransactionDirection.IN;
+function TransactionCard({ tx, currency, dateFormat, timeFormat, index, pAccId }: { tx: any, currency: any, dateFormat: string, timeFormat: string, index: number, pAccId: string }) {
+  const direction = getPartyTransactionPerspective(
+    tx.toAccountId,
+    tx.fromAccountId,
+    pAccId
+  );
+
+  const isIn = direction === TransactionDirection.IN;
 
   return (
     <motion.div
@@ -202,27 +232,24 @@ function TransactionCard({ tx, currency, index }: { tx: any, currency: any, inde
         <div className="flex items-center gap-4">
           <div className={cn(
             "flex h-12 w-12 items-center justify-center rounded-2xl transition-all",
-            isReceived ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30"
+            isIn ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30"
           )}>
-            {isReceived ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
+            {isIn ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
           </div>
           <div>
             <p className="font-bold text-foreground">
-              {tx.description || (isReceived ? "Payment Received" : "Payment Sent")}
+              {tx.description || (isIn ? "Payment Received" : "Payment Sent")}
             </p>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground border">
-                {tx.mode}
-              </span>
               <span className="text-xs text-muted-foreground/80 font-medium">
-                {format(tx.date, "dd MMM")} • {format(tx.date, "hh:mm a")}
+                {formatDate(tx.date, dateFormat)} • {formatTime(tx.date, timeFormat)}
               </span>
             </div>
           </div>
         </div>
         <p className={cn(
           "text-lg font-black tabular-nums tracking-tight",
-          isReceived ? "text-emerald-600" : "text-rose-600"
+          isIn ? "text-emerald-600" : "text-rose-600"
         )}>
           {formatAmount(tx.amount, currency)}
         </p>
@@ -230,6 +257,7 @@ function TransactionCard({ tx, currency, index }: { tx: any, currency: any, inde
     </motion.div>
   );
 }
+
 
 function Metric({ label, value, positive }: { label: string; value: string; positive?: boolean }) {
   return (
@@ -250,14 +278,14 @@ function Metric({ label, value, positive }: { label: string; value: string; posi
   );
 }
 
-function groupTransactions(transactions: any[]) {
+function groupTransactions(transactions: any[], dateFormat: string) {
   const groups: Record<string, any[]> = {};
 
   transactions.forEach(tx => {
     let label = "";
     if (isToday(tx.date)) label = "Today";
     else if (isYesterday(tx.date)) label = "Yesterday";
-    else label = format(tx.date, "dd MMM, yyyy");
+    else label = formatDate(tx.date, dateFormat);
 
     if (!groups[label]) groups[label] = [];
     groups[label].push(tx);

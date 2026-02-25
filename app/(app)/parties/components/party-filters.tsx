@@ -6,8 +6,11 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
+import { useUserConfig } from "@/components/providers/user-config-provider"
+import { t } from "@/lib/languages/i18n"
 
 export function PartyFilters() {
+    const { language } = useUserConfig()
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -37,41 +40,52 @@ export function PartyFilters() {
 
 
     return (
-        <div className="space-y-6">
-            <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="relative"
-            >
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
-                <Input
-                    placeholder="Search name, phone..."
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    className="h-12 rounded-full pl-10 bg-muted/50 border-none focus-visible:ring-2 focus-visible:ring-primary/20 transition-all shadow-sm"
-                />
-            </motion.div>
+        <div className="space-y-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <Tabs
+                    value={currentTab}
+                    onValueChange={(val) => updateFilters({ tab: val })}
+                    className="w-full md:w-auto"
+                >
+                    <div className="flex flex-col gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Directory Type</span>
+                        <TabsList className="grid grid-cols-2 rounded-2xl bg-muted/40 p-1 w-full md:w-[320px] border border-border/50">
+                            <TabsTrigger
+                                value="customers"
+                                className="rounded-xl font-bold uppercase tracking-widest text-[9px] data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all h-10"
+                            >
+                                {t("parties.customers", language)}
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="suppliers"
+                                className="rounded-xl font-bold uppercase tracking-widest text-[9px] data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all h-10"
+                            >
+                                {t("parties.suppliers", language)}
+                            </TabsTrigger>
+                        </TabsList>
+                    </div>
+                </Tabs>
 
-            <Tabs
-                value={currentTab}
-                onValueChange={(val) => updateFilters({ tab: val })}
-                className="w-full"
-            >
-                <TabsList className="grid grid-cols-2 h-14 rounded-2xl bg-muted/50 p-1 md:w-[400px]">
-                    <TabsTrigger
-                        value="customers"
-                        className="rounded-xl font-bold uppercase tracking-widest text-[10px] data-[state=active]:bg-background data-[state=active]:shadow-md transition-all h-12"
-                    >
-                        Customers
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="suppliers"
-                        className="rounded-xl font-bold uppercase tracking-widest text-[10px] data-[state=active]:bg-background data-[state=active]:shadow-md transition-all h-12"
-                    >
-                        Suppliers
-                    </TabsTrigger>
-                </TabsList>
-            </Tabs>
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="relative flex-1 max-w-md"
+                >
+                    <div className="flex flex-col gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-4">Search {currentTab}</span>
+                        <div className="relative group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 size-4 group-focus-within:text-primary transition-colors" />
+                            <Input
+                                placeholder={t("common.search_parties", language)}
+                                value={searchValue}
+                                onChange={(e) => setSearchValue(e.target.value)}
+                                className="h-12 rounded-2xl pl-11 bg-muted/30 border-2 border-transparent focus:border-primary/20 focus:bg-background transition-all shadow-sm font-medium"
+                            />
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
         </div>
     )
 }
+

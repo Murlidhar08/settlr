@@ -61,97 +61,94 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
     }
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.04
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: 20 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.2 } }
+  }
+
   return (
     <>
-      {/* Floating CTA */}
-      <motion.div
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setOpen(true)}
-        className="inline-block cursor-pointer"
-      >
+      <div onClick={() => setOpen(true)} className="inline-block cursor-pointer active:scale-95 transition-transform">
         {children}
-      </motion.div>
+      </div>
 
-      {/* Sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="right"
-          className="w-full sm:max-w-md flex flex-col p-0 pb-[env(safe-area-inset-bottom)] border-l border-border/40 bg-background/95 backdrop-blur-xl"
+          className="w-full! h-full! sm:max-w-[70vw]! lg:max-w-[35vw]! border-l-0 sm:border-l p-0 flex flex-col overflow-hidden bg-background"
         >
           {/* HEADER */}
-          <div className="flex items-center justify-between border-b border-border/40 px-6 py-5 bg-background/50">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm">
-                <Building2 className="h-6 w-6" />
+          <div className="px-6 py-6 border-b bg-muted/20 backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-2xl flex items-center justify-center bg-primary text-white shadow-lg shadow-primary/20 border border-primary/20">
+                <Building2 size={20} />
               </div>
               <div>
                 <h2 className="text-xl font-black tracking-tight leading-tight">{resolvedTitle}</h2>
                 <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground opacity-60">Directory Entry</p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setOpen(false)}
-              className="h-10 w-10 rounded-xl hover:bg-secondary/80"
-            >
-              <X className="h-5 w-5" />
-            </Button>
           </div>
 
           {/* BODY */}
-          <div className="flex-1 space-y-8 overflow-y-auto px-6 py-8">
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="space-y-3"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="px-6 py-8 space-y-8"
             >
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">
-                Full Name / Business Title
-              </Label>
-              <Input
-                placeholder="Ex. Reliance Industries Ltd"
-                value={data.name}
-                onChange={(e) =>
-                  setData((pre) => ({ ...pre, name: e.target.value }))
-                }
-                className="h-14 rounded-2xl bg-secondary/30 border-secondary/50 focus:bg-background focus:ring-4 focus:ring-primary/5 transition-all text-base font-bold"
-                autoFocus
-              />
-            </motion.div>
+              <motion.div variants={itemVariants} className="space-y-3">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 ml-1">
+                  Full Name / Business Title
+                </Label>
+                <Input
+                  placeholder="Ex. Reliance Industries Ltd"
+                  value={data.name}
+                  onChange={(e) =>
+                    setData((pre) => ({ ...pre, name: e.target.value }))
+                  }
+                  className="h-14 rounded-2xl border-2 bg-transparent px-4 text-base font-bold shadow-sm outline-none focus:border-primary transition-all"
+                  autoFocus
+                />
+              </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="space-y-3"
-            >
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">
-                Primary Contact Number
-              </Label>
-              <Input
-                placeholder="+91 00000 00000 (Optional)"
-                inputMode="numeric"
-                value={data.contactNo ?? ""}
-                onChange={(e) =>
-                  setData((pre) => ({
-                    ...pre,
-                    contactNo: e.target.value || null,
-                  }))
-                }
-                className="h-14 rounded-2xl bg-secondary/30 border-secondary/50 focus:bg-background focus:ring-4 focus:ring-primary/5 transition-all text-base font-bold"
-              />
+              <motion.div variants={itemVariants} className="space-y-3">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 ml-1">
+                  Primary Contact Number
+                </Label>
+                <Input
+                  placeholder="+91 00000 00000 (Optional)"
+                  inputMode="numeric"
+                  value={data.contactNo ?? ""}
+                  onChange={(e) =>
+                    setData((pre) => ({
+                      ...pre,
+                      contactNo: e.target.value || null,
+                    }))
+                  }
+                  className="h-14 rounded-2xl border-2 bg-transparent px-4 text-base font-bold shadow-sm outline-none focus:border-primary transition-all"
+                />
+              </motion.div>
             </motion.div>
           </div>
 
           {/* FOOTER */}
-          <div className="sticky bottom-0 border-t border-border/40 bg-background/50 backdrop-blur-md p-6">
+          <div className="p-6 border-t bg-background/50 backdrop-blur-md pb-[env(safe-area-inset-bottom,24px)]">
             <div className="flex gap-4">
               <Button
                 variant="outline"
-                className="h-14 flex-1 rounded-2xl text-sm font-black uppercase tracking-widest border-border hover:bg-secondary/80"
+                className="h-14 flex-1 rounded-2xl text-base font-bold border-2"
                 onClick={() => setOpen(false)}
               >
                 Discard
@@ -159,13 +156,14 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
 
               <Button
                 onClick={handleAddParty}
-                className="h-14 flex-[1.5] rounded-2xl bg-primary text-primary-foreground shadow-2xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-all font-black uppercase tracking-widest text-sm"
+                className="h-14 flex-[1.5] rounded-2xl bg-primary text-white shadow-xl shadow-primary/20 active:scale-[0.97] transition-all font-black uppercase tracking-widest text-base"
               >
                 Create {type === PartyType.CUSTOMER ? "Customer" : "Supplier"}
               </Button>
             </div>
           </div>
         </SheetContent>
+
       </Sheet>
     </>
   )

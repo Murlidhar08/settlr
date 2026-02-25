@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { MoneyType } from "@/lib/generated/prisma/enums";
 
 export default function StatementFilters() {
     const router = useRouter();
@@ -91,7 +92,7 @@ export default function StatementFilters() {
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-40 p-1 rounded-2xl" align="start">
-                        {["All", "Cash", "Online"].map((mode) => (
+                        {["All", MoneyType.CASH, MoneyType.ONLINE].map((mode) => (
                             <button
                                 key={mode}
                                 onClick={() => updateFilters({ mode: mode === "All" ? null : mode })}

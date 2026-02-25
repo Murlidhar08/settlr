@@ -2,8 +2,7 @@
 
 import { use } from "react";
 import { TransactionList } from "@/components/transaction/transaction-list";
-import { TransactionDirection, PaymentMode } from "@/lib/generated/prisma/enums";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Transaction } from "@/lib/generated/prisma/client";
 
 interface CashbookListProps {

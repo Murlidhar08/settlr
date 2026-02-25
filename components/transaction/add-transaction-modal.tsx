@@ -1,42 +1,51 @@
 "use client"
 
-import { CalendarIcon, Wallet, Paperclip, ChevronDownIcon, ArrowUpRight, ArrowDownLeft, Clock, Info, CheckCircle2 } from "lucide-react"
+// Packages
+import { useState, useEffect, ReactNode } from "react"
+import { CalendarIcon, Wallet, Paperclip, ChevronDownIcon, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2 } from "lucide-react"
+import { format } from "date-fns"
+import { motion, AnimatePresence } from "framer-motion"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+import { Loader2 } from "lucide-react"
+
+// Components
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { useState, useEffect, ReactNode } from "react"
-import { PaymentMode, TransactionDirection } from "@/lib/generated/prisma/enums"
+import { Calendar } from "@/components/ui/calendar"
+import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+
+// Actions
 import { addTransaction } from "@/actions/transaction.actions"
-import { Transaction } from "@/lib/generated/prisma/client"
-import { format } from "date-fns"
-import { motion, AnimatePresence } from "framer-motion"
+import { getFinancialAccountsWithBalance } from "@/actions/financial-account.actions"
+
+// Library
+import { FinancialAccount } from "@/lib/generated/prisma/client"
+import { FinancialAccountType, CategoryType } from "@/lib/generated/prisma/enums"
 import { cn } from "@/lib/utils"
 
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Select,
-  SelectContent,
-  SelectTrigger,
-  SelectValue,
-  SelectItem,
-} from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+// Types
+import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 
 interface TransactionProps {
   title: string
   children: ReactNode
   partyId?: string | null
-  transactionData?: Transaction
-  direction?: TransactionDirection,
+  accountId?: string | null
+  transactionData?: any
+  direction?: TransactionDirection
   path?: string
 }
+
+type ModalMode = 'PARTY' | 'CASHBOOK' | 'ACCOUNT'
 
 export const AddTransactionModal = ({
   title,
   partyId,
+  accountId,
   transactionData,
   direction,
   path,
@@ -44,8 +53,17 @@ export const AddTransactionModal = ({
 }: TransactionProps) => {
   const [open, setOpen] = useState(false)
   const [dateOpen, setDateOpen] = useState(false)
+  const [allAccounts, setAllAccounts] = useState<(FinancialAccount & { balance: number })[]>([])
+  const [loadingAccounts, setLoadingAccounts] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [showAccountControls, setShowAccountControls] = useState(false)
+
   const router = useRouter()
   const isOut = direction === TransactionDirection.OUT;
+
+  // Selected IDs
+  const [moneyAccountId, setMoneyAccountId] = useState<string>("")
+  const [partnerAccountId, setPartnerAccountId] = useState<string>("")
 
   const [data, setData] = useState<any>({
     id: undefined,
@@ -54,32 +72,140 @@ export const AddTransactionModal = ({
     date: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "yyyy-MM-dd"),
     time: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "HH:mm"),
     description: "",
-    mode: PaymentMode.CASH,
-    direction,
     partyId: partyId || null,
+    fromAccountId: "",
+    toAccountId: "",
     userId: "",
   })
 
+  // Mode Detection
+  const [mode, setMode] = useState<ModalMode>('CASHBOOK')
+
   useEffect(() => {
-    if (transactionData) {
-      setData((pre: any) => ({
-        ...pre,
-        ...transactionData,
-        amount: Number(transactionData.amount),
-        date: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "yyyy-MM-dd"),
-        time: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "HH:mm"),
-      }))
+    if (open) {
+      const fetchAccounts = async () => {
+        setLoadingAccounts(true)
+        try {
+          const accs = await getFinancialAccountsWithBalance()
+          setAllAccounts(accs as any)
+
+          if (transactionData) {
+            setData((pre: any) => ({
+              ...pre,
+              ...transactionData,
+              amount: Number(transactionData.amount),
+              date: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "yyyy-MM-dd"),
+              time: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "HH:mm"),
+            }))
+
+            // Editing logic
+            const from = accs.find(a => a.id === transactionData.fromAccountId)
+            const to = accs.find(a => a.id === transactionData.toAccountId)
+
+            if (from?.type === FinancialAccountType.MONEY) {
+              setMoneyAccountId(from.id)
+              setPartnerAccountId(transactionData.toAccountId)
+            } else {
+              setMoneyAccountId(transactionData.toAccountId)
+              setPartnerAccountId(transactionData.fromAccountId)
+            }
+          } else {
+            // New Transaction Logic
+            let inferredMode: ModalMode = 'CASHBOOK'
+            let initialMoneyAcc = ""
+            let initialPartnerAcc = ""
+
+            const currentAcc = accs.find(a => a.id === accountId)
+            const partyAcc = partyId ? accs.find(a => a.partyId === partyId) : null
+
+            if (partyId || (currentAcc && currentAcc.type === FinancialAccountType.PARTY)) {
+              inferredMode = 'PARTY'
+              const partyAccount = partyAcc || currentAcc
+              initialPartnerAcc = partyAccount?.id || ""
+              initialMoneyAcc = accs.find(a => a.type === FinancialAccountType.MONEY)?.id || ""
+            }
+            else if (currentAcc && currentAcc.type === FinancialAccountType.MONEY) {
+              inferredMode = 'ACCOUNT'
+              initialMoneyAcc = currentAcc.id
+              // Default partner is any other non-party account
+              initialPartnerAcc = accs.find(a => a.id !== currentAcc.id && a.partyId === null)?.id || ""
+            }
+            else {
+              inferredMode = 'CASHBOOK'
+              const moneyAccs = accs.filter(a => a.type === FinancialAccountType.MONEY)
+              initialMoneyAcc = moneyAccs[0]?.id || ""
+
+              const targetCat = isOut ? CategoryType.EXPENSE : CategoryType.INCOME
+              initialPartnerAcc = accs.find(a => a.type === FinancialAccountType.CATEGORY && a.categoryType === targetCat)?.id || ""
+            }
+
+            setMode(inferredMode)
+            setMoneyAccountId(initialMoneyAcc)
+            setPartnerAccountId(initialPartnerAcc)
+
+            // Sync with data state
+            setData((pre: any) => ({
+              ...pre,
+              partyId: accs.find(a => a.id === initialPartnerAcc)?.partyId || null
+            }))
+          }
+        } catch (err) {
+          toast.error("Failed to load accounts")
+        } finally {
+          setLoadingAccounts(false)
+        }
+      }
+      fetchAccounts()
     }
-  }, [transactionData])
+  }, [open, partyId, accountId, transactionData, isOut])
+
+  // Update data state whenever selections change
+  useEffect(() => {
+    const partnerAcc = allAccounts.find(a => a.id === partnerAccountId)
+
+    // Direction logic
+    // PARTY: OUT -> Money to Party, IN -> Party to Money
+    // ACCOUNT: OUT -> Current to Other, IN -> Other to Current
+    // CASHBOOK: OUT -> Money to Expense, IN -> Income to Money
+
+    let from = ""
+    let to = ""
+
+    if (mode === 'PARTY') {
+      from = isOut ? moneyAccountId : partnerAccountId
+      to = isOut ? partnerAccountId : moneyAccountId
+    } else if (mode === 'ACCOUNT') {
+      from = isOut ? moneyAccountId : partnerAccountId
+      to = isOut ? partnerAccountId : moneyAccountId
+    } else {
+      // CASHBOOK
+      from = isOut ? moneyAccountId : partnerAccountId
+      to = isOut ? partnerAccountId : moneyAccountId
+    }
+
+    setData((pre: any) => ({
+      ...pre,
+      fromAccountId: from,
+      toAccountId: to,
+      partyId: partnerAcc?.partyId || null
+    }))
+  }, [moneyAccountId, partnerAccountId, isOut, mode, allAccounts])
 
   const handleAddTransaction = async () => {
     if (!data.amount || isNaN(Number(data.amount))) {
       return toast.error("Please enter a valid amount")
     }
 
+    if (!data.fromAccountId || !data.toAccountId) {
+      return toast.error("Please select both accounts")
+    }
+
+    setIsSaving(true)
     try {
-      // Combine date and time
       const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
+      if (isNaN(combinedDateTime.getTime())) {
+        return toast.error("Please enter a valid date and time")
+      }
 
       await addTransaction({
         ...data,
@@ -95,7 +221,7 @@ export const AddTransactionModal = ({
       router.refresh()
       setOpen(false)
 
-      // Clear data
+      // Reset
       setData({
         id: undefined,
         businessId: "",
@@ -103,15 +229,41 @@ export const AddTransactionModal = ({
         date: format(new Date(), "yyyy-MM-dd"),
         time: format(new Date(), "HH:mm"),
         description: "",
-        mode: PaymentMode.CASH,
-        direction,
         partyId: partyId || null,
+        fromAccountId: "",
+        toAccountId: "",
         userId: "",
       })
+      setMoneyAccountId("")
+      setPartnerAccountId("")
     } catch (error) {
       toast.error("Failed to save transaction")
+    } finally {
+      setIsSaving(false)
     }
   }
+
+  // Filtering Logic
+  const moneyAccounts = allAccounts.filter(a => a.type === FinancialAccountType.MONEY)
+
+  const partnerOptions = allAccounts.filter(acc => {
+    if (mode === 'PARTY') return false // Partner is fixed
+    if (mode === 'ACCOUNT') {
+      // Show list of accounts where partyId is null, except current
+      return acc.partyId === null && acc.id !== (isOut ? moneyAccountId : accountId)
+    }
+    if (mode === 'CASHBOOK') {
+      const targetCat = isOut ? CategoryType.EXPENSE : CategoryType.INCOME
+      return acc.type === FinancialAccountType.CATEGORY && acc.categoryType === targetCat
+    }
+    return true
+  })
+
+  // Labels
+  const moneyLabel = isOut ? "Pay From Account" : "Receive In Account"
+  const partnerLabel = mode === 'ACCOUNT'
+    ? (isOut ? "Transfer To" : "Transfer From")
+    : (isOut ? "Payment For (Category)" : "Source (Category)")
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -149,7 +301,9 @@ export const AddTransactionModal = ({
               </div>
               <div>
                 <SheetTitle className="text-xl font-black tracking-tight">{title}</SheetTitle>
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Recording new entry</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                  {mode} ENTRY
+                </p>
               </div>
             </div>
           </SheetHeader>
@@ -194,7 +348,7 @@ export const AddTransactionModal = ({
                     <PopoverTrigger>
                       <Button
                         variant="outline"
-                        className="h-14 w-full justify-between rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:hover:border-primary/50 transition-all"
+                        className="h-14 w-full justify-between rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all"
                       >
                         {format(new Date(data.date), "dd MMM yyyy")}
                         <ChevronDownIcon size={16} className="text-muted-foreground" />
@@ -229,34 +383,92 @@ export const AddTransactionModal = ({
                   />
                 </motion.div>
 
-                {/* Payment Mode */}
-                <motion.div variants={itemVariants} className="space-y-2">
-                  <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
-                    <Wallet size={12} /> Mode
-                  </Label>
-                  <Select
-                    value={data.mode}
-                    onValueChange={(val) => setData({ ...data, mode: val as PaymentMode })}
-                  >
-                    <SelectTrigger className="h-14 rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl shadow-xl">
-                      <SelectItem value={PaymentMode.CASH}>Cash Payment</SelectItem>
-                      <SelectItem value={PaymentMode.ONLINE}>Online Transfer</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </motion.div>
-
-                {/* Category/Tag Placeholder */}
-                <motion.div variants={itemVariants} className="space-y-2">
-                  <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
-                    <Info size={12} /> Type
-                  </Label>
-                  <div className="h-14 flex items-center px-4 rounded-2xl border-2 border-dashed bg-muted/10 text-muted-foreground font-bold opacity-60">
-                    {isOut ? "General Expense" : "Direct Income"}
+                {/* Advanced Controls Toggle */}
+                <motion.div variants={itemVariants} className="col-span-full pt-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-px flex-1 bg-border/40" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAccountControls(!showAccountControls)}
+                      className="rounded-xl px-4 py-1.5 h-auto text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-primary hover:bg-primary/5 transition-all"
+                    >
+                      {showAccountControls ? "Hide Account Details" : "Adjust Accounts"}
+                    </Button>
+                    <div className="h-px flex-1 bg-border/40" />
                   </div>
                 </motion.div>
+
+                <AnimatePresence>
+                  {showAccountControls && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="col-span-full space-y-6 overflow-hidden"
+                    >
+                      {/* Money Account Selection */}
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
+                          <Wallet size={12} /> {moneyLabel}
+                        </Label>
+                        <Select
+                          value={moneyAccountId}
+                          onValueChange={(val) => val && setMoneyAccountId(val)}
+                        >
+                          <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
+                            <SelectValue placeholder="Choose Account">
+                              {allAccounts.find(a => a.id === moneyAccountId)?.name}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
+                            {moneyAccounts.map(acc => (
+                              <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/10 rounded-xl cursor-pointer">
+                                <div className="flex justify-between items-center w-full gap-4">
+                                  <span>{acc.name}</span>
+                                  <span className="text-xs font-bold tabular-nums text-muted-foreground">
+                                    ₹{acc.balance.toLocaleString()}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Partner Account Selection (Category/Transfer) */}
+                      {mode !== 'PARTY' && (
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
+                            <Wallet size={12} /> {partnerLabel}
+                          </Label>
+                          <Select
+                            value={partnerAccountId}
+                            onValueChange={(val) => val && setPartnerAccountId(val)}
+                          >
+                            <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
+                              <SelectValue placeholder="Select Category or Account">
+                                {allAccounts.find(a => a.id === partnerAccountId)?.name}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
+                              {partnerOptions.map(acc => (
+                                <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/10 rounded-xl cursor-pointer">
+                                  <div className="flex flex-col">
+                                    <span className="font-bold text-sm">{acc.name}</span>
+                                    <span className="text-[10px] text-muted-foreground/60 italic">
+                                      {acc.partyType || acc.categoryType || acc.type}
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Note */}
@@ -265,7 +477,7 @@ export const AddTransactionModal = ({
                   <Paperclip size={12} /> Description
                 </Label>
                 <Textarea
-                  placeholder="Add a remark or note..."
+                  placeholder="What is this for?"
                   value={data.description}
                   onChange={(e) => setData({ ...data, description: e.target.value })}
                   className="min-h-[100px] rounded-2xl border-2 p-4 text-base font-medium transition-all focus:border-primary focus:ring-0"
@@ -286,6 +498,7 @@ export const AddTransactionModal = ({
               </Button>
               <Button
                 onClick={handleAddTransaction}
+                disabled={loadingAccounts || isSaving}
                 className={cn(
                   "h-14 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
                   isOut
@@ -293,8 +506,17 @@ export const AddTransactionModal = ({
                     : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
                 )}
               >
-                {isOut ? "Confirm Give" : "Confirm Get"}
-                {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
+                {isSaving ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Recording...
+                  </>
+                ) : (
+                  <>
+                    {isOut ? "Confirm Pay" : "Confirm Receive"}
+                    {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
+                  </>
+                )}
               </Button>
             </div>
           </div>
@@ -303,4 +525,3 @@ export const AddTransactionModal = ({
     </>
   )
 }
-

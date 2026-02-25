@@ -1,8 +1,9 @@
+import { cache } from "react";
 import { prisma } from "./prisma";
 import { getUserSession } from "./auth";
-import { Currency, PaymentMode, ThemeMode } from "./generated/prisma/enums";
+import { Currency, ThemeMode } from "./generated/prisma/enums";
 
-export async function getUserConfig() {
+export const getUserConfig = cache(async () => {
   const session = await getUserSession()
   if (!session?.user?.id)
     return getDefaultConfig();
@@ -12,13 +13,15 @@ export async function getUserConfig() {
   });
 
   return userSettings ?? getDefaultConfig();
-}
+});
+
 
 export function getDefaultConfig() {
   return {
     currency: Currency.INR,
-    dateFormat: "DD/MM/YYYY",
-    defaultPayment: PaymentMode.CASH,
+    dateFormat: "dd/MM/yyyy",
+    timeFormat: "hh:mm a",
+    language: "en",
     theme: ThemeMode.AUTO,
   }
 }

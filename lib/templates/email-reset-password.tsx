@@ -4,104 +4,82 @@ export function getResetPasswordEmailHtml(
   email: string,
   resetUrl: string
 ): string {
+  const primaryColor = "#7c3aed";
+  const appName = envServer.NEXT_PUBLIC_APP_NAME;
+  const appUrl = envServer.BETTER_AUTH_URL;
+
   return `
   <!DOCTYPE html>
   <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Reset Password</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Reset your password</title>
   </head>
-
-  <body style="margin:0; padding:0; background:#f6f7f9; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-
-    <table width="100%" cellpadding="0" cellspacing="0" style="padding:50px 0; background:#f6f7f9;">
+  <body style="margin:0; padding:0; background-color:#f8fafc; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing:antialiased;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc; padding:40px 20px;">
       <tr>
         <td align="center">
-
-          <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 3px 12px rgba(0,0,0,0.06);">
-
-            <!-- BRAND HEADER -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px; background-color:#ffffff; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+            <!-- Header -->
             <tr>
-              <td style="background:#18181b; padding:28px 40px; text-align:center;">
-                <span style="font-size:26px; font-weight:700; color:#ffffff; letter-spacing:0.5px;">${envServer.NEXT_PUBLIC_APP_NAME}</span>
+              <td style="padding:40px 40px 20px 40px; text-align:center;">
+                <img src="${appUrl}/images/logo/light_logo.svg" alt="${appName} Logo" style="height:48px; width:auto; display:inline-block; margin-bottom:16px;" />
+                <div style="font-size:24px; font-weight:700; color:${primaryColor}; letter-spacing:-0.5px;">
+                  ${appName}
+                </div>
               </td>
             </tr>
 
-            <!-- TITLE -->
+            <!-- Content -->
             <tr>
-              <td style="padding:40px 40px 15px 40px; text-align:center;">
-                <h1 style="margin:0; font-size:24px; font-weight:600; color:#18181b;">
-                  Reset Your Password
+              <td style="padding:0 40px 40px 40px;">
+                <h1 style="margin:0 0 16px 0; font-size:24px; font-weight:700; color:#0f172a; text-align:center;">
+                  Reset your password
                 </h1>
-              </td>
-            </tr>
-
-            <!-- MAIN CONTENT -->
-            <tr>
-              <td style="padding:0 40px 35px 40px; color:#52525b; font-size:16px; line-height:26px;">
-
-                <p style="margin:0 0 18px;">
+                <p style="margin:0 0 18px 0; font-size:16px; line-height:24px; color:#475569;">
                   Hello,
                 </p>
-
-                <p style="margin:0 0 18px;">
-                  We received a request to reset the password for your ${envServer.NEXT_PUBLIC_APP_NAME} account associated with:
-                  <strong>${email}</strong>
+                <p style="margin:0 0 24px 0; font-size:16px; line-height:24px; color:#475569;">
+                  We received a request to reset the password for your ${appName} account <strong>${email}</strong>. Click the button below to choose a new password.
                 </p>
 
-                <p style="margin:0 0 28px;">
-                  Click the button below to choose a new password.
-                </p>
-
-                <!-- CTA BUTTON -->
-                <table width="100%" cellspacing="0" cellpadding="0">
+                <!-- Button -->
+                <table width="100%" cellpadding="0" cellspacing="0">
                   <tr>
-                    <td align="center" style="padding-bottom:28px;">
-                      <a href="${resetUrl}" style="display:inline-block; padding:14px 36px; background:#18181b; color:#ffffff; border-radius:6px; text-decoration:none; font-size:16px; font-weight:500;">
+                    <td align="center" style="padding:10px 0 30px 0;">
+                      <a href="${resetUrl}" style="display:inline-block; padding:14px 32px; background-color:${primaryColor}; color:#ffffff; text-decoration:none; border-radius:12px; font-size:16px; font-weight:600; box-shadow:0 4px 10px rgba(124, 58, 237, 0.25);">
                         Reset Password
                       </a>
                     </td>
                   </tr>
                 </table>
 
-                <!-- URL -->
-                <p style="margin:0 0 14px; font-size:14px; color:#71717a;">
-                  Or paste this link into your browser:
+                <p style="margin:0 0 12px 0; font-size:14px; color:#64748b; text-align:center;">
+                  Or copy and paste this link into your browser:
                 </p>
-
-                <p style="margin:0 0 24px; font-size:14px; color:#2563eb; word-break:break-all;">
+                <div style="padding:12px; background-color:#f1f5f9; border-radius:8px; font-size:12px; color:${primaryColor}; word-break:break-all; text-align:center; font-family:monospace;">
                   ${resetUrl}
+                </div>
+                
+                <p style="margin:30px 0 0 0; font-size:14px; line-height:20px; color:#94a3b8; text-align:center;">
+                  This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.
                 </p>
-
-                <!-- NOTES -->
-                <p style="margin:0 0 14px; font-size:14px; color:#71717a;">
-                  This link will expire in 1 hour for security purposes.
-                </p>
-
-                <p style="margin:0; font-size:14px; color:#71717a;">
-                  If you didn’t request this password reset, you can safely ignore this email.
-                </p>
-
               </td>
             </tr>
 
-            <!-- FOOTER -->
+            <!-- Footer -->
             <tr>
-              <td style="padding:24px 40px; background:#fafafa; border-top:1px solid #e5e7eb;">
-                <p style="margin:0; font-size:12px; color:#9ca3af; text-align:center; line-height:18px;">
-                  © ${new Date().getFullYear()} ${envServer.NEXT_PUBLIC_APP_NAME}. All rights reserved.<br/>
-                  This is an automated message—please do not reply.
+              <td style="padding:32px 40px; background-color:#f8fafc; border-top:1px solid #e2e8f0; border-bottom-left-radius:16px; border-bottom-right-radius:16px; text-align:center;">
+                <p style="margin:0; font-size:12px; color:#94a3b8; line-height:18px;">
+                  © ${new Date().getFullYear()} ${appName}. All rights reserved.
                 </p>
               </td>
             </tr>
-
           </table>
-
         </td>
       </tr>
     </table>
-
   </body>
   </html>
   `.trim();

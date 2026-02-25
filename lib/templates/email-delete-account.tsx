@@ -4,6 +4,10 @@ export function getDeleteAccountEmailHtml(
   email: string,
   deleteUrl: string
 ): string {
+  const primaryColor = "#dc2626"; // Red for deletion
+  const appName = envServer.NEXT_PUBLIC_APP_NAME;
+  const appUrl = envServer.BETTER_AUTH_URL;
+
   return `
   <!DOCTYPE html>
   <html lang="en">
@@ -12,107 +16,77 @@ export function getDeleteAccountEmailHtml(
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Confirm Account Deletion</title>
   </head>
-  <body style="margin:0; padding:0; background:#f6f7f9; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f6f7f9; padding:50px 0;">
+  <body style="margin:0; padding:0; background-color:#f8fafc; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing:antialiased;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc; padding:40px 20px;">
       <tr>
         <td align="center">
-
-          <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px; background:#ffffff; border-radius:12px; box-shadow:0 3px 12px rgba(0,0,0,0.06); overflow:hidden;">
-
-            <!-- Brand Header -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px; background-color:#ffffff; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+            <!-- Header -->
             <tr>
-              <td style="background:#18181b; padding:28px 40px; text-align:center;">
-                <span style="font-size:26px; font-weight:700; color:#ffffff; letter-spacing:0.5px;">
-                  ${envServer.NEXT_PUBLIC_APP_NAME}
-                </span>
+              <td style="padding:40px 40px 20px 40px; text-align:center;">
+                <img src="${appUrl}/images/logo/light_logo.svg" alt="${appName} Logo" style="height:48px; width:auto; display:inline-block; margin-bottom:16px;" />
+                <div style="font-size:24px; font-weight:700; color:#0f172a; letter-spacing:-0.5px;">
+                  ${appName}
+                </div>
               </td>
             </tr>
 
-            <!-- Title -->
+            <!-- Content -->
             <tr>
-              <td style="padding:40px 40px 10px 40px; text-align:center;">
-                <h1 style="margin:0; font-size:24px; font-weight:600; color:#18181b;">
+              <td style="padding:0 40px 40px 40px;">
+                <h1 style="margin:0 0 16px 0; font-size:24px; font-weight:700; color:#0f172a; text-align:center;">
                   Confirm Account Deletion
                 </h1>
-              </td>
-            </tr>
-
-            <!-- Body Content -->
-            <tr>
-              <td style="padding:0 40px 35px 40px; color:#52525b; font-size:16px; line-height:26px;">
-                <p style="margin:0 0 18px;">
+                <p style="margin:0 0 18px 0; font-size:16px; line-height:24px; color:#475569;">
                   Hi,
                 </p>
-
-                <p style="margin:0 0 18px;">
-                  A request was made to <strong>permanently delete</strong> the ${envServer.NEXT_PUBLIC_APP_NAME} account associated with:
-                  <br />
-                  <strong>${email}</strong>
+                <p style="margin:0 0 18px 0; font-size:16px; line-height:24px; color:#475569;">
+                  A request was made to <strong>permanently delete</strong> the ${appName} account associated with: <strong>${email}</strong>
+                </p>
+                <p style="margin:0 0 24px 0; font-size:16px; line-height:24px; color:#ef4444; background-color:#fef2f2; padding:16px; border-radius:12px; border:1px solid #fee2e2;">
+                  <strong>⚠️ Warning:</strong> This action is irreversible. All your data, businesses, transactions, and settings will be permanently removed.
+                </p>
+                <p style="margin:0 0 24px 0; font-size:16px; line-height:24px; color:#475569; text-align:center;">
+                  If you’re sure you want to continue, click the button below.
                 </p>
 
-                <p style="margin:0 0 18px; color:#b91c1c;">
-                  ⚠️ This action is irreversible. All your data, businesses, transactions, and settings will be permanently removed.
-                </p>
-
-                <p style="margin:0 0 28px;">
-                  If you’re sure you want to continue, confirm by clicking the button below.
-                </p>
-
-                <!-- CTA Button -->
-                <table cellpadding="0" cellspacing="0" width="100%">
+                <!-- Button -->
+                <table width="100%" cellpadding="0" cellspacing="0">
                   <tr>
-                    <td align="center" style="padding-bottom:28px;">
-                      <a href="${deleteUrl}"
-                        style="
-                          display:inline-block;
-                          padding:14px 36px;
-                          background:#dc2626;
-                          color:#ffffff;
-                          text-decoration:none;
-                          border-radius:6px;
-                          font-size:16px;
-                          font-weight:500;
-                        ">
+                    <td align="center" style="padding:10px 0 30px 0;">
+                      <a href="${deleteUrl}" style="display:inline-block; padding:14px 32px; background-color:${primaryColor}; color:#ffffff; text-decoration:none; border-radius:12px; font-size:16px; font-weight:600; box-shadow:0 4px 10px rgba(220, 38, 38, 0.25);">
                         Delete Account Permanently
                       </a>
                     </td>
                   </tr>
                 </table>
 
-                <p style="margin:0 0 14px; font-size:14px; color:#71717a;">
+                <p style="margin:0 0 12px 0; font-size:14px; color:#64748b; text-align:center;">
                   Or paste this link into your browser:
                 </p>
-
-                <p style="margin:0 0 24px; font-size:14px; color:#2563eb; word-break:break-all;">
+                <div style="padding:12px; background-color:#f1f5f9; border-radius:8px; font-size:12px; color:#2563eb; word-break:break-all; text-align:center; font-family:monospace;">
                   ${deleteUrl}
-                </p>
-
-                <p style="margin:0 0 14px; font-size:14px; color:#71717a;">
-                  This confirmation link will expire in 1 hour.
-                </p>
-
-                <p style="margin:0; font-size:14px; color:#71717a;">
-                  If you did not request account deletion, you can safely ignore this email and your account will remain active.
+                </div>
+                
+                <p style="margin:30px 0 0 0; font-size:14px; line-height:20px; color:#94a3b8; text-align:center;">
+                  This link will expire in 1 hour. If you didn't request deletion, you can safely ignore this email.
                 </p>
               </td>
             </tr>
 
             <!-- Footer -->
             <tr>
-              <td style="padding:24px 40px; background:#fafafa; border-top:1px solid #e5e7eb;">
-                <p style="margin:0; font-size:12px; line-height:18px; text-align:center; color:#9ca3af;">
-                  © ${new Date().getFullYear()} ${envServer.NEXT_PUBLIC_APP_NAME}. All rights reserved.<br/>
-                  This is an automated email—please do not reply.
+              <td style="padding:32px 40px; background-color:#f8fafc; border-top:1px solid #e2e8f0; border-bottom-left-radius:16px; border-bottom-right-radius:16px; text-align:center;">
+                <p style="margin:0; font-size:12px; color:#94a3b8; line-height:18px;">
+                  © ${new Date().getFullYear()} ${appName}. All rights reserved.
                 </p>
               </td>
             </tr>
-
           </table>
-
         </td>
       </tr>
     </table>
   </body>
   </html>
-  `.trim()
+  `.trim();
 }

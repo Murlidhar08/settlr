@@ -3,13 +3,63 @@
 // Lib
 import { prisma } from "@/lib/prisma";
 import { getUserSession } from "@/lib/auth";
-import { Transaction } from "@/lib/generated/prisma/client";
+import { Transaction, Prisma } from "@/lib/generated/prisma/client";
+import { MoneyType, FinancialAccountType, CategoryType } from "@/lib/generated/prisma/enums";
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache";
 
-export async function addTransaction(transactionData: Transaction, pathToRevalidate?: string) {
+export async function addTransaction(transactionData: any, pathToRevalidate?: string) {
   const session = await getUserSession();
-  let result
+
+  if (!session?.user.activeBusinessId) {
+    throw new Error("No active business found in session");
+  }
+
+  const businessId = session.user.activeBusinessId;
+  const userId = session.user.id;
+
+  // Validation
+  if (!transactionData.amount) throw new Error("Amount is required");
+  if (!transactionData.fromAccountId) throw new Error("Source account is required");
+  if (!transactionData.toAccountId) throw new Error("Destination account is required");
+
+  // Fetch accounts to validate business and types
+  const [fromAccount, toAccount] = await Promise.all([
+    prisma.financialAccount.findUnique({ where: { id: transactionData.fromAccountId } }),
+    prisma.financialAccount.findUnique({ where: { id: transactionData.toAccountId } })
+  ]);
+
+  if (!fromAccount || !toAccount) throw new Error("One or both accounts not found");
+
+  // 1. BUSINESS ISOLATION
+  if (fromAccount.businessId !== businessId || toAccount.businessId !== businessId) {
+    throw new Error("Cross-business transactions are strictly prohibited.");
+  }
+
+  // 2. ACTIVE CHECK
+  if (!fromAccount.isActive || !toAccount.isActive) {
+    throw new Error("Cannot perform transactions with inactive accounts.");
+  }
+
+  // 3. CATEGORY TO CATEGORY RESTRICTION
+  if (fromAccount.type === FinancialAccountType.CATEGORY && toAccount.type === FinancialAccountType.CATEGORY) {
+    if (fromAccount.categoryType !== CategoryType.ADJUSTMENT && toAccount.categoryType !== CategoryType.ADJUSTMENT) {
+      throw new Error("Direct Category to Category transfers are only allowed for Adjustments.");
+    }
+  }
+
+  if (transactionData.partyId) {
+    const party = await prisma.party.findUnique({ where: { id: transactionData.partyId } });
+    if (!party?.isActive) throw new Error("Cannot perform transactions with an inactive party.");
+    if (party.businessId !== businessId) throw new Error("Party does not belong to this business.");
+  }
+
+  let result;
+
+  // Handle Invalid Date
+  const finalDate = (transactionData.date && !isNaN(new Date(transactionData.date).getTime()))
+    ? new Date(transactionData.date)
+    : new Date();
 
   // If id exists and not zero -> update
   if (!!transactionData.id) {
@@ -18,51 +68,61 @@ export async function addTransaction(transactionData: Transaction, pathToRevalid
         id: transactionData.id,
       },
       data: {
-        businessId: transactionData.businessId,
-        amount: transactionData.amount,
-        date: transactionData.date,
-        description: transactionData.description,
-        mode: transactionData.mode,
-        direction: transactionData.direction,
-        partyId: transactionData.partyId,
-        userId: transactionData.userId,
+        amount: new Prisma.Decimal(transactionData.amount),
+        date: finalDate,
+        description: transactionData.description || null,
+        business: { connect: { id: businessId } },
+        user: { connect: { id: userId } },
+        fromAccount: { connect: { id: transactionData.fromAccountId } },
+        toAccount: { connect: { id: transactionData.toAccountId } },
+        party: transactionData.partyId
+          ? { connect: { id: transactionData.partyId } }
+          : { disconnect: true }
       },
     });
   }
 
   // Else -> create
   else {
+    const createData: any = {
+      amount: new Prisma.Decimal(transactionData.amount),
+      date: finalDate,
+      description: transactionData.description || null,
+      business: { connect: { id: businessId } },
+      user: { connect: { id: userId } },
+      fromAccount: { connect: { id: transactionData.fromAccountId } },
+      toAccount: { connect: { id: transactionData.toAccountId } },
+    };
+
+    if (transactionData.partyId) {
+      createData.party = { connect: { id: transactionData.partyId } };
+    }
+
     result = await prisma.transaction.create({
-      data: {
-        businessId: session?.session.activeBusinessId || "",
-        amount: transactionData.amount,
-        date: transactionData.date,
-        description: transactionData.description,
-        mode: transactionData.mode,
-        direction: transactionData.direction,
-        partyId: transactionData.partyId,
-        userId: session?.user.id || "",
-      },
+      data: createData,
     });
   }
 
   if (pathToRevalidate)
     revalidatePath(pathToRevalidate)
 
-  return result;
+  return {
+    ...result,
+    amount: Number(result.amount)
+  };
 }
 
 export async function deleteTransaction(transactionId: string, partyId?: string) {
   const session = await getUserSession()
 
-  if (!session?.session.activeBusinessId) {
+  if (!session?.user.activeBusinessId) {
     throw new Error("Unauthorized")
   }
 
   await prisma.transaction.delete({
     where: {
       id: transactionId,
-      businessId: session.session.activeBusinessId,
+      businessId: session.user.activeBusinessId,
     },
   })
 
@@ -76,7 +136,7 @@ export async function deleteTransaction(transactionId: string, partyId?: string)
 
 export async function getRecentTransactions() {
   const session = await getUserSession();
-  let businessId = session?.session.activeBusinessId;
+  let businessId = session?.user.activeBusinessId;
 
   if (!businessId && session?.user.id) {
     const business = await prisma.business.findFirst({
@@ -88,7 +148,7 @@ export async function getRecentTransactions() {
 
   if (!businessId) return [];
 
-  return await prisma.transaction.findMany({
+  const transactions = await prisma.transaction.findMany({
     where: {
       businessId: businessId,
     },
@@ -100,8 +160,19 @@ export async function getRecentTransactions() {
       party: {
         select: { name: true },
       },
+      fromAccount: {
+        select: { name: true, type: true }
+      },
+      toAccount: {
+        select: { name: true, type: true }
+      }
     },
   });
+
+  return transactions.map(tx => ({
+    ...tx,
+    amount: Number(tx.amount)
+  }));
 }
 
 export async function getCashbookTransactions(filters: {
@@ -111,7 +182,7 @@ export async function getCashbookTransactions(filters: {
   endDate?: string;
 }) {
   const session = await getUserSession();
-  let businessId = session?.session.activeBusinessId;
+  let businessId = session?.user.activeBusinessId;
 
   if (!businessId && session?.user.id) {
     const business = await prisma.business.findFirst({
@@ -125,14 +196,19 @@ export async function getCashbookTransactions(filters: {
 
   const where: any = {
     businessId,
-    partyId: null, // Cashbook transactions are those without a party
   };
 
-  // Category filter (Cash/Online)
-  if (filters.category === "Cash") {
-    where.mode = "CASH";
-  } else if (filters.category === "Online") {
-    where.mode = { not: "CASH" };
+  // Category filter (Cash/Online) - Based on Account MoneyType
+  if (filters.category === MoneyType.CASH) {
+    where.OR = [
+      { fromAccount: { moneyType: MoneyType.CASH } },
+      { toAccount: { moneyType: MoneyType.CASH } }
+    ];
+  } else if (filters.category === MoneyType.ONLINE) {
+    where.OR = [
+      { fromAccount: { moneyType: MoneyType.ONLINE } },
+      { toAccount: { moneyType: MoneyType.ONLINE } }
+    ];
   }
 
   // Date range filter
@@ -159,28 +235,26 @@ export async function getCashbookTransactions(filters: {
     ].filter(Boolean);
   }
 
-  const [transactions, stats] = await Promise.all([
-    prisma.transaction.findMany({
-      where,
-      orderBy: [
-        { date: "desc" },
-        { createdAt: "desc" },
-      ],
-    }),
-    prisma.transaction.groupBy({
-      by: ['direction'],
-      where,
-      _sum: { amount: true }
-    })
-  ]);
+  const transactions = await prisma.transaction.findMany({
+    where,
+    orderBy: [
+      { date: "desc" },
+      { createdAt: "desc" },
+    ],
+    include: {
+      fromAccount: { select: { name: true, type: true } },
+      toAccount: { select: { name: true, type: true } },
+      party: { select: { name: true } }
+    }
+  });
 
   let totalIn = 0;
   let totalOut = 0;
 
-  stats.forEach(stat => {
-    const amount = stat._sum.amount ? stat._sum.amount.toNumber() : 0;
-    if (stat.direction === "IN") totalIn += amount;
-    else totalOut += amount;
+  transactions.forEach(tx => {
+    const amount = Number(tx.amount);
+    if (tx.toAccount.type === FinancialAccountType.MONEY) totalIn += amount;
+    if (tx.fromAccount.type === FinancialAccountType.MONEY) totalOut += amount;
   });
 
   return {
@@ -200,24 +274,16 @@ export async function getPartyStatement(partyId: string, filters: {
   endDate?: string;
 }) {
   const session = await getUserSession();
-  const businessId = session?.session.activeBusinessId || "";
+  const businessId = session?.user.activeBusinessId || "";
 
   const where: any = {
     businessId,
     partyId,
   };
 
-  // Mode filter
-  if (filters.mode === "Cash") {
-    where.mode = "CASH";
-  } else if (filters.mode === "Online") {
-    where.mode = { not: "CASH" };
-  }
+  // Mode filter removed as mode column is gone
 
-  // Direction filter
-  if (filters.direction === "IN" || filters.direction === "OUT") {
-    where.direction = filters.direction;
-  }
+  // No more direction filter on DB level, we handle it if needed elsewhere
 
   // Date range filter
   if (filters.startDate || filters.endDate) {
@@ -237,14 +303,64 @@ export async function getPartyStatement(partyId: string, filters: {
   const transactions = await prisma.transaction.findMany({
     where,
     orderBy: { date: "desc" },
+    include: {
+      fromAccount: { select: { name: true, type: true } },
+      toAccount: { select: { name: true, type: true } }
+    }
   });
 
   const party = await prisma.party.findUnique({
     where: { id: partyId },
+    include: {
+      financialAccounts: {
+        select: { partyType: true },
+        take: 1
+      }
+    }
+  });
+
+  const partyWithTyped = party ? {
+    ...party,
+    type: party.financialAccounts[0]?.partyType
+  } : null;
+
+  return {
+    party: partyWithTyped,
+    transactions: transactions.map(tx => ({ ...tx, amount: Number(tx.amount) })),
+  };
+}
+
+export async function getAccountTransactions(accountId: string) {
+  const session = await getUserSession();
+  const businessId = session?.user.activeBusinessId || "";
+
+  const account = await prisma.financialAccount.findUnique({
+    where: { id: accountId, businessId },
+  });
+
+  if (!account) {
+    throw new Error("Account not found");
+  }
+
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      businessId,
+      OR: [
+        { fromAccountId: accountId },
+        { toAccountId: accountId },
+      ],
+    },
+    orderBy: { date: "desc" },
+    include: {
+      fromAccount: { select: { name: true, type: true } },
+      toAccount: { select: { name: true, type: true } },
+      party: { select: { name: true } }
+    }
   });
 
   return {
-    party,
+    account,
+    totalTransactions: transactions.length,
     transactions: transactions.map(tx => ({ ...tx, amount: Number(tx.amount) })),
   };
 }

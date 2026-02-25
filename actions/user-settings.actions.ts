@@ -3,7 +3,7 @@
 import packageJson from "@/package.json"
 import { prisma } from "@/lib/prisma";
 import { auth, getUserSession } from "@/lib/auth";
-import { Currency, PaymentMode, ThemeMode } from "@/lib/generated/prisma/enums";
+import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { UserSettingsInput } from "@/types/user/UserSettingsInput";
@@ -18,8 +18,9 @@ export async function upsertUserSettings(data: UserSettingsInput) {
     create: {
       userId: userId,
       currency: data.currency ?? Currency.INR,
-      dateFormat: data.dateFormat ?? "DD/MM/YYYY",
-      defaultPayment: data.defaultPayment ?? PaymentMode.CASH,
+      dateFormat: data.dateFormat ?? "dd/MM/yyyy",
+      timeFormat: data.timeFormat ?? "hh:mm a",
+      language: data.language ?? "en",
       theme: data.theme ?? ThemeMode.AUTO,
     },
     update: {

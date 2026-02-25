@@ -2,18 +2,27 @@
 
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
-import { PaymentMode, TransactionDirection } from "@/lib/generated/prisma/enums"
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { formatAmount } from "@/utility/transaction"
+import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { getTransactionPerspective, getPartyTransactionPerspective, getBusinessTransactionPerspective } from "@/lib/transaction-logic"
 
 interface TransactionProp {
   transactionId: string,
   title: string,
   subtitle: string,
   amount: string,
-  mode: PaymentMode
-  type: TransactionDirection
+  accountId?: string | null,
+  accountType?: string | null,
+  fromAccountId: string,
+  toAccountId: string,
+  fromAccount?: string,
+  toAccount?: string,
+  fromAccountType?: string,
+  toAccountType?: string,
+  partyName?: string,
 }
 
 const TransactionItem = ({
@@ -21,10 +30,26 @@ const TransactionItem = ({
   title,
   subtitle,
   amount,
-  type,
-  mode,
+  accountId,
+  accountType,
+  fromAccountId,
+  toAccountId,
+  fromAccount,
+  toAccount,
+  fromAccountType,
+  toAccountType,
+  partyName,
 }: TransactionProp) => {
-  const isIn = type === TransactionDirection.IN
+  // Determine direction based on the current context account using unified logic
+  const direction = accountId
+    ? (accountType === "PARTY"
+      ? getPartyTransactionPerspective(toAccountId, fromAccountId, accountId)
+      : getTransactionPerspective(toAccountId, fromAccountId, accountId))
+    : getBusinessTransactionPerspective(toAccountType, fromAccountType);
+
+  const isIn = direction === TransactionDirection.IN;
+
+  const displayTitle = title || partyName || (isIn ? "Payment Received" : "Payment Sent");
 
   return (
     <Link href={`/transactions/${transactionId}`} className="block p-1 outline-none group">
@@ -48,23 +73,34 @@ const TransactionItem = ({
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="truncate text-sm font-bold lg:text-base text-foreground">
-              {title || (isIn ? "Payment Received" : "Payment Sent")}
-            </p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{mode}</span>
-              <span className="text-xs text-muted-foreground">{subtitle}</span>
+            <div className="flex items-center gap-2 mb-0.5">
+              <p className="truncate text-sm font-bold lg:text-base text-foreground">
+                {displayTitle}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+
+              {(fromAccount || toAccount) && (
+                <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground/70">
+                  <span className="truncate max-w-[80px]">{fromAccount || "Unknown"}</span>
+                  <ArrowRight size={10} className="opacity-50" />
+                  <span className="truncate max-w-[80px] font-bold text-foreground/60">{toAccount || "Unknown"}</span>
+                </div>
+              )}
+
+              <span className="text-[10px] text-muted-foreground/60 ml-auto">{subtitle}</span>
             </div>
           </div>
 
-          <div className="shrink-0 text-right mr-2">
+          <div className="shrink-0 text-right mr-2 ml-4">
             <p
               className={cn(
                 "text-base font-extrabold lg:text-lg tabular-nums",
                 isIn ? "text-emerald-600" : "text-rose-600"
               )}
             >
-              {amount}
+              {formatAmount(Number(amount.replace(/[^0-9.-]+/g, "")), undefined, true, isIn ? 'IN' : 'OUT')}
             </p>
           </div>
         </Card>
