@@ -1,5 +1,6 @@
-import { PageSkeleton } from "@/components/ui/page-skeleton";
+import { LoadingScreen } from "@/components/loading-screen";
 
 export default function Loading() {
-    return <PageSkeleton />;
+    return <LoadingScreen />;
 }
+
