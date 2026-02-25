@@ -1,6 +1,5 @@
 // Component
 import SummaryCard from "./components/summary-card";
-import { Header } from "@/components/header";
 import SwitchBusiness from "./components/business-switch";
 
 // Actions
@@ -16,7 +15,6 @@ export default async function Page() {
 
   return (
     <div className="w-full">
-      <Header title={t("dashboard.title", language)} />
 
       <div className="px-4">
         <div className="my-4">

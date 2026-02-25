@@ -6,6 +6,7 @@ import { getUserSession } from "@/lib/auth";
 
 // Components
 import { Sidebar } from "@/components/sidebar";
+import { AppHeader } from "@/components/app-header";
 import { getDefaultConfig, getUserConfig } from "@/lib/user-config";
 import { UserConfigProvider } from "@/components/providers/user-config-provider";
 import { LayoutTransitions } from "@/components/layout-transitions";
@@ -28,9 +29,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Sidebar />
 
           {/* Main Content */}
-          <LayoutTransitions>
-            {children}
-          </LayoutTransitions>
+          <div className="flex-1 flex flex-col min-w-0 h-full">
+            <AppHeader />
+            <div className="flex-1 flex flex-col overflow-y-auto">
+              <LayoutTransitions>
+                {children}
+              </LayoutTransitions>
+            </div>
+          </div>
+
         </div>
       </div>
     </UserConfigProvider>

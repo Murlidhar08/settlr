@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Header } from "@/components/header";
 import CashSummary from "./components/cash-summary";
 import CashFilters from "./components/cash-filters";
 import { CashbookList } from "./components/cashbook-list";
@@ -75,7 +74,6 @@ async function CashbookContent({
 
   return (
     <div className="w-full bg-background pb-28">
-      <Header title={t("cashbook.title", config.language)} />
 
       <div className="mx-auto w-full max-w-4xl px-6 pb-32">
         <CashSummary totalIn={totalIn} totalOut={totalOut} currency={config.currency} />
