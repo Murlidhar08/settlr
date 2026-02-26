@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils"
 
 // Types
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { ModalMode } from "@/types/transaction/ModalMode"
 
 interface TransactionProps {
   title: string
@@ -40,8 +41,6 @@ interface TransactionProps {
   direction?: TransactionDirection
   path?: string
 }
-
-type ModalMode = 'PARTY' | 'CASHBOOK' | 'ACCOUNT'
 
 export const AddTransactionModal = ({
   title,
@@ -56,9 +55,6 @@ export const AddTransactionModal = ({
   const [dateOpen, setDateOpen] = useState(false)
   const [allAccounts, setAllAccounts] = useState<(FinancialAccount & { balance: number })[]>([])
   const [loadingAccounts, setLoadingAccounts] = useState(false)
-  const [showAccountControls, setShowAccountControls] = useState(false)
-
-  const router = useRouter()
   const isOut = direction === TransactionDirection.OUT;
 
   // Selected IDs
@@ -79,7 +75,7 @@ export const AddTransactionModal = ({
   })
 
   // Mode Detection
-  const [mode, setMode] = useState<ModalMode>('CASHBOOK')
+  const [mode, setMode] = useState<ModalMode>(ModalMode.CASHBOOK)
 
   useEffect(() => {
     if (open) {
@@ -111,7 +107,7 @@ export const AddTransactionModal = ({
             }
           } else {
             // New Transaction Logic
-            let inferredMode: ModalMode = 'CASHBOOK'
+            let inferredMode: ModalMode = ModalMode.CASHBOOK
             let initialMoneyAcc = ""
             let initialPartnerAcc = ""
 
@@ -119,19 +115,19 @@ export const AddTransactionModal = ({
             const partyAcc = partyId ? accs.find(a => a.partyId === partyId) : null
 
             if (partyId || (currentAcc && currentAcc.type === FinancialAccountType.PARTY)) {
-              inferredMode = 'PARTY'
+              inferredMode = ModalMode.PARTY
               const partyAccount = partyAcc || currentAcc
               initialPartnerAcc = partyAccount?.id || ""
               initialMoneyAcc = accs.find(a => a.type === FinancialAccountType.MONEY)?.id || ""
             }
             else if (currentAcc && currentAcc.type === FinancialAccountType.MONEY) {
-              inferredMode = 'ACCOUNT'
+              inferredMode = ModalMode.ACCOUNT
               initialMoneyAcc = currentAcc.id
               // Default partner is any other non-party account
               initialPartnerAcc = accs.find(a => a.id !== currentAcc.id && a.partyId === null)?.id || ""
             }
             else {
-              inferredMode = 'CASHBOOK'
+              inferredMode = ModalMode.CASHBOOK
               const moneyAccs = accs.filter(a => a.type === FinancialAccountType.MONEY)
               initialMoneyAcc = moneyAccs[0]?.id || ""
 
@@ -189,10 +185,10 @@ export const AddTransactionModal = ({
     let from = ""
     let to = ""
 
-    if (mode === 'PARTY') {
+    if (mode === ModalMode.PARTY) {
       from = isOut ? moneyAccountId : partnerAccountId
       to = isOut ? partnerAccountId : moneyAccountId
-    } else if (mode === 'ACCOUNT') {
+    } else if (mode === ModalMode.ACCOUNT) {
       from = isOut ? moneyAccountId : partnerAccountId
       to = isOut ? partnerAccountId : moneyAccountId
     } else {
@@ -286,14 +282,13 @@ export const AddTransactionModal = ({
 
   // Filtering Logic
   const moneyAccounts = allAccounts.filter(a => a.type === FinancialAccountType.MONEY)
-
   const partnerOptions = allAccounts.filter(acc => {
-    if (mode === 'PARTY') return false // Partner is fixed
-    if (mode === 'ACCOUNT') {
+    if (mode === ModalMode.PARTY) return false // Partner is fixed
+    if (mode === ModalMode.ACCOUNT) {
       // Show list of accounts where partyId is null, except current
       return acc.partyId === null && acc.id !== (isOut ? moneyAccountId : accountId)
     }
-    if (mode === 'CASHBOOK') {
+    if (mode === ModalMode.CASHBOOK) {
       const targetCat = isOut ? CategoryType.EXPENSE : CategoryType.INCOME
       return acc.type === FinancialAccountType.CATEGORY && acc.categoryType === targetCat
     }
@@ -302,19 +297,9 @@ export const AddTransactionModal = ({
 
   // Labels
   const moneyLabel = isOut ? "Pay From Account" : "Receive In Account"
-  const partnerLabel = mode === 'ACCOUNT'
+  const partnerLabel = mode === ModalMode.ACCOUNT
     ? (isOut ? "Transfer To" : "Transfer From")
     : (isOut ? "Payment For (Category)" : "Source (Category)")
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.04
-      }
-    }
-  }
 
   const itemVariants = {
     hidden: { opacity: 0, y: 15 },
@@ -351,7 +336,15 @@ export const AddTransactionModal = ({
 
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <motion.div
-              variants={containerVariants}
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.04
+                  }
+                }
+              }}
               initial="hidden"
               animate="visible"
               className="px-6 py-8 space-y-8"
@@ -473,7 +466,7 @@ export const AddTransactionModal = ({
                   </div>
 
                   {/* Partner Account Selection (Category/Transfer) */}
-                  {mode !== 'PARTY' && (
+                  {mode !== ModalMode.PARTY && (
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
                         <Wallet size={12} /> {partnerLabel}
