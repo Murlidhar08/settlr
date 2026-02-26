@@ -198,18 +198,7 @@ export async function getCashbookTransactions(filters: {
     businessId,
   };
 
-  // Category filter (Cash/Online) - Based on Account MoneyType
-  if (filters.category === MoneyType.CASH) {
-    where.OR = [
-      { fromAccount: { moneyType: MoneyType.CASH } },
-      { toAccount: { moneyType: MoneyType.CASH } }
-    ];
-  } else if (filters.category === MoneyType.ONLINE) {
-    where.OR = [
-      { fromAccount: { moneyType: MoneyType.ONLINE } },
-      { toAccount: { moneyType: MoneyType.ONLINE } }
-    ];
-  }
+  // Account type filter (Cash/Online) removed as mode is gone
 
   // Date range filter
   if (filters.startDate || filters.endDate) {
@@ -281,9 +270,23 @@ export async function getPartyStatement(partyId: string, filters: {
     partyId,
   };
 
-  // Mode filter removed as mode column is gone
+  // direction filter (translated to perspective in the component, but here we can handle it at DB if we know party account)
+  if (filters.direction) {
+    const partyAccount = await prisma.financialAccount.findFirst({
+      where: { partyId, businessId },
+      select: { id: true }
+    });
 
-  // No more direction filter on DB level, we handle it if needed elsewhere
+    if (partyAccount) {
+      if (filters.direction === "IN") {
+        // Perspective IN means money flows FROM Party TO Us
+        where.fromAccountId = partyAccount.id;
+      } else if (filters.direction === "OUT") {
+        // Perspective OUT means money flows FROM Us TO Party
+        where.toAccountId = partyAccount.id;
+      }
+    }
+  }
 
   // Date range filter
   if (filters.startDate || filters.endDate) {

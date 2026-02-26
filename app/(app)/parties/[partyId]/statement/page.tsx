@@ -200,7 +200,10 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
       <FooterButtons>
         <ExportPDFButton
           party={party}
-          transactions={transactions}
+          transactions={transactions.map(t => ({
+            ...t,
+            direction: getPartyTransactionPerspective(t.toAccountId, t.fromAccountId, pAccId!)
+          }))}
           totalIn={totalPaid}
           totalOut={totalReceived}
           balance={balance}
