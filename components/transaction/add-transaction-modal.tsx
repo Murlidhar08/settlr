@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 // Components
 import { Button } from "@/components/ui/button"
@@ -55,7 +56,6 @@ export const AddTransactionModal = ({
   const [dateOpen, setDateOpen] = useState(false)
   const [allAccounts, setAllAccounts] = useState<(FinancialAccount & { balance: number })[]>([])
   const [loadingAccounts, setLoadingAccounts] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
   const [showAccountControls, setShowAccountControls] = useState(false)
 
   const router = useRouter()
@@ -191,34 +191,39 @@ export const AddTransactionModal = ({
     }))
   }, [moneyAccountId, partnerAccountId, isOut, mode, allAccounts])
 
-  const handleAddTransaction = async () => {
-    if (!data.amount || isNaN(Number(data.amount))) {
-      return toast.error("Please enter a valid amount")
-    }
+  const queryClient = useQueryClient()
 
-    if (!data.fromAccountId || !data.toAccountId) {
-      return toast.error("Please select both accounts")
-    }
+  const mutation = useMutation({
+    mutationFn: async (payload: any) => {
+      return addTransaction(payload, path)
+    },
+    onMutate: async (newTx) => {
+      // Invalidate both transactions and financial accounts since balance changes
+      await queryClient.cancelQueries({ queryKey: ["transactions"] })
+      await queryClient.cancelQueries({ queryKey: ["financial-accounts"] })
 
-    setIsSaving(true)
-    try {
-      const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
-      if (isNaN(combinedDateTime.getTime())) {
-        return toast.error("Please enter a valid date and time")
-      }
+      const previousTransactions = queryClient.getQueryData(["transactions"])
+      const previousAccounts = queryClient.getQueryData(["financial-accounts"])
 
-      await addTransaction({
-        ...data,
-        amount: Number(data.amount),
-        date: combinedDateTime,
-        description: data.description || null
-      }, path)
+      // We don't necessarily update the list optimistically for transactions 
+      // because of the complex filtering, but invalidating handles it well. 
+      // For "ultra fast" feel, we can try to prepend if filters match.
 
+      return { previousTransactions, previousAccounts }
+    },
+    onError: (err, newTx, context) => {
+      queryClient.setQueryData(["transactions"], context?.previousTransactions)
+      queryClient.setQueryData(["financial-accounts"], context?.previousAccounts)
+      toast.error("Failed to save transaction")
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] })
+      queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
+    },
+    onSuccess: () => {
       toast.success("Transaction recorded successfully", {
         icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
       })
-
-      router.refresh()
       setOpen(false)
 
       // Reset
@@ -236,11 +241,29 @@ export const AddTransactionModal = ({
       })
       setMoneyAccountId("")
       setPartnerAccountId("")
-    } catch (error) {
-      toast.error("Failed to save transaction")
-    } finally {
-      setIsSaving(false)
     }
+  })
+
+  const handleAddTransaction = async () => {
+    if (!data.amount || isNaN(Number(data.amount))) {
+      return toast.error("Please enter a valid amount")
+    }
+
+    if (!data.fromAccountId || !data.toAccountId) {
+      return toast.error("Please select both accounts")
+    }
+
+    const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
+    if (isNaN(combinedDateTime.getTime())) {
+      return toast.error("Please enter a valid date and time")
+    }
+
+    mutation.mutate({
+      ...data,
+      amount: Number(data.amount),
+      date: combinedDateTime,
+      description: data.description || null
+    })
   }
 
   // Filtering Logic
@@ -498,7 +521,7 @@ export const AddTransactionModal = ({
               </Button>
               <Button
                 onClick={handleAddTransaction}
-                disabled={loadingAccounts || isSaving}
+                disabled={loadingAccounts || mutation.isPending}
                 className={cn(
                   "h-14 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
                   isOut
@@ -506,7 +529,7 @@ export const AddTransactionModal = ({
                     : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
                 )}
               >
-                {isSaving ? (
+                {mutation.isPending ? (
                   <>
                     <Loader2 className="animate-spin" size={20} />
                     Recording...

@@ -17,6 +17,7 @@ import { motion, AnimatePresence, Variants } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 interface AddAccountModalProps {
     title?: string
@@ -74,7 +75,6 @@ export const AddAccountModal = ({
         if (setOpenInternal) setOpenInternal(val)
         else setOpenState(val)
     }
-    const [loading, setLoading] = useState(false)
     const router = useRouter()
 
     const [data, setData] = useState<{
@@ -113,30 +113,61 @@ export const AddAccountModal = ({
         }
     }, [open, accountData])
 
+    const queryClient = useQueryClient()
+
+    const mutation = useMutation({
+        mutationFn: async (payload: any) => {
+            if (accountData) {
+                return updateFinancialAccount(accountData.id, payload)
+            } else {
+                return addFinancialAccount(payload)
+            }
+        },
+        onMutate: async (newAccount) => {
+            await queryClient.cancelQueries({ queryKey: ["financial-accounts"] })
+            const previousAccounts = queryClient.getQueryData(["financial-accounts"])
+
+            queryClient.setQueryData(["financial-accounts"], (old: any) => {
+                if (accountData) {
+                    return old?.map((a: any) => a.id === accountData.id ? { ...a, ...newAccount } : a)
+                }
+                return [
+                    {
+                        ...newAccount,
+                        id: `temp-${Date.now()}`,
+                        balance: 0,
+                        partyId: null,
+                        isSystem: false,
+                        isActive: true,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    },
+                    ...(old || []),
+                ]
+            })
+
+            return { previousAccounts }
+        },
+        onError: (err, newAccount, context) => {
+            queryClient.setQueryData(["financial-accounts"], context?.previousAccounts)
+            toast.error("Failed to save account")
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
+        },
+        onSuccess: () => {
+            toast.success(accountData ? "Account updated successfully" : "Account created successfully", {
+                icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            })
+            setOpen(false)
+        }
+    })
+
     const handleSave = async () => {
         if (!data.name.trim()) {
             return toast.error("Please enter account name")
         }
-
-        setLoading(true)
-        try {
-            if (accountData) {
-                await updateFinancialAccount(accountData.id, data)
-                toast.success("Account updated successfully")
-            } else {
-                await addFinancialAccount(data)
-                toast.success("Account created successfully", {
-                    icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                })
-            }
-
-            router.refresh()
-            setOpen(false)
-        } catch (error) {
-            toast.error("Failed to save account")
-        } finally {
-            setLoading(false)
-        }
+        mutation.mutate(data)
     }
 
     const containerVariants: Variants = {
@@ -297,11 +328,11 @@ export const AddAccountModal = ({
                             </Button>
                             <Button
                                 onClick={handleSave}
-                                disabled={loading}
+                                disabled={mutation.isPending}
                                 className="h-14 flex-2 rounded-2xl text-primary-foreground text-base font-black uppercase tracking-widest gap-2 shadow-xl shadow-primary/20 active:scale-[0.97] transition-all bg-primary hover:bg-primary/90"
                             >
-                                {loading ? "Saving..." : (accountData ? "Update Account" : "Create Account")}
-                                {!loading && <CheckCircle2 size={20} />}
+                                {mutation.isPending ? "Saving..." : (accountData ? "Update Account" : "Create Account")}
+                                {!mutation.isPending && <CheckCircle2 size={20} />}
                             </Button>
                         </div>
                     </div>

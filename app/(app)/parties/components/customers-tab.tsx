@@ -36,7 +36,7 @@ export default async function CustomersTab({ partyType, search }: PartyListProp)
           ))}
         </div>
       }>
-        <PartyList partyType={partyType} promise={partiesPromise} />
+        <PartyList partyType={partyType} promise={partiesPromise} search={search} />
       </Suspense>
 
       <FooterButtons>

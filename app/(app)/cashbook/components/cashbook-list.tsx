@@ -1,16 +1,14 @@
 "use client";
 
-import { use } from "react";
 import { TransactionList } from "@/components/transaction/transaction-list";
 import { motion } from "framer-motion";
-import { Transaction } from "@/lib/generated/prisma/client";
 
 interface CashbookListProps {
-    promise: Promise<any[]>;
+    transactions: any[];
 }
 
-export function CashbookList({ promise }: CashbookListProps) {
-    const transactions = use(promise);
+export function CashbookList({ transactions }: CashbookListProps) {
+
 
     if (transactions.length === 0) {
         return (

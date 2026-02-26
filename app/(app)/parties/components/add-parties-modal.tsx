@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { motion } from "framer-motion"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 /* ========================================================= */
 /* ACTIONS + TYPES */
@@ -43,14 +44,40 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
         ? "Add New Supplier"
         : "Add New Party")
 
-  const handleAddParty = async () => {
-    if (!data.name.trim()) {
-      return toast.error("Party name is required")
-    }
+  const queryClient = useQueryClient()
 
-    const success = await addParties(data)
+  const mutation = useMutation({
+    mutationFn: addParties,
+    onMutate: async (newParty) => {
+      // Cancel any outgoing refetches
+      // (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: ["parties", type] })
 
-    if (success) {
+      // Snapshot the previous value
+      const previousParties = queryClient.getQueryData(["parties", type, ""])
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(["parties", type, ""], (old: any) => [
+        {
+          ...newParty,
+          id: `temp-${Date.now()}`,
+          amount: 0,
+          profileUrl: null,
+        },
+        ...(old || []),
+      ])
+
+      // Return a context object with the snapshotted value
+      return { previousParties }
+    },
+    onError: (err, newParty, context) => {
+      queryClient.setQueryData(["parties", type, ""], context?.previousParties)
+      toast.error("Failed to add party")
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["parties", type] })
+    },
+    onSuccess: () => {
       toast.success("Party added successfully")
       setData({
         type,
@@ -59,6 +86,14 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
       })
       setOpen(false)
     }
+  })
+
+  const handleAddParty = async () => {
+    if (!data.name.trim()) {
+      return toast.error("Party name is required")
+    }
+
+    mutation.mutate(data)
   }
 
   const containerVariants = {
