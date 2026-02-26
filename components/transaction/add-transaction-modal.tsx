@@ -439,17 +439,17 @@ export const AddTransactionModal = ({
                           value={moneyAccountId}
                           onValueChange={(val) => val && setMoneyAccountId(val)}
                         >
-                          <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
+                          <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary transition-all text-foreground bg-background">
                             <SelectValue placeholder="Choose Account">
                               {allAccounts.find(a => a.id === moneyAccountId)?.name}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
                             {moneyAccounts.map(acc => (
-                              <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/10 rounded-xl cursor-pointer">
+                              <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
                                 <div className="flex justify-between items-center w-full gap-4">
                                   <span>{acc.name}</span>
-                                  <span className="text-xs font-bold tabular-nums text-muted-foreground">
+                                  <span className="text-xs font-bold tabular-nums text-muted-foreground mr-10">
                                     ₹{acc.balance.toLocaleString()}
                                   </span>
                                 </div>
@@ -476,10 +476,10 @@ export const AddTransactionModal = ({
                             </SelectTrigger>
                             <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
                               {partnerOptions.map(acc => (
-                                <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/10 rounded-xl cursor-pointer">
+                                <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
                                   <div className="flex flex-col">
                                     <span className="font-bold text-sm">{acc.name}</span>
-                                    <span className="text-[10px] text-muted-foreground/60 italic">
+                                    <span className="text-[10px] text-muted-foreground/90 italic">
                                       {acc.partyType || acc.categoryType || acc.type}
                                     </span>
                                   </div>
