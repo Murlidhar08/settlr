@@ -56,6 +56,27 @@ export const metadata: Metadata = {
     ],
     apple: "images/logo/maskable_icon_x192.png",
   },
+  openGraph: {
+    title: envClient.NEXT_PUBLIC_APP_NAME,
+    description: envClient.NEXT_PUBLIC_APP_DESCRIPTION,
+    siteName: envClient.NEXT_PUBLIC_APP_NAME,
+    images: [
+      {
+        url: '/images/og/og-banner.png',
+        width: 1200,
+        height: 630,
+        alt: `${envClient.NEXT_PUBLIC_APP_NAME} - ${envClient.NEXT_PUBLIC_APP_DESCRIPTION}`,
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: envClient.NEXT_PUBLIC_APP_NAME,
+    description: envClient.NEXT_PUBLIC_APP_DESCRIPTION,
+    images: ['/images/og/twitter-banner.png'],
+  },
 };
 
 
