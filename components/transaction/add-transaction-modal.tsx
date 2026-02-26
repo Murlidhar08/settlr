@@ -93,7 +93,7 @@ export const AddTransactionModal = ({
             setData((pre: any) => ({
               ...pre,
               ...transactionData,
-              amount: Number(transactionData.amount),
+              amount: Number(transactionData.amount).toFixed(2),
               date: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "yyyy-MM-dd"),
               time: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "HH:mm"),
             }))
@@ -156,6 +156,24 @@ export const AddTransactionModal = ({
         }
       }
       fetchAccounts()
+    } else {
+      // Reset values when modal closes
+      if (!transactionData) {
+        setData({
+          id: undefined,
+          businessId: "",
+          amount: "",
+          description: "",
+          date: format(new Date(), "yyyy-MM-dd"),
+          time: format(new Date(), "HH:mm"),
+          partyId: partyId || null,
+          fromAccountId: "",
+          toAccountId: "",
+          userId: "",
+        })
+        setMoneyAccountId("")
+        setPartnerAccountId("")
+      }
     }
   }, [open, partyId, accountId, transactionData, isOut])
 
@@ -347,8 +365,21 @@ export const AddTransactionModal = ({
                 )}>
                   <span className="text-4xl font-black mr-2 opacity-50">₹</span>
                   <input
-                    value={data.amount}
-                    onChange={(e) => setData({ ...data, amount: e.target.value })}
+                    value={(() => {
+                      if (!data.amount) return "";
+                      const parts = data.amount.toString().split('.');
+                      const integerPart = parts[0];
+                      const decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+                      const formattedInteger = integerPart ? parseInt(integerPart, 10).toLocaleString('en-IN') : integerPart === '0' ? '0' : '';
+                      return (integerPart === "" && data.amount.startsWith('.') ? "" : formattedInteger) + decimalPart;
+                    })()}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/,/g, '');
+                      // Allow only numbers and up to two decimal points
+                      if (/^\d*\.?\d{0,2}$/.test(val)) {
+                        setData({ ...data, amount: val });
+                      }
+                    }}
                     inputMode="decimal"
                     placeholder="0.00"
                     autoFocus
@@ -406,92 +437,72 @@ export const AddTransactionModal = ({
                   />
                 </motion.div>
 
-                {/* Advanced Controls Toggle */}
-                <motion.div variants={itemVariants} className="col-span-full pt-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-px flex-1 bg-border/40" />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowAccountControls(!showAccountControls)}
-                      className="rounded-xl px-4 py-1.5 h-auto text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-primary hover:bg-primary/5 transition-all"
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="col-span-full space-y-6 overflow-hidden"
+                >
+                  {/* Money Account Selection */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
+                      <Wallet size={12} /> {moneyLabel}
+                    </Label>
+                    <Select
+                      value={moneyAccountId}
+                      onValueChange={(val) => val && setMoneyAccountId(val)}
                     >
-                      {showAccountControls ? "Hide Account Details" : "Adjust Accounts"}
-                    </Button>
-                    <div className="h-px flex-1 bg-border/40" />
+                      <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary transition-all text-foreground bg-background">
+                        <SelectValue placeholder="Choose Account">
+                          {allAccounts.find(a => a.id === moneyAccountId)?.name}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
+                        {moneyAccounts.map(acc => (
+                          <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
+                            <div className="flex justify-between items-center w-full gap-4">
+                              <span>{acc.name}</span>
+                              <span className="text-xs font-bold tabular-nums text-muted-foreground mr-10">
+                                ₹{acc.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                </motion.div>
 
-                <AnimatePresence>
-                  {showAccountControls && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="col-span-full space-y-6 overflow-hidden"
-                    >
-                      {/* Money Account Selection */}
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
-                          <Wallet size={12} /> {moneyLabel}
-                        </Label>
-                        <Select
-                          value={moneyAccountId}
-                          onValueChange={(val) => val && setMoneyAccountId(val)}
-                        >
-                          <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary transition-all text-foreground bg-background">
-                            <SelectValue placeholder="Choose Account">
-                              {allAccounts.find(a => a.id === moneyAccountId)?.name}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
-                            {moneyAccounts.map(acc => (
-                              <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
-                                <div className="flex justify-between items-center w-full gap-4">
-                                  <span>{acc.name}</span>
-                                  <span className="text-xs font-bold tabular-nums text-muted-foreground mr-10">
-                                    ₹{acc.balance.toLocaleString()}
-                                  </span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Partner Account Selection (Category/Transfer) */}
-                      {mode !== 'PARTY' && (
-                        <div className="space-y-2">
-                          <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
-                            <Wallet size={12} /> {partnerLabel}
-                          </Label>
-                          <Select
-                            value={partnerAccountId}
-                            onValueChange={(val) => val && setPartnerAccountId(val)}
-                          >
-                            <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
-                              <SelectValue placeholder="Select Category or Account">
-                                {allAccounts.find(a => a.id === partnerAccountId)?.name}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
-                              {partnerOptions.map(acc => (
-                                <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
-                                  <div className="flex flex-col">
-                                    <span className="font-bold text-sm">{acc.name}</span>
-                                    <span className="text-[10px] text-muted-foreground/90 italic">
-                                      {acc.partyType || acc.categoryType || acc.type}
-                                    </span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                    </motion.div>
+                  {/* Partner Account Selection (Category/Transfer) */}
+                  {mode !== 'PARTY' && (
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
+                        <Wallet size={12} /> {partnerLabel}
+                      </Label>
+                      <Select
+                        value={partnerAccountId}
+                        onValueChange={(val) => val && setPartnerAccountId(val)}
+                      >
+                        <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
+                          <SelectValue placeholder="Select Category or Account">
+                            {allAccounts.find(a => a.id === partnerAccountId)?.name}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
+                          {partnerOptions.map(acc => (
+                            <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
+                              <div className="flex flex-col">
+                                <span className="font-bold text-sm">{acc.name}</span>
+                                <span className="text-[10px] text-muted-foreground/90 italic">
+                                  {acc.partyType || acc.categoryType || acc.type}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   )}
-                </AnimatePresence>
+                </motion.div>
               </div>
 
               {/* Note */}
