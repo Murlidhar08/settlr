@@ -44,6 +44,8 @@ export default {
         title: "पार्टियां",
         customers: "ग्राहक",
         suppliers: "आपूर्तिकर्ता",
+        employees: "कर्मचारी",
+        other: "अन्य",
     },
     cashbook: {
         title: "कैशबुक",

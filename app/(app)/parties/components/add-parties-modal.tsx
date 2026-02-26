@@ -42,7 +42,9 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
       ? "Add New Customer"
       : type === PartyType.SUPPLIER
         ? "Add New Supplier"
-        : "Add New Party")
+        : type === PartyType.EMPLOYEE
+          ? "Add New Employee"
+          : "Add New Party")
 
   const queryClient = useQueryClient()
 
@@ -193,7 +195,10 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
                 onClick={handleAddParty}
                 className="h-14 flex-[1.5] rounded-2xl bg-primary text-white shadow-xl shadow-primary/20 active:scale-[0.97] transition-all font-black uppercase tracking-widest text-base"
               >
-                Create {type === PartyType.CUSTOMER ? "Customer" : "Supplier"}
+                Create {type === PartyType.CUSTOMER ? "Customer" :
+                  type === PartyType.SUPPLIER ? "Supplier" :
+                    type === PartyType.EMPLOYEE ? "Employee" :
+                      "Party"}
               </Button>
             </div>
           </div>

@@ -44,6 +44,8 @@ export default {
         title: "Parties",
         customers: "Customers",
         suppliers: "Suppliers",
+        employees: "Employees",
+        other: "Other",
     },
     cashbook: {
         title: "Cashbook",

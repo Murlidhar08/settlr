@@ -41,50 +41,60 @@ export function PartyFilters() {
 
     return (
         <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <Tabs
-                    value={currentTab}
-                    onValueChange={(val) => updateFilters({ tab: val })}
-                    className="w-full md:w-auto"
-                >
-                    <div className="flex flex-col gap-2">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Directory Type</span>
-                        <TabsList className="grid grid-cols-2 rounded-2xl bg-muted/40 p-1 w-full md:w-[320px] border border-border/50">
-                            <TabsTrigger
-                                value="customers"
-                                className="rounded-xl font-bold uppercase tracking-widest text-[9px] data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all h-10"
-                            >
-                                {t("parties.customers", language)}
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="suppliers"
-                                className="rounded-xl font-bold uppercase tracking-widest text-[9px] data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all h-10"
-                            >
-                                {t("parties.suppliers", language)}
-                            </TabsTrigger>
-                        </TabsList>
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative w-full max-w-md"
+            >
+                <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-4">Search {currentTab}</span>
+                    <div className="relative group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 size-4 group-focus-within:text-primary transition-colors" />
+                        <Input
+                            placeholder={t("common.search_parties", language)}
+                            value={searchValue}
+                            onChange={(e) => setSearchValue(e.target.value)}
+                            className="h-12 rounded-2xl pl-11 bg-muted/30 border-2 border-transparent focus:border-primary/20 focus:bg-background transition-all shadow-sm font-medium"
+                        />
                     </div>
-                </Tabs>
+                </div>
+            </motion.div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="relative flex-1 max-w-md"
-                >
-                    <div className="flex flex-col gap-2">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-4">Search {currentTab}</span>
-                        <div className="relative group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 size-4 group-focus-within:text-primary transition-colors" />
-                            <Input
-                                placeholder={t("common.search_parties", language)}
-                                value={searchValue}
-                                onChange={(e) => setSearchValue(e.target.value)}
-                                className="h-12 rounded-2xl pl-11 bg-muted/30 border-2 border-transparent focus:border-primary/20 focus:bg-background transition-all shadow-sm font-medium"
-                            />
-                        </div>
-                    </div>
-                </motion.div>
-            </div>
+            <Tabs
+                value={currentTab}
+                onValueChange={(val) => updateFilters({ tab: val })}
+                className="w-full md:w-auto"
+            >
+                <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Directory Type</span>
+                    <TabsList className="grid grid-cols-4 rounded-2xl bg-muted/40 p-1 w-full md:w-[480px] border border-border/50">
+                        <TabsTrigger
+                            value="customers"
+                            className="rounded-xl font-bold uppercase tracking-widest text-[9px] data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all h-10"
+                        >
+                            {t("parties.customers", language)}
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="suppliers"
+                            className="rounded-xl font-bold uppercase tracking-widest text-[9px] data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all h-10"
+                        >
+                            {t("parties.suppliers", language)}
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="employees"
+                            className="rounded-xl font-bold uppercase tracking-widest text-[9px] data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all h-10"
+                        >
+                            {t("parties.employees", language)}
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="other"
+                            className="rounded-xl font-bold uppercase tracking-widest text-[9px] data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all h-10"
+                        >
+                            {t("parties.other", language)}
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
+            </Tabs>
         </div>
     )
 }

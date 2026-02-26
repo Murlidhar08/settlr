@@ -19,7 +19,11 @@ export default async function Parties({ searchParams }: PageProps) {
   const currentTab = typeof params.tab === 'string' ? params.tab : "customers";
   const searchQuery = typeof params.search === 'string' ? params.search : "";
 
-  const partyType = currentTab === "suppliers" ? PartyType.SUPPLIER : PartyType.CUSTOMER;
+  const partyType =
+    currentTab === "suppliers" ? PartyType.SUPPLIER :
+      currentTab === "employees" ? PartyType.EMPLOYEE :
+        currentTab === "other" ? PartyType.OTHER :
+          PartyType.CUSTOMER;
 
   return (
     <div className="min-h-screen bg-background">

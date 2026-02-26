@@ -44,7 +44,10 @@ export default async function CustomersTab({ partyType, search }: PartyListProp)
           <Button size="lg" className="px-12 flex-1 h-14 rounded-full font-semibold uppercase bg-primary text-white shadow-lg shadow-rose-600/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
             <Plus className="size-7" />
             <span className="hidden md:block">
-              {partyType === PartyType.CUSTOMER ? "Add Customer" : "Add Supplier"}
+              {partyType === PartyType.CUSTOMER ? "Add Customer" :
+                partyType === PartyType.SUPPLIER ? "Add Supplier" :
+                  partyType === PartyType.EMPLOYEE ? "Add Employee" :
+                    "Add Other"}
             </span>
           </Button>
         </AddPartiesModal>

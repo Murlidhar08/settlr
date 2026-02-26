@@ -19,13 +19,11 @@ export function AccountsContent({ language }: { language: string }) {
 
     const groupedAccounts = {
         [FinancialAccountType.MONEY]: accounts.filter(a => a.type === FinancialAccountType.MONEY),
-        [FinancialAccountType.PARTY]: accounts.filter(a => a.type === FinancialAccountType.PARTY),
         [FinancialAccountType.CATEGORY]: accounts.filter(a => a.type === FinancialAccountType.CATEGORY),
     };
 
     const sections = [
         { type: FinancialAccountType.MONEY, title: t("accounts.money_title", language), subtitle: t("accounts.money_subtitle", language) },
-        { type: FinancialAccountType.PARTY, title: t("accounts.party_title", language), subtitle: t("accounts.party_subtitle", language) },
         { type: FinancialAccountType.CATEGORY, title: t("accounts.business_title", language), subtitle: t("accounts.business_subtitle", language) },
     ];
 
