@@ -17,7 +17,7 @@ const withPWAConfig = withPWA({
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: "standalone",
-  compress: true, // Enable Gzip/Brotli compression
+  compress: true,
   typedRoutes: true,
   experimental: {
     optimizePackageImports: [
@@ -25,10 +25,11 @@ const nextConfig: NextConfig = {
       "date-fns",
       "framer-motion",
       "@base-ui/react",
+      "recharts",
+      "jspdf",
+      "jspdf-autotable",
+      "sonner",
     ],
-  },
-  typescript: {
-    // ignoreBuildErrors: true,
   },
   images: {
     remotePatterns: [
@@ -43,5 +44,16 @@ const nextConfig: NextConfig = {
     ],
   }
 };
+
+// let finalConfig = nextConfig;
+
+// if (process.env.ANALYZE === 'true') {
+//   finalConfig = withBundleAnalyzer(finalConfig);
+// }
+
+// // Only apply PWA in production to speed up development
+// if (process.env.NODE_ENV === 'production') {
+//   finalConfig = withPWAConfig(finalConfig);
+// }
 
 export default withBundleAnalyzer(withPWAConfig(nextConfig));

@@ -9,6 +9,9 @@ import { StatusGridSkeletons } from "./components/status-card-loading";
 import { TransactionListSkeletons } from "./components/transaction-item-skeleton";
 import { getUserConfig } from "@/lib/user-config";
 import { t } from "@/lib/languages/i18n";
+import { CashflowChart } from "./components/cashflow-chart";
+import { AccountsDistribution } from "./components/accounts-distribution";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default async function Page() {
   const { language } = await getUserConfig();
@@ -24,6 +27,16 @@ export default async function Page() {
         <Suspense fallback={<StatusGridSkeletons />}>
           <SummaryCard />
         </Suspense>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Suspense fallback={<Skeleton className="mt-8 h-[400px] w-full rounded-[2.5rem] bg-muted/40 animate-pulse" />}>
+            <CashflowChart />
+          </Suspense>
+
+          <Suspense fallback={<Skeleton className="mt-8 h-[400px] w-full rounded-[2.5rem] bg-muted/40 animate-pulse" />}>
+            <AccountsDistribution />
+          </Suspense>
+        </div>
 
         <section className="flex-1 pt-6 md:px-6">
           <div className="flex items-center justify-between pb-4">
