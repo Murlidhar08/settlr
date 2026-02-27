@@ -5,6 +5,8 @@ import { TransactionItem } from "@/components/transaction-item";
 import { TransactionRes } from "@/types/transaction/TransactionData";
 import { formatAmount, formatDate, formatTime } from "@/utility/transaction";
 import { useUserConfig } from "@/components/providers/user-config-provider";
+import { motion } from "framer-motion";
+import { Wallet2 } from "lucide-react";
 
 interface transactionListProp {
   transactions: TransactionRes[]
@@ -52,41 +54,48 @@ const TransactionList = ({ transactions, accountId, accountType }: transactionLi
   }
 
   return (
-    <div className="flex flex-col gap-4 px-1">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex flex-col gap-6 px-1"
+    >
       {/* No Records */}
       {!transactions?.length && (
-        <p className="text-sm text-slate-500">
-          No transactions yet
-        </p>
+        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground/50">
+          <Wallet2 size={40} className="mb-2 opacity-20" />
+          <p className="text-sm font-medium">No transactions yet</p>
+        </div>
       )}
 
       {/* List Of All Transactions */}
       {transactions &&
         Object.entries(groupTransactionsByDate(transactions))
-          .map(([label, transactions]) => (
+          .map(([label, groupTxs]) => (
             <TransactionGroup key={label} label={label}>
-              {transactions.map((transaction) => (
-                <TransactionItem
-                  key={transaction.id}
-                  transactionId={transaction.id}
-                  title={transaction.description || ""}
-                  subtitle={formatTime(transaction.date, timeFormat)}
-                  amount={formatAmount(transaction.amount, currency, true)}
-                  accountId={accountId}
-                  accountType={accountType}
-                  fromAccountId={transaction.fromAccountId}
-                  toAccountId={transaction.toAccountId}
-                  fromAccount={transaction.fromAccount?.name}
-                  toAccount={transaction.toAccount?.name}
-                  fromAccountType={transaction.fromAccount?.type}
-                  toAccountType={transaction.toAccount?.type}
-                  partyName={transaction.party?.name}
-                />
-              ))}
+              <div className="space-y-2 mt-2">
+                {groupTxs.map((transaction) => (
+                  <TransactionItem
+                    key={transaction.id}
+                    transactionId={transaction.id}
+                    title={transaction.description || ""}
+                    subtitle={formatTime(transaction.date, timeFormat)}
+                    amount={transaction.amount}
+                    currency={currency}
+                    accountId={accountId}
+                    accountType={accountType}
+                    fromAccountId={transaction.fromAccountId}
+                    toAccountId={transaction.toAccountId}
+                    fromAccount={transaction.fromAccount?.name}
+                    toAccount={transaction.toAccount?.name}
+                    fromAccountType={transaction.fromAccount?.type}
+                    toAccountType={transaction.toAccount?.type}
+                    partyName={transaction.party?.name}
+                  />
+                ))}
+              </div>
             </TransactionGroup>
           ))}
-
-    </div>
+    </motion.div>
   )
 }
 

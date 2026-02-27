@@ -14,6 +14,7 @@ import {
 import { authClient } from "@/lib/auth-client"
 import { useUserConfig } from "@/components/providers/user-config-provider"
 import { t } from "@/lib/languages/i18n"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 
 /* ========================================================= */
 /* TYPES */
@@ -32,8 +33,16 @@ export default function SwitchBusiness() {
   const { language } = useUserConfig()
   const router = useRouter()
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null)
-  const [businesses, setBusinesses] = useState<Business[]>([])
   const [popOpen, setPopOpen] = useState(false)
+
+  const { data: businesses = [] } = useQuery({
+    queryKey: ["businesses"],
+    queryFn: async () => {
+      const list = await getBusinessList()
+      return (list ?? []) as Business[]
+    },
+    staleTime: 1000 * 60 * 60, // Cache for 1 hour
+  })
 
   /* ========================================================= */
   /* INIT: LOAD BUSINESSES + SESSION */
@@ -41,38 +50,33 @@ export default function SwitchBusiness() {
 
   useEffect(() => {
     const init = async () => {
-      const [businessList, sessionRes] = await Promise.all([
-        getBusinessList(),
-        authClient.getSession(),
-      ])
+      if (!businesses.length) return
 
-      const list = businessList as Business[]
-      setBusinesses(list)
+      const sessionRes = await authClient.getSession()
+      const activeBusinessId = sessionRes.data?.user?.activeBusinessId
 
-      if (!list.length) return
-
-      const activeBusinessId =
-        sessionRes.data?.user?.activeBusinessId
-
-      const active =
-        list.find(b => b.id === activeBusinessId) ?? list[0]
-
+      const active = businesses.find(b => b.id === activeBusinessId) ?? businesses[0]
       setSelectedBusiness(active)
 
       // ensure backend/session is in sync
-      await switchBusiness(active.id)
+      if (activeBusinessId !== active.id) {
+        await switchBusiness(active.id)
+      }
     }
 
     init()
-  }, [])
+  }, [businesses])
 
   /* ========================================================= */
   /* HANDLERS */
   /* ========================================================= */
 
+  const queryClient = useQueryClient()
+
   const onChangeBusinessId = async (business: Business) => {
     setSelectedBusiness(business)
     await switchBusiness(business.id)
+    await queryClient.invalidateQueries()
     setPopOpen(false)
     router.refresh()
   }

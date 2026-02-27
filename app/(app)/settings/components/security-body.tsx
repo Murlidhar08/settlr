@@ -8,7 +8,7 @@ import { motion } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { LoadingSwap } from "@/components/ui/loading-swap"
-import { PasswordInput } from "@/components/ui/password-input"
+import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { BetterAuthActionButton } from "@/components/auth/better-auth-action-button"
 
@@ -142,8 +142,9 @@ function ChangePasswordForm() {
             <div className="grid gap-6">
                 <div className="space-y-2">
                     <label className="ml-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground italic">Current Password</label>
-                    <PasswordInput
+                    <Input
                         {...register("currentPassword", { required: "Required" })}
+                        type="password"
                         className="h-14 rounded-2xl bg-muted/10 border-muted-foreground/10 focus:bg-background transition-all"
                     />
                     {errors.currentPassword && <p className="ml-1 text-xs font-bold text-rose-500 italic">Please enter your current password</p>}
@@ -151,8 +152,9 @@ function ChangePasswordForm() {
 
                 <div className="space-y-2">
                     <label className="ml-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground italic">New Password</label>
-                    <PasswordInput
+                    <Input
                         {...register("newPassword", { required: "Required", minLength: 8 })}
+                        type="password"
                         className="h-14 rounded-2xl bg-muted/10 border-muted-foreground/10 focus:bg-background transition-all"
                     />
                     {errors.newPassword && <p className="ml-1 text-xs font-bold text-rose-500 italic">Must be at least 8 characters long</p>}

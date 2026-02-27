@@ -31,13 +31,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {/* Main Content */}
           <div className="flex-1 flex flex-col min-w-0 h-full">
             <AppHeader />
-            <div className="flex-1 flex flex-col overflow-y-auto">
+            <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
               <LayoutTransitions>
                 {children}
               </LayoutTransitions>
             </div>
           </div>
-
         </div>
       </div>
     </UserConfigProvider>

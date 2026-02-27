@@ -3,7 +3,6 @@
 import { Monitor, Smartphone, Trash2, Globe, ShieldQuestion } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Session } from 'better-auth'
-import { UAParser } from 'ua-parser-js'
 import { useRouter } from 'next/navigation'
 import { BetterAuthActionButton } from '@/components/auth/better-auth-action-button'
 import { authClient } from '@/lib/auth-client'
@@ -96,7 +95,31 @@ function SessionCard({
 }) {
     const { dateFormat } = useUserConfig()
     const router = useRouter()
-    const ua = session.userAgent ? UAParser(session.userAgent) : null
+    const ua = session.userAgent ? (() => {
+        const lowerUA = session.userAgent.toLowerCase();
+        const isMobile = /mobile|iphone|ipad|android|blackberry|opera mini|iemobile/i.test(lowerUA);
+        const isTablet = /tablet|ipad|playbook|silk/i.test(lowerUA);
+        
+        let browser = "Web Browser";
+        if (lowerUA.includes("firefox")) browser = "Firefox";
+        else if (lowerUA.includes("opr") || lowerUA.includes("opera")) browser = "Opera";
+        else if (lowerUA.includes("edg")) browser = "Edge";
+        else if (lowerUA.includes("chrome")) browser = "Chrome";
+        else if (lowerUA.includes("safari")) browser = "Safari";
+
+        let os = "Unknown OS";
+        if (lowerUA.includes("win")) os = "Windows";
+        else if (lowerUA.includes("mac")) os = "macOS";
+        else if (lowerUA.includes("linux")) os = "Linux";
+        else if (lowerUA.includes("android")) os = "Android";
+        else if (lowerUA.includes("iphone") || lowerUA.includes("ipad")) os = "iOS";
+
+        return {
+            device: { type: isTablet ? 'tablet' : (isMobile ? 'mobile' : 'desktop') },
+            browser: { name: browser },
+            os: { name: os }
+        };
+    })() : null;
 
     function getBrowserIcon() {
         const type = ua?.device.type;

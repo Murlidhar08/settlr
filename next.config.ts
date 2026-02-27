@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 import withPWA from '@ducanh2912/next-pwa';
+import nextBundleAnalyzer from '@next/bundle-analyzer';
+
+const withBundleAnalyzer = nextBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const withPWAConfig = withPWA({
   dest: 'public',                              // where to output SW file (in public/)
@@ -10,26 +15,28 @@ const withPWAConfig = withPWA({
 });
 
 const nextConfig: NextConfig = {
-  // output: process.platform === "win32" ? undefined : "standalone",
   reactStrictMode: true,
   output: "standalone",
+  compress: true,
   typedRoutes: true,
-  typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
-    // ignoreBuildErrors: true,
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "date-fns",
+      "framer-motion",
+      "@base-ui/react",
+      "recharts",
+      "jspdf",
+      "jspdf-autotable",
+      "sonner",
+    ],
   },
   images: {
     remotePatterns: [
-      // Google
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
       },
-
-      // Discord
       {
         protocol: "https",
         hostname: "cdn.discordapp.com",
@@ -38,4 +45,15 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default withPWAConfig(nextConfig);
+// let finalConfig = nextConfig;
+
+// if (process.env.ANALYZE === 'true') {
+//   finalConfig = withBundleAnalyzer(finalConfig);
+// }
+
+// // Only apply PWA in production to speed up development
+// if (process.env.NODE_ENV === 'production') {
+//   finalConfig = withPWAConfig(finalConfig);
+// }
+
+export default withBundleAnalyzer(withPWAConfig(nextConfig));

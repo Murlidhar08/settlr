@@ -14,6 +14,8 @@ export default {
         title: "Dashboard",
         recent_transactions: "Recent Transactions",
         view_all: "View All",
+        cashflow_trend: "Cashflow Trend",
+        balance_overview: "Balance Overview",
         cash_flow: "Today's Cash Flow",
         receivables: "Receivables",
         payables: "Payables",
@@ -42,6 +44,8 @@ export default {
         title: "Parties",
         customers: "Customers",
         suppliers: "Suppliers",
+        employees: "Employees",
+        other: "Other",
     },
     cashbook: {
         title: "Cashbook",

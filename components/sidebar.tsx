@@ -30,11 +30,11 @@ const Sidebar = () => {
   const pathname = usePathname();
 
   const navItems: NavItem[] = [
-    { label: t("nav.dashboard", language), icon: <LayoutDashboard />, href: "/dashboard" },
-    { label: t("nav.accounts", language), icon: <LandmarkIcon />, href: "/accounts" },
-    { label: t("nav.parties", language), icon: <User2Icon />, href: "/parties" },
-    { label: t("nav.cashbook", language), icon: <Wallet />, href: "/cashbook" },
-    { label: t("nav.settings", language), icon: <Settings />, href: "/settings" },
+    { label: t("nav.dashboard", language), icon: <LayoutDashboard size={20} />, href: "/dashboard" },
+    { label: t("nav.accounts", language), icon: <LandmarkIcon size={20} />, href: "/accounts" },
+    { label: t("nav.parties", language), icon: <User2Icon size={20} />, href: "/parties" },
+    { label: t("nav.cashbook", language), icon: <Wallet size={20} />, href: "/cashbook" },
+    { label: t("nav.settings", language), icon: <Settings size={20} />, href: "/settings" },
   ];
 
   return (
@@ -96,15 +96,15 @@ const Sidebar = () => {
             onClick={() => setCollapsed(!collapsed)}
             className="flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all active:scale-95"
           >
-            {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
             {!collapsed && <span className="text-sm font-bold uppercase tracking-widest text-[10px]">{t("sidebar.collapse", language)}</span>}
           </button>
         </div>
       </aside>
 
       {/* ================= Mobile Bottom Nav ================= */}
-      <nav className="fixed bottom-0 z-50 w-full border-t border-sidebar-border bg-sidebar/80 backdrop-blur-xl pb-safe lg:hidden">
-        <div className="flex h-20 items-center justify-around">
+      <nav className="fixed bottom-0 z-50 w-full border-t border-sidebar-border bg-sidebar/90 backdrop-blur-xl lg:hidden">
+        <div className="flex h-16 items-center justify-around px-2">
           {navItems.map((item) => {
             const active = pathname?.startsWith(item.href);
 
@@ -176,14 +176,21 @@ function MobileNavItem({ icon, label, active, href }: MobileNavItemProps) {
     <Link
       href={href as any}
       className={clsx(
-        "flex flex-col items-center gap-1 transition-all duration-300 active:scale-90 px-4",
-        active ? "text-sidebar-primary" : "text-muted-foreground"
+        "flex flex-col items-center justify-center transition-all duration-300 active:scale-90 h-full min-w-[64px]",
+        active ? "text-primary" : "text-muted-foreground"
       )}
     >
-      <span className={clsx("transition-all duration-300", active ? "scale-110 drop-shadow-[0_0_8px_rgba(var(--sidebar-primary),0.5)]" : "opacity-70")}>
+      <span className={clsx(
+        "transition-all duration-300",
+        active ? "scale-100 mb-0.5" : "scale-90 opacity-60"
+      )}>
         {icon}
       </span>
-      <span className={clsx("text-[10px] font-black uppercase tracking-tighter", active && "tracking-widest")}>{label}</span>
+      {active && (
+        <span className="text-[8px] font-black uppercase tracking-widest animate-in fade-in slide-in-from-bottom-1 duration-300">
+          {label}
+        </span>
+      )}
     </Link>
   );
 }

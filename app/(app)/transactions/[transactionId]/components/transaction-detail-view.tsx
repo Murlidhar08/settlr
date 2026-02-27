@@ -7,7 +7,7 @@ import { FooterButtons } from "@/components/footer-buttons"
 import { Button } from "@/components/ui/button"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
 import { DeleteTransactionButton } from "./delete-transaction-button"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { Currency } from "@/lib/generated/prisma/enums"
 import { formatAmount, getCurrencySymbol, formatDate, formatTime } from "@/utility/transaction"
 import { useUserConfig } from "@/components/providers/user-config-provider"
@@ -25,33 +25,32 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
     return (
         <div className="min-h-full bg-background relative">
             {/* Dynamic Animated Background */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none overflow-hidden isolate">
                 <motion.div
                     animate={{
-                        scale: [1, 1.2, 1],
-                        rotate: [0, 90, 0],
+                        scale: [1, 1.1, 1],
                         opacity: [0.3, 0.5, 0.3]
                     }}
                     transition={{
-                        duration: 10,
+                        duration: 15,
                         repeat: Infinity,
                         ease: "linear"
                     }}
-                    className={`absolute -top-1/2 -right-1/2 w-full h-full rounded-full blur-[120px] ${isIn ? "bg-emerald-500/10" : "bg-rose-500/10"}`}
+                    style={{ willChange: "transform, opacity" }}
+                    className={`absolute -top-1/4 -right-1/4 w-full h-full rounded-full blur-[100px] ${isIn ? "bg-emerald-500/15" : "bg-rose-500/15"}`}
                 />
                 <motion.div
                     animate={{
-                        scale: [1.2, 1, 1.2],
-                        rotate: [90, 0, 90],
+                        scale: [1.1, 1, 1.1],
                         opacity: [0.2, 0.4, 0.2]
                     }}
                     transition={{
-                        duration: 12,
+                        duration: 20,
                         repeat: Infinity,
                         ease: "linear"
                     }}
-                    className={`absolute -bottom-1/2 -left-1/2 w-full h-full rounded-full blur-[120px] ${isIn ? "bg-primary/5" : "bg-primary/5"
-                        }`}
+                    style={{ willChange: "transform, opacity" }}
+                    className="absolute -bottom-1/4 -left-1/4 w-full h-full rounded-full blur-[100px] bg-primary/5"
                 />
             </div>
 

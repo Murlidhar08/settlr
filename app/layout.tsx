@@ -15,6 +15,7 @@ import { envClient } from "@/lib/env.client";
 import { ConfirmProvider } from "@/components/providers/confirm-provider";
 import AppIconsMetaTags from "@/components/app-icons-metatags";
 import NextTopLoader from 'nextjs-toploader';
+import QueryProvider from "@/components/providers/query-provider";
 
 
 const nunitoSans = Nunito_Sans({
@@ -55,6 +56,27 @@ export const metadata: Metadata = {
     ],
     apple: "images/logo/maskable_icon_x192.png",
   },
+  openGraph: {
+    title: envClient.NEXT_PUBLIC_APP_NAME,
+    description: envClient.NEXT_PUBLIC_APP_DESCRIPTION,
+    siteName: envClient.NEXT_PUBLIC_APP_NAME,
+    images: [
+      {
+        url: '/images/og/og-banner.png',
+        width: 1200,
+        height: 630,
+        alt: `${envClient.NEXT_PUBLIC_APP_NAME} - ${envClient.NEXT_PUBLIC_APP_DESCRIPTION}`,
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: envClient.NEXT_PUBLIC_APP_NAME,
+    description: envClient.NEXT_PUBLIC_APP_DESCRIPTION,
+    images: ['/images/og/twitter-banner.png'],
+  },
 };
 
 
@@ -83,8 +105,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             shadow="0 0 10px oklch(0.541 0.281 293.009),0 0 5px oklch(0.541 0.281 293.009)"
           />
           <ConfirmProvider>
-
-            {children}
+            <QueryProvider>
+              {children}
+            </QueryProvider>
 
             {/* Toast Container */}
             <Toaster

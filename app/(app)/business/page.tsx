@@ -110,7 +110,7 @@ export default function BusinessPage() {
     }
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="w-full bg-background pb-32">
             <BackHeader title="Manage Businesses" />
 
             <div className="mx-auto max-w-2xl p-6 space-y-6">

@@ -7,14 +7,14 @@ export function LayoutTransitions({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
 
     return (
-        <AnimatePresence mode="popLayout" initial={false}>
+        <AnimatePresence mode="wait" initial={false}>
             <motion.main
                 key={pathname}
-                initial={{ opacity: 0, y: 4 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.2, ease: "easeInOut" }}
-                className="flex-1 flex flex-col overflow-y-auto pb-24 bg-background transition-[width] duration-300 ease-in-out h-full"
+                exit={{ opacity: 1, y: -10 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="flex-1 flex flex-col bg-background w-full pb-34"
             >
                 {children}
             </motion.main>

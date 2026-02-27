@@ -7,6 +7,7 @@ import { BadgeCheck, Lock, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { BackHeader } from "@/components/back-header";
 import { prisma } from "@/lib/prisma";
+import { TransactionItem } from "@/components/transaction-item";
 import StatementFilters from "./components/statement-filters";
 import ExportPDFButton from "./components/export-pdf-button";
 import StatementSkeleton from "./components/statement-skeleton";
@@ -23,7 +24,6 @@ import { FooterButtons } from "@/components/footer-buttons";
 
 import { TransactionDirection } from "@/types/transaction/TransactionDirection";
 import { getPartyTransactionPerspective } from "@/lib/transaction-logic";
-import { FinancialAccountType } from "@/lib/generated/prisma/enums";
 
 interface PageProps {
   params: Promise<{ partyId: string }>;
@@ -82,7 +82,7 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
   const grouped = groupTransactions(transactions, dateFormat);
 
   return (
-    <div className="min-h-screen bg-background pb-40">
+    <div className="w-full bg-background pb-32">
       <BackHeader title="Public Statement" />
 
       <div className="mx-auto mt-6 max-w-4xl space-y-8 px-6">
@@ -144,14 +144,21 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
                   <h4 className="px-2 mb-3 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">{label}</h4>
                   <div className="space-y-3">
                     {items.map((tx: any, i: number) => (
-                      <TransactionCard
+                      <TransactionItem
                         key={tx.id}
-                        tx={tx}
+                        transactionId={tx.id}
+                        title={tx.description || ""}
+                        subtitle={formatTime(tx.date, timeFormat)}
+                        amount={tx.amount}
                         currency={currency}
-                        dateFormat={dateFormat}
-                        timeFormat={timeFormat}
-                        index={i}
-                        pAccId={pAccId!}
+                        accountId={pAccId}
+                        accountType={"PARTY"}
+                        fromAccountId={tx.fromAccountId}
+                        toAccountId={tx.toAccountId}
+                        fromAccount={tx.fromAccount?.name}
+                        toAccount={tx.toAccount?.name}
+                        fromAccountType={tx.fromAccount?.type}
+                        toAccountType={tx.toAccount?.type}
                       />
                     ))}
                   </div>
@@ -200,7 +207,10 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
       <FooterButtons>
         <ExportPDFButton
           party={party}
-          transactions={transactions}
+          transactions={transactions.map(t => ({
+            ...t,
+            direction: getPartyTransactionPerspective(t.toAccountId, t.fromAccountId, pAccId!)
+          }))}
           totalIn={totalPaid}
           totalOut={totalReceived}
           balance={balance}
@@ -211,52 +221,6 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
   );
 }
 
-function TransactionCard({ tx, currency, dateFormat, timeFormat, index, pAccId }: { tx: any, currency: any, dateFormat: string, timeFormat: string, index: number, pAccId: string }) {
-  const direction = getPartyTransactionPerspective(
-    tx.toAccountId,
-    tx.fromAccountId,
-    pAccId
-  );
-
-  const isIn = direction === TransactionDirection.IN;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.05 * index }}
-      whileHover={{ scale: 1.01, y: -2 }}
-      whileTap={{ scale: 0.99 }}
-    >
-      <Card className="flex flex-row items-center justify-between p-4 bg-card/50 backdrop-blur-sm border-muted shadow-sm hover:shadow-md transition-all cursor-default">
-        <div className="flex items-center gap-4">
-          <div className={cn(
-            "flex h-12 w-12 items-center justify-center rounded-2xl transition-all",
-            isIn ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30"
-          )}>
-            {isIn ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
-          </div>
-          <div>
-            <p className="font-bold text-foreground">
-              {tx.description || (isIn ? "Payment Received" : "Payment Sent")}
-            </p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-xs text-muted-foreground/80 font-medium">
-                {formatDate(tx.date, dateFormat)} • {formatTime(tx.date, timeFormat)}
-              </span>
-            </div>
-          </div>
-        </div>
-        <p className={cn(
-          "text-lg font-black tabular-nums tracking-tight",
-          isIn ? "text-emerald-600" : "text-rose-600"
-        )}>
-          {formatAmount(tx.amount, currency)}
-        </p>
-      </Card>
-    </motion.div>
-  );
-}
 
 
 function Metric({ label, value, positive }: { label: string; value: string; positive?: boolean }) {

@@ -9,14 +9,17 @@ import { motion } from "framer-motion"
 import { ShieldCheck, Copy, RefreshCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { PasswordInput } from "@/components/ui/password-input"
 import { LoadingSwap } from "@/components/ui/loading-swap"
 import { Input } from "@/components/ui/input"
 
 import { authClient } from "@/lib/auth-client"
 import { toast } from "sonner"
+import dynamic from "next/dynamic"
 
-import QRCode from "react-qr-code"
+const QRCode = dynamic(() => import("react-qr-code"), {
+  ssr: false,
+  loading: () => <div className="h-[180px] w-[180px] animate-pulse bg-muted rounded-xl" />
+})
 
 /* ========================================================= */
 /* SCHEMA */
@@ -111,8 +114,9 @@ export function TwoFactorAuth({ isEnabled }: { isEnabled: boolean }) {
         <label className="ml-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground italic">
           Confirm Your Password
         </label>
-        <PasswordInput
+        <Input
           {...register("password")}
+          type="password"
           className="h-14 rounded-2xl bg-muted/10 border-muted-foreground/10 focus:bg-background transition-all"
         />
         {errors.password && (

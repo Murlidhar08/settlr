@@ -14,6 +14,8 @@ export default {
         title: "डैशबोर्ड",
         recent_transactions: "हाल के लेनदेन",
         view_all: "सभी देखें",
+        cashflow_trend: "नकदी प्रवाह का रुझान",
+        balance_overview: "शेष राशि का अवलोकन",
         cash_flow: "आज का नकदी प्रवाह",
         receivables: "प्राप्य",
         payables: "देय",
@@ -42,6 +44,8 @@ export default {
         title: "पार्टियां",
         customers: "ग्राहक",
         suppliers: "आपूर्तिकर्ता",
+        employees: "कर्मचारी",
+        other: "अन्य",
     },
     cashbook: {
         title: "कैशबुक",

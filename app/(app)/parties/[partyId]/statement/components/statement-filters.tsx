@@ -60,7 +60,7 @@ export default function StatementFilters() {
                             className="rounded-full shrink-0 gap-1.5"
                         >
                             {currentDirection === "IN" ? <ArrowDownLeft size={14} /> : currentDirection === "OUT" ? <ArrowUpRight size={14} /> : <Filter size={14} />}
-                            {currentDirection === "All" ? "Type" : currentDirection === "IN" ? "Cash In" : "Cash Out"}
+                            {currentDirection === "All" ? "Payment Type" : currentDirection === "IN" ? "Payment In" : "Payment Out"}
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-40 p-1 rounded-2xl" align="start">
@@ -73,35 +73,7 @@ export default function StatementFilters() {
                                     currentDirection === dir ? "bg-primary text-primary-foreground font-semibold" : "hover:bg-muted"
                                 )}
                             >
-                                {dir === "All" ? "All Types" : dir === "IN" ? "Cash In" : "Cash Out"}
-                            </button>
-                        ))}
-                    </PopoverContent>
-                </Popover>
-
-                {/* Mode Filter */}
-                <Popover>
-                    <PopoverTrigger>
-                        <Button
-                            variant={currentMode !== "All" ? "default" : "secondary"}
-                            size="sm"
-                            className="rounded-full shrink-0 gap-1.5"
-                        >
-                            <Wallet size={14} />
-                            {currentMode === "All" ? "Mode" : currentMode}
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-40 p-1 rounded-2xl" align="start">
-                        {["All", MoneyType.CASH, MoneyType.ONLINE].map((mode) => (
-                            <button
-                                key={mode}
-                                onClick={() => updateFilters({ mode: mode === "All" ? null : mode })}
-                                className={cn(
-                                    "w-full text-left px-3 py-2 text-sm rounded-xl transition-colors",
-                                    currentMode === mode ? "bg-primary text-primary-foreground font-semibold" : "hover:bg-muted"
-                                )}
-                            >
-                                {mode}
+                                {dir === "All" ? "All Payments" : dir === "IN" ? "Payment In" : "Payment Out"}
                             </button>
                         ))}
                     </PopoverContent>

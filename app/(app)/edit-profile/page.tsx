@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { Camera, User, Phone, Mail, CheckCircle2 } from 'lucide-react'
+import { Camera, User, Phone, Mail, CheckCircle2, Edit3 } from 'lucide-react'
 import { useForm, UseFormRegisterReturn } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -116,7 +116,7 @@ export default function EditProfilePage() {
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="relative min-h-screen bg-background pb-32"
+      className="relative w-full bg-background pb-12"
     >
       <BackHeader title='Edit Profile' backUrl={'/profile' as any} />
 
@@ -174,13 +174,14 @@ export default function EditProfilePage() {
         {/* Submit */}
         <FooterButtons>
           <Button
-            type="submit"
-            disabled={isSubmitting}
-            size="lg"
-            className="px-12 flex-1 h-14 rounded-2xl gap-3 font-black uppercase tracking-[0.1em] shadow-xl shadow-primary/20 transition-all hover:shadow-2xl active:scale-[0.98]"
+            onClick={() => router.push("/edit-profile" as any)}
+            className="h-14 w-auto p-8 rounded-full gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:bg-primary/90 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 py-2"
           >
             <LoadingSwap isLoading={isSubmitting}>
-              Update My Profile
+              <div className="flex items-center gap-2">
+                <Edit3 size={18} />
+                <span className="hidden md:block">Update My Profile</span>
+              </div>
             </LoadingSwap>
           </Button>
         </FooterButtons>

@@ -28,7 +28,6 @@ enum ThemeMode {
 }
 
 // Transaction Enums
-
 enum FinancialAccountType {
   MONEY
   PARTY
@@ -44,6 +43,7 @@ enum MoneyType {
 enum PartyType {
   CUSTOMER
   SUPPLIER
+  EMPLOYEE
   OTHER
 }
 

@@ -72,10 +72,10 @@ export default function ExportPDFButton({
             // Summary Table
             autoTable(doc, {
                 startY: 70,
-                head: [['Summary Metrics', 'Amount']],
+                head: [['Financial Summary', 'Amount']],
                 body: [
-                    ['Total Cash In (+)', `${symbol}${totalIn.toLocaleString()}`],
-                    ['Total Cash Out (-)', `${symbol}${totalOut.toLocaleString()}`],
+                    ['Total Payments Sent (-)', `${symbol}${totalIn.toLocaleString()}`],
+                    ['Total Payments Received (+)', `${symbol}${totalOut.toLocaleString()}`],
                     ['Closing Balance', `${balance < 0 ? '-' : ''}${symbol}${Math.abs(balance).toLocaleString()}`]
                 ],
                 theme: 'striped',
@@ -84,9 +84,9 @@ export default function ExportPDFButton({
                 styles: { fontSize: 10, cellPadding: 5 },
                 didParseCell: (data) => {
                     if (data.section === 'body' && data.column.index === 1) {
-                        if (data.row.index === 0) data.cell.styles.textColor = [16, 128, 67]; // Green
-                        if (data.row.index === 1) data.cell.styles.textColor = [185, 28, 28]; // Red
-                        if (data.row.index === 2) data.cell.styles.textColor = balance >= 0 ? [16, 128, 67] : [185, 28, 28];
+                        if (data.row.index === 0) data.cell.styles.textColor = [185, 28, 28]; // Red for outflow (sent)
+                        if (data.row.index === 1) data.cell.styles.textColor = [16, 128, 67]; // Green for inflow (received)
+                        if (data.row.index === 2) data.cell.styles.textColor = balance >= 0 ? [185, 28, 28] : [16, 128, 67];
                     }
                 }
             });
@@ -94,21 +94,23 @@ export default function ExportPDFButton({
             // Transactions Table
             autoTable(doc, {
                 startY: (doc as any).lastAutoTable.finalY + 15,
-                head: [['Date', 'Description', 'Mode', 'Type', 'Amount']],
-                body: transactions.map((tx: any) => [
-                    format(new Date(tx.date), "dd MMM, yyyy"),
-                    tx.description || (tx.direction === "IN" ? "Payment Received" : "Payment Sent"),
-                    tx.mode,
-                    tx.direction === "IN" ? "Cash In" : "Cash Out",
-                    `${tx.direction === "IN" ? "+" : "-"}${symbol}${tx.amount.toLocaleString()}`
-                ]),
+                head: [['Date', 'Description', 'Direction', 'Amount']],
+                body: transactions.map((tx: any) => {
+                    const isIn = tx.direction === 'IN';
+                    return [
+                        format(new Date(tx.date), "dd MMM, yyyy"),
+                        tx.description || (isIn ? "Payment Received" : "Payment Sent"),
+                        isIn ? "Received" : "Paid Out",
+                        `${isIn ? "+" : "-"}${symbol}${tx.amount.toLocaleString()}`
+                    ];
+                }),
                 headStyles: { fillColor: [44, 62, 80], fontStyle: 'bold' },
                 bodyStyles: { textColor: [0, 0, 0] },
                 alternateRowStyles: { fillColor: [248, 250, 252] },
-                columnStyles: { 4: { halign: 'left', fontStyle: 'bold', fontSize: 10 } },
+                columnStyles: { 3: { halign: 'left', fontStyle: 'bold', fontSize: 10 } },
                 styles: { fontSize: 9, cellPadding: 3 },
                 didParseCell: (data) => {
-                    if (data.section === 'body' && data.column.index === 4) {
+                    if (data.section === 'body' && data.column.index === 3) {
                         const amountText = data.cell.text[0];
                         if (amountText.startsWith('+')) {
                             data.cell.styles.textColor = [16, 128, 67]; // Green

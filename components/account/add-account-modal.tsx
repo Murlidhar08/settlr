@@ -17,6 +17,7 @@ import { motion, AnimatePresence, Variants } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 interface AddAccountModalProps {
     title?: string
@@ -26,7 +27,7 @@ interface AddAccountModalProps {
     setOpenInternal?: (open: boolean) => void
 }
 
-const SUBTYPES_CONFIG: Record<FinancialAccountType, any> = {
+const SUBTYPES_CONFIG: Partial<Record<FinancialAccountType, any>> = {
     [FinancialAccountType.MONEY]: {
         enum: MoneyType,
         field: "moneyType",
@@ -35,16 +36,6 @@ const SUBTYPES_CONFIG: Record<FinancialAccountType, any> = {
             [MoneyType.CASH]: Banknote,
             [MoneyType.ONLINE]: Landmark,
             [MoneyType.CHEQUE]: CreditCard,
-        }
-    },
-    [FinancialAccountType.PARTY]: {
-        enum: PartyType,
-        field: "partyType",
-        label: "Relationship Type",
-        icons: {
-            [PartyType.CUSTOMER]: User2,
-            [PartyType.SUPPLIER]: Truck,
-            [PartyType.OTHER]: Users,
         }
     },
     [FinancialAccountType.CATEGORY]: {
@@ -74,7 +65,6 @@ export const AddAccountModal = ({
         if (setOpenInternal) setOpenInternal(val)
         else setOpenState(val)
     }
-    const [loading, setLoading] = useState(false)
     const router = useRouter()
 
     const [data, setData] = useState<{
@@ -113,30 +103,61 @@ export const AddAccountModal = ({
         }
     }, [open, accountData])
 
+    const queryClient = useQueryClient()
+
+    const mutation = useMutation({
+        mutationFn: async (payload: any) => {
+            if (accountData) {
+                return updateFinancialAccount(accountData.id, payload)
+            } else {
+                return addFinancialAccount(payload)
+            }
+        },
+        onMutate: async (newAccount) => {
+            await queryClient.cancelQueries({ queryKey: ["financial-accounts"] })
+            const previousAccounts = queryClient.getQueryData(["financial-accounts"])
+
+            queryClient.setQueryData(["financial-accounts"], (old: any) => {
+                if (accountData) {
+                    return old?.map((a: any) => a.id === accountData.id ? { ...a, ...newAccount } : a)
+                }
+                return [
+                    {
+                        ...newAccount,
+                        id: `temp-${Date.now()}`,
+                        balance: 0,
+                        partyId: null,
+                        isSystem: false,
+                        isActive: true,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    },
+                    ...(old || []),
+                ]
+            })
+
+            return { previousAccounts }
+        },
+        onError: (err, newAccount, context) => {
+            queryClient.setQueryData(["financial-accounts"], context?.previousAccounts)
+            toast.error("Failed to save account")
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
+        },
+        onSuccess: () => {
+            toast.success(accountData ? "Account updated successfully" : "Account created successfully", {
+                icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            })
+            setOpen(false)
+        }
+    })
+
     const handleSave = async () => {
         if (!data.name.trim()) {
             return toast.error("Please enter account name")
         }
-
-        setLoading(true)
-        try {
-            if (accountData) {
-                await updateFinancialAccount(accountData.id, data)
-                toast.success("Account updated successfully")
-            } else {
-                await addFinancialAccount(data)
-                toast.success("Account created successfully", {
-                    icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                })
-            }
-
-            router.refresh()
-            setOpen(false)
-        } catch (error) {
-            toast.error("Failed to save account")
-        } finally {
-            setLoading(false)
-        }
+        mutation.mutate(data)
     }
 
     const containerVariants: Variants = {
@@ -209,10 +230,9 @@ export const AddAccountModal = ({
                             {/* Main Type Selection */}
                             <motion.div variants={itemVariants} className="space-y-4">
                                 <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 ml-1">Account Category</Label>
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-2 gap-3">
                                     {[
                                         { id: FinancialAccountType.MONEY, label: "Money", icon: Wallet },
-                                        { id: FinancialAccountType.PARTY, label: "Party", icon: User2 },
                                         { id: FinancialAccountType.CATEGORY, label: "Business", icon: Tag },
                                     ].map((type) => (
                                         <button
@@ -220,6 +240,7 @@ export const AddAccountModal = ({
                                             disabled={accountData?.isSystem}
                                             onClick={() => {
                                                 const config = SUBTYPES_CONFIG[type.id];
+                                                if (!config) return;
                                                 setData({
                                                     ...data,
                                                     type: type.id,
@@ -255,12 +276,12 @@ export const AddAccountModal = ({
                                     className="space-y-4"
                                 >
                                     <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60 ml-1">
-                                        <Info size={12} /> {SUBTYPES_CONFIG[data.type].label}
+                                        <Info size={12} /> {SUBTYPES_CONFIG[data.type]?.label}
                                     </Label>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                        {Object.entries(SUBTYPES_CONFIG[data.type].enum).map(([key, value]: [string, any]) => {
-                                            const Icon = SUBTYPES_CONFIG[data.type].icons[value] || Tag;
-                                            const field = SUBTYPES_CONFIG[data.type].field;
+                                        {SUBTYPES_CONFIG[data.type] && Object.entries(SUBTYPES_CONFIG[data.type]!.enum).map(([key, value]: [string, any]) => {
+                                            const Icon = SUBTYPES_CONFIG[data.type]!.icons[value] || Tag;
+                                            const field = SUBTYPES_CONFIG[data.type]!.field;
                                             return (
                                                 <button
                                                     key={value}
@@ -297,11 +318,11 @@ export const AddAccountModal = ({
                             </Button>
                             <Button
                                 onClick={handleSave}
-                                disabled={loading}
+                                disabled={mutation.isPending}
                                 className="h-14 flex-2 rounded-2xl text-primary-foreground text-base font-black uppercase tracking-widest gap-2 shadow-xl shadow-primary/20 active:scale-[0.97] transition-all bg-primary hover:bg-primary/90"
                             >
-                                {loading ? "Saving..." : (accountData ? "Update Account" : "Create Account")}
-                                {!loading && <CheckCircle2 size={20} />}
+                                {mutation.isPending ? "Saving..." : (accountData ? "Update Account" : "Create Account")}
+                                {!mutation.isPending && <CheckCircle2 size={20} />}
                             </Button>
                         </div>
                     </div>

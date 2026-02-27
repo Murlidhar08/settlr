@@ -20,7 +20,7 @@ export default async function CustomersTab({ partyType, search }: PartyListProp)
   const { currency } = await getUserConfig();
 
   return (
-    <main className="space-y-4">
+    <main className="flex-1 w-full space-y-4">
       <Suspense fallback={<div className="h-28 w-full animate-pulse rounded-2xl bg-muted" />}>
         <BalanceCard promise={partiesPromise} currency={currency} />
       </Suspense>
@@ -36,22 +36,22 @@ export default async function CustomersTab({ partyType, search }: PartyListProp)
           ))}
         </div>
       }>
-        <PartyList partyType={partyType} promise={partiesPromise} />
+        <PartyList partyType={partyType} promise={partiesPromise} search={search} />
       </Suspense>
 
       <FooterButtons>
         <AddPartiesModal type={partyType}>
-          <Button size="lg" className="px-12 flex-1 h-14 rounded-full font-semibold uppercase bg-primary text-white shadow-lg shadow-rose-600/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
-            <Plus className="size-7" />
+          <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
+            <Plus className="size-6 sm:size-5" />
             <span className="hidden md:block">
-              {partyType === PartyType.CUSTOMER ? "Add Customer" : "Add Supplier"}
+              {partyType === PartyType.CUSTOMER ? "Add Customer" :
+                partyType === PartyType.SUPPLIER ? "Add Supplier" :
+                  partyType === PartyType.EMPLOYEE ? "Add Employee" :
+                    "Add Other"}
             </span>
           </Button>
         </AddPartiesModal>
       </FooterButtons>
-
-      {/* Bottom Spacing */}
-      <div className="h-24" />
     </main>
   );
 }

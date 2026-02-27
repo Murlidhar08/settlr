@@ -1,6 +1,6 @@
 {
   "name": "settlr",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -9,7 +9,8 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "production-deploy": "npm run postinstall && prisma migrate deploy && npm run build",
-    "production-build": "npm run postinstall && npm run build"
+    "production-build": "npm run postinstall && npm run build",
+    "analyze": "cross-env ANALYZE=true next build --webpack"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
@@ -17,14 +18,11 @@
     "@hookform/resolvers": "^5.2.2",
     "@prisma/adapter-pg": "^7.4.1",
     "@prisma/client": "^7.4.1",
-    "@zxcvbn-ts/core": "^3.0.4",
-    "@zxcvbn-ts/language-common": "^3.0.4",
-    "@zxcvbn-ts/language-en": "^3.0.2",
+    "@tanstack/react-query": "^5.90.21",
     "better-auth": "^1.4.19",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "dotenv": "^17.3.1",
     "framer-motion": "^12.34.3",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
@@ -38,28 +36,28 @@
     "react-dom": "^19.2.4",
     "react-hook-form": "^7.71.2",
     "react-qr-code": "^2.0.18",
-    "react-social-icons": "^6.25.0",
-    "shadcn": "^3.8.5",
+    "recharts": "^3.7.0",
+    "sharp": "^0.34.5",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
-    "tw-animate-css": "^1.4.0",
-    "ua-parser-js": "^2.0.9",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/compat": "^2.0.2",
     "@eslint/js": "^10.0.1",
+    "@next/bundle-analyzer": "^16.1.6",
     "@tailwindcss/postcss": "^4.2.1",
-    "@types/node": "^25.3.0",
+    "@types/node": "^25.3.1",
     "@types/nodemailer": "^7.0.11",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.3.1",
     "eslint": "^10.0.2",
     "eslint-config-next": "^16.1.6",
     "prisma": "^7.4.1",
     "tailwindcss": "^4.2.1",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "webpack": "^5.105.2"
+    "typescript": "^5.9.3"
   }
 }

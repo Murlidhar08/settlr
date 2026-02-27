@@ -101,14 +101,14 @@ export default function CashFilters({
             >
                 <div className="relative group">
                     <Search className={cn(
-                        "absolute left-4 top-1/2 -translate-y-1/2 size-4 transition-colors",
+                        "absolute left-4 top-1/2 -translate-y-1/2 size-3.5 sm:size-4 transition-colors",
                         isPending ? "text-primary animate-pulse" : "text-muted-foreground"
                     )} />
                     <Input
                         placeholder={t("common.search_cashbook", language)}
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
-                        className="h-12 rounded-2xl pl-11 pr-11 bg-muted/30 border-2 border-transparent focus:border-primary/20 focus:bg-background transition-all shadow-sm font-medium"
+                        className="h-10 sm:h-12 rounded-2xl pl-10 sm:pl-11 pr-10 sm:pr-11 bg-muted/30 border-2 border-transparent focus:border-primary/20 focus:bg-background transition-all shadow-sm font-medium text-xs sm:text-sm"
                     />
                     <AnimatePresence>
                         {searchValue && (
@@ -117,7 +117,7 @@ export default function CashFilters({
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.8 }}
                                 onClick={() => setSearchValue("")}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-muted rounded-full"
+                                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-muted rounded-full"
                             >
                                 <X size={14} />
                             </motion.button>
@@ -142,15 +142,15 @@ export default function CashFilters({
                             updateFilters({ category: item === "All" ? null : item });
                         }}
                         className={cn(
-                            "rounded-xl shrink-0 transition-all duration-300 h-10 font-bold uppercase tracking-widest text-[10px]",
-                            optCategory === item ? "px-6 shadow-lg shadow-primary/20" : "px-4 bg-muted/40 hover:bg-muted"
+                            "rounded-xl shrink-0 transition-all duration-300 h-9 sm:h-10 font-bold uppercase tracking-widest text-[9px] sm:text-[10px]",
+                            optCategory === item ? "px-4 sm:px-6 shadow-lg shadow-primary/20" : "px-3 sm:px-4 bg-muted/40 hover:bg-muted"
                         )}
                     >
                         {item === "All" ? t("common.all", language) : item}
                     </Button>
                 ))}
 
-                <div className="h-6 w-px bg-border/50 mx-1 shrink-0" />
+                <div className="h-5 sm:h-6 w-px bg-border/50 mx-1 shrink-0" />
 
                 <Popover>
                     <PopoverTrigger
@@ -159,8 +159,8 @@ export default function CashFilters({
                                 variant={isDateActive ? "default" : "secondary"}
                                 size="sm"
                                 className={cn(
-                                    "rounded-xl shrink-0 gap-2 font-bold uppercase tracking-widest text-[10px] h-10 transition-all",
-                                    isDateActive ? "px-6 shadow-lg shadow-primary/20" : "px-4 bg-muted/40 hover:bg-muted"
+                                    "rounded-xl shrink-0 gap-1 sm:gap-2 font-bold uppercase tracking-widest text-[9px] sm:text-[10px] h-9 sm:h-10 transition-all",
+                                    isDateActive ? "px-4 sm:px-6 shadow-lg shadow-primary/20" : "px-3 sm:px-4 bg-muted/40 hover:bg-muted"
                                 )}
                             >
                                 <CalendarIcon size={14} className={isPending && isDateActive ? "animate-pulse" : ""} />

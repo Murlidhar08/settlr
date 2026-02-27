@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 // Components
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,7 @@ import { cn } from "@/lib/utils"
 
 // Types
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { ModalMode } from "@/types/transaction/ModalMode"
 
 interface TransactionProps {
   title: string
@@ -39,8 +41,6 @@ interface TransactionProps {
   direction?: TransactionDirection
   path?: string
 }
-
-type ModalMode = 'PARTY' | 'CASHBOOK' | 'ACCOUNT'
 
 export const AddTransactionModal = ({
   title,
@@ -55,10 +55,6 @@ export const AddTransactionModal = ({
   const [dateOpen, setDateOpen] = useState(false)
   const [allAccounts, setAllAccounts] = useState<(FinancialAccount & { balance: number })[]>([])
   const [loadingAccounts, setLoadingAccounts] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [showAccountControls, setShowAccountControls] = useState(false)
-
-  const router = useRouter()
   const isOut = direction === TransactionDirection.OUT;
 
   // Selected IDs
@@ -79,7 +75,7 @@ export const AddTransactionModal = ({
   })
 
   // Mode Detection
-  const [mode, setMode] = useState<ModalMode>('CASHBOOK')
+  const [mode, setMode] = useState<ModalMode>(ModalMode.CASHBOOK)
 
   useEffect(() => {
     if (open) {
@@ -93,7 +89,7 @@ export const AddTransactionModal = ({
             setData((pre: any) => ({
               ...pre,
               ...transactionData,
-              amount: Number(transactionData.amount),
+              amount: Number(transactionData.amount).toFixed(2),
               date: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "yyyy-MM-dd"),
               time: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "HH:mm"),
             }))
@@ -111,7 +107,7 @@ export const AddTransactionModal = ({
             }
           } else {
             // New Transaction Logic
-            let inferredMode: ModalMode = 'CASHBOOK'
+            let inferredMode: ModalMode = ModalMode.CASHBOOK
             let initialMoneyAcc = ""
             let initialPartnerAcc = ""
 
@@ -119,19 +115,19 @@ export const AddTransactionModal = ({
             const partyAcc = partyId ? accs.find(a => a.partyId === partyId) : null
 
             if (partyId || (currentAcc && currentAcc.type === FinancialAccountType.PARTY)) {
-              inferredMode = 'PARTY'
+              inferredMode = ModalMode.PARTY
               const partyAccount = partyAcc || currentAcc
               initialPartnerAcc = partyAccount?.id || ""
               initialMoneyAcc = accs.find(a => a.type === FinancialAccountType.MONEY)?.id || ""
             }
             else if (currentAcc && currentAcc.type === FinancialAccountType.MONEY) {
-              inferredMode = 'ACCOUNT'
+              inferredMode = ModalMode.ACCOUNT
               initialMoneyAcc = currentAcc.id
               // Default partner is any other non-party account
               initialPartnerAcc = accs.find(a => a.id !== currentAcc.id && a.partyId === null)?.id || ""
             }
             else {
-              inferredMode = 'CASHBOOK'
+              inferredMode = ModalMode.CASHBOOK
               const moneyAccs = accs.filter(a => a.type === FinancialAccountType.MONEY)
               initialMoneyAcc = moneyAccs[0]?.id || ""
 
@@ -156,6 +152,24 @@ export const AddTransactionModal = ({
         }
       }
       fetchAccounts()
+    } else {
+      // Reset values when modal closes
+      if (!transactionData) {
+        setData({
+          id: undefined,
+          businessId: "",
+          amount: "",
+          description: "",
+          date: format(new Date(), "yyyy-MM-dd"),
+          time: format(new Date(), "HH:mm"),
+          partyId: partyId || null,
+          fromAccountId: "",
+          toAccountId: "",
+          userId: "",
+        })
+        setMoneyAccountId("")
+        setPartnerAccountId("")
+      }
     }
   }, [open, partyId, accountId, transactionData, isOut])
 
@@ -171,10 +185,10 @@ export const AddTransactionModal = ({
     let from = ""
     let to = ""
 
-    if (mode === 'PARTY') {
+    if (mode === ModalMode.PARTY) {
       from = isOut ? moneyAccountId : partnerAccountId
       to = isOut ? partnerAccountId : moneyAccountId
-    } else if (mode === 'ACCOUNT') {
+    } else if (mode === ModalMode.ACCOUNT) {
       from = isOut ? moneyAccountId : partnerAccountId
       to = isOut ? partnerAccountId : moneyAccountId
     } else {
@@ -191,34 +205,39 @@ export const AddTransactionModal = ({
     }))
   }, [moneyAccountId, partnerAccountId, isOut, mode, allAccounts])
 
-  const handleAddTransaction = async () => {
-    if (!data.amount || isNaN(Number(data.amount))) {
-      return toast.error("Please enter a valid amount")
-    }
+  const queryClient = useQueryClient()
 
-    if (!data.fromAccountId || !data.toAccountId) {
-      return toast.error("Please select both accounts")
-    }
+  const mutation = useMutation({
+    mutationFn: async (payload: any) => {
+      return addTransaction(payload, path)
+    },
+    onMutate: async (newTx) => {
+      // Invalidate both transactions and financial accounts since balance changes
+      await queryClient.cancelQueries({ queryKey: ["transactions"] })
+      await queryClient.cancelQueries({ queryKey: ["financial-accounts"] })
 
-    setIsSaving(true)
-    try {
-      const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
-      if (isNaN(combinedDateTime.getTime())) {
-        return toast.error("Please enter a valid date and time")
-      }
+      const previousTransactions = queryClient.getQueryData(["transactions"])
+      const previousAccounts = queryClient.getQueryData(["financial-accounts"])
 
-      await addTransaction({
-        ...data,
-        amount: Number(data.amount),
-        date: combinedDateTime,
-        description: data.description || null
-      }, path)
+      // We don't necessarily update the list optimistically for transactions 
+      // because of the complex filtering, but invalidating handles it well. 
+      // For "ultra fast" feel, we can try to prepend if filters match.
 
+      return { previousTransactions, previousAccounts }
+    },
+    onError: (err, newTx, context) => {
+      queryClient.setQueryData(["transactions"], context?.previousTransactions)
+      queryClient.setQueryData(["financial-accounts"], context?.previousAccounts)
+      toast.error("Failed to save transaction")
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] })
+      queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
+    },
+    onSuccess: () => {
       toast.success("Transaction recorded successfully", {
         icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
       })
-
-      router.refresh()
       setOpen(false)
 
       // Reset
@@ -236,44 +255,55 @@ export const AddTransactionModal = ({
       })
       setMoneyAccountId("")
       setPartnerAccountId("")
-    } catch (error) {
-      toast.error("Failed to save transaction")
-    } finally {
-      setIsSaving(false)
     }
+  })
+
+  const handleAddTransaction = async () => {
+    if (!data.amount || isNaN(Number(data.amount))) {
+      return toast.error("Please enter a valid amount")
+    }
+
+    if (!data.fromAccountId || !data.toAccountId) {
+      return toast.error("Please select both accounts")
+    }
+
+    const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
+    if (isNaN(combinedDateTime.getTime())) {
+      return toast.error("Please enter a valid date and time")
+    }
+
+    mutation.mutate({
+      ...data,
+      amount: Number(data.amount),
+      date: combinedDateTime,
+      description: data.description || null
+    })
   }
 
   // Filtering Logic
   const moneyAccounts = allAccounts.filter(a => a.type === FinancialAccountType.MONEY)
-
   const partnerOptions = allAccounts.filter(acc => {
-    if (mode === 'PARTY') return false // Partner is fixed
-    if (mode === 'ACCOUNT') {
+    if (mode === ModalMode.PARTY)
+      return false // Partner is fixed
+
+    if (mode === ModalMode.ACCOUNT) {
       // Show list of accounts where partyId is null, except current
       return acc.partyId === null && acc.id !== (isOut ? moneyAccountId : accountId)
     }
-    if (mode === 'CASHBOOK') {
+
+    if (mode === ModalMode.CASHBOOK) {
       const targetCat = isOut ? CategoryType.EXPENSE : CategoryType.INCOME
       return acc.type === FinancialAccountType.CATEGORY && acc.categoryType === targetCat
     }
+
     return true
   })
 
   // Labels
   const moneyLabel = isOut ? "Pay From Account" : "Receive In Account"
-  const partnerLabel = mode === 'ACCOUNT'
+  const partnerLabel = mode === ModalMode.ACCOUNT
     ? (isOut ? "Transfer To" : "Transfer From")
     : (isOut ? "Payment For (Category)" : "Source (Category)")
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.04
-      }
-    }
-  }
 
   const itemVariants = {
     hidden: { opacity: 0, y: 15 },
@@ -310,7 +340,15 @@ export const AddTransactionModal = ({
 
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <motion.div
-              variants={containerVariants}
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.04
+                  }
+                }
+              }}
               initial="hidden"
               animate="visible"
               className="px-6 py-8 space-y-8"
@@ -324,8 +362,21 @@ export const AddTransactionModal = ({
                 )}>
                   <span className="text-4xl font-black mr-2 opacity-50">₹</span>
                   <input
-                    value={data.amount}
-                    onChange={(e) => setData({ ...data, amount: e.target.value })}
+                    value={(() => {
+                      if (!data.amount) return "";
+                      const parts = data.amount.toString().split('.');
+                      const integerPart = parts[0];
+                      const decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+                      const formattedInteger = integerPart ? parseInt(integerPart, 10).toLocaleString('en-IN') : integerPart === '0' ? '0' : '';
+                      return (integerPart === "" && data.amount.startsWith('.') ? "" : formattedInteger) + decimalPart;
+                    })()}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/,/g, '');
+                      // Allow only numbers and up to two decimal points
+                      if (/^\d*\.?\d{0,2}$/.test(val)) {
+                        setData({ ...data, amount: val });
+                      }
+                    }}
                     inputMode="decimal"
                     placeholder="0.00"
                     autoFocus
@@ -383,92 +434,74 @@ export const AddTransactionModal = ({
                   />
                 </motion.div>
 
-                {/* Advanced Controls Toggle */}
-                <motion.div variants={itemVariants} className="col-span-full pt-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-px flex-1 bg-border/40" />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowAccountControls(!showAccountControls)}
-                      className="rounded-xl px-4 py-1.5 h-auto text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-primary hover:bg-primary/5 transition-all"
-                    >
-                      {showAccountControls ? "Hide Account Details" : "Adjust Accounts"}
-                    </Button>
-                    <div className="h-px flex-1 bg-border/40" />
-                  </div>
-                </motion.div>
-
-                <AnimatePresence>
-                  {showAccountControls && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="col-span-full space-y-6 overflow-hidden"
-                    >
-                      {/* Money Account Selection */}
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
-                          <Wallet size={12} /> {moneyLabel}
-                        </Label>
-                        <Select
-                          value={moneyAccountId}
-                          onValueChange={(val) => val && setMoneyAccountId(val)}
-                        >
-                          <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
-                            <SelectValue placeholder="Choose Account">
-                              {allAccounts.find(a => a.id === moneyAccountId)?.name}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
-                            {moneyAccounts.map(acc => (
-                              <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/10 rounded-xl cursor-pointer">
-                                <div className="flex justify-between items-center w-full gap-4">
-                                  <span>{acc.name}</span>
-                                  <span className="text-xs font-bold tabular-nums text-muted-foreground">
-                                    ₹{acc.balance.toLocaleString()}
-                                  </span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Partner Account Selection (Category/Transfer) */}
-                      {mode !== 'PARTY' && (
-                        <div className="space-y-2">
-                          <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
-                            <Wallet size={12} /> {partnerLabel}
-                          </Label>
-                          <Select
-                            value={partnerAccountId}
-                            onValueChange={(val) => val && setPartnerAccountId(val)}
-                          >
-                            <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
-                              <SelectValue placeholder="Select Category or Account">
-                                {allAccounts.find(a => a.id === partnerAccountId)?.name}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
-                              {partnerOptions.map(acc => (
-                                <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/10 rounded-xl cursor-pointer">
-                                  <div className="flex flex-col">
-                                    <span className="font-bold text-sm">{acc.name}</span>
-                                    <span className="text-[10px] text-muted-foreground/60 italic">
-                                      {acc.partyType || acc.categoryType || acc.type}
-                                    </span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                    </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="col-span-full space-y-6 overflow-hidden"
+                >
+                  {/* Money Account Selection */}
+                  {mode !== ModalMode.ACCOUNT && (
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
+                        <Wallet size={12} /> {moneyLabel}
+                      </Label>
+                      <Select
+                        value={moneyAccountId}
+                        onValueChange={(val) => val && setMoneyAccountId(val)}
+                      >
+                        <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary transition-all text-foreground bg-background">
+                          <SelectValue placeholder="Choose Account">
+                            {allAccounts.find(a => a.id === moneyAccountId)?.name}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
+                          {moneyAccounts.map(acc => (
+                            <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
+                              <div className="flex justify-between items-center w-full gap-4">
+                                <span>{acc.name}</span>
+                                <span className="text-xs font-bold tabular-nums text-muted-foreground mr-10">
+                                  ₹{acc.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   )}
-                </AnimatePresence>
+
+                  {/* Partner Account Selection (Category/Transfer) */}
+                  {mode !== ModalMode.PARTY && (
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
+                        <Wallet size={12} /> {partnerLabel}
+                      </Label>
+                      <Select
+                        value={partnerAccountId}
+                        onValueChange={(val) => val && setPartnerAccountId(val)}
+                      >
+                        <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
+                          <SelectValue placeholder="Select Category or Account">
+                            {allAccounts.find(a => a.id === partnerAccountId)?.name}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
+                          {partnerOptions.map(acc => (
+                            <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
+                              <div className="flex flex-col">
+                                <span className="font-bold text-sm">{acc.name}</span>
+                                <span className="text-[10px] text-muted-foreground/90 italic">
+                                  {acc.partyType || acc.categoryType || acc.type}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </motion.div>
               </div>
 
               {/* Note */}
@@ -498,7 +531,7 @@ export const AddTransactionModal = ({
               </Button>
               <Button
                 onClick={handleAddTransaction}
-                disabled={loadingAccounts || isSaving}
+                disabled={loadingAccounts || mutation.isPending}
                 className={cn(
                   "h-14 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
                   isOut
@@ -506,7 +539,7 @@ export const AddTransactionModal = ({
                     : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
                 )}
               >
-                {isSaving ? (
+                {mutation.isPending ? (
                   <>
                     <Loader2 className="animate-spin" size={20} />
                     Recording...

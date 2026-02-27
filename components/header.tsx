@@ -41,19 +41,19 @@ const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
           </motion.div>
         ) : (
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center lg:hidden group overflow-hidden relative" onClick={() => router.push("/")}>
+            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center lg:hidden group overflow-hidden relative" onClick={() => router.push("/")}>
               <Image
                 src="/images/logo/light_logo.svg"
                 alt={envClient.NEXT_PUBLIC_APP_NAME}
-                width={40}
-                height={40}
+                width={36}
+                height={36}
                 className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
               />
               <Image
                 src="/images/logo/dark_logo.svg"
                 alt={envClient.NEXT_PUBLIC_APP_NAME}
-                width={40}
-                height={40}
+                width={36}
+                height={36}
                 className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"
               />
             </div>
@@ -62,7 +62,7 @@ const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
               layoutId="header-title"
               transition={{ type: "spring", bounce: 0.3 }}
             >
-              <h1 className="text-2xl font-black -tracking-normal lg:text-4xl bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent">
+              <h1 className="text-xl font-black -tracking-normal sm:text-2xl lg:text-3xl bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent">
                 {title}
               </h1>
             </motion.div>

@@ -77,7 +77,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
   };
 
   return (
-    <div className="relative min-h-screen max-w-full bg-background pb-28 lg:pb-16">
+    <div className="relative w-full bg-background">
 
       {/* Top App Bar */}
       <BackHeaderClient
@@ -85,8 +85,8 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
       />
 
       {/* Main Content */}
-      <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6">
-        <main className="flex-1 overflow-y-auto pb-24">
+      <div className="mx-auto max-w-4xl mt-6 space-y-8 px-6">
+        <main className="pb-24">
           {/* Balance Card */}
           <BalanceCard
             totalReceived={totalReceived}
@@ -133,9 +133,9 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
             accountId={partyAccountId}
             path={`/parties/${partyId}`}
           >
-            <Button size="lg" className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
-              <ArrowUpRight className="h-5 w-5" />
-              You Pay
+            <Button className="h-14 w-14 md:h-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
+              <ArrowUpRight className="h-6 w-6 sm:h-5 sm:w-5" />
+              <span className="hidden md:inline">You Pay</span>
             </Button>
           </AddTransactionModal>
 
@@ -148,11 +148,10 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
             path={`/parties/${partyId}`}
           >
             <Button
-              size="lg"
-              className="px-12 flex-1 h-14 rounded-full gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+              className="h-14 w-14 md:h-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2"
             >
-              <ArrowDownLeft className="h-5 w-5" />
-              You Receive
+              <ArrowDownLeft className="h-6 w-6 sm:h-5 sm:w-5" />
+              <span className="hidden md:inline">You Receive</span>
             </Button>
           </AddTransactionModal>
         </FooterButtons>

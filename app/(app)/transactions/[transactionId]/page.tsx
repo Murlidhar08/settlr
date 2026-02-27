@@ -8,9 +8,8 @@ import { getTransactionPerspective } from "@/lib/transaction-logic"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 
 export default async function TransactionDetailPage({ params }: { params: Promise<{ transactionId: string }> }) {
-  const transactionId = (await params).transactionId;
+  const { transactionId } = await params;
   const session = await getUserSession()
-
   if (!session?.user.activeBusinessId)
     notFound()
 

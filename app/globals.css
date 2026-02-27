@@ -1,6 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -47,9 +45,15 @@
   --radius-4xl: calc(var(--radius) + 16px);
 
   @keyframes shimmer {
-    from { background-position: 200% 0; }
-    to { background-position: -200% 0; }
+    from {
+      background-position: 200% 0;
+    }
+
+    to {
+      background-position: -200% 0;
+    }
   }
+
   --animate-shimmer: shimmer 8s infinite linear;
 }
 
@@ -132,5 +136,6 @@
 
   body {
     @apply bg-background text-foreground;
+    scrollbar-gutter: stable;
   }
 }
