@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StatementSkeleton() {
     return (
-        <div className="min-h-screen bg-background pb-32">
+        <div className="w-full bg-background pb-32">
             <div className="mx-auto mt-6 max-w-4xl space-y-8 px-6">
                 {/* Profile Skeleton */}
                 <section className="flex flex-col items-center px-6 pb-8 pt-4 text-center">

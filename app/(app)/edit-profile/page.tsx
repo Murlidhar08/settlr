@@ -116,7 +116,7 @@ export default function EditProfilePage() {
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="relative min-h-screen bg-background pb-32"
+      className="relative w-full bg-background pb-32"
     >
       <BackHeader title='Edit Profile' backUrl={'/profile' as any} />
 
@@ -177,7 +177,7 @@ export default function EditProfilePage() {
             type="submit"
             disabled={isSubmitting}
             size="lg"
-            className="px-12 flex-1 h-14 rounded-2xl gap-3 font-black uppercase tracking-[0.1em] shadow-xl shadow-primary/20 transition-all hover:shadow-2xl active:scale-[0.98]"
+            className="px-12 flex-1 h-14 rounded-2xl gap-3 font-black uppercase tracking-widest shadow-xl shadow-primary/20 transition-all hover:shadow-2xl active:scale-[0.98]"
           >
             <LoadingSwap isLoading={isSubmitting}>
               Update My Profile

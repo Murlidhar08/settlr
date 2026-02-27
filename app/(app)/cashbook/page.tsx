@@ -32,8 +32,8 @@ export default async function CashbookPage({ searchParams }: CashbookPageProps) 
   const effectiveEndDate = params.endDate || (!hasOtherFilters ? today : undefined);
 
   return (
-    <div className="w-full bg-background min-h-screen">
-      <div className="mx-auto w-full max-w-4xl pb-32">
+    <div className="w-full flex-1 bg-background">
+      <div className="mx-auto w-full max-w-4xl pb-32 px-6">
         <CashFilters effectiveStartDate={effectiveStartDate} effectiveEndDate={effectiveEndDate} />
 
         <Suspense

@@ -82,7 +82,7 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
   const grouped = groupTransactions(transactions, dateFormat);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="w-full bg-background pb-32">
       <BackHeader title="Public Statement" />
 
       <div className="mx-auto mt-6 max-w-4xl space-y-8 px-6">

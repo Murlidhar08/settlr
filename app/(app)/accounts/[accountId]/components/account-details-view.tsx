@@ -73,7 +73,7 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
     }
 
     return (
-        <div className="min-h-full bg-background relative overflow-x-hidden pb-32">
+        <div className="w-full bg-background relative overflow-x-hidden pb-32">
             {/* Background blobs */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden isolate">
                 <motion.div
@@ -206,11 +206,11 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                     direction={TransactionDirection.OUT}
                     path={`/accounts/${account.id}`}
                 >
-                    <Button
-                        className="h-14 w-14 md:h-16 md:px-8 md:flex-1 rounded-full md:rounded-[1.5rem] md:gap-3 font-black uppercase md:tracking-widest bg-rose-500 text-white shadow-2xl shadow-rose-500/20 transition-all hover:bg-rose-600 hover:-translate-y-1 active:scale-95 border-b-4 border-rose-700 p-0 md:py-2"
-                    >
+                    <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
                         <ArrowUpRight className="h-6 w-6 sm:h-5 sm:w-5" />
-                        <span className="hidden md:inline">Pay Out</span>
+                        <span className="hidden md:block text-center">
+                            Pay Out
+                        </span>
                     </Button>
                 </AddTransactionModal>
 
@@ -221,11 +221,11 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                     direction={TransactionDirection.IN}
                     path={`/accounts/${account.id}`}
                 >
-                    <Button
-                        className="h-14 w-14 md:h-16 md:px-8 md:flex-1 rounded-full md:rounded-[1.5rem] md:gap-3 font-black uppercase md:tracking-widest bg-emerald-500 text-white shadow-2xl shadow-emerald-500/20 transition-all hover:bg-emerald-600 hover:-translate-y-1 active:scale-95 border-b-4 border-emerald-700 p-0 md:py-2"
-                    >
+                    <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
                         <ArrowDownLeft className="h-6 w-6 sm:h-5 sm:w-5" />
-                        <span className="hidden md:inline">Receive</span>
+                        <span className="hidden md:block text-center">
+                            Receive
+                        </span>
                     </Button>
                 </AddTransactionModal>
             </FooterButtons>

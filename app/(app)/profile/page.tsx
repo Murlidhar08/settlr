@@ -53,9 +53,7 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="min-h-screen bg-background pb-32">
-            <BackHeader title="Profile" backUrl="/settings" />
-
+        <div className="w-full bg-background pb-32">
             <motion.div
                 variants={containerVariants}
                 initial="hidden"

@@ -77,7 +77,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
   };
 
   return (
-    <div className="relative min-h-screen max-w-full bg-background">
+    <div className="relative w-full bg-background">
 
       {/* Top App Bar */}
       <BackHeaderClient
@@ -86,7 +86,7 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
 
       {/* Main Content */}
       <div className="mx-auto max-w-4xl mt-6 space-y-8 px-6">
-        <main className="flex-1 overflow-y-auto pb-24">
+        <main className="pb-24">
           {/* Balance Card */}
           <BalanceCard
             totalReceived={totalReceived}
