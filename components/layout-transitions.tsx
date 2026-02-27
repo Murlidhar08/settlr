@@ -14,7 +14,7 @@ export function LayoutTransitions({ children }: { children: React.ReactNode }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.2, ease: "easeInOut" }}
-                className="flex-1 flex flex-col bg-background transition-[width] duration-300 ease-in-out h-full w-full"
+                className="flex-1 flex flex-col bg-background transition-[width] duration-300 ease-in-out w-full pb-34"
             >
                 {children}
             </motion.main>

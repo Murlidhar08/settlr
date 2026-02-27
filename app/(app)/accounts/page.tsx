@@ -7,7 +7,7 @@ export default async function AccountsPage() {
     const { language } = await getUserConfig();
 
     return (
-        <div className="w-full bg-background min-h-screen">
+        <div className="flex-1 w-full bg-background min-h-screen pb-32">
             <Suspense fallback={<AccountsSkeleton />}>
                 <AccountsContent language={language} />
             </Suspense>

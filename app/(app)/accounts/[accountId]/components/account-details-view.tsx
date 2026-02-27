@@ -73,7 +73,7 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
     }
 
     return (
-        <div className="min-h-full bg-background relative overflow-x-hidden">
+        <div className="min-h-full bg-background relative overflow-x-hidden pb-32">
             {/* Background blobs */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden isolate">
                 <motion.div
@@ -91,35 +91,35 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className={cn(
-                        "relative overflow-hidden rounded-[3rem] p-8 shadow-2xl border-2 border-white/10 bg-linear-to-br",
+                        "relative overflow-hidden rounded-[2.5rem] sm:rounded-[3rem] p-6 sm:p-8 shadow-2xl border-2 border-white/10 bg-linear-to-br",
                         getThemeColors()
                     )}
                 >
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 sm:gap-8">
                         <div className="space-y-4">
                             <div className="flex items-center gap-3">
                                 <div className={cn(
-                                    "h-12 w-12 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20",
+                                    "h-10 w-10 sm:h-12 sm:w-12 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20",
                                     isDarkCard ? "bg-white/10" : "bg-primary/10 text-primary"
                                 )}>
-                                    {getIcon(28)}
+                                    {getIcon(24)}
                                 </div>
                                 <div>
-                                    <h1 className="text-2xl font-black tracking-tight">{account.name}</h1>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
+                                    <h1 className="text-xl sm:text-2xl font-black tracking-tight">{account.name}</h1>
+                                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
                                         {account.moneyType || account.partyType || account.categoryType || account.type}
                                     </p>
                                 </div>
                             </div>
 
                             <div className="space-y-1">
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50">Current Standing</p>
+                                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] opacity-50">Current Standing</p>
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-5xl font-black tracking-tighter tabular-nums">
+                                    <span className="text-3xl sm:text-5xl font-black tracking-tighter tabular-nums">
                                         {symbol}{Math.abs(stats.balance).toLocaleString()}
                                     </span>
                                     <span className={cn(
-                                        "px-2 py-0.5 rounded-md text-[10px] font-black tracking-widest",
+                                        "px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black tracking-widest",
                                         stats.balance >= 0 ? "bg-emerald-400/20 text-emerald-300" : "bg-rose-400/20 text-rose-300"
                                     )}>
                                         {stats.balance >= 0 ? "CR" : "DR"}
@@ -128,20 +128,20 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 md:w-1/3">
-                            <div className="space-y-2 rounded-2xl bg-white/5 border border-white/5 p-4 backdrop-blur-sm">
+                        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:w-1/3">
+                            <div className="space-y-1.5 sm:space-y-2 rounded-2xl bg-white/5 border border-white/5 p-3 sm:p-4 backdrop-blur-sm">
                                 <div className="flex items-center gap-2 text-emerald-400">
-                                    <ArrowDownLeft size={16} />
-                                    <span className="text-[9px] font-black uppercase tracking-widest">Total In</span>
+                                    <ArrowDownLeft size={14} className="sm:size-4" />
+                                    <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Total In</span>
                                 </div>
-                                <p className="text-xl font-black tabular-nums">{symbol}{stats.totalIn.toLocaleString()}</p>
+                                <p className="text-lg sm:text-xl font-black tabular-nums">{symbol}{stats.totalIn.toLocaleString()}</p>
                             </div>
-                            <div className="space-y-2 rounded-2xl bg-white/5 border border-white/5 p-4 backdrop-blur-sm">
+                            <div className="space-y-1.5 sm:space-y-2 rounded-2xl bg-white/5 border border-white/5 p-3 sm:p-4 backdrop-blur-sm">
                                 <div className="flex items-center gap-2 text-rose-400">
-                                    <ArrowUpRight size={16} />
-                                    <span className="text-[9px] font-black uppercase tracking-widest">Total Out</span>
+                                    <ArrowUpRight size={14} className="sm:size-4" />
+                                    <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Total Out</span>
                                 </div>
-                                <p className="text-xl font-black tabular-nums">{symbol}{stats.totalOut.toLocaleString()}</p>
+                                <p className="text-lg sm:text-xl font-black tabular-nums">{symbol}{stats.totalOut.toLocaleString()}</p>
                             </div>
                         </div>
                     </div>
@@ -207,11 +207,10 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                     path={`/accounts/${account.id}`}
                 >
                     <Button
-                        size="lg"
-                        className="px-8 flex-1 h-16 rounded-[1.5rem] gap-3 font-black uppercase tracking-widest bg-rose-500 text-white shadow-2xl shadow-rose-500/20 transition-all hover:bg-rose-600 hover:-translate-y-1 active:scale-95 border-b-4 border-rose-700"
+                        className="h-14 w-14 md:h-16 md:px-8 md:flex-1 rounded-full md:rounded-[1.5rem] md:gap-3 font-black uppercase md:tracking-widest bg-rose-500 text-white shadow-2xl shadow-rose-500/20 transition-all hover:bg-rose-600 hover:-translate-y-1 active:scale-95 border-b-4 border-rose-700 p-0 md:py-2"
                     >
-                        <ArrowUpRight className="h-5 w-5" />
-                        Pay Out
+                        <ArrowUpRight className="h-6 w-6 sm:h-5 sm:w-5" />
+                        <span className="hidden md:inline">Pay Out</span>
                     </Button>
                 </AddTransactionModal>
 
@@ -223,11 +222,10 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                     path={`/accounts/${account.id}`}
                 >
                     <Button
-                        size="lg"
-                        className="px-8 flex-1 h-16 rounded-[1.5rem] gap-3 font-black uppercase tracking-widest bg-emerald-500 text-white shadow-2xl shadow-emerald-500/20 transition-all hover:bg-emerald-600 hover:-translate-y-1 active:scale-95 border-b-4 border-emerald-700"
+                        className="h-14 w-14 md:h-16 md:px-8 md:flex-1 rounded-full md:rounded-[1.5rem] md:gap-3 font-black uppercase md:tracking-widest bg-emerald-500 text-white shadow-2xl shadow-emerald-500/20 transition-all hover:bg-emerald-600 hover:-translate-y-1 active:scale-95 border-b-4 border-emerald-700 p-0 md:py-2"
                     >
-                        <ArrowDownLeft className="h-5 w-5" />
-                        Receive
+                        <ArrowDownLeft className="h-6 w-6 sm:h-5 sm:w-5" />
+                        <span className="hidden md:inline">Receive</span>
                     </Button>
                 </AddTransactionModal>
             </FooterButtons>

@@ -8,6 +8,7 @@ import { FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { getTransactionPerspective } from "@/lib/transaction-logic"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 import { t } from "@/lib/languages/i18n"
+import { cn } from "@/lib/utils"
 
 export default async function SummaryCard() {
   const session = await getUserSession();
@@ -56,10 +57,12 @@ export default async function SummaryCard() {
   let payable = 0;
   let todayIn = 0;
   let todayOut = 0;
+  let liquidCash = 0;
 
   // Process Party Balances for Receivables/Payables
   const partyToAccId = new Map(partyAccs.map(a => [a.partyId!, a.id]));
   const partyBalances: Record<string, number> = {};
+  const moneyBalances: Record<string, number> = {};
 
   transactions.forEach(tx => {
     const amount = Number(tx.amount);
@@ -68,6 +71,14 @@ export default async function SummaryCard() {
     if (tx.date >= startOfDay && tx.date <= endOfDay) {
       if (moneyAccIds.has(tx.toAccountId)) todayIn += amount;
       if (moneyAccIds.has(tx.fromAccountId)) todayOut += amount;
+    }
+
+    // Money Account Balances
+    if (moneyAccIds.has(tx.toAccountId)) {
+      moneyBalances[tx.toAccountId] = (moneyBalances[tx.toAccountId] || 0) + amount;
+    }
+    if (moneyAccIds.has(tx.fromAccountId)) {
+      moneyBalances[tx.fromAccountId] = (moneyBalances[tx.fromAccountId] || 0) - amount;
     }
 
     // Party Balance logic
@@ -89,30 +100,64 @@ export default async function SummaryCard() {
     else if (balance < 0) payable += Math.abs(balance);
   });
 
+  Object.values(moneyBalances).forEach(bal => {
+    liquidCash += bal;
+  })
+
   const todayNetCash = todayIn - todayOut;
+  const netWorth = liquidCash + receivable - payable;
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      {/* Total Liquid Cash - Premium Card */}
+      <div className="relative overflow-hidden rounded-3xl sm:rounded-[2.5rem] bg-indigo-600 dark:bg-indigo-500/90 group p-5 sm:p-8 text-white shadow-2xl shadow-indigo-500/20 transition-all hover:-translate-y-1 hover:shadow-indigo-500/30 border border-white/10 backdrop-blur-md">
+        <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-white/20 blur-3xl group-hover:bg-white/30 transition-all duration-700" />
+        <div className="absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-indigo-400/20 blur-3xl transition-all duration-700" />
+
+        <div className="relative z-10 flex justify-between items-start">
+          <div className="space-y-1">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Total Cash</p>
+            <p className="text-2xl font-black tracking-tighter sm:text-4xl">
+              {formatAmount(liquidCash, currency)}
+            </p>
+          </div>
+          <div className="h-10 w-10 sm:h-14 sm:w-14 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+            <PiggyBank className="h-5 w-5 sm:h-7 sm:w-7 text-white" />
+          </div>
+        </div>
+
+        <div className="relative z-10 mt-6 flex items-center gap-3">
+          <div className="px-3 py-1 rounded-full bg-white/10 border border-white/10 backdrop-blur-md">
+            <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest mr-2">Net Worth</span>
+            <span className="text-xs font-black text-white">{formatAmount(netWorth, currency)}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Today's Cash Flow */}
-      <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 group dark:bg-slate-950 p-8 text-white shadow-2xl shadow-indigo-500/10 transition-all hover:-translate-y-1 hover:shadow-indigo-500/20 border border-white/5">
-        <div className="absolute -top-20 -right-20 h-48 w-100 rounded-full bg-indigo-500/40 blur-3xl group-hover:bg-indigo-500/20 transition-colors" />
-        <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent via-white/60 to-transparent" />
+      <div className="relative overflow-hidden rounded-3xl sm:rounded-[2.5rem] bg-slate-900 group dark:bg-slate-950 p-5 sm:p-8 text-white shadow-2xl shadow-indigo-500/10 transition-all hover:-translate-y-1 hover:shadow-indigo-500/20 border border-white/5">
+        <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-indigo-500/30 blur-3xl group-hover:bg-indigo-500/20 transition-all duration-700" />
 
         <div className="relative z-10 flex justify-between items-start">
           <div className="space-y-1">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">{t("dashboard.cash_flow", language)}</p>
-            <p className="text-4xl font-black tracking-tighter">
+            <p className="text-2xl font-black tracking-tighter sm:text-4xl">
               {formatAmount(todayNetCash, currency)}
             </p>
           </div>
-          <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center backdrop-blur-md border border-white/10 shadow-inner group-hover:scale-110 transition-transform">
-            <PiggyBank className="h-6 w-6 text-indigo-400" />
+          <div className="h-10 w-10 sm:h-14 sm:w-14 rounded-2xl bg-white/5 flex items-center justify-center backdrop-blur-md border border-white/10 shadow-inner group-hover:scale-110 transition-all duration-500">
+            <div className={cn(
+              "h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]",
+              todayNetCash >= 0
+                ? "bg-emerald-400 shadow-emerald-400/50 animate-pulse"
+                : "bg-rose-400 shadow-rose-400/50 animate-pulse"
+            )} />
           </div>
         </div>
 
-        <div className={`relative z-10 mt-6 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-wider backdrop-blur-md border ${todayNetCash >= 0
-          ? "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"
-          : "bg-rose-400/10 text-rose-400 border-rose-400/20"
+        <div className={`relative z-10 mt-6 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-wider backdrop-blur-md border transition-all ${todayNetCash >= 0
+          ? "bg-emerald-400/10 text-emerald-400 border-emerald-400/20 group-hover:bg-emerald-400/20"
+          : "bg-rose-400/10 text-rose-400 border-rose-400/20 group-hover:bg-rose-400/20"
           }`}
         >
           {todayNetCash >= 0 ? (

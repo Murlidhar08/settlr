@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Plus, Wallet } from "lucide-react"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { t } from "@/lib/languages/i18n"
+import { FooterButtons } from "@/components/footer-buttons"
 
 export function AccountsContent({ language }: { language: string }) {
     const { data: allAccounts = [] } = useQuery({
@@ -28,20 +29,11 @@ export function AccountsContent({ language }: { language: string }) {
     ];
 
     return (
-        <div className="w-full bg-background pb-28">
+        <div className="w-full bg-background">
             <div className="mx-auto w-full max-w-4xl px-6 py-8">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-16">
-                    <div>
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 ml-1 mb-1">{t("accounts.overview", language)}</h2>
-                        <p className="text-3xl font-black tracking-tight">{t("accounts.total", language, { count: accounts.length.toString() })}</p>
-                    </div>
-
-                    <AddAccountModal>
-                        <Button className="h-14 sm:h-16 px-8 rounded-2xl gap-3 font-black uppercase tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all text-xs">
-                            <Plus size={20} className="stroke-3" />
-                            {t("accounts.new", language)}
-                        </Button>
-                    </AddAccountModal>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 ml-1 mb-1">{t("accounts.overview", language)}</h2>
+                    <p className="text-3xl font-black tracking-tight">{t("accounts.total", language, { count: accounts.length.toString() })}</p>
                 </div>
 
                 {accounts.length === 0 ? (
@@ -88,6 +80,17 @@ export function AccountsContent({ language }: { language: string }) {
                     </div>
                 )}
             </div>
+
+            <FooterButtons>
+                <AddAccountModal>
+                    <Button className="h-14 w-14 sm:h-16 sm:w-auto sm:px-8 rounded-full sm:rounded-2xl sm:gap-3 font-black uppercase tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all text-xs p-0 sm:py-2">
+                        <Plus size={20} className="stroke-3" />
+                        <span className="hidden sm:inline-block">
+                            {t("accounts.new", language)}
+                        </span>
+                    </Button>
+                </AddAccountModal>
+            </FooterButtons>
         </div>
     );
 }
