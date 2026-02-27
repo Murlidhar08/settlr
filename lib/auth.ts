@@ -16,7 +16,7 @@ import { getVerificationEmailHtml } from "./templates/email-verification";
 import { getPasswordResetSuccessEmailHtml } from "./templates/email-password-reseted";
 import { getDeleteAccountEmailHtml } from "./templates/email-delete-account";
 import { headers } from "next/headers";
-import { Currency, ThemeMode, FinancialAccountType, MoneyType, CategoryType } from "./generated/prisma/enums";
+import { Currency, ThemeMode, FinancialAccountType, MoneyType, CategoryType, UserType } from "./generated/prisma/enums";
 import { envServer } from "./env.server";
 
 export const auth = betterAuth({
@@ -187,6 +187,10 @@ export const auth = betterAuth({
     // },
   },
   plugins: [
+    admin({
+      defaultRole: UserType.USER,
+      adminRole: UserType.ADMIN
+    }),
     nextCookies(),
     twoFactor(),
     customSession(async ({ user, session }) => {
@@ -197,6 +201,7 @@ export const auth = betterAuth({
           address: true,
           activeBusinessId: true,
           twoFactorEnabled: true,
+          role: true,
 
           // current session context
           sessions: {
@@ -238,6 +243,7 @@ export const auth = betterAuth({
 
         user: {
           ...user,
+          role: dbUser?.role,
           activeBusinessId: activeBusinessId,
           contactNo: dbUser?.contactNo,
           address: dbUser?.address,
@@ -245,10 +251,7 @@ export const auth = betterAuth({
         },
       }
     }),
-    lastLoginMethod(),
-    admin({
-      defaultRole: "user"
-    })
+    lastLoginMethod()
   ],
   databaseHooks: {
     user: {

@@ -17,6 +17,8 @@ import { useState } from "react";
 import { envClient } from "@/lib/env.client";
 import { useUserConfig } from "./providers/user-config-provider";
 import { t } from "@/lib/languages/i18n";
+import { useSession } from "@/lib/auth-client";
+import { UserType } from "@/lib/generated/prisma/enums";
 
 type NavItem = {
   label: string;
@@ -29,11 +31,15 @@ const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
 
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === UserType.ADMIN;
+
   const navItems: NavItem[] = [
     { label: t("nav.dashboard", language), icon: <LayoutDashboard size={20} />, href: "/dashboard" },
     { label: t("nav.accounts", language), icon: <LandmarkIcon size={20} />, href: "/accounts" },
     { label: t("nav.parties", language), icon: <User2Icon size={20} />, href: "/parties" },
     { label: t("nav.cashbook", language), icon: <Wallet size={20} />, href: "/cashbook" },
+    ...(isAdmin ? [{ label: t("nav.admin", language), icon: <Settings size={20} />, href: "/admin" }] : []),
     { label: t("nav.settings", language), icon: <Settings size={20} />, href: "/settings" },
   ];
 

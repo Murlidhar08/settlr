@@ -47,6 +47,9 @@ export default {
         employees: "कर्मचारी",
         other: "अन्य",
     },
+    admin: {
+        title: "एडमिन पैनल",
+    },
     cashbook: {
         title: "कैशबुक",
         you_pay: "आप भुगतान करें",
@@ -69,6 +72,7 @@ export default {
         accounts: "खाते",
         parties: "पार्टियां",
         cashbook: "कैशबुक",
+        admin: "एडमिन",
         settings: "सेटिंग्स",
     },
     sidebar: {

@@ -15,7 +15,7 @@ export const authClient = createAuthClient({
       },
     }),
     lastLoginMethodClient(),
-    adminClient(),
+    adminClient()
   ],
 })
 

@@ -13,6 +13,7 @@ const ROUTE_TITLE_MAP: Record<string, string> = {
     "/cashbook": "cashbook.title",
     "/settings": "settings.title",
     "/profile": "settings.title", // Or map to a specific profile key if exists
+    "/admin": "admin.title",
 };
 
 export function AppHeader() {
