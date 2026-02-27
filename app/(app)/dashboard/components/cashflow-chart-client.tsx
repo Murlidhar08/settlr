@@ -8,8 +8,7 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    ResponsiveContainer,
-    TooltipProps
+    ResponsiveContainer
 } from "recharts"
 import { motion } from "framer-motion"
 import { Currency } from "@/lib/generated/prisma/enums"
@@ -30,7 +29,12 @@ interface CashflowChartClientProps {
     language: string
 }
 
-const CustomTooltip = ({ active, payload, label, currency }: TooltipProps<number, string> & { currency: Currency }) => {
+const CustomTooltip = ({ active, payload, label, currency }: {
+    active?: boolean;
+    payload?: any[];
+    label?: string;
+    currency: Currency
+}) => {
     if (active && payload && payload.length) {
         return (
             <div className="rounded-2xl border border-border/50 bg-background/90 p-4 shadow-2xl backdrop-blur-xl">
