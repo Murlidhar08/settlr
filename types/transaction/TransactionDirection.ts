@@ -1,4 +1,5 @@
 export enum TransactionDirection {
     IN = "IN",
-    OUT = "OUT"
+    OUT = "OUT",
+    NEUTRAL = "NEUTRAL"
 }

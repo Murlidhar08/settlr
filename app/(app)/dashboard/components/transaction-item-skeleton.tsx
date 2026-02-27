@@ -1,22 +1,20 @@
 export function TransactionItemSkeleton() {
   return (
     <div className="block">
-      <div className="flex items-center justify-between rounded-2xl border bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center gap-4">
-          {/* Icon skeleton */}
-          <div className="h-12 w-12 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-700" />
+      <div className="flex items-center gap-4 p-4 rounded-[1.5rem] border bg-card/40 backdrop-blur-sm shadow-xs">
+        {/* Icon skeleton */}
+        <div className="h-12 w-12 shrink-0 animate-pulse rounded-2xl bg-muted/60" />
 
-          <div className="space-y-2">
-            {/* Meta */}
-            <div className="h-3 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+        <div className="flex-1 space-y-2">
+          {/* Title */}
+          <div className="h-4 w-1/3 animate-pulse rounded-lg bg-muted" />
 
-            {/* Title */}
-            <div className="h-4 w-40 animate-pulse rounded bg-slate-300 dark:bg-slate-600" />
-          </div>
+          {/* Subtitle / Path */}
+          <div className="h-3 w-1/2 animate-pulse rounded-lg bg-muted/50" />
         </div>
 
         {/* Amount */}
-        <div className="h-4 w-20 animate-pulse rounded bg-slate-300 dark:bg-slate-600" />
+        <div className="h-5 w-20 animate-pulse rounded-lg bg-muted" />
       </div>
     </div>
   );

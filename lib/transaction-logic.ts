@@ -61,6 +61,10 @@ export function getBusinessTransactionPerspective(
     toAccountType?: string,
     fromAccountType?: string
 ): TransactionDirection | undefined {
+    if (toAccountType === FinancialAccountType.MONEY && fromAccountType === FinancialAccountType.MONEY) {
+        return TransactionDirection.NEUTRAL;
+    }
+
     if (toAccountType === FinancialAccountType.MONEY && fromAccountType !== FinancialAccountType.MONEY) {
         return TransactionDirection.IN;
     }

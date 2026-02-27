@@ -283,15 +283,19 @@ export const AddTransactionModal = ({
   // Filtering Logic
   const moneyAccounts = allAccounts.filter(a => a.type === FinancialAccountType.MONEY)
   const partnerOptions = allAccounts.filter(acc => {
-    if (mode === ModalMode.PARTY) return false // Partner is fixed
+    if (mode === ModalMode.PARTY)
+      return false // Partner is fixed
+
     if (mode === ModalMode.ACCOUNT) {
       // Show list of accounts where partyId is null, except current
       return acc.partyId === null && acc.id !== (isOut ? moneyAccountId : accountId)
     }
+
     if (mode === ModalMode.CASHBOOK) {
       const targetCat = isOut ? CategoryType.EXPENSE : CategoryType.INCOME
       return acc.type === FinancialAccountType.CATEGORY && acc.categoryType === targetCat
     }
+
     return true
   })
 
@@ -437,33 +441,35 @@ export const AddTransactionModal = ({
                   className="col-span-full space-y-6 overflow-hidden"
                 >
                   {/* Money Account Selection */}
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
-                      <Wallet size={12} /> {moneyLabel}
-                    </Label>
-                    <Select
-                      value={moneyAccountId}
-                      onValueChange={(val) => val && setMoneyAccountId(val)}
-                    >
-                      <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary transition-all text-foreground bg-background">
-                        <SelectValue placeholder="Choose Account">
-                          {allAccounts.find(a => a.id === moneyAccountId)?.name}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
-                        {moneyAccounts.map(acc => (
-                          <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
-                            <div className="flex justify-between items-center w-full gap-4">
-                              <span>{acc.name}</span>
-                              <span className="text-xs font-bold tabular-nums text-muted-foreground mr-10">
-                                ₹{acc.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {mode !== ModalMode.ACCOUNT && (
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
+                        <Wallet size={12} /> {moneyLabel}
+                      </Label>
+                      <Select
+                        value={moneyAccountId}
+                        onValueChange={(val) => val && setMoneyAccountId(val)}
+                      >
+                        <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary transition-all text-foreground bg-background">
+                          <SelectValue placeholder="Choose Account">
+                            {allAccounts.find(a => a.id === moneyAccountId)?.name}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
+                          {moneyAccounts.map(acc => (
+                            <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
+                              <div className="flex justify-between items-center w-full gap-4">
+                                <span>{acc.name}</span>
+                                <span className="text-xs font-bold tabular-nums text-muted-foreground mr-10">
+                                  ₹{acc.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
 
                   {/* Partner Account Selection (Category/Transfer) */}
                   {mode !== ModalMode.PARTY && (
