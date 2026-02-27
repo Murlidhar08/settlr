@@ -53,7 +53,7 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="w-full bg-background pb-32">
+        <div className="w-full bg-background">
             <motion.div
                 variants={containerVariants}
                 initial="hidden"
@@ -107,24 +107,24 @@ export default function ProfilePage() {
 
                 {/* Actions Section */}
                 <FooterButtons>
-                    <div className="flex flex-col sm:flex-row gap-3 w-[calc(100vw-2.5rem)] max-w-lg">
-                        <Button
-                            onClick={() => router.push("/edit-profile" as any)}
-                            className="flex-1 h-14 rounded-2xl gap-3 font-black uppercase tracking-[0.1em] shadow-xl shadow-primary/20 transition-all hover:shadow-2xl active:scale-[0.98]"
-                        >
-                            <Edit3 size={18} />
-                            Edit Profile
-                        </Button>
+                    {/* Edit Profile */}
+                    <Button
+                        onClick={() => router.push("/edit-profile" as any)}
+                        className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:bg-primary/90 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2"
+                    >
+                        <Edit3 size={18} />
+                        <span className="hidden md:block">Edit Profile</span>
+                    </Button>
 
-                        <Button
-                            onClick={handleLogout}
-                            variant="outline"
-                            className="flex-1 h-14 rounded-2xl gap-3 font-black uppercase tracking-[0.1em] border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all duration-300"
-                        >
-                            <LogOut size={18} />
-                            Logout
-                        </Button>
-                    </div>
+                    {/* Logout */}
+                    <Button
+                        onClick={handleLogout}
+                        variant="outline"
+                        className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase text-rose-600 shadow-lg shadow-rose-600/30 hover:text-white hover:bg-rose-900 hover:shadow-xl p-0 md:py-2"
+                    >
+                        <LogOut size={18} />
+                        <span className="hidden md:block">Logout</span>
+                    </Button>
                 </FooterButtons>
             </motion.div>
         </div>
@@ -148,7 +148,6 @@ function DetailRow({ icon: Icon, label, value }: { icon: any, label: string, val
 function ProfileSkeleton() {
     return (
         <div className="min-h-screen bg-background">
-            <BackHeader title="Profile" />
             <div className="mx-auto max-w-lg px-6 mt-8 space-y-8">
                 <div className="h-64 w-full animate-pulse rounded-[2.5rem] bg-muted" />
                 <div className="space-y-4">
