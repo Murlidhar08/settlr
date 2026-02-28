@@ -4,7 +4,7 @@ import { cache } from "react";
 
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { admin, customSession, lastLoginMethod, twoFactor } from "better-auth/plugins"
+import { admin as adminPlugin, customSession, lastLoginMethod, twoFactor } from "better-auth/plugins"
 
 // Lib
 import { prisma } from "./prisma";
@@ -18,6 +18,7 @@ import { getDeleteAccountEmailHtml } from "./templates/email-delete-account";
 import { headers } from "next/headers";
 import { Currency, ThemeMode, FinancialAccountType, MoneyType, CategoryType, UserType } from "./generated/prisma/enums";
 import { envServer } from "./env.server";
+import { ac, admin, superadmin, user } from "./permissions";
 
 export const auth = betterAuth({
   appName: envServer.NEXT_PUBLIC_APP_NAME,
@@ -187,9 +188,19 @@ export const auth = betterAuth({
     // },
   },
   plugins: [
-    admin({
+    adminPlugin({
+      ac,
+      adminRoles: [UserType.ADMIN, UserType.SUPERADMIN],
       defaultRole: UserType.USER,
-      adminRole: UserType.ADMIN
+      adminRole: UserType.ADMIN,
+      defaultBanReason: "Spamming",
+      bannedUserMessage: "Your account is suspended. Contact support.",
+      impersonationSessionDuration: 60 * 60, // 1 hour
+      roles: {
+        admin,
+        superadmin,
+        user,
+      }
     }),
     nextCookies(),
     twoFactor(),

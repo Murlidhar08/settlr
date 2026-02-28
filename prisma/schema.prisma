@@ -193,6 +193,7 @@ model Transaction {
 }
 
 enum UserType {
+  SUPERADMIN
   ADMIN
   USER
 }

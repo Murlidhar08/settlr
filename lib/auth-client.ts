@@ -1,6 +1,7 @@
 import { createAuthClient } from "better-auth/react"
 import { adminClient, customSessionClient, inferAdditionalFields, lastLoginMethodClient, twoFactorClient } from "better-auth/client/plugins"
 import { Auth } from "./auth";
+import { ac, admin, superadmin, user } from "./permissions";
 
 /**
  * Single source of truth for auth client
@@ -15,7 +16,14 @@ export const authClient = createAuthClient({
       },
     }),
     lastLoginMethodClient(),
-    adminClient()
+    adminClient({
+      ac,
+      roles: {
+        admin,
+        superadmin,
+        user
+      }
+    })
   ],
 })
 
