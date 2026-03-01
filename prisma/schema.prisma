@@ -22,7 +22,7 @@ model User {
   banned            Boolean?      @default(false)
   banReason         String?
   banExpires        DateTime?
-  role              UserType?     @default(USER)
+  role              String?       @default("user")
   accounts          Account[]
   createdBusinesses Business[]
   sessions          Session[]
@@ -190,12 +190,6 @@ model Transaction {
   @@index([userId])
   @@index([partyId, date])
   @@map("transaction")
-}
-
-enum UserType {
-  SUPERADMIN
-  ADMIN
-  USER
 }
 
 enum Currency {

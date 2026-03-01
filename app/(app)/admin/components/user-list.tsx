@@ -23,13 +23,10 @@ import {
     Ban,
     Slash,
     UserCircle,
-    LogOut,
     UserX,
-    UserCog,
     RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
-import { UserType } from "@/lib/generated/prisma/enums";
 
 interface User {
     id: string;
@@ -67,10 +64,10 @@ export function UserList({ initialUsers }: UserListProps) {
         }
     };
 
-    const setRole = async (userId: string, role: UserType) => {
+    const setRole = async (userId: string, role: string) => {
         await handleAction(
             userId,
-            () => authClient.admin.setRole({ userId, role: role as any }),
+            () => authClient.admin.setRole({ userId, role: role as "admin" | "user" }),
             `Role updated to ${role}`
         );
 
@@ -115,8 +112,6 @@ export function UserList({ initialUsers }: UserListProps) {
         setUsers(prev => prev.filter(u => u.id !== userId));
     };
 
-    const { data: sessionData } = authClient.useSession();
-    const isImpersonating = !!(sessionData?.session as any)?.impersonatedBy;
 
     const unbanUser = async (userId: string) => {
         await handleAction(
@@ -127,38 +122,8 @@ export function UserList({ initialUsers }: UserListProps) {
         setUsers(prev => prev.map(u => u.id === userId ? { ...u, banned: false } : u));
     };
 
-    const stopImpersonating = async () => {
-        try {
-            await authClient.admin.stopImpersonating();
-            toast.success("Stopped impersonating");
-            window.location.reload();
-        } catch (err) {
-            toast.error("Failed to stop impersonating");
-        }
-    };
-
     return (
         <div className="space-y-6">
-            {isImpersonating && (
-                <div className="flex items-center justify-between p-4 rounded-[2rem] bg-amber-500/10 border border-amber-500/20 animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-amber-500/20 rounded-2xl">
-                            <ShieldAlert className="text-amber-600" size={20} />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="font-black text-amber-900 text-sm tracking-tight leading-none mb-1">Impersonation Mode</span>
-                            <span className="text-[10px] font-bold text-amber-700/60 uppercase tracking-wider">Actively viewing as {sessionData?.user.name}</span>
-                        </div>
-                    </div>
-                    <Button
-                        onClick={stopImpersonating}
-                        className="rounded-xl bg-amber-500 text-white hover:bg-amber-600 font-bold text-xs h-9 px-4"
-                    >
-                        <LogOut size={14} className="mr-2" />
-                        Stop
-                    </Button>
-                </div>
-            )}
             <div className="rounded-[2.5rem] border-none shadow-2xl shadow-primary/5 bg-muted/30 backdrop-blur-xl overflow-hidden">
                 <div className="p-8 pt-0">
                     <div className="space-y-3">
@@ -186,12 +151,7 @@ export function UserList({ initialUsers }: UserListProps) {
                                             <span className="font-black text-base tracking-tight text-foreground/90">
                                                 {user.name}
                                             </span>
-                                            {user.role === UserType.SUPERADMIN && (
-                                                <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-none text-[9px] font-black uppercase tracking-[0.1em] h-4 scale-90 origin-left">
-                                                    Superadmin
-                                                </Badge>
-                                            )}
-                                            {user.role === UserType.ADMIN && (
+                                            {user.role === "admin" && (
                                                 <Badge variant="secondary" className="bg-indigo-500/10 text-indigo-500 border-none text-[9px] font-black uppercase tracking-[0.1em] h-4 scale-90 origin-left">
                                                     Admin
                                                 </Badge>
@@ -209,36 +169,18 @@ export function UserList({ initialUsers }: UserListProps) {
                                 <div className="flex items-center gap-2">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger>
-                                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-background/50 border border-border/50 opacity-0 group-hover:opacity-100 transition-all hover:bg-primary/10 hover:border-primary/20" disabled={loading === user.id}>
+                                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-background/50 border border-border/50 opacity-0 group-hover:opacity-100 transition-all hover:bg-primary/10 hover:border-primary/50" disabled={loading === user.id}>
                                                 <MoreHorizontal size={18} />
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end" className="w-60 rounded-3xl p-2 border-none shadow-2xl bg-background/95 backdrop-blur-xl">
                                             <DropdownMenuGroup>
-                                                <DropdownMenuLabel className="px-3 pt-3 pb-1 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">User Actions</DropdownMenuLabel>
-                                                <DropdownMenuSeparator className="mx-2 bg-border/40" />
-
                                                 {/* Role Management */}
                                                 <DropdownMenuItem
-                                                    onClick={() => setRole(user.id, user.role === UserType.SUPERADMIN ? UserType.ADMIN : UserType.SUPERADMIN)}
-                                                    className="rounded-2xl gap-3 p-3 focus:bg-amber-500/10 focus:text-amber-600 transition-colors"
+                                                    onClick={() => setRole(user.id, user.role === "admin" ? "user" : "admin")}
+                                                    className="rounded-2xl gap-3 p-3 focus:bg-indigo-500/10 focus:text-indigo-600 transition-all duration-300 cursor-pointer active:scale-95"
                                                 >
-                                                    <div className="p-2 bg-amber-500/10 rounded-xl">
-                                                        <UserCog size={16} className="text-amber-500" />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="font-bold text-sm">
-                                                            {user.role === UserType.SUPERADMIN ? "Demote to Admin" : "Promote to Superadmin"}
-                                                        </span>
-                                                        <span className="text-[10px] text-muted-foreground/60">Change authority level</span>
-                                                    </div>
-                                                </DropdownMenuItem>
-
-                                                <DropdownMenuItem
-                                                    onClick={() => setRole(user.id, user.role === UserType.ADMIN ? UserType.USER : UserType.ADMIN)}
-                                                    className="rounded-2xl gap-3 p-3 focus:bg-indigo-500/10 focus:text-indigo-600 transition-colors"
-                                                >
-                                                    {user.role === UserType.ADMIN ? (
+                                                    {user.role === "admin" ? (
                                                         <>
                                                             <div className="p-2 bg-muted rounded-xl">
                                                                 <UserMinus size={16} className="text-muted-foreground" />
@@ -261,27 +203,24 @@ export function UserList({ initialUsers }: UserListProps) {
                                                     )}
                                                 </DropdownMenuItem>
 
-                                                <DropdownMenuSeparator className="mx-2 bg-border/40" />
-                                                <DropdownMenuLabel className="px-3 pt-3 pb-1 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">Advanced Powers</DropdownMenuLabel>
-
                                                 {/* Impersonation */}
                                                 <DropdownMenuItem
                                                     onClick={() => impersonateUser(user.id)}
-                                                    className="rounded-2xl gap-3 p-3 focus:bg-blue-500/10 focus:text-blue-600 transition-colors"
+                                                    className="rounded-2xl gap-3 p-3 focus:bg-blue-500/10 focus:text-blue-600 transition-all duration-300 cursor-pointer active:scale-95 mt-1"
                                                 >
                                                     <div className="p-2 bg-blue-500/10 rounded-xl">
                                                         <UserCircle size={16} className="text-blue-500" />
                                                     </div>
                                                     <div className="flex flex-col">
                                                         <span className="font-bold text-sm">Impersonate</span>
-                                                        <span className="text-[10px] text-muted-foreground/60">Login as this user</span>
+                                                        <span className="text-[10px] text-muted-foreground">Login as this user</span>
                                                     </div>
                                                 </DropdownMenuItem>
 
                                                 {/* Revoke Sessions */}
                                                 <DropdownMenuItem
                                                     onClick={() => revokeSessions(user.id)}
-                                                    className="rounded-2xl gap-3 p-3 focus:bg-orange-500/10 focus:text-orange-600 transition-colors"
+                                                    className="rounded-2xl gap-3 p-3 focus:bg-orange-500/10 focus:text-orange-600 transition-all duration-300 cursor-pointer active:scale-95 mt-1"
                                                 >
                                                     <div className="p-2 bg-orange-500/10 rounded-xl">
                                                         <RefreshCw size={16} className="text-orange-500" />
@@ -295,7 +234,7 @@ export function UserList({ initialUsers }: UserListProps) {
                                                 {/* Ban Management */}
                                                 <DropdownMenuItem
                                                     onClick={() => user.banned ? unbanUser(user.id) : banUser(user.id)}
-                                                    className="rounded-2xl gap-3 p-3 text-rose-500 focus:bg-rose-500/10 focus:text-rose-600 transition-colors mt-1"
+                                                    className="rounded-2xl gap-3 p-3 focus:bg-rose-500/10 focus:text-rose-600 transition-all duration-300 cursor-pointer active:scale-95 mt-1"
                                                 >
                                                     {user.banned ? (
                                                         <>
@@ -323,7 +262,7 @@ export function UserList({ initialUsers }: UserListProps) {
                                                 {/* Delete User */}
                                                 <DropdownMenuItem
                                                     onClick={() => deleteUser(user.id)}
-                                                    className="rounded-2xl gap-3 p-3 text-rose-600 focus:bg-rose-600 focus:text-white transition-colors mt-1 hover:bg-rose-600"
+                                                    className="rounded-2xl gap-3 p-3 focus:bg-rose-600 focus:text-white transition-all duration-300 cursor-pointer active:scale-95 mt-1"
                                                 >
                                                     <div className="p-2 bg-rose-100 rounded-xl">
                                                         <UserX size={16} className="text-rose-600" />

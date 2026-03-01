@@ -16,9 +16,9 @@ import { getVerificationEmailHtml } from "./templates/email-verification";
 import { getPasswordResetSuccessEmailHtml } from "./templates/email-password-reseted";
 import { getDeleteAccountEmailHtml } from "./templates/email-delete-account";
 import { headers } from "next/headers";
-import { Currency, ThemeMode, FinancialAccountType, MoneyType, CategoryType, UserType } from "./generated/prisma/enums";
+import { Currency, ThemeMode, FinancialAccountType, MoneyType, CategoryType } from "./generated/prisma/enums";
 import { envServer } from "./env.server";
-import { ac, admin, superadmin, user } from "./permissions";
+import { ac, admin, user } from "./permissions";
 
 export const auth = betterAuth({
   appName: envServer.NEXT_PUBLIC_APP_NAME,
@@ -188,20 +188,7 @@ export const auth = betterAuth({
     // },
   },
   plugins: [
-    adminPlugin({
-      ac,
-      adminRoles: [UserType.ADMIN, UserType.SUPERADMIN],
-      defaultRole: UserType.USER,
-      adminRole: UserType.ADMIN,
-      defaultBanReason: "Spamming",
-      bannedUserMessage: "Your account is suspended. Contact support.",
-      impersonationSessionDuration: 60 * 60, // 1 hour
-      roles: {
-        admin,
-        superadmin,
-        user,
-      }
-    }),
+    adminPlugin(),
     nextCookies(),
     twoFactor(),
     customSession(async ({ user, session }) => {
@@ -219,6 +206,7 @@ export const auth = betterAuth({
             where: { id: session.id },
             select: {
               id: true,
+              impersonatedBy: true
             },
             take: 1,
           },
@@ -238,10 +226,12 @@ export const auth = betterAuth({
 
       const activeBusinessId = dbUser?.activeBusinessId ?? null
       const settings = dbUser?.userSettings
+      const dbSession = dbUser?.sessions[0];
 
       return {
         session: {
           ...session,
+          impersonatedBy: dbSession?.impersonatedBy ?? null,
 
           userSettings: {
             currency: settings?.currency ?? Currency.INR,

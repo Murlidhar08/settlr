@@ -13,12 +13,11 @@ import {
   LandmarkIcon,
 } from "lucide-react";
 import clsx from "clsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { envClient } from "@/lib/env.client";
 import { useUserConfig } from "./providers/user-config-provider";
 import { t } from "@/lib/languages/i18n";
 import { useSession } from "@/lib/auth-client";
-import { UserType } from "@/lib/generated/prisma/enums";
 
 type NavItem = {
   label: string;
@@ -32,7 +31,7 @@ const Sidebar = () => {
   const pathname = usePathname();
 
   const { data: session } = useSession();
-  const isAdmin = session?.user?.role === UserType.ADMIN;
+  const isAdmin = session?.user?.role === "admin";
 
   const navItems: NavItem[] = [
     { label: t("nav.dashboard", language), icon: <LayoutDashboard size={20} />, href: "/dashboard" },
@@ -78,6 +77,7 @@ const Sidebar = () => {
               {envClient.NEXT_PUBLIC_APP_NAME}
             </span>
           )}
+          <span>ROLE: {session?.user.role}</span>
         </div>
 
         {/* Nav */}

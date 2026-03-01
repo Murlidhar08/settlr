@@ -1,27 +1,26 @@
-import { getUserSession } from "@/lib/auth";
+import { auth, getUserSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { AdminStats } from "./components/admin-stats";
 import { UserList } from "./components/user-list";
-import { UserType } from "@/lib/generated/prisma/enums";
 import { authClient } from "@/lib/auth-client";
 import { ShieldAlert } from "lucide-react";
+import { headers } from "next/headers";
 
 export default async function AdminPage() {
     const session = await getUserSession();
 
-    // Guard: Only admins/superadmins can access this page
-    const isAdmin = session?.user.role === UserType.ADMIN || session?.user.role === UserType.SUPERADMIN;
+    // Guard: Only admins can access this page
+    const isAdmin = session?.user.role === "admin";
     if (!isAdmin) {
         redirect("/dashboard");
     }
 
-    const { data: usersList, error } = await authClient.admin.listUsers({
-        query: {
-            limit: 100,
-        },
-    });
+    const usersList = await auth.api.listUsers({
+        headers: await headers(),
+        query: { limit: 100, sortBy: "createdAt", sortDirection: "desc" },
+    })
 
-    if (error) {
+    if (!isAdmin) {
         return (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6 animate-in fade-in zoom-in duration-500">
                 <div className="group relative">
@@ -33,7 +32,7 @@ export default async function AdminPage() {
                 <div className="space-y-2">
                     <h2 className="text-3xl font-black tracking-tight text-foreground">Access Restricted</h2>
                     <p className="text-muted-foreground font-semibold max-w-sm mx-auto leading-relaxed italic">
-                        &quot;{error.message || "You do not have the necessary permissions to access this administrative resource."}&quot;
+                        &quot;{"You do not have the necessary permissions to access this administrative resource."}&quot;
                     </p>
                 </div>
                 <div className="flex gap-4">
@@ -51,7 +50,7 @@ export default async function AdminPage() {
     const users = usersList?.users.filter((u: any) => u.id !== session.user.id);
 
     const totalUsers = users?.length || 0;
-    const adminUsers = users?.filter((u: any) => u.role === UserType.ADMIN || u.role === UserType.SUPERADMIN).length || 0;
+    const adminUsers = users?.filter((u: any) => u.role === "admin").length || 0;
     const bannedUsers = users?.filter((u: any) => u.banned).length || 0;
     const activeUsers = totalUsers - bannedUsers;
 

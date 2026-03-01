@@ -1,7 +1,8 @@
 import { createAuthClient } from "better-auth/react"
 import { adminClient, customSessionClient, inferAdditionalFields, lastLoginMethodClient, twoFactorClient } from "better-auth/client/plugins"
 import { Auth } from "./auth";
-import { ac, admin, superadmin, user } from "./permissions";
+import { ac, admin, user } from "./permissions";
+import { hasExternalOtelApiPackage } from "next/dist/build/webpack-config";
 
 /**
  * Single source of truth for auth client
@@ -16,14 +17,7 @@ export const authClient = createAuthClient({
       },
     }),
     lastLoginMethodClient(),
-    adminClient({
-      ac,
-      roles: {
-        admin,
-        superadmin,
-        user
-      }
-    })
+    adminClient()
   ],
 })
 
