@@ -1,17 +1,18 @@
 "use client"
 
-import { format } from "date-fns"
-import { Check, PenSquareIcon, ArrowDownLeft, ArrowUpRight, Clock, Hash, CreditCard } from "lucide-react"
+import { Check, PenSquareIcon, ArrowDownLeft, ArrowUpRight, Clock, Hash, CreditCard, Pencil, Trash2 } from "lucide-react"
 import { BackHeader } from "@/components/back-header"
-import { FooterButtons } from "@/components/footer-buttons"
 import { Button } from "@/components/ui/button"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
-import { DeleteTransactionButton } from "./delete-transaction-button"
 import { motion } from "framer-motion"
 import { Currency } from "@/lib/generated/prisma/enums"
-import { formatAmount, getCurrencySymbol, formatDate, formatTime } from "@/utility/transaction"
+import { formatAmount, formatDate, formatTime } from "@/utility/transaction"
 import { useUserConfig } from "@/components/providers/user-config-provider"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { deleteTransaction } from "@/actions/transaction.actions"
+import { useConfirm } from "@/components/providers/confirm-provider"
+
+import { useState } from "react"
 
 interface TransactionDetailViewProps {
     transaction: any
@@ -21,7 +22,25 @@ interface TransactionDetailViewProps {
 
 export function TransactionDetailView({ transaction, isIn, currency = Currency.INR }: TransactionDetailViewProps) {
     const { dateFormat, timeFormat, currency: configCurrency } = useUserConfig()
-    const symbol = getCurrencySymbol(configCurrency)
+    const confirm = useConfirm()
+    const [isEditOpen, setIsEditOpen] = useState(false)
+
+    const onDelete = async () => {
+        const ok = await confirm({
+            title: "Delete transaction?",
+            description: "This action cannot be undone.",
+            confirmText: "Yes, delete",
+            destructive: true,
+        })
+
+        if (!ok) return
+
+        await deleteTransaction(
+            transaction.id,
+            transaction.partyId || ""
+        )
+    }
+
     return (
         <div className="min-h-full bg-background relative">
             {/* Dynamic Animated Background */}
@@ -54,7 +73,24 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                 />
             </div>
 
-            <BackHeader title="Transaction Details" />
+            <BackHeader
+                title="Transaction Details"
+                description={transaction.description}
+                menuItems={[
+                    {
+                        icon: <Pencil size={18} />,
+                        label: "Edit",
+                        onClick: () => setIsEditOpen(true),
+                        destructive: false
+                    },
+                    {
+                        icon: <Trash2 size={18} />,
+                        label: "Delete",
+                        onClick: async () => await onDelete(),
+                        destructive: true
+                    }
+                ]}
+            />
 
             <main className="relative z-10 mx-auto max-w-4xl px-4 pb-36 pt-12 md:px-6">
                 <div className="space-y-12">
@@ -82,7 +118,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.05 }}
-                                className="text-3xl font-black tracking-tighter lg:text-5xl"
+                                className="text-3xl font-black tracking-tighter sm:text-4xl lg:text-5xl"
                             >
                                 Transaction Verified
                             </motion.h1>
@@ -105,7 +141,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.1 }}
-                        className="relative group overflow-hidden rounded-[3rem] border border-border/50 bg-card p-10 text-center shadow-2xl transition-all hover:border-primary/20"
+                        className="relative group overflow-hidden rounded-[3rem] border border-border/50 bg-card p-6 sm:p-10 text-center shadow-2xl transition-all hover:border-primary/20"
                     >
                         <div className={`absolute top-0 left-0 w-full h-1.5 ${isIn ? "bg-emerald-500" : "bg-rose-500"}`} />
 
@@ -117,7 +153,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className={`text-6xl font-black tracking-tighter lg:text-8xl ${isIn ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                            className={`text-4xl font-black tracking-tighter sm:text-6xl lg:text-8xl break-all ${isIn ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                                 }`}
                         >
                             {formatAmount(transaction.amount, configCurrency, true, isIn ? 'IN' : 'OUT')}
@@ -144,11 +180,11 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4 }}
-                        className="rounded-[3rem] border border-border/50 bg-card/50 backdrop-blur-xl p-8 shadow-2xl space-y-8"
+                        className="rounded-[3rem] border border-border/50 bg-card/50 backdrop-blur-xl p-6 sm:p-8 shadow-2xl space-y-8"
                     >
                         <DetailRow icon={<Hash className="h-4 w-4 text-primary" />} label="Reference ID">
-                            <span className="font-mono font-black text-sm tracking-tighter opacity-80">
-                                {transaction.id.toUpperCase()}
+                            <span className="font-mono font-black opacity-80 text-right ml-4">
+                                {transaction.id}
                             </span>
                         </DetailRow>
 
@@ -186,23 +222,16 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                 </div>
             </main>
 
-            <FooterButtons>
-                <DeleteTransactionButton transaction={transaction} />
-                <AddTransactionModal
-                    title="Edit Transaction"
-                    transactionData={transaction}
-                    direction={isIn ? TransactionDirection.IN : TransactionDirection.OUT}
-                    partyId={transaction.partyId}
-                >
-                    <Button
-                        size="lg"
-                        className="px-12 flex-1 h-16 rounded-full gap-4 font-black uppercase tracking-widest shadow-2xl shadow-primary/30 transition-all hover:shadow-primary/50 hover:-translate-y-1 active:scale-95 bg-primary text-primary-foreground"
-                    >
-                        <PenSquareIcon className="h-5 w-5" />
-                        Update Record
-                    </Button>
-                </AddTransactionModal>
-            </FooterButtons>
+            <AddTransactionModal
+                title="Edit Transaction"
+                transactionData={transaction}
+                direction={isIn ? TransactionDirection.IN : TransactionDirection.OUT}
+                partyId={transaction.partyId}
+                open={isEditOpen}
+                onOpenChange={setIsEditOpen}
+            >
+                <></>
+            </AddTransactionModal>
         </div>
     )
 }
@@ -217,7 +246,7 @@ function DetailRow({
     children: React.ReactNode
 }) {
     return (
-        <div className="flex items-center justify-between gap-6 px-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 px-2">
             <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-primary/5 border border-primary/10 shadow-inner">
                     {icon}

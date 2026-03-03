@@ -2,9 +2,9 @@ import { auth, getUserSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { AdminStats } from "./components/admin-stats";
 import { UserList } from "./components/user-list";
-import { authClient } from "@/lib/auth-client";
 import { ShieldAlert } from "lucide-react";
 import { headers } from "next/headers";
+import { prisma } from "@/lib/prisma";
 
 export default async function AdminPage() {
     const session = await getUserSession();
@@ -47,7 +47,32 @@ export default async function AdminPage() {
     }
 
     // Hide context user from the list
-    const users = usersList?.users.filter((u: any) => u.id !== session.user.id);
+    const filteredUsers = usersList?.users.filter((u: any) => u.id !== session.user.id) || [];
+
+    // Fetch counts for these users from Prisma
+    const usersWithCounts = await prisma.user.findMany({
+        where: { id: { in: filteredUsers.map((u: any) => u.id) } },
+        select: {
+            id: true,
+            contactNo: true,
+            _count: {
+                select: {
+                    createdBusinesses: true,
+                    transactions: true
+                }
+            }
+        }
+    });
+
+    const users = filteredUsers.map((u: any) => {
+        const counts = usersWithCounts.find(uc => uc.id === u.id);
+        return {
+            ...u,
+            contactNo: counts?.contactNo,
+            businessCount: counts?._count.createdBusinesses || 0,
+            transactionCount: counts?._count.transactions || 0
+        };
+    });
 
     const totalUsers = users?.length || 0;
     const adminUsers = users?.filter((u: any) => u.role === "admin").length || 0;
