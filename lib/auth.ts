@@ -47,6 +47,14 @@ export const auth = betterAuth({
       activeBusinessId: {
         type: "string",
         required: false
+      },
+      twoFactorEnabled: {
+        type: "boolean",
+        required: false
+      },
+      role: {
+        type: "string",
+        required: false
       }
     },
     deleteUser: {
@@ -181,58 +189,35 @@ export const auth = betterAuth({
     },
   },
   session: {
-    // PENDING CACHE
-    // cookieCache: {
-    //   enabled: true,
-    //   maxAge: 10 // 1 Minute
-    // },
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60 // 5 Minutes
+    },
+    additionalFields: {
+      impersonatedBy: {
+        type: "string",
+        required: false
+      }
+    }
   },
   plugins: [
     adminPlugin(),
     nextCookies(),
     twoFactor(),
     customSession(async ({ user, session }) => {
-      const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: {
-          contactNo: true,
-          address: true,
-          activeBusinessId: true,
-          twoFactorEnabled: true,
-          role: true,
+      // Role and other fields are now automatically included in the user object
+      // because they were added to additionalFields above.
+      // userSettings still needs a fetch if we want it in the session.
+      // However, to keep it fast, we only fetch it if absolutely necessary OR 
+      // rely on the cookie cache to minimize these calls.
 
-          // current session context
-          sessions: {
-            where: { id: session.id },
-            select: {
-              id: true,
-              impersonatedBy: true
-            },
-            take: 1,
-          },
-
-          // user preferences
-          userSettings: {
-            select: {
-              currency: true,
-              dateFormat: true,
-              timeFormat: true,
-              language: true,
-              theme: true,
-            },
-          },
-        },
+      const settings = await prisma.userSettings.findUnique({
+        where: { userId: user.id },
       })
-
-      const activeBusinessId = dbUser?.activeBusinessId ?? null
-      const settings = dbUser?.userSettings
-      const dbSession = dbUser?.sessions[0];
 
       return {
         session: {
           ...session,
-          impersonatedBy: dbSession?.impersonatedBy ?? null,
-
           userSettings: {
             currency: settings?.currency ?? Currency.INR,
             dateFormat: settings?.dateFormat ?? "dd/MM/yyyy",
@@ -241,14 +226,9 @@ export const auth = betterAuth({
             theme: settings?.theme ?? ThemeMode.AUTO,
           },
         },
-
         user: {
           ...user,
-          role: dbUser?.role,
-          activeBusinessId: activeBusinessId,
-          contactNo: dbUser?.contactNo,
-          address: dbUser?.address,
-          twoFactorEnabled: dbUser?.twoFactorEnabled ?? false,
+          // role, contactNo, address, etc. are already in 'user' thanks to additionalFields configuration
         },
       }
     }),

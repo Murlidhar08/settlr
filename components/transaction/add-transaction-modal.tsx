@@ -219,9 +219,43 @@ export const AddTransactionModal = ({
       const previousTransactions = queryClient.getQueryData(["transactions"])
       const previousAccounts = queryClient.getQueryData(["financial-accounts"])
 
-      // We don't necessarily update the list optimistically for transactions 
-      // because of the complex filtering, but invalidating handles it well. 
-      // For "ultra fast" feel, we can try to prepend if filters match.
+      // Optimistically update financial-accounts (balances)
+      if (previousAccounts) {
+        queryClient.setQueryData(["financial-accounts"], (old: any[]) => {
+          if (!old) return old;
+          return old.map(acc => {
+            if (acc.id === newTx.fromAccountId) {
+              return { ...acc, balance: Number(acc.balance) - Number(newTx.amount) };
+            }
+            if (acc.id === newTx.toAccountId) {
+              return { ...acc, balance: Number(acc.balance) + Number(newTx.amount) };
+            }
+            return acc;
+          });
+        });
+      }
+
+      // Prepend to transactions if it's a simple list
+      if (previousTransactions && Array.isArray(previousTransactions)) {
+        // This is a rough guess, but helps in simple filtered views.
+        // Note: Full optimistic transaction list update is complex with filters.
+        const tempTx = {
+          ...newTx,
+          id: "temp-" + Date.now(),
+          createdAt: new Date().toISOString(),
+          amount: Number(newTx.amount),
+          fromAccount: allAccounts.find(a => a.id === newTx.fromAccountId) || { name: "...", type: "..." },
+          toAccount: allAccounts.find(a => a.id === newTx.toAccountId) || { name: "...", type: "..." },
+          party: allAccounts.find(a => a.id === (isOut ? newTx.toAccountId : newTx.fromAccountId))?.partyId
+            ? { name: allAccounts.find(a => a.id === (isOut ? newTx.toAccountId : newTx.fromAccountId))?.name }
+            : null
+        };
+        queryClient.setQueryData(["transactions"], (old: any) => {
+          if (Array.isArray(old)) return [tempTx, ...old];
+          if (old?.transactions) return { ...old, transactions: [tempTx, ...old.transactions] };
+          return old;
+        });
+      }
 
       return { previousTransactions, previousAccounts }
     },

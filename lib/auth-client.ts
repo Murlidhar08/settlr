@@ -8,6 +8,11 @@ import { hasExternalOtelApiPackage } from "next/dist/build/webpack-config";
  * Single source of truth for auth client
  */
 export const authClient = createAuthClient({
+  session: {
+    cookieCache: {
+      enabled: true,
+    },
+  },
   plugins: [
     customSessionClient<Auth>(),
     inferAdditionalFields<Auth>(),
