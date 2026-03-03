@@ -18,7 +18,6 @@ import { getDeleteAccountEmailHtml } from "./templates/email-delete-account";
 import { headers } from "next/headers";
 import { Currency, ThemeMode, FinancialAccountType, MoneyType, CategoryType } from "./generated/prisma/enums";
 import { envServer } from "./env.server";
-import { ac, admin, user } from "./permissions";
 
 export const auth = betterAuth({
   appName: envServer.NEXT_PUBLIC_APP_NAME,
@@ -47,14 +46,14 @@ export const auth = betterAuth({
       activeBusinessId: {
         type: "string",
         required: false
-      },
-      twoFactorEnabled: {
-        type: "boolean",
-        required: false
-      },
-      role: {
-        type: "string",
-        required: false
+
+
+
+
+
+
+
+
       }
     },
     deleteUser: {
@@ -192,12 +191,6 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true,
       maxAge: 5 * 60 // 5 Minutes
-    },
-    additionalFields: {
-      impersonatedBy: {
-        type: "string",
-        required: false
-      }
     }
   },
   plugins: [
@@ -205,19 +198,47 @@ export const auth = betterAuth({
     nextCookies(),
     twoFactor(),
     customSession(async ({ user, session }) => {
-      // Role and other fields are now automatically included in the user object
-      // because they were added to additionalFields above.
-      // userSettings still needs a fetch if we want it in the session.
-      // However, to keep it fast, we only fetch it if absolutely necessary OR 
-      // rely on the cookie cache to minimize these calls.
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: {
+          contactNo: true,
+          address: true,
+          activeBusinessId: true,
+          twoFactorEnabled: true,
+          role: true,
 
-      const settings = await prisma.userSettings.findUnique({
-        where: { userId: user.id },
+          // current session context
+          sessions: {
+            where: { id: session.id },
+            select: {
+              id: true,
+              impersonatedBy: true
+            },
+            take: 1,
+          },
+
+          // user preferences
+          userSettings: {
+            select: {
+              currency: true,
+              dateFormat: true,
+              timeFormat: true,
+              language: true,
+              theme: true,
+            },
+          },
+        },
       })
+
+      const activeBusinessId = dbUser?.activeBusinessId ?? null
+      const settings = dbUser?.userSettings
+      const dbSession = dbUser?.sessions[0];
 
       return {
         session: {
           ...session,
+          impersonatedBy: dbSession?.impersonatedBy ?? null,
+
           userSettings: {
             currency: settings?.currency ?? Currency.INR,
             dateFormat: settings?.dateFormat ?? "dd/MM/yyyy",
@@ -226,9 +247,14 @@ export const auth = betterAuth({
             theme: settings?.theme ?? ThemeMode.AUTO,
           },
         },
+
         user: {
           ...user,
-          // role, contactNo, address, etc. are already in 'user' thanks to additionalFields configuration
+          role: dbUser?.role,
+          activeBusinessId: activeBusinessId,
+          contactNo: dbUser?.contactNo,
+          address: dbUser?.address,
+          twoFactorEnabled: dbUser?.twoFactorEnabled ?? false,
         },
       }
     }),
@@ -308,4 +334,3 @@ export const getUserSession = cache(async () => {
     headers: await headers()
   });
 });
-

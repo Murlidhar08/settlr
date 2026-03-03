@@ -110,7 +110,7 @@ export function LoadingScreen() {
                     <motion.div animate={getLogoAnimation()} className="relative z-10">
                         <Image
                             src={logoSrc}
-                            alt="Settlr Logo"
+                            alt="Logo"
                             width={120}
                             height={120}
                             priority
