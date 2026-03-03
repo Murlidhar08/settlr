@@ -9,8 +9,9 @@ import { Plus, Wallet } from "lucide-react"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { t } from "@/lib/languages/i18n"
 import { FooterButtons } from "@/components/footer-buttons"
+import { Currency } from "@/lib/generated/prisma/enums"
 
-export function AccountsContent({ language }: { language: string }) {
+export function AccountsContent({ language, currency }: { language: string, currency: Currency }) {
     const { data: allAccounts = [], isLoading } = useQuery({
         queryKey: ["financial-accounts"],
         queryFn: () => getFinancialAccountsWithBalance(),
@@ -102,7 +103,7 @@ export function AccountsContent({ language }: { language: string }) {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {sectionAccounts.map((account, index) => (
-                                            <AccountCard key={account.id} account={account} index={index} />
+                                            <AccountCard key={account.id} account={account} index={index} currency={currency} />
                                         ))}
                                     </div>
                                 </div>

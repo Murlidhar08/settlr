@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LandmarkIcon,
+  UserRoundCog,
 } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
@@ -38,7 +39,7 @@ const Sidebar = () => {
     { label: t("nav.accounts", language), icon: <LandmarkIcon size={20} />, href: "/accounts" },
     { label: t("nav.parties", language), icon: <User2Icon size={20} />, href: "/parties" },
     { label: t("nav.cashbook", language), icon: <Wallet size={20} />, href: "/cashbook" },
-    ...(isAdmin ? [{ label: t("nav.admin", language), icon: <Settings size={20} />, href: "/admin" }] : []),
+    ...(isAdmin ? [{ label: t("nav.admin", language), icon: <UserRoundCog size={20} />, href: "/admin" }] : []),
     { label: t("nav.settings", language), icon: <Settings size={20} />, href: "/settings" },
   ];
 
