@@ -25,7 +25,84 @@ async function main() {
       image: null,
       twoFactorEnabled: false,
       banned: false,
-      role: "admin"
+      role: "user"
+    },
+  });
+
+  // Sample User 5 users
+  const sampleUser1 = await prisma.user.upsert({
+    where: { email: 'sample1@settlr.com' },
+    update: {},
+    create: {
+      id: "sampleUser1",
+      email: 'sample1@settlr.com',
+      name: 'Sample User 1',
+      contactNo: "9998887776",
+      address: "Sample Address, Dev Enviroment, Settlr",
+      image: null,
+      twoFactorEnabled: false,
+      banned: false,
+      role: "user"
+    },
+  });
+  const sampleUser2 = await prisma.user.upsert({
+    where: { email: 'sample2@settlr.com' },
+    update: {},
+    create: {
+      id: "sampleUser2",
+      email: 'sample2@settlr.com',
+      name: 'Sample User 2',
+      contactNo: "9998887776",
+      address: "Sample Address, Dev Enviroment, Settlr",
+      image: null,
+      twoFactorEnabled: false,
+      banned: false,
+      role: "user"
+    },
+  });
+  const sampleUser3 = await prisma.user.upsert({
+    where: { email: 'sample3@settlr.com' },
+    update: {},
+    create: {
+      id: "sampleUser3",
+      email: 'sample3@settlr.com',
+      name: 'Sample User 3',
+      contactNo: "9998887776",
+      address: "Sample Address, Dev Enviroment, Settlr",
+      image: null,
+      twoFactorEnabled: false,
+      banned: false,
+      role: "user"
+    },
+  });
+  const sampleUser4 = await prisma.user.upsert({
+    where: { email: 'sample4@settlr.com' },
+    update: {},
+    create: {
+      id: "sampleUser4",
+      email: 'sample4@settlr.com',
+      name: 'Sample User 4',
+      contactNo: "9998887776",
+      address: "Sample Address, Dev Enviroment, Settlr",
+      image: null,
+      twoFactorEnabled: false,
+      banned: false,
+      role: "user"
+    },
+  });
+  const sampleUser5 = await prisma.user.upsert({
+    where: { email: 'sample5@settlr.com' },
+    update: {},
+    create: {
+      id: "sampleUser5",
+      email: 'sample5@settlr.com',
+      name: 'Sample User 5',
+      contactNo: "9998887776",
+      address: "Sample Address, Dev Enviroment, Settlr",
+      image: null,
+      twoFactorEnabled: false,
+      banned: false,
+      role: "user"
     },
   });
 

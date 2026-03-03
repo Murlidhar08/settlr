@@ -216,7 +216,6 @@ export default function CashFilters({
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="ml-auto"
                     >
                         <Loader2 className="size-4 text-primary animate-spin" />
                     </motion.div>

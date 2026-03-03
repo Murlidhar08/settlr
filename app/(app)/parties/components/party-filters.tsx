@@ -9,6 +9,8 @@ import { motion } from "framer-motion"
 import { useUserConfig } from "@/components/providers/user-config-provider"
 import { t } from "@/lib/languages/i18n"
 
+import { useOptimisticTab } from "./parties-client-wrapper"
+
 export function PartyFilters() {
     const { language } = useUserConfig()
     const router = useRouter()
@@ -18,15 +20,21 @@ export function PartyFilters() {
     const currentTab = searchParams.get("tab") || "customers"
     const currentSearch = searchParams.get("search") || ""
 
+    const { optimisticTab, setOptimisticTab } = useOptimisticTab()
+    const displayTab = optimisticTab || currentTab
+
     const [searchValue, setSearchValue] = useState(currentSearch)
 
     const updateFilters = (updates: Record<string, string | null>) => {
+        if (updates.tab && updates.tab !== currentTab) {
+            setOptimisticTab(updates.tab)
+        }
         const params = new URLSearchParams(searchParams.toString())
         Object.entries(updates).forEach(([key, value]) => {
             if (value) params.set(key, value)
             else params.delete(key)
         })
-        router.push(`${pathname}?${params.toString()}` as any)
+        router.push(`${pathname}?${params.toString()}` as any, { scroll: false })
     }
 
     useEffect(() => {
@@ -61,7 +69,7 @@ export function PartyFilters() {
             </motion.div>
 
             <Tabs
-                value={currentTab}
+                value={displayTab}
                 onValueChange={(val) => updateFilters({ tab: val })}
                 className="w-full md:w-auto"
             >

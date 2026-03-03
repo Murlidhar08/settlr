@@ -47,6 +47,9 @@ export default {
         employees: "Employees",
         other: "Other",
     },
+    admin: {
+        title: "Admin Panel",
+    },
     cashbook: {
         title: "Cashbook",
         you_pay: "You Pay",
@@ -69,6 +72,7 @@ export default {
         accounts: "Accounts",
         parties: "Parties",
         cashbook: "Cashbook",
+        admin: "Admin",
         settings: "Settings",
     },
     sidebar: {

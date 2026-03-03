@@ -6,6 +6,11 @@ import { Auth } from "./auth";
  * Single source of truth for auth client
  */
 export const authClient = createAuthClient({
+  session: {
+    cookieCache: {
+      enabled: true,
+    },
+  },
   plugins: [
     customSessionClient<Auth>(),
     inferAdditionalFields<Auth>(),
@@ -15,7 +20,7 @@ export const authClient = createAuthClient({
       },
     }),
     lastLoginMethodClient(),
-    adminClient(),
+    adminClient()
   ],
 })
 

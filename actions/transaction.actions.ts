@@ -7,6 +7,7 @@ import { Transaction, Prisma } from "@/lib/generated/prisma/client";
 import { MoneyType, FinancialAccountType, CategoryType } from "@/lib/generated/prisma/enums";
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache";
+import { cache } from "react";
 
 export async function addTransaction(transactionData: any, pathToRevalidate?: string) {
   const session = await getUserSession();
@@ -134,7 +135,7 @@ export async function deleteTransaction(transactionId: string, partyId?: string)
 
 }
 
-export async function getRecentTransactions() {
+export const getRecentTransactions = cache(async function getRecentTransactions() {
   const session = await getUserSession();
   let businessId = session?.user.activeBusinessId;
 
@@ -173,9 +174,9 @@ export async function getRecentTransactions() {
     ...tx,
     amount: Number(tx.amount)
   }));
-}
+});
 
-export async function getCashbookTransactions(filters: {
+export const getCashbookTransactions = cache(async function getCashbookTransactions(filters: {
   category?: string;
   search?: string;
   startDate?: string;
@@ -254,9 +255,9 @@ export async function getCashbookTransactions(filters: {
     totalIn,
     totalOut,
   };
-}
+});
 
-export async function getPartyStatement(partyId: string, filters: {
+export const getPartyStatement = cache(async function getPartyStatement(partyId: string, filters: {
   mode?: string;
   direction?: string;
   startDate?: string;
@@ -331,9 +332,9 @@ export async function getPartyStatement(partyId: string, filters: {
     party: partyWithTyped,
     transactions: transactions.map(tx => ({ ...tx, amount: Number(tx.amount) })),
   };
-}
+});
 
-export async function getAccountTransactions(accountId: string) {
+export const getAccountTransactions = cache(async function getAccountTransactions(accountId: string) {
   const session = await getUserSession();
   const businessId = session?.user.activeBusinessId || "";
 
@@ -366,4 +367,4 @@ export async function getAccountTransactions(accountId: string) {
     totalTransactions: transactions.length,
     transactions: transactions.map(tx => ({ ...tx, amount: Number(tx.amount) })),
   };
-}
+});

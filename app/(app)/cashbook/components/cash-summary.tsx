@@ -8,13 +8,28 @@ interface CashSummaryProp {
   totalIn: number
   totalOut: number
   currency?: Currency
+  isLoading?: boolean
 }
 
 export default function CashSummary({
   totalIn,
   totalOut,
   currency = Currency.INR,
+  isLoading,
 }: CashSummaryProp) {
+  if (isLoading) {
+    return (
+      <div className="mt-6 rounded-3xl sm:rounded-[2.5rem] bg-card p-5 sm:p-8 shadow-xs border border-border/50 relative overflow-hidden flex flex-col items-center">
+        <div className="h-3 w-40 bg-muted animate-pulse rounded mb-4" />
+        <div className="h-12 w-64 bg-muted animate-pulse rounded-xl mb-10" />
+        <div className="w-full grid grid-cols-2 gap-3 sm:gap-4">
+          <div className="h-24 rounded-2xl sm:rounded-[2rem] bg-muted/40 animate-pulse border border-border/20" />
+          <div className="h-24 rounded-2xl sm:rounded-[2rem] bg-muted/40 animate-pulse border border-border/20" />
+        </div>
+      </div>
+    )
+  }
+
   const cashBalance = totalIn - totalOut
   const isPositive = cashBalance >= 0
 

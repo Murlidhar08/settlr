@@ -4,7 +4,7 @@ import { cache } from "react";
 
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { admin, customSession, lastLoginMethod, twoFactor } from "better-auth/plugins"
+import { admin as adminPlugin, customSession, lastLoginMethod, twoFactor } from "better-auth/plugins"
 
 // Lib
 import { prisma } from "./prisma";
@@ -46,6 +46,14 @@ export const auth = betterAuth({
       activeBusinessId: {
         type: "string",
         required: false
+
+
+
+
+
+
+
+
       }
     },
     deleteUser: {
@@ -180,13 +188,13 @@ export const auth = betterAuth({
     },
   },
   session: {
-    // PENDING CACHE
-    // cookieCache: {
-    //   enabled: true,
-    //   maxAge: 10 // 1 Minute
-    // },
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60 // 5 Minutes
+    }
   },
   plugins: [
+    adminPlugin(),
     nextCookies(),
     twoFactor(),
     customSession(async ({ user, session }) => {
@@ -197,12 +205,14 @@ export const auth = betterAuth({
           address: true,
           activeBusinessId: true,
           twoFactorEnabled: true,
+          role: true,
 
           // current session context
           sessions: {
             where: { id: session.id },
             select: {
               id: true,
+              impersonatedBy: true
             },
             take: 1,
           },
@@ -222,10 +232,12 @@ export const auth = betterAuth({
 
       const activeBusinessId = dbUser?.activeBusinessId ?? null
       const settings = dbUser?.userSettings
+      const dbSession = dbUser?.sessions[0];
 
       return {
         session: {
           ...session,
+          impersonatedBy: dbSession?.impersonatedBy ?? null,
 
           userSettings: {
             currency: settings?.currency ?? Currency.INR,
@@ -238,6 +250,7 @@ export const auth = betterAuth({
 
         user: {
           ...user,
+          role: dbUser?.role,
           activeBusinessId: activeBusinessId,
           contactNo: dbUser?.contactNo,
           address: dbUser?.address,
@@ -245,10 +258,7 @@ export const auth = betterAuth({
         },
       }
     }),
-    lastLoginMethod(),
-    admin({
-      defaultRole: "user"
-    })
+    lastLoginMethod()
   ],
   databaseHooks: {
     user: {
@@ -324,4 +334,3 @@ export const getUserSession = cache(async () => {
     headers: await headers()
   });
 });
-

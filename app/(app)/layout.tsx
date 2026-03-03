@@ -10,6 +10,7 @@ import { AppHeader } from "@/components/app-header";
 import { getDefaultConfig, getUserConfig } from "@/lib/user-config";
 import { UserConfigProvider } from "@/components/providers/user-config-provider";
 import { LayoutTransitions } from "@/components/layout-transitions";
+import { ImpersonationIndicator } from "@/components/auth/impersonation-indicator";
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // User Config
@@ -38,6 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
           </div>
         </div>
+        <ImpersonationIndicator />
       </div>
     </UserConfigProvider>
   );

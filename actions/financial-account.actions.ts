@@ -142,8 +142,7 @@ export async function getFinancialAccountsWithBalance() {
     const businessId = session.user.activeBusinessId;
 
     const accounts = await prisma.financialAccount.findMany({
-        where: { businessId, isActive: true },
-        orderBy: { createdAt: "desc" },
+        where: { businessId, isActive: true }
     });
 
     const transactions = await prisma.transaction.findMany({
@@ -153,6 +152,7 @@ export async function getFinancialAccountsWithBalance() {
             fromAccountId: true,
             toAccountId: true,
         },
+        orderBy: { date: "desc" },
     });
 
     const balances: Record<string, number> = {};
