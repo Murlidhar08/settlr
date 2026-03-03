@@ -77,7 +77,6 @@ const Sidebar = () => {
               {envClient.NEXT_PUBLIC_APP_NAME}
             </span>
           )}
-          <span>ROLE: {session?.user.role}</span>
         </div>
 
         {/* Nav */}

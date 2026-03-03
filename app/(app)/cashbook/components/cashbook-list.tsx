@@ -5,10 +5,23 @@ import { motion } from "framer-motion";
 
 interface CashbookListProps {
     transactions: any[];
+    isLoading?: boolean;
 }
 
-export function CashbookList({ transactions }: CashbookListProps) {
-
+export function CashbookList({ transactions, isLoading }: CashbookListProps) {
+    if (isLoading) {
+        return (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-3 space-y-3"
+            >
+                {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="h-[72px] w-full animate-pulse rounded-2xl bg-muted/40" />
+                ))}
+            </motion.div>
+        );
+    }
 
     if (transactions.length === 0) {
         return (

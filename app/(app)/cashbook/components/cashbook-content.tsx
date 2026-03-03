@@ -21,7 +21,7 @@ export function CashbookContent({
   endDate,
   currency
 }: CashbookContentProps) {
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["transactions", { search, category, startDate, endDate }],
     queryFn: () => getCashbookTransactions({ search, category, startDate, endDate }),
   })
@@ -32,13 +32,13 @@ export function CashbookContent({
 
   return (
     <div className="mt-8 space-y-8">
-      <CashSummary totalIn={totalIn} totalOut={totalOut} currency={currency} />
+      <CashSummary totalIn={totalIn} totalOut={totalOut} currency={currency} isLoading={isLoading} />
 
       <div>
         <p className="mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
           Transactions
         </p>
-        <CashbookList transactions={transactions} />
+        <CashbookList transactions={transactions} isLoading={isLoading} />
       </div>
     </div>
   )
