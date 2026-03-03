@@ -57,10 +57,6 @@ export function DangerModalBody() {
                     </BetterAuthActionButton>
                 </div>
             </div>
-
-            <p className="text-[10px] text-center text-muted-foreground font-medium uppercase tracking-[0.2em] opacity-40">
-                {envClient.NEXT_PUBLIC_APP_NAME} Security Protocol v1.4
-            </p>
         </motion.div>
     )
 }

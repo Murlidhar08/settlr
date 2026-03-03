@@ -31,7 +31,6 @@ import { cn } from "@/lib/utils"
 // Types
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 import { ModalMode } from "@/types/transaction/ModalMode"
-
 interface TransactionProps {
   title: string
   children: ReactNode
@@ -40,6 +39,8 @@ interface TransactionProps {
   transactionData?: any
   direction?: TransactionDirection
   path?: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 export const AddTransactionModal = ({
@@ -50,8 +51,19 @@ export const AddTransactionModal = ({
   direction,
   path,
   children,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen,
 }: TransactionProps) => {
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen
+  const setOpen = (val: boolean) => {
+    if (setControlledOpen) {
+      setControlledOpen(val)
+    } else {
+      setInternalOpen(val)
+    }
+  }
+
   const [dateOpen, setDateOpen] = useState(false)
   const [allAccounts, setAllAccounts] = useState<(FinancialAccount & { balance: number })[]>([])
   const [loadingAccounts, setLoadingAccounts] = useState(false)
@@ -78,14 +90,20 @@ export const AddTransactionModal = ({
   const [mode, setMode] = useState<ModalMode>(ModalMode.CASHBOOK)
 
   useEffect(() => {
+    let isMounted = true
+
     if (open) {
       const fetchAccounts = async () => {
+        // Prevent redundant fetching if already loading
         setLoadingAccounts(true)
         try {
           const accs = await getFinancialAccountsWithBalance()
+          if (!isMounted) return
+
           setAllAccounts(accs as any)
 
           if (transactionData) {
+            // Bulk update to reduce re-renders
             setData((pre: any) => ({
               ...pre,
               ...transactionData,
@@ -94,10 +112,7 @@ export const AddTransactionModal = ({
               time: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "HH:mm"),
             }))
 
-            // Editing logic
             const from = accs.find(a => a.id === transactionData.fromAccountId)
-            const to = accs.find(a => a.id === transactionData.toAccountId)
-
             if (from?.type === FinancialAccountType.MONEY) {
               setMoneyAccountId(from.id)
               setPartnerAccountId(transactionData.toAccountId)
@@ -106,7 +121,6 @@ export const AddTransactionModal = ({
               setPartnerAccountId(transactionData.fromAccountId)
             }
           } else {
-            // New Transaction Logic
             let inferredMode: ModalMode = ModalMode.CASHBOOK
             let initialMoneyAcc = ""
             let initialPartnerAcc = ""
@@ -119,18 +133,14 @@ export const AddTransactionModal = ({
               const partyAccount = partyAcc || currentAcc
               initialPartnerAcc = partyAccount?.id || ""
               initialMoneyAcc = accs.find(a => a.type === FinancialAccountType.MONEY)?.id || ""
-            }
-            else if (currentAcc && currentAcc.type === FinancialAccountType.MONEY) {
+            } else if (currentAcc && currentAcc.type === FinancialAccountType.MONEY) {
               inferredMode = ModalMode.ACCOUNT
               initialMoneyAcc = currentAcc.id
-              // Default partner is any other non-party account
               initialPartnerAcc = accs.find(a => a.id !== currentAcc.id && a.partyId === null)?.id || ""
-            }
-            else {
+            } else {
               inferredMode = ModalMode.CASHBOOK
               const moneyAccs = accs.filter(a => a.type === FinancialAccountType.MONEY)
               initialMoneyAcc = moneyAccs[0]?.id || ""
-
               const targetCat = isOut ? CategoryType.EXPENSE : CategoryType.INCOME
               initialPartnerAcc = accs.find(a => a.type === FinancialAccountType.CATEGORY && a.categoryType === targetCat)?.id || ""
             }
@@ -138,22 +148,20 @@ export const AddTransactionModal = ({
             setMode(inferredMode)
             setMoneyAccountId(initialMoneyAcc)
             setPartnerAccountId(initialPartnerAcc)
-
-            // Sync with data state
             setData((pre: any) => ({
               ...pre,
               partyId: accs.find(a => a.id === initialPartnerAcc)?.partyId || null
             }))
           }
         } catch (err) {
-          toast.error("Failed to load accounts")
+          if (isMounted) toast.error("Failed to load accounts")
         } finally {
-          setLoadingAccounts(false)
+          if (isMounted) setLoadingAccounts(false)
         }
       }
       fetchAccounts()
     } else {
-      // Reset values when modal closes
+      // Cleanup for next open
       if (!transactionData) {
         setData({
           id: undefined,
@@ -171,7 +179,9 @@ export const AddTransactionModal = ({
         setPartnerAccountId("")
       }
     }
-  }, [open, partyId, accountId, transactionData, isOut])
+
+    return () => { isMounted = false }
+  }, [open, partyId, accountId, transactionData?.id, isOut]) // Stabilized dependencies
 
   // Update data state whenever selections change
   useEffect(() => {

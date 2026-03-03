@@ -10,9 +10,10 @@ import "./globals.css";
 
 // Lib
 import { envClient } from "@/lib/env.client";
+import { envServer } from "@/lib/env.server";
 
-// Components
 import { ConfirmProvider } from "@/components/providers/confirm-provider";
+import { PromptProvider } from "@/components/providers/prompt-provider";
 import AppIconsMetaTags from "@/components/app-icons-metatags";
 import NextTopLoader from 'nextjs-toploader';
 import QueryProvider from "@/components/providers/query-provider";
@@ -56,7 +57,7 @@ export const metadata: Metadata = {
     ],
     apple: "images/logo/maskable_icon_x192.png",
   },
-  openGraph: {
+  openGraph: envServer.NODE_ENV === "development" ? {} : {
     title: envClient.NEXT_PUBLIC_APP_NAME,
     description: envClient.NEXT_PUBLIC_APP_DESCRIPTION,
     siteName: envClient.NEXT_PUBLIC_APP_NAME,
@@ -71,7 +72,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     type: 'website',
   },
-  twitter: {
+  twitter: envServer.NODE_ENV === "development" ? {} : {
     card: 'summary_large_image',
     title: envClient.NEXT_PUBLIC_APP_NAME,
     description: envClient.NEXT_PUBLIC_APP_DESCRIPTION,
@@ -105,9 +106,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             shadow="0 0 10px oklch(0.541 0.281 293.009),0 0 5px oklch(0.541 0.281 293.009)"
           />
           <ConfirmProvider>
-            <QueryProvider>
-              {children}
-            </QueryProvider>
+            <PromptProvider>
+              <QueryProvider>
+                {children}
+              </QueryProvider>
+            </PromptProvider>
 
             {/* Toast Container */}
             <Toaster
