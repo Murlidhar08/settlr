@@ -29,8 +29,12 @@ export function getTransactionPerspective(
     fromAccountId: string,
     contextAccountId: string,
 ): TransactionDirection | undefined {
-    if (toAccountId === contextAccountId) return TransactionDirection.IN;
-    if (fromAccountId === contextAccountId) return TransactionDirection.OUT;
+    if (toAccountId === contextAccountId)
+        return TransactionDirection.IN;
+
+    if (fromAccountId === contextAccountId)
+        return TransactionDirection.OUT;
+
     return undefined;
 }
 
