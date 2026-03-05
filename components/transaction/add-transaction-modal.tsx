@@ -6,7 +6,6 @@ import { CalendarIcon, Wallet, Paperclip, ChevronDownIcon, ArrowUpRight, ArrowDo
 import { format } from "date-fns"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 

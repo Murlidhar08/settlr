@@ -43,5 +43,11 @@ export default async function TransactionDetailPage({ params }: { params: Promis
 
   const isIn = perspective === TransactionDirection.IN;
 
-  return <TransactionDetailView transaction={JSON.parse(JSON.stringify(transaction))} isIn={isIn} currency={currency} />
+  return (
+    <TransactionDetailView
+      transaction={JSON.parse(JSON.stringify(transaction))}
+      isIn={isIn}
+      currency={currency}
+    />
+  )
 }

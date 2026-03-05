@@ -44,7 +44,7 @@ const TransactionItem = ({
 }: TransactionProp) => {
   // Determine direction based on context
   const direction = accountId
-    ? (accountType === "PARTY"
+    ? (accountType === FinancialAccountType.PARTY
       ? getPartyTransactionPerspective(toAccountId, fromAccountId, accountId)
       : getTransactionPerspective(toAccountId, fromAccountId, accountId))
     : getBusinessTransactionPerspective(toAccountType, fromAccountType);
@@ -58,6 +58,7 @@ const TransactionItem = ({
   // Icon Selection
   const renderIcon = () => {
     if (isNeutral) return <Wallet2 size={18} className="text-indigo-500" />;
+
     return isIn ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />;
   };
 
