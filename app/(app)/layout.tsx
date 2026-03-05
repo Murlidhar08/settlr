@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 
 // Lib
-import { getUserSession } from "@/lib/auth";
+import { getUserSession } from "@/lib/auth/auth";
 
 // Components
 import { Sidebar } from "@/components/sidebar";

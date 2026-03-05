@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { LoadingSwap } from "@/components/ui/loading-swap"
 import { Input } from "@/components/ui/input"
 
-import { authClient } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 import { toast } from "sonner"
 import dynamic from "next/dynamic"
 

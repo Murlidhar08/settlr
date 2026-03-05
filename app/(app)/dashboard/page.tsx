@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getUserSession } from "@/lib/auth";
+import { getUserSession } from "@/lib/auth/auth";
 import { getUserConfig } from "@/lib/user-config";
 import { t } from "@/lib/languages/i18n";
 

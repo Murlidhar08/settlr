@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
-import { prisma } from "@/lib/prisma"
-import { getUserSession } from "@/lib/auth"
+import { prisma } from "@/lib/prisma/prisma"
+import { getUserSession } from "@/lib/auth/auth"
 import { TransactionDetailView } from "./components/transaction-detail-view"
 import { getUserConfig } from "@/lib/user-config"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"

@@ -3,7 +3,7 @@
 import { AlertTriangle, Trash2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { BetterAuthActionButton } from '@/components/auth/better-auth-action-button'
-import { authClient } from '@/lib/auth-client'
+import { authClient } from '@/lib/auth/auth-client'
 import { envClient } from '@/lib/env.client'
 
 const itemVariants = {

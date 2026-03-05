@@ -38,13 +38,13 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { signOut } from "@/lib/auth-client";
+import { signOut } from "@/lib/auth/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
 import { envClient } from "@/lib/env.client";
 import { getAppVersion, upsertUserSettings } from "@/actions/user-settings.actions";
-import { useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth/auth-client";
 import { getInitials } from "@/utility/party";
 import { useUserConfig } from "@/components/providers/user-config-provider";
 import { t } from "@/lib/languages/i18n";

@@ -1,7 +1,7 @@
 "use server";
 
-import { getUserSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getUserSession } from "@/lib/auth/auth";
+import { prisma } from "@/lib/prisma/prisma";
 import { revalidatePath } from "next/cache";
 import { FinancialAccountType, MoneyType, PartyType, CategoryType } from "@/lib/generated/prisma/enums";
 

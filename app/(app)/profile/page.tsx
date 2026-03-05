@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { authClient, signOut, useSession } from "@/lib/auth-client";
+import { authClient, signOut, useSession } from "@/lib/auth/auth-client";
 import { getInitials } from "@/utility/party";
 import { BackHeader } from "@/components/back-header";
 import { FooterButtons } from "@/components/footer-buttons";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth/auth-client";
 import { SessionModalBody } from "../components/session-body";
 import { getListSessions } from "@/actions/user-settings.actions";
 import { useEffect, useState } from "react";

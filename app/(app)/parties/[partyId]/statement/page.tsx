@@ -6,7 +6,7 @@ import { BadgeCheck, Lock, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 // Components
 import { Card } from "@/components/ui/card";
 import { BackHeader } from "@/components/back-header";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma/prisma";
 import { TransactionItem } from "@/components/transaction-item";
 import StatementFilters from "./components/statement-filters";
 import ExportPDFButton from "./components/export-pdf-button";

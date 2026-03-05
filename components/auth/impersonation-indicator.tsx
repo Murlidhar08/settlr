@@ -1,6 +1,6 @@
 "use client"
 
-import { authClient } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 import { ShieldAlert, UserX } from "lucide-react"
 import { BetterAuthActionButton } from "./better-auth-action-button"
 import { useRouter } from "next/navigation"

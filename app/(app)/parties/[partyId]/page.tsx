@@ -7,8 +7,8 @@ import { QuickActions } from './components/quick-action';
 import { BalanceCard } from './components/balance-card';
 
 // Lib
-import { prisma } from '@/lib/prisma'
-import { getUserSession } from '@/lib/auth'
+import { prisma } from '@/lib/prisma/prisma'
+import { getUserSession } from '@/lib/auth/auth'
 import { TransactionList } from '@/components/transaction/transaction-list';
 import { FooterButtons } from '@/components/footer-buttons';
 import { AddTransactionModal } from '@/components/transaction/add-transaction-modal';

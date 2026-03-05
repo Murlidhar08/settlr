@@ -1,8 +1,8 @@
 "use server";
 
 // Lib
-import { prisma } from "@/lib/prisma";
-import { getUserSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma/prisma";
+import { getUserSession } from "@/lib/auth/auth";
 import { Transaction, Prisma } from "@/lib/generated/prisma/client";
 import { MoneyType, FinancialAccountType, CategoryType } from "@/lib/generated/prisma/enums";
 import { redirect } from "next/navigation"

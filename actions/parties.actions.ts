@@ -1,11 +1,11 @@
 "use server";
 
 // Package
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma/prisma";
 import { revalidatePath } from "next/cache";
 import { FinancialAccountType, PartyType } from "@/lib/generated/prisma/enums";
 import { Prisma } from "@/lib/generated/prisma/client";
-import { getUserSession } from "@/lib/auth";
+import { getUserSession } from "@/lib/auth/auth";
 import { PartyInput, PartyRes } from "@/types/party/PartyRes";
 import { getTransactionPerspective, calculateAccountStats } from "@/lib/transaction-logic";
 import { TransactionDirection } from "@/types/transaction/TransactionDirection";

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/auth-client";
 import { envClient } from "@/lib/env.client";
 import { TotpForm } from "./components/totp-form";
 import { BackupCodeTab } from "./components/backup-code-tab";

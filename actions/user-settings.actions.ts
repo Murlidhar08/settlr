@@ -1,8 +1,8 @@
 "use server";
 
 import packageJson from "@/package.json"
-import { prisma } from "@/lib/prisma";
-import { auth, getUserSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma/prisma";
+import { auth, getUserSession } from "@/lib/auth/auth";
 import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";

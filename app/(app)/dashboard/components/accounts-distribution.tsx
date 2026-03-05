@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma"
-import { getUserSession } from "@/lib/auth"
+import { prisma } from "@/lib/prisma/prisma"
+import { getUserSession } from "@/lib/auth/auth"
 import { getUserConfig } from "@/lib/user-config"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { AccountsDistributionClient } from "./accounts-distribution-client"

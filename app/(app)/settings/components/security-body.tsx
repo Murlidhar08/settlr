@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { BetterAuthActionButton } from "@/components/auth/better-auth-action-button"
 
-import { authClient } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 import { getListUserAccounts } from "@/actions/user-settings.actions"
 import { TwoFactorAuth } from "./two-factor-auth"
 import { cn } from "@/lib/utils"

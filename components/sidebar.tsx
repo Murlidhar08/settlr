@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import { envClient } from "@/lib/env.client";
 import { useUserConfig } from "./providers/user-config-provider";
 import { t } from "@/lib/languages/i18n";
-import { useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth/auth-client";
 
 type NavItem = {
   label: string;

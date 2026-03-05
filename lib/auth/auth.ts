@@ -6,17 +6,17 @@ import { nextCookies } from "better-auth/next-js";
 import { admin as adminPlugin, customSession, lastLoginMethod, twoFactor } from "better-auth/plugins"
 
 // Lib
-import { prisma } from "./prisma";
-import { sendMail } from "./nodemailer";
+import { prisma } from "../prisma/prisma";
+import { sendMail } from "../nodemailer";
 
 // Template
-import { getResetPasswordEmailHtml } from "./templates/email-reset-password";
-import { getVerificationEmailHtml } from "./templates/email-verification";
-import { getPasswordResetSuccessEmailHtml } from "./templates/email-password-reseted";
-import { getDeleteAccountEmailHtml } from "./templates/email-delete-account";
+import { getResetPasswordEmailHtml } from "../templates/email-reset-password";
+import { getVerificationEmailHtml } from "../templates/email-verification";
+import { getPasswordResetSuccessEmailHtml } from "../templates/email-password-reseted";
+import { getDeleteAccountEmailHtml } from "../templates/email-delete-account";
 import { headers } from "next/headers";
-import { Currency, ThemeMode, FinancialAccountType, MoneyType, CategoryType } from "./generated/prisma/enums";
-import { envServer } from "./env.server";
+import { Currency, ThemeMode, FinancialAccountType, MoneyType, CategoryType } from "../generated/prisma/enums";
+import { envServer } from "../env.server";
 
 export const auth = betterAuth({
   appName: envServer.NEXT_PUBLIC_APP_NAME,

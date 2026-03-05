@@ -11,7 +11,7 @@ import {
   getBusinessList,
   switchBusiness,
 } from "@/actions/business.actions"
-import { authClient } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 import { useUserConfig } from "@/components/providers/user-config-provider"
 import { t } from "@/lib/languages/i18n"
 import { useQuery, useQueryClient } from "@tanstack/react-query"

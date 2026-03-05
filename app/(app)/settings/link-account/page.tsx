@@ -1,10 +1,10 @@
 "use client";
 
-import { useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth/auth-client";
 import { LinkAccountModalBody } from "../components/link-account-body";
 import { getCredientialAccounts } from "@/actions/user-settings.actions";
 import { useEffect, useState } from "react";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/auth";
 import { BackHeader } from "@/components/back-header";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";

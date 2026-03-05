@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth/auth-client";
 import { DangerModalBody } from "../components/danger-body";
 import { BackHeader } from "@/components/back-header";
 import { useRouter } from "next/navigation";

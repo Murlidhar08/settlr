@@ -9,7 +9,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Lib
-import { authClient, signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth-client";
+import { authClient, signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth/auth-client";
 import { envClient } from "@/lib/env.client";
 
 // Components
