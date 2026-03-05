@@ -1,8 +1,7 @@
 // Packages
 import { betterAuth } from "better-auth";
 import { cache } from "react";
-
-import { prismaAdapter } from "better-auth/adapters/prisma";
+import { Pool } from "pg";
 import { nextCookies } from "better-auth/next-js";
 import { admin as adminPlugin, customSession, lastLoginMethod, twoFactor } from "better-auth/plugins"
 
@@ -30,8 +29,8 @@ export const auth = betterAuth({
   advanced: {
     disableOriginCheck: true
   },
-  database: prismaAdapter(prisma, {
-    provider: "postgresql"
+  database: new Pool({
+    connectionString: envServer.DATABASE_URL,
   }),
   user: {
     additionalFields: {
@@ -46,14 +45,6 @@ export const auth = betterAuth({
       activeBusinessId: {
         type: "string",
         required: false
-
-
-
-
-
-
-
-
       }
     },
     deleteUser: {
