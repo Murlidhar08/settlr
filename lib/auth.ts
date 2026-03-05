@@ -1,7 +1,7 @@
 // Packages
 import { betterAuth } from "better-auth";
 import { cache } from "react";
-import { Pool } from "pg";
+import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { admin as adminPlugin, customSession, lastLoginMethod, twoFactor } from "better-auth/plugins"
 
@@ -29,8 +29,8 @@ export const auth = betterAuth({
   advanced: {
     disableOriginCheck: true
   },
-  database: new Pool({
-    connectionString: envServer.DATABASE_URL,
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
   }),
   user: {
     additionalFields: {
