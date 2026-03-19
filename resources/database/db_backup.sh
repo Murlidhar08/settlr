@@ -18,16 +18,6 @@ set -o pipefail
 
 # Determine Database URL
 DB_URL=$1
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-if [ -z "$DB_URL" ]; then
-    if [ -f "$SCRIPT_DIR/../../.env" ]; then
-        # Extract DATABASE_URL from .env file (assuming it's in the project root)
-        DB_URL=$(grep "^DATABASE_URL=" "$SCRIPT_DIR/../../.env" | cut -d'=' -f2- | tr -d '"')
-    elif [ -n "$DATABASE_URL" ]; then
-        DB_URL=$DATABASE_URL
-    fi
-fi
 
 if [ -z "$DB_URL" ]; then
     echo "Error: Database URL not found."
