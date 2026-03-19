@@ -172,32 +172,15 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                 </main>
 
                 <FooterButtons>
-                    {/* OUT Button */}
                     <AddTransactionModal
-                        title="Account Outflow"
+                        title="New Entry"
                         accountId={account.id}
                         direction={TransactionDirection.OUT}
                         path={`/accounts/${account.id}`}
                     >
-                        <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
-                            <ArrowUpRight className="h-6 w-6 sm:h-5 sm:w-5" />
-                            <span className="hidden md:block text-center">
-                                Pay Out
-                            </span>
-                        </Button>
-                    </AddTransactionModal>
-
-                    {/* IN Button */}
-                    <AddTransactionModal
-                        title="Account Inflow"
-                        accountId={account.id}
-                        direction={TransactionDirection.IN}
-                        path={`/accounts/${account.id}`}
-                    >
-                        <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
-                            <ArrowDownLeft className="h-6 w-6 sm:h-5 sm:w-5" />
-                            <span className="hidden md:block text-center">
-                                Receive
+                        <Button className="h-14 w-full md:w-auto md:px-24 rounded-full gap-3 font-semibold uppercase bg-slate-900 text-white shadow-xl shadow-slate-900/20 transition-all hover:bg-slate-800 hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 py-2">
+                            <span className="text-center font-black tracking-[0.2em] text-sm">
+                                Add Entry
                             </span>
                         </Button>
                     </AddTransactionModal>

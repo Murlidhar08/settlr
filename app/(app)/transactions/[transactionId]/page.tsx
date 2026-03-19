@@ -19,9 +19,10 @@ export default async function TransactionDetailPage({ params }: { params: Promis
       businessId: session.user.activeBusinessId,
     },
     include: {
-      party: { select: { id: true, name: true } },
-      toAccount: { select: { type: true } },
-      fromAccount: { select: { type: true } }
+      party: { select: { id: true, name: true, contactNo: true } },
+      toAccount: { select: { id: true, name: true, type: true, moneyType: true, categoryType: true } },
+      fromAccount: { select: { id: true, name: true, type: true, moneyType: true, categoryType: true } },
+      user: { select: { name: true } }
     },
   })
 

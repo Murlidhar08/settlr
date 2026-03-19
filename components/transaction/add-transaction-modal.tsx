@@ -66,7 +66,8 @@ export const AddTransactionModal = ({
   const [dateOpen, setDateOpen] = useState(false)
   const [allAccounts, setAllAccounts] = useState<(FinancialAccount & { balance: number })[]>([])
   const [loadingAccounts, setLoadingAccounts] = useState(false)
-  const isOut = direction === TransactionDirection.OUT;
+  const [currentDirection, setCurrentDirection] = useState<TransactionDirection>(direction || TransactionDirection.OUT)
+  const isOut = currentDirection === TransactionDirection.OUT;
 
   // Selected IDs
   const [moneyAccountId, setMoneyAccountId] = useState<string>("")
@@ -180,7 +181,7 @@ export const AddTransactionModal = ({
     }
 
     return () => { isMounted = false }
-  }, [open, partyId, accountId, transactionData?.id, isOut]) // Stabilized dependencies
+  }, [open, partyId, accountId, transactionData?.id, currentDirection]) // Stabilized dependencies
 
   // Update data state whenever selections change
   useEffect(() => {
@@ -212,7 +213,7 @@ export const AddTransactionModal = ({
       toAccountId: to,
       partyId: partnerAcc?.partyId || null
     }))
-  }, [moneyAccountId, partnerAccountId, isOut, mode, allAccounts])
+  }, [moneyAccountId, partnerAccountId, currentDirection, mode, allAccounts])
 
   const queryClient = useQueryClient()
 
@@ -365,21 +366,51 @@ export const AddTransactionModal = ({
           className="w-full! h-full! sm:max-w-[70vw]! lg:max-w-[35vw]! border-l-0 sm:border-l p-0 flex flex-col overflow-hidden bg-background"
         >
           <SheetHeader className="px-6 py-6 border-b bg-muted/20 backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-              <div className={cn(
-                "h-10 w-10 rounded-2xl flex items-center justify-center shadow-lg",
-                isOut ? "bg-rose-500 text-white shadow-rose-200" : "bg-emerald-500 text-white shadow-emerald-200"
-              )}>
-                {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
-              </div>
-              <div>
-                <SheetTitle className="text-xl font-black tracking-tight">{title}</SheetTitle>
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                  {mode} ENTRY
-                </p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  "h-10 w-10 rounded-2xl flex items-center justify-center shadow-lg transition-colors duration-400",
+                  isOut ? "bg-rose-500 text-white shadow-rose-200" : "bg-emerald-500 text-white shadow-emerald-200"
+                )}>
+                  {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
+                </div>
+                <div>
+                  <SheetTitle className="text-xl font-black tracking-tight">{title || "New Entry"}</SheetTitle>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                    {mode} ENTRY
+                  </p>
+                </div>
               </div>
             </div>
           </SheetHeader>
+
+          {/* Money In/Out Toggle */}
+          <div className="px-6">
+            <div className="bg-muted/50 p-1.5 rounded-[20px] flex items-center shadow-inner border border-muted-foreground/5">
+              <button
+                onClick={() => setCurrentDirection(TransactionDirection.IN)}
+                className={cn(
+                  "flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-400 ease-out",
+                  !isOut
+                    ? "bg-background text-emerald-600 shadow-xl scale-[1.02] border border-emerald-100/50"
+                    : "text-muted-foreground/40 hover:text-muted-foreground/60"
+                )}
+              >
+                Money In
+              </button>
+              <button
+                onClick={() => setCurrentDirection(TransactionDirection.OUT)}
+                className={cn(
+                  "flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-400 ease-out",
+                  isOut
+                    ? "bg-background text-rose-600 shadow-xl scale-[1.02] border border-rose-100/50"
+                    : "text-muted-foreground/40 hover:text-muted-foreground/60"
+                )}
+              >
+                Money Out
+              </button>
+            </div>
+          </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <motion.div
