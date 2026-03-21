@@ -94,7 +94,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
 
             <main className="relative z-10 mx-auto max-w-6xl px-4 pb-36 pt-12 md:px-6">
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-16">
-                    
+
                     {/* LEFT COLUMN: BADGE & AMOUNT (Fixed/Sticky on Desktop) */}
                     <div className="lg:col-span-2 space-y-10 lg:sticky lg:top-28 h-fit">
                         {/* STATUS SECTION */}
@@ -201,7 +201,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
 
                             <div className="space-y-10">
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-50 px-2">Core Information</p>
-                                
+
                                 <div className="space-y-6">
                                     <DetailRow icon={<Hash className="h-4 w-4 text-primary" />} label="Reference ID">
                                         <span className="font-mono font-black opacity-80 text-right text-xs break-all">

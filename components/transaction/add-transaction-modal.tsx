@@ -365,7 +365,7 @@ export const AddTransactionModal = ({
           side="right"
           className="w-full! h-full! sm:max-w-[70vw]! lg:max-w-[35vw]! border-l-0 sm:border-l p-0 flex flex-col overflow-hidden bg-background"
         >
-          <SheetHeader className="px-6 py-6 border-b bg-muted/20 backdrop-blur-sm">
+          <SheetHeader className="px-4 py-4 border-b bg-muted/20 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className={cn(
@@ -384,9 +384,9 @@ export const AddTransactionModal = ({
             </div>
           </SheetHeader>
 
-          {/* Money In/Out Toggle */}
-          <div className="px-6">
-            <div className="bg-muted/50 p-1.5 rounded-[20px] flex items-center shadow-inner border border-muted-foreground/5">
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {/* Money In/Out Toggle */}
+            <div className="bg-muted/50 p-1 mx-6 rounded-[20px] flex items-center shadow-inner border border-muted-foreground/5">
               <button
                 onClick={() => setCurrentDirection(TransactionDirection.IN)}
                 className={cn(
@@ -410,9 +410,7 @@ export const AddTransactionModal = ({
                 Money Out
               </button>
             </div>
-          </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
             <motion.div
               variants={{
                 hidden: { opacity: 0 },
@@ -594,12 +592,12 @@ export const AddTransactionModal = ({
           </div>
 
           {/* Footer Actions */}
-          <div className="p-6 border-t bg-background/50 backdrop-blur-md pb-[env(safe-area-inset-bottom,24px)]">
+          <div className="p-2 border-t bg-background/50 backdrop-blur-md pb-[env(safe-area-inset-bottom,24px)]">
             <div className="flex gap-4">
               <Button
                 variant="outline"
                 onClick={() => setOpen(false)}
-                className="h-14 flex-1 rounded-2xl text-base font-bold border-2"
+                className="h-12 flex-1 rounded-2xl text-base font-bold border-2"
               >
                 Discard
               </Button>
@@ -607,7 +605,7 @@ export const AddTransactionModal = ({
                 onClick={handleAddTransaction}
                 disabled={loadingAccounts || mutation.isPending}
                 className={cn(
-                  "h-14 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
+                  "h-12 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
                   isOut
                     ? "bg-rose-600 hover:bg-rose-700 shadow-rose-200"
                     : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
