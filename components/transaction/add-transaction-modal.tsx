@@ -1,35 +1,34 @@
 "use client"
 
 // Packages
-import { useState, useEffect, ReactNode } from "react"
-import { CalendarIcon, Wallet, Paperclip, ChevronDownIcon, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2 } from "lucide-react"
-import { format } from "date-fns"
-import { motion, AnimatePresence } from "framer-motion"
-import { toast } from "sonner"
-import { Loader2 } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { format } from "date-fns"
+import { motion } from "framer-motion"
+import { ArrowDownLeft, ArrowUpRight, CalendarIcon, CheckCircle2, ChevronDownIcon, Clock, Loader2, Paperclip, Wallet } from "lucide-react"
+import { ReactNode, useEffect, useState } from "react"
+import { toast } from "sonner"
 
 // Components
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
-import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Textarea } from "@/components/ui/textarea"
 
 // Actions
-import { addTransaction } from "@/actions/transaction.actions"
 import { getFinancialAccountsWithBalance } from "@/actions/financial-account.actions"
+import { addTransaction } from "@/actions/transaction.actions"
 
 // Library
 import { FinancialAccount } from "@/lib/generated/prisma/client"
-import { FinancialAccountType, CategoryType } from "@/lib/generated/prisma/enums"
+import { CategoryType, FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { cn } from "@/lib/utils"
 
 // Types
-import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 import { ModalMode } from "@/types/transaction/ModalMode"
+import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 interface TransactionProps {
   title: string
   children: ReactNode

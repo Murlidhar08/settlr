@@ -1,17 +1,25 @@
 "use client"
 
-import {
-    Wallet, Banknote, Landmark, CreditCard, Edit2,
-    TrendingUp, TrendingDown, Briefcase, Scale, Settings2, Tag, Cpu,
-    ChevronRight, ArrowDownLeft, ArrowUpRight
-} from "lucide-react"
 import { FinancialAccount } from "@/lib/generated/prisma/client"
-import { MoneyType, FinancialAccountType, CategoryType, Currency } from "@/lib/generated/prisma/enums"
-import { AddAccountModal } from "./add-account-modal"
-import { motion } from "framer-motion"
+import { CategoryType, Currency, FinancialAccountType, MoneyType } from "@/lib/generated/prisma/enums"
 import { cn } from "@/lib/utils"
-import { useRouter } from "next/navigation"
 import { getCurrencySymbol } from "@/utility/transaction"
+import { motion } from "framer-motion"
+import {
+    ArrowDownLeft, ArrowUpRight,
+    Banknote,
+    Briefcase,
+    ChevronRight,
+    Cpu,
+    CreditCard, Edit2,
+    Landmark,
+    Scale, Settings2, Tag,
+    TrendingDown,
+    TrendingUp,
+    Wallet
+} from "lucide-react"
+import { useRouter } from "next/navigation"
+import { AddAccountModal } from "./add-account-modal"
 
 interface AccountCardProps {
     account: FinancialAccount & { balance: number }

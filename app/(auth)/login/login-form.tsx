@@ -1,21 +1,21 @@
 "use client";
 
 // Packages
-import { useEffect, useState } from "react";
-import { Mail, EyeOff, Eye } from "lucide-react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import { Eye, EyeOff, Mail } from "lucide-react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // Lib
 import { authClient, signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth/auth-client";
 import { envClient } from "@/lib/env.client";
 
 // Components
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 
 const containerVariants = {
   hidden: { opacity: 0 },

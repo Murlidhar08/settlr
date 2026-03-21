@@ -1,10 +1,9 @@
 'use client'
 
-import { AlertTriangle, Trash2 } from 'lucide-react'
-import { motion } from 'framer-motion'
 import { BetterAuthActionButton } from '@/components/auth/better-auth-action-button'
 import { authClient } from '@/lib/auth/auth-client'
-import { envClient } from '@/lib/env.client'
+import { motion } from 'framer-motion'
+import { AlertTriangle, Trash2 } from 'lucide-react'
 
 const itemVariants = {
     hidden: { opacity: 0, scale: 0.95 },

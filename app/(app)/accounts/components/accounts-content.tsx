@@ -1,16 +1,13 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
-import { getFinancialAccountsWithBalance } from "@/actions/financial-account.actions"
-import { AddAccountModal } from "@/components/account/add-account-modal"
 import { AccountCard } from "@/components/account/account-card"
-import { Button } from "@/components/ui/button"
-import { Plus, Wallet } from "lucide-react"
-import { FinancialAccountType } from "@/lib/generated/prisma/enums"
-import { t } from "@/lib/languages/i18n"
-import { useCachedAccountsWithBalance } from "@/lib/hooks/use-cached-queries"
+import { AddAccountModal } from "@/components/account/add-account-modal"
 import { FooterButtons } from "@/components/footer-buttons"
-import { Currency } from "@/lib/generated/prisma/enums"
+import { Button } from "@/components/ui/button"
+import { Currency, FinancialAccountType } from "@/lib/generated/prisma/enums"
+import { useCachedAccountsWithBalance } from "@/lib/hooks/use-cached-queries"
+import { t } from "@/lib/languages/i18n"
+import { Plus, Wallet } from "lucide-react"
 
 export function AccountsContent({ language, currency }: { language: string, currency: Currency }) {
     const { data: allAccounts = [], isLoading } = useCachedAccountsWithBalance()

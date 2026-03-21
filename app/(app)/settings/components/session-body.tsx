@@ -1,14 +1,14 @@
 'use client'
 
-import { Monitor, Smartphone, Trash2, Globe, ShieldQuestion } from 'lucide-react'
-import { motion } from 'framer-motion'
-import { Session } from 'better-auth'
-import { useRouter } from 'next/navigation'
 import { BetterAuthActionButton } from '@/components/auth/better-auth-action-button'
+import { useUserConfig } from '@/components/providers/user-config-provider'
 import { authClient } from '@/lib/auth/auth-client'
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/utility/transaction'
-import { useUserConfig } from '@/components/providers/user-config-provider'
+import { Session } from 'better-auth'
+import { motion } from 'framer-motion'
+import { Globe, Monitor, Smartphone, Trash2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 interface SessionModalBodyProps {
     sessions: Session[]

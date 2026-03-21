@@ -1,14 +1,14 @@
 import { Plus } from "lucide-react";
 import { Suspense } from "react";
 
-import { PartyList } from "./party-list";
-import { PartyType } from "@/lib/generated/prisma/enums";
 import { getPartyList } from "@/actions/parties.actions";
-import { AddPartiesModal } from "./add-parties-modal";
 import { FooterButtons } from "@/components/footer-buttons";
 import { Button } from "@/components/ui/button";
+import { PartyType } from "@/lib/generated/prisma/enums";
 import { getUserConfig } from "@/lib/user-config";
+import { AddPartiesModal } from "./add-parties-modal";
 import BalanceCard from "./balance-card";
+import { PartyList } from "./party-list";
 
 interface PartyListProp {
   partyType: PartyType;

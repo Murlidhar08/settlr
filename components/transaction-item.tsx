@@ -1,13 +1,13 @@
 "use client"
 
-import Link from "next/link"
-import { ArrowDownLeft, ArrowUpRight, ArrowRight, Wallet2, Tag } from "lucide-react"
-import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
-import { formatAmount } from "@/utility/transaction"
-import { TransactionDirection } from "@/types/transaction/TransactionDirection"
-import { getTransactionPerspective, getPartyTransactionPerspective, getBusinessTransactionPerspective } from "@/lib/transaction-logic"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
+import { getBusinessTransactionPerspective, getPartyTransactionPerspective, getTransactionPerspective } from "@/lib/transaction-logic"
+import { cn } from "@/lib/utils"
+import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { formatAmount } from "@/utility/transaction"
+import { motion } from "framer-motion"
+import { ArrowDownLeft, ArrowRight, ArrowUpRight, Tag, Wallet2 } from "lucide-react"
+import Link from "next/link"
 
 interface TransactionProp {
   transactionId: string

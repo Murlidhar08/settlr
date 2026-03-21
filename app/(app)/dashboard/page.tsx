@@ -1,18 +1,18 @@
-import { Suspense } from "react";
 import { getUserSession } from "@/lib/auth/auth";
-import { getUserConfig } from "@/lib/user-config";
 import { t } from "@/lib/languages/i18n";
+import { getUserConfig } from "@/lib/user-config";
+import { Suspense } from "react";
 
 // Components
-import SummaryCard from "./components/summary-card";
-import { CashflowChart } from "./components/cashflow-chart";
-import { AccountsDistribution } from "./components/accounts-distribution";
-import RecentTransaction from "./components/recent-transaction";
-import SwitchBusiness from "./components/business-switch";
-import { StatusGridSkeletons } from "./components/status-card-loading";
-import { TransactionListSkeletons } from "./components/transaction-item-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AccountsDistribution } from "./components/accounts-distribution";
 import { BudgetAlerts } from "./components/budget-alerts";
+import SwitchBusiness from "./components/business-switch";
+import { CashflowChart } from "./components/cashflow-chart";
+import RecentTransaction from "./components/recent-transaction";
+import { StatusGridSkeletons } from "./components/status-card-loading";
+import SummaryCard from "./components/summary-card";
+import { TransactionListSkeletons } from "./components/transaction-item-skeleton";
 
 export default async function Page() {
   const session = await getUserSession();

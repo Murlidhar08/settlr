@@ -1,6 +1,6 @@
-import { Suspense } from "react";
 import { AccountsSkeleton } from "@/components/account/accounts-skeleton";
 import { getUserConfig } from "@/lib/user-config";
+import { Suspense } from "react";
 import { AccountsContent } from "./components/accounts-content";
 
 export default async function AccountsPage() {

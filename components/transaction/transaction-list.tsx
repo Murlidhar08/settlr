@@ -1,10 +1,10 @@
 "use client";
 
-import { format, isToday, isYesterday } from "date-fns";
+import { useUserConfig } from "@/components/providers/user-config-provider";
 import { TransactionItem } from "@/components/transaction-item";
 import { TransactionRes } from "@/types/transaction/TransactionData";
-import { formatAmount, formatDate, formatTime } from "@/utility/transaction";
-import { useUserConfig } from "@/components/providers/user-config-provider";
+import { formatDate, formatTime } from "@/utility/transaction";
+import { isToday, isYesterday } from "date-fns";
 import { motion } from "framer-motion";
 import { Wallet2 } from "lucide-react";
 
@@ -99,4 +99,4 @@ const TransactionList = ({ transactions, accountId, accountType }: transactionLi
   )
 }
 
-export { TransactionList }
+export { TransactionList };

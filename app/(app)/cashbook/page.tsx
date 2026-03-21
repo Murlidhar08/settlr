@@ -1,15 +1,13 @@
+import { FooterButtons } from "@/components/footer-buttons";
+import { AddTransactionModal } from "@/components/transaction/add-transaction-modal";
+import { Button } from "@/components/ui/button";
+import { getDefaultConfig, getUserConfig } from "@/lib/user-config";
+import { TransactionDirection } from "@/types/transaction/TransactionDirection";
+import { format } from "date-fns";
 import { Suspense } from "react";
 import CashFilters from "./components/cash-filters";
-import { CashbookSkeleton } from "./components/cashbook-skeleton";
-import { AddTransactionModal } from "@/components/transaction/add-transaction-modal";
-import { FooterButtons } from "@/components/footer-buttons";
-import { Button } from "@/components/ui/button";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
-import { format } from "date-fns";
-import { TransactionDirection } from "@/types/transaction/TransactionDirection";
-import { t } from "@/lib/languages/i18n";
-import { getUserConfig, getDefaultConfig } from "@/lib/user-config";
 import { CashbookContent } from "./components/cashbook-content";
+import { CashbookSkeleton } from "./components/cashbook-skeleton";
 
 interface CashbookPageProps {
   searchParams: Promise<{

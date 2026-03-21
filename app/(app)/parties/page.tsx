@@ -3,12 +3,11 @@ import { PartyType } from "@/lib/generated/prisma/enums";
 import { Suspense } from "react";
 
 // Components
-import CustomersTab from "./components/customers-tab";
-import { PartyFilters } from "./components/party-filters";
-import * as motion from "framer-motion/client";
-import { PartiesClientProvider, PartiesTabContent } from "./components/parties-client-wrapper";
 import { getUserConfig } from "@/lib/user-config";
-import { t } from "@/lib/languages/i18n";
+import * as motion from "framer-motion/client";
+import CustomersTab from "./components/customers-tab";
+import { PartiesClientProvider, PartiesTabContent } from "./components/parties-client-wrapper";
+import { PartyFilters } from "./components/party-filters";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { authClient } from "@/lib/auth/auth-client";
 import { envClient } from "@/lib/env.client";
-import { TotpForm } from "./components/totp-form";
+import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { BackupCodeTab } from "./components/backup-code-tab";
-import { ShieldCheck, Wallet } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { TotpForm } from "./components/totp-form";
 
 const containerVariants = {
   hidden: { opacity: 0 },

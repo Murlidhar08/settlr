@@ -1,13 +1,12 @@
 "use client"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useSession } from "@/lib/auth/auth-client"
-import { getInitials } from "@/utility/party"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
 import { envClient } from "@/lib/env.client"
 import { useCachedSession } from "@/lib/hooks/use-cached-queries"
-import { motion, AnimatePresence } from "framer-motion"
+import { getInitials } from "@/utility/party"
+import { motion } from "framer-motion"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 interface HeaderProps {
   title: string

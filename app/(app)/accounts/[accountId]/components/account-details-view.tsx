@@ -1,19 +1,29 @@
 "use client"
 
-import { motion } from "framer-motion"
-import {
-    Wallet, ArrowUpRight, ArrowDownLeft, Receipt, Landmark, Banknote,
-    Tag, User2, Users, Truck, TrendingUp, TrendingDown,
-    Briefcase, Scale, Settings2, CreditCard, ChevronRight, History
-} from "lucide-react"
-import { FinancialAccountType, MoneyType, CategoryType, PartyType, Currency } from "@/lib/generated/prisma/enums"
-import { TransactionDirection } from "@/types/transaction/TransactionDirection"
-import { cn } from "@/lib/utils"
-import { getCurrencySymbol, formatAmount } from "@/utility/transaction"
-import { TransactionList } from "@/components/transaction/transaction-list"
 import { FooterButtons } from "@/components/footer-buttons"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
+import { TransactionList } from "@/components/transaction/transaction-list"
 import { Button } from "@/components/ui/button"
+import { CategoryType, Currency, FinancialAccountType, MoneyType, PartyType } from "@/lib/generated/prisma/enums"
+import { cn } from "@/lib/utils"
+import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { getCurrencySymbol } from "@/utility/transaction"
+import { motion } from "framer-motion"
+import {
+    ArrowDownLeft,
+    ArrowUpRight,
+    Banknote,
+    Briefcase,
+    CreditCard,
+    Landmark,
+    Scale, Settings2,
+    Tag,
+    TrendingDown,
+    TrendingUp,
+    Truck,
+    User2, Users,
+    Wallet
+} from "lucide-react"
 import BackAccountHeaderClient from "./back-account-header-client"
 
 interface AccountDetailsViewProps {

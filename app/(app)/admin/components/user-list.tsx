@@ -1,43 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import { authClient } from "@/lib/auth/auth-client";
+import { useConfirm } from "@/components/providers/confirm-provider";
+import { usePrompt } from "@/components/providers/prompt-provider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuGroup,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+    DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth/auth-client";
+import { format } from "date-fns";
 import {
-    MoreHorizontal,
-    Shield,
-    ShieldAlert,
-    UserMinus,
-    UserPlus,
+    Activity,
     Ban,
-    Slash,
-    UserCircle,
-    UserX,
+    Briefcase,
+    Calendar,
+    Check,
+    Filter,
+    MoreHorizontal,
+    Phone,
     RefreshCw,
     Search,
-    Filter,
-    Phone,
-    Calendar,
-    Briefcase,
-    Activity,
-    Check
+    Shield,
+    UserCircle,
+    UserMinus,
+    UserPlus,
+    UserX
 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
-import { format } from "date-fns";
-import { useConfirm } from "@/components/providers/confirm-provider";
-import { usePrompt } from "@/components/providers/prompt-provider";
 
 interface User {
     id: string;

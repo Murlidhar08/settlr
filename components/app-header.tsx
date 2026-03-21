@@ -1,10 +1,10 @@
 "use client";
 
+import { t } from "@/lib/languages/i18n";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Header } from "./header";
 import { useUserConfig } from "./providers/user-config-provider";
-import { t } from "@/lib/languages/i18n";
-import { useEffect, useState } from "react";
 
 const ROUTE_TITLE_MAP: Record<string, string> = {
     "/dashboard": "dashboard.title",

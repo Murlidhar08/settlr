@@ -1,22 +1,22 @@
 "use client"
 
 // Package
+import { motion } from "framer-motion"
 import { ArrowLeft, EllipsisVertical } from "lucide-react"
+import type { Route } from "next"
 import { useRouter } from "next/navigation"
 import { ReactNode } from "react"
-import type { Route } from "next"
-import { motion, AnimatePresence } from "framer-motion"
 
 // Components
-import { Button } from "./ui/button"
+import { cn } from "@/lib/utils"
 import { Badge } from "./ui/badge"
+import { Button } from "./ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
-import { cn } from "@/lib/utils"
 
 interface HeaderMenuItem {
   label: string

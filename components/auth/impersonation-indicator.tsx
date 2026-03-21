@@ -2,8 +2,8 @@
 
 import { authClient } from "@/lib/auth/auth-client"
 import { ShieldAlert, UserX } from "lucide-react"
-import { BetterAuthActionButton } from "./better-auth-action-button"
 import { useRouter } from "next/navigation"
+import { BetterAuthActionButton } from "./better-auth-action-button"
 
 export function ImpersonationIndicator() {
     const router = useRouter()

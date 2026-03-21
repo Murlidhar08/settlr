@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { AnimatePresence, motion, Variants } from "framer-motion";
+import { ArrowLeft, Eye, EyeOff, ShieldAlert, ShieldCheck } from "lucide-react";
 import Image from "next/image";
-import { ArrowLeft, Lock, Eye, EyeOff, ShieldCheck, ShieldAlert } from "lucide-react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

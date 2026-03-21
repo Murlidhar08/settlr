@@ -1,8 +1,8 @@
 "use client"
 
-import { motion } from "framer-motion";
 import { Currency } from "@/lib/generated/prisma/enums";
 import { getCurrencySymbol } from "@/utility/transaction";
+import { motion } from "framer-motion";
 
 interface CashSummaryProp {
   totalIn: number

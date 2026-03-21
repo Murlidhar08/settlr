@@ -1,14 +1,14 @@
 "use client";
 
-import { useSession } from "@/lib/auth/auth-client";
-import { SessionModalBody } from "../components/session-body";
 import { getListSessions } from "@/actions/user-settings.actions";
-import { useEffect, useState } from "react";
-import { Session } from "@/lib/generated/prisma/client";
 import { BackHeader } from "@/components/back-header";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSession } from "@/lib/auth/auth-client";
+import { Session } from "@/lib/generated/prisma/client";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { SessionModalBody } from "../components/session-body";
 
 export default function SessionManagementPage() {
     const router = useRouter();

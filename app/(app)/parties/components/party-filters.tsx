@@ -1,13 +1,13 @@
 "use client"
 
-import { Search } from "lucide-react"
+import { useUserConfig } from "@/components/providers/user-config-provider"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { t } from "@/lib/languages/i18n"
+import { motion } from "framer-motion"
+import { Search } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
-import { useUserConfig } from "@/components/providers/user-config-provider"
-import { t } from "@/lib/languages/i18n"
 
 import { useOptimisticTab } from "./parties-client-wrapper"
 

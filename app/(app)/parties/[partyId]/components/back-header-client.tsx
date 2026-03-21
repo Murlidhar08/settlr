@@ -1,11 +1,7 @@
 "use client"
 
-import { Pencil, Trash2, Building2, Check, X, ShieldAlert } from "lucide-react"
-import { useState } from "react"
+import { deleteParty, updateParty } from "@/actions/parties.actions"
 import { BackHeader } from "@/components/back-header"
-import { updateParty, deleteParty } from "@/actions/parties.actions"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,16 +12,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { motion, AnimatePresence } from "framer-motion"
+import { Building2, Pencil, ShieldAlert, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { toast } from "sonner"
 
 export default function BackHeaderClient({ party }: { party: any }) {
   const router = useRouter()

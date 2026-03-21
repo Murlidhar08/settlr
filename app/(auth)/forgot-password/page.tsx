@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
+import { AnimatePresence, motion, Variants } from "framer-motion";
 import { ArrowLeft, Mail, ShieldAlert, ShieldCheck } from "lucide-react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

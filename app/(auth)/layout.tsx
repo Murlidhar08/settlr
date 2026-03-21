@@ -1,5 +1,5 @@
-import { ThemeToggle } from "@/components/theme-toggle";
 import { BuildVersion } from "@/components/auth/build-version";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   return (

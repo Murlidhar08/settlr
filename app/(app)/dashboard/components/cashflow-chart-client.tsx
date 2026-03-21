@@ -1,20 +1,20 @@
 "use client"
 
-import { useMemo } from "react"
-import {
-    AreaChart,
-    Area,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer
-} from "recharts"
-import { motion } from "framer-motion"
 import { Currency } from "@/lib/generated/prisma/enums"
-import { formatAmount } from "@/utility/transaction"
 import { t } from "@/lib/languages/i18n"
 import { cn } from "@/lib/utils"
+import { formatAmount } from "@/utility/transaction"
+import { motion } from "framer-motion"
+import { useMemo } from "react"
+import {
+    Area,
+    AreaChart,
+    CartesianGrid,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis
+} from "recharts"
 
 interface ChartData {
     date: string

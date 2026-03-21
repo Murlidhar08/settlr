@@ -1,21 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
-import { toast } from "sonner"
-import { LockKeyhole, ShieldCheck, Mail } from "lucide-react"
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
+import { Mail, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button"
-import { LoadingSwap } from "@/components/ui/loading-swap"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { BetterAuthActionButton } from "@/components/auth/better-auth-action-button"
+import { BetterAuthActionButton } from "@/components/auth/better-auth-action-button";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { LoadingSwap } from "@/components/ui/loading-swap";
 
-import { authClient } from "@/lib/auth/auth-client"
-import { getListUserAccounts } from "@/actions/user-settings.actions"
-import { TwoFactorAuth } from "./two-factor-auth"
-import { cn } from "@/lib/utils"
+import { getListUserAccounts } from "@/actions/user-settings.actions";
+import { authClient } from "@/lib/auth/auth-client";
+import { cn } from "@/lib/utils";
+import { TwoFactorAuth } from "./two-factor-auth";
 
 interface SecurityModalBodyProps {
     email: string

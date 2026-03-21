@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button"
-import { Phone, Share2 } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import { Phone, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface QuickActionProp {
@@ -39,4 +39,4 @@ const QuickActions = ({ partyId, contact }: QuickActionProp) => {
   )
 }
 
-export { QuickActions }
+export { QuickActions };

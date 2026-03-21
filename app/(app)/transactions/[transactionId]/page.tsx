@@ -1,11 +1,11 @@
-import { notFound } from "next/navigation"
-import { prisma } from "@/lib/prisma/prisma"
 import { getUserSession } from "@/lib/auth/auth"
-import { TransactionDetailView } from "./components/transaction-detail-view"
-import { getUserConfig } from "@/lib/user-config"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
+import { prisma } from "@/lib/prisma/prisma"
 import { getTransactionPerspective } from "@/lib/transaction-logic"
+import { getUserConfig } from "@/lib/user-config"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { notFound } from "next/navigation"
+import { TransactionDetailView } from "./components/transaction-detail-view"
 
 export default async function TransactionDetailPage({ params }: { params: Promise<{ transactionId: string }> }) {
   const { transactionId } = await params;

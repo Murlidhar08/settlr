@@ -1,15 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Filter, X, Calendar as CalendarIcon, ArrowUpRight, ArrowDownLeft, Wallet } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { MoneyType } from "@/lib/generated/prisma/enums";
+import { ArrowDownLeft, ArrowUpRight, Calendar as CalendarIcon, Filter } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export default function StatementFilters() {
     const router = useRouter();

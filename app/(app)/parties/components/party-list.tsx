@@ -15,7 +15,7 @@ interface PartyListProp {
   search?: string
 }
 
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 const PartyList = ({ partyType, promise, search = "" }: PartyListProp) => {
   const { data: partyLst = [] } = useCachedParties(partyType, search);
@@ -70,5 +70,5 @@ const PartyList = ({ partyType, promise, search = "" }: PartyListProp) => {
 }
 
 
-export { PartyList }
+export { PartyList };
 

@@ -1,21 +1,19 @@
 "use client"
 
-import { Building2, Check, ChevronDown, Settings2 } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import {
-  getBusinessList,
-  switchBusiness,
+  switchBusiness
 } from "@/actions/business.actions"
-import { authClient } from "@/lib/auth/auth-client"
 import { useUserConfig } from "@/components/providers/user-config-provider"
-import { t } from "@/lib/languages/i18n"
+import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useCachedBusinesses, useCachedSession } from "@/lib/hooks/use-cached-queries"
+import { t } from "@/lib/languages/i18n"
+import { cn } from "@/lib/utils"
 import { useQueryClient } from "@tanstack/react-query"
+import { AnimatePresence, motion } from "framer-motion"
+import { Building2, Check, ChevronDown, Settings2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 /* ========================================================= */
 /* TYPES */

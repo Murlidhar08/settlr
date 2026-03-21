@@ -1,10 +1,10 @@
 import { auth, getUserSession } from "@/lib/auth/auth";
+import { prisma } from "@/lib/prisma/prisma";
+import { ShieldAlert } from "lucide-react";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminStats } from "./components/admin-stats";
 import { UserList } from "./components/user-list";
-import { ShieldAlert } from "lucide-react";
-import { headers } from "next/headers";
-import { prisma } from "@/lib/prisma/prisma";
 
 export default async function AdminPage() {
     const session = await getUserSession();

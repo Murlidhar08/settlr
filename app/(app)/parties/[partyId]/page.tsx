@@ -1,24 +1,24 @@
 // Packages
-import { ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react'
+import { Search } from 'lucide-react';
 
 // Components
-import { Input } from '@/components/ui/input'
-import { QuickActions } from './components/quick-action';
+import { Input } from '@/components/ui/input';
 import { BalanceCard } from './components/balance-card';
+import { QuickActions } from './components/quick-action';
 
 // Lib
-import { prisma } from '@/lib/prisma/prisma'
-import { getUserSession } from '@/lib/auth/auth'
-import { TransactionList } from '@/components/transaction/transaction-list';
 import { FooterButtons } from '@/components/footer-buttons';
 import { AddTransactionModal } from '@/components/transaction/add-transaction-modal';
+import { TransactionList } from '@/components/transaction/transaction-list';
 import { Button } from '@/components/ui/button';
+import { getUserSession } from '@/lib/auth/auth';
+import { FinancialAccountType } from '@/lib/generated/prisma/enums';
+import { prisma } from '@/lib/prisma/prisma';
+import { calculateAccountStats } from '@/lib/transaction-logic';
 import { getUserConfig } from '@/lib/user-config';
+import { TransactionDirection } from '@/types/transaction/TransactionDirection';
 import { getCurrencySymbol } from '@/utility/transaction';
 import BackHeaderClient from './components/back-header-client';
-import { TransactionDirection } from '@/types/transaction/TransactionDirection';
-import { FinancialAccountType } from '@/lib/generated/prisma/enums';
-import { calculateAccountStats } from '@/lib/transaction-logic';
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;

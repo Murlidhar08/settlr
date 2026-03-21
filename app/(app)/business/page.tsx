@@ -1,23 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Building2, Plus, Pencil, Trash2, Check, X, ShieldAlert, Loader2 } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { BackHeader } from "@/components/back-header"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { useRouter } from "next/navigation"
-import { authClient } from "@/lib/auth/auth-client"
-import { cn } from "@/lib/utils"
 import {
-    getBusinessList,
     addBusiness,
-    updateBusiness,
     deleteBusiness,
-    switchBusiness
+    getBusinessList,
+    switchBusiness,
+    updateBusiness
 } from "@/actions/business.actions"
-import { toast } from "sonner"
+import { BackHeader } from "@/components/back-header"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -28,6 +18,16 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { authClient } from "@/lib/auth/auth-client"
+import { cn } from "@/lib/utils"
+import { AnimatePresence, motion } from "framer-motion"
+import { Building2, Check, Loader2, Pencil, Plus, ShieldAlert, Trash2, X } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
 interface Business {
     id: string

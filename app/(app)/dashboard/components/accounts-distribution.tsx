@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/prisma/prisma"
 import { getUserSession } from "@/lib/auth/auth"
-import { getUserConfig } from "@/lib/user-config"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
+import { prisma } from "@/lib/prisma/prisma"
+import { getUserConfig } from "@/lib/user-config"
 import { AccountsDistributionClient } from "./accounts-distribution-client"
 
 export async function AccountsDistribution() {

@@ -1,7 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, UserCheck, UserX, ShieldCheck } from "lucide-react";
+import { ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
 
 interface AdminStatsProps {
     totalUsers: number;

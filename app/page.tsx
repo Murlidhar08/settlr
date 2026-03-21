@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
     // Get session on the server
