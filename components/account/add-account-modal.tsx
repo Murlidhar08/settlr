@@ -3,7 +3,7 @@
 import {
     Wallet, CheckCircle2, Plus, CreditCard, Banknote, Landmark, Info,
     ChevronDownIcon, User2, Users, Truck, TrendingUp, TrendingDown,
-    Briefcase, Scale, Settings2, Tag, Edit2
+    Briefcase, Scale, Settings2, Tag, Edit2, Loader2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
@@ -321,8 +321,17 @@ export const AddAccountModal = ({
                                 disabled={mutation.isPending}
                                 className="h-14 flex-2 rounded-2xl text-primary-foreground text-base font-black uppercase tracking-widest gap-2 shadow-xl shadow-primary/20 active:scale-[0.97] transition-all bg-primary hover:bg-primary/90"
                             >
-                                {mutation.isPending ? "Saving..." : (accountData ? "Update Account" : "Create Account")}
-                                {!mutation.isPending && <CheckCircle2 size={20} />}
+                                {mutation.isPending ? (
+                                    <>
+                                        <Loader2 className="animate-spin" size={20} />
+                                        Just a sec...
+                                    </>
+                                ) : (
+                                    <>
+                                        {accountData ? "Update Account" : "Create Account"}
+                                        <CheckCircle2 size={20} />
+                                    </>
+                                )}
                             </Button>
                         </div>
                     </div>

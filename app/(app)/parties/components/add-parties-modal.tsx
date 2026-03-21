@@ -1,6 +1,6 @@
 "use client"
 
-import { Building2, X } from "lucide-react"
+import { Building2, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ReactNode, useState } from "react"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
@@ -193,12 +193,22 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
 
               <Button
                 onClick={handleAddParty}
-                className="h-14 flex-[1.5] rounded-2xl bg-primary text-white shadow-xl shadow-primary/20 active:scale-[0.97] transition-all font-black uppercase tracking-widest text-base"
+                disabled={mutation.isPending}
+                className="h-14 flex-[1.5] rounded-2xl bg-primary text-white shadow-xl shadow-primary/20 active:scale-[0.97] transition-all font-black uppercase tracking-widest text-base gap-2"
               >
-                Create {type === PartyType.CUSTOMER ? "Customer" :
-                  type === PartyType.SUPPLIER ? "Supplier" :
-                    type === PartyType.EMPLOYEE ? "Employee" :
-                      "Party"}
+                {mutation.isPending ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Hang on...
+                  </>
+                ) : (
+                  <>
+                    Create {type === PartyType.CUSTOMER ? "Customer" :
+                      type === PartyType.SUPPLIER ? "Supplier" :
+                        type === PartyType.EMPLOYEE ? "Employee" :
+                          "Party"}
+                  </>
+                )}
               </Button>
             </div>
           </div>
