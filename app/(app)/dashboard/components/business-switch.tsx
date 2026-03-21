@@ -14,7 +14,8 @@ import {
 import { authClient } from "@/lib/auth/auth-client"
 import { useUserConfig } from "@/components/providers/user-config-provider"
 import { t } from "@/lib/languages/i18n"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useCachedBusinesses, useCachedSession } from "@/lib/hooks/use-cached-queries"
+import { useQueryClient } from "@tanstack/react-query"
 
 /* ========================================================= */
 /* TYPES */
@@ -35,14 +36,8 @@ export default function SwitchBusiness() {
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null)
   const [popOpen, setPopOpen] = useState(false)
 
-  const { data: businesses = [] } = useQuery({
-    queryKey: ["businesses"],
-    queryFn: async () => {
-      const list = await getBusinessList()
-      return (list ?? []) as Business[]
-    },
-    staleTime: 1000 * 60 * 60, // Cache for 1 hour
-  })
+  const { data: session } = useCachedSession()
+  const { data: businesses = [] } = useCachedBusinesses() as { data: Business[] }
 
   /* ========================================================= */
   /* INIT: LOAD BUSINESSES + SESSION */
@@ -50,11 +45,9 @@ export default function SwitchBusiness() {
 
   useEffect(() => {
     const init = async () => {
-      if (!businesses.length) return
+      if (!businesses.length || !session?.user) return
 
-      const sessionRes = await authClient.getSession()
-      const activeBusinessId = sessionRes.data?.user?.activeBusinessId
-
+      const activeBusinessId = session.user.activeBusinessId
       const active = businesses.find(b => b.id === activeBusinessId) ?? businesses[0]
       setSelectedBusiness(active)
 
@@ -65,7 +58,7 @@ export default function SwitchBusiness() {
     }
 
     init()
-  }, [businesses])
+  }, [businesses, session])
 
   /* ========================================================= */
   /* HANDLERS */

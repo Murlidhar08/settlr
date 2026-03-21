@@ -1,7 +1,23 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { useState } from "react";
+
+import { Persister } from "@tanstack/react-query-persist-client";
+
+// Persistent caching setup
+const persister: Persister = (typeof window !== "undefined"
+    ? createAsyncStoragePersister({
+        storage: window.localStorage,
+        key: 'SETTLR_OFFLINE_CACHE',
+    })
+    : {
+        persistClient: async () => { },
+        restoreClient: async () => undefined,
+        removeClient: async () => { },
+    }) as Persister;
 
 export default function QueryProvider({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(
@@ -9,17 +25,21 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
             new QueryClient({
                 defaultOptions: {
                     queries: {
-                        // With SSR, we usually want to set some default staleTime
-                        // above 0 to avoid refetching immediately on the client
-                        staleTime: 60 * 1000,
+                        staleTime: 1000 * 60 * 5, // 5 minutes default
+                        gcTime: 1000 * 60 * 60 * 24, // 24 hours in cache
+                        retry: 1,
+                        refetchOnWindowFocus: false,
                     },
                 },
             })
     );
 
     return (
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{ persister }}
+        >
             {children}
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
     );
 }

@@ -8,14 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Plus, Wallet } from "lucide-react"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { t } from "@/lib/languages/i18n"
+import { useCachedAccountsWithBalance } from "@/lib/hooks/use-cached-queries"
 import { FooterButtons } from "@/components/footer-buttons"
 import { Currency } from "@/lib/generated/prisma/enums"
 
 export function AccountsContent({ language, currency }: { language: string, currency: Currency }) {
-    const { data: allAccounts = [], isLoading } = useQuery({
-        queryKey: ["financial-accounts"],
-        queryFn: () => getFinancialAccountsWithBalance(),
-    })
+    const { data: allAccounts = [], isLoading } = useCachedAccountsWithBalance()
 
     const accounts = allAccounts.filter(a => a.partyId === null);
 

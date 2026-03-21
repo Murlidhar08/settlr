@@ -1,9 +1,7 @@
 "use client";
 
-import { use } from "react";
 import { PartyType } from "@/lib/generated/prisma/enums";
-import { useQuery } from "@tanstack/react-query";
-import { getPartyList } from "@/actions/parties.actions";
+import { useCachedParties } from "@/lib/hooks/use-cached-queries";
 
 // components
 import { PartyItem } from "./party-item";
@@ -20,11 +18,7 @@ interface PartyListProp {
 import { motion, AnimatePresence } from "framer-motion";
 
 const PartyList = ({ partyType, promise, search = "" }: PartyListProp) => {
-  const { data: partyLst = [] } = useQuery({
-    queryKey: ["parties", partyType, search],
-    queryFn: () => getPartyList(partyType, search),
-    initialData: promise ? use(promise) : undefined,
-  });
+  const { data: partyLst = [] } = useCachedParties(partyType, search);
 
   return (
     <div className="space-y-3">

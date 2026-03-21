@@ -6,6 +6,7 @@ import { getInitials } from "@/utility/party"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { envClient } from "@/lib/env.client"
+import { useCachedSession } from "@/lib/hooks/use-cached-queries"
 import { motion, AnimatePresence } from "framer-motion"
 
 interface HeaderProps {
@@ -16,7 +17,8 @@ interface HeaderProps {
 
 const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
   const router = useRouter()
-  const { data: session } = useSession();
+  const { data: sessionData } = useCachedSession()
+  const session = sessionData?.session ? sessionData : null
   const showProfile = isProfile ?? true
 
   const handleRedirect = () => {
