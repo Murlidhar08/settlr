@@ -62,6 +62,7 @@ export default function TwoFactorPage() {
             <Image
               src="/images/logo/light_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={48}
               height={48}
               className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
@@ -69,6 +70,7 @@ export default function TwoFactorPage() {
             <Image
               src="/images/logo/dark_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={48}
               height={48}
               className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"
@@ -192,6 +194,7 @@ export default function TwoFactorPage() {
             <Image
               src="/images/logo/dark_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={140}
               height={140}
               className="relative z-10 group-hover:scale-110 transition-transform duration-500 drop-shadow-2xl"

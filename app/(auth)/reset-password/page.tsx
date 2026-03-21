@@ -129,6 +129,7 @@ function ResetPasswordForm() {
               <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-lg group-hover:bg-primary/20 transition-colors" />
               <Image
                 src="/images/logo/light_logo.svg"
+                loading="eager"
                 alt={envClient.NEXT_PUBLIC_APP_NAME}
                 width={48}
                 height={48}
@@ -137,6 +138,7 @@ function ResetPasswordForm() {
               <Image
                 src="/images/logo/dark_logo.svg"
                 alt={envClient.NEXT_PUBLIC_APP_NAME}
+                loading="eager"
                 width={48}
                 height={48}
                 className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"
@@ -283,6 +285,7 @@ function ResetPasswordForm() {
             <Image
               src="/images/logo/dark_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={140}
               height={140}
               className="relative z-10 group-hover:scale-110 transition-transform duration-500 drop-shadow-2xl"

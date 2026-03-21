@@ -60,6 +60,7 @@ const Sidebar = () => {
             <Image
               src="/images/logo/light_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={34}
               height={34}
               className="dark:hidden"
@@ -67,6 +68,7 @@ const Sidebar = () => {
             <Image
               src="/images/logo/dark_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={34}
               height={34}
               className="hidden dark:block"

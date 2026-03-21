@@ -47,6 +47,7 @@ const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
               <Image
                 src="/images/logo/light_logo.svg"
                 alt={envClient.NEXT_PUBLIC_APP_NAME}
+                loading="eager"
                 width={36}
                 height={36}
                 className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
@@ -54,6 +55,7 @@ const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
               <Image
                 src="/images/logo/dark_logo.svg"
                 alt={envClient.NEXT_PUBLIC_APP_NAME}
+                loading="eager"
                 width={36}
                 height={36}
                 className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"

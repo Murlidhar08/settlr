@@ -113,6 +113,7 @@ export function LoadingScreen() {
                             alt="Logo"
                             width={120}
                             height={120}
+                            loading="eager"
                             priority
                             className="h-24 w-24 md:h-32 md:w-32 drop-shadow-2xl"
                         />
