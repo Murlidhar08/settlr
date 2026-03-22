@@ -15,10 +15,7 @@ export async function getFinancialAccounts() {
         where: {
             businessId: session.user.activeBusinessId,
             isActive: true,
-        },
-        orderBy: {
-            createdAt: "desc",
-        },
+        }
     });
 }
 
