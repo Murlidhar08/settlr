@@ -19,33 +19,41 @@ set -o pipefail
 # Determine Database URL
 DB_URL=$1
 
+# If not provided as argument, prompt the user
+if [ -z "$DB_URL" ]; then
+    echo -n "Enter the Database Connection String (URL): "
+    read -r DB_URL
+fi
+
 if [ -z "$DB_URL" ]; then
     echo "Error: Database URL not found."
     usage
 fi
 
-# Sanitize URL: pg_dump does not support pgbouncer=true query parameter
-CLEAN_DB_URL=$(echo "$DB_URL" | sed -e 's/[?&]pgbouncer=true//g')
+# Sanitize URL: pg_dump does not support pgbouncer, pool, or direct query parameters
+CLEAN_DB_URL=$(echo "$DB_URL" | \
+    sed -E 's/([?&])(pgbouncer|pool|direct)=[^&]*(&)?/\1/g' | \
+    sed -E 's/\?&/?/g' | \
+    sed -E 's/[?&]$//g')
 
 # Extract host/name for filename (optional, but nice for naming)
 DB_HOST=$(echo "$CLEAN_DB_URL" | sed -e 's|.*://[^/]*@\([^:/]*\).*|\1|')
 DB_NAME=$(echo "$CLEAN_DB_URL" | sed -e 's|.*/\([^?]*\).*|\1|')
 
 # Backup filename
-BACKUP_FILE="$BACKUP_DIR/${DB_HOST}_${DB_NAME}_${TIMESTAMP}.sql.gz"
+BACKUP_FILE="$BACKUP_DIR/${DB_HOST}_${DB_NAME}_${TIMESTAMP}.sql"
 
 echo "Starting backup for: $DB_NAME on $DB_HOST"
 
-# Run the backup with compression
-# Using the connection string directly with pg_dump
-pg_dump --column-inserts --inserts --data-only --exclude-table='*prisma_migration*' "$CLEAN_DB_URL" | gzip > "$BACKUP_FILE"
+# Run the backup (No compression, include all schema/data, exclude migration metadata)
+pg_dump --column-inserts --inserts --data-only --exclude-table='_prisma_migrations' "$CLEAN_DB_URL" > "$BACKUP_FILE"
 
 # Check if backup was successful
 if [ $? -eq 0 ]; then
     echo "Backup completed successfully: $BACKUP_FILE"
     
     # Optional: remove backups older than 30 days
-    find "$BACKUP_DIR" -type f -name "*.sql.gz" -mtime +30 -delete
+    find "$BACKUP_DIR" -type f -name "*.sql" -mtime +30 -delete
 else
     echo "Error: Backup failed."
     exit 1
