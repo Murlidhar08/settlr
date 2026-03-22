@@ -170,7 +170,7 @@ export function UserList({ initialUsers }: UserListProps) {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-2">
             {/* SEARCH & FILTER UI */}
             <div className="p-4 sm:p-6 rounded-[2rem] sm:rounded-[2.5rem] bg-muted/30 backdrop-blur-xl border border-border/40 flex flex-col gap-4">
                 <div className="relative group">
@@ -234,8 +234,8 @@ export function UserList({ initialUsers }: UserListProps) {
                 </div>
             </div>
 
-            <div className="rounded-[2.5rem] border-none shadow-2xl shadow-primary/5 bg-muted/30 backdrop-blur-xl overflow-hidden">
-                <div className="p-4 sm:p-8 pt-0">
+            <div className="rounded-xl border-none shadow-2xl shadow-primary/5 bg-muted/30 backdrop-blur-xl overflow-hidden">
+                <div className="sm:p-2 pt-0">
                     <div className="space-y-3 mt-8">
                         {filteredUsers?.length === 0 ? (
                             <div className="text-center py-20 bg-background/20 rounded-[2rem] border border-dashed">
