@@ -1,12 +1,12 @@
 "use server";
 
-import packageJson from "@/package.json"
-import { prisma } from "@/lib/prisma/prisma";
 import { auth, getUserSession } from "@/lib/auth/auth";
 import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
+import { prisma } from "@/lib/prisma/prisma";
+import packageJson from "@/package.json";
+import { UserSettingsInput } from "@/types/user/UserSettingsInput";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { UserSettingsInput } from "@/types/user/UserSettingsInput";
 
 export async function upsertUserSettings(data: UserSettingsInput) {
   const session = await getUserSession();

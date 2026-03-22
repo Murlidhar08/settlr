@@ -16,7 +16,7 @@ const ROUTE_TITLE_MAP: Record<string, string> = {
     "/admin": "admin.title",
 };
 
-export function AppHeader() {
+export function AppHeader({ initialSession }: { initialSession?: any }) {
     const pathname = usePathname();
     const { language } = useUserConfig();
     const [mounted, setMounted] = useState(false);
@@ -49,7 +49,7 @@ export function AppHeader() {
     }
 
     return (
-        <Header title={t(translationKey, language)} />
+        <Header title={t(translationKey, language)} initialSession={initialSession} />
     );
 }
 

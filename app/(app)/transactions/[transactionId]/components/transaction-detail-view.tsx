@@ -11,6 +11,7 @@ import { formatAmount, formatDate, formatTime } from "@/utility/transaction"
 import { motion } from "framer-motion"
 import { ArrowDownLeft, ArrowRight, ArrowUpRight, CalendarDays, Check, Clock, Hash, History, Pencil, PenSquareIcon, Phone, Trash2, User } from "lucide-react"
 
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 interface TransactionDetailViewProps {
@@ -22,6 +23,7 @@ interface TransactionDetailViewProps {
 export function TransactionDetailView({ transaction, isIn, currency = Currency.INR }: TransactionDetailViewProps) {
     const { dateFormat, timeFormat, currency: configCurrency } = useUserConfig()
     const confirm = useConfirm()
+    const router = useRouter()
     const [isEditOpen, setIsEditOpen] = useState(false)
 
     const onDelete = async () => {
@@ -34,10 +36,8 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
 
         if (!ok) return
 
-        await deleteTransaction(
-            transaction.id,
-            transaction.partyId || ""
-        )
+        await deleteTransaction(transaction.id)
+        router.back()
     }
 
     return (

@@ -1,11 +1,11 @@
 "use client"
 
 // Packages
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { format } from "date-fns"
 import { motion } from "framer-motion"
 import { ArrowDownLeft, ArrowUpRight, CalendarIcon, CheckCircle2, ChevronDownIcon, Clock, Loader2, Paperclip, Wallet } from "lucide-react"
 import { ReactNode, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 // Components
@@ -52,6 +52,7 @@ export const AddTransactionModal = ({
   open: controlledOpen,
   onOpenChange: setControlledOpen,
 }: TransactionProps) => {
+  const router = useRouter()
   const [internalOpen, setInternalOpen] = useState(false)
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen
   const setOpen = (val: boolean) => {
@@ -214,114 +215,58 @@ export const AddTransactionModal = ({
     }))
   }, [moneyAccountId, partnerAccountId, currentDirection, mode, allAccounts])
 
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation({
-    mutationFn: async (payload: any) => {
-      return addTransaction(payload, path)
-    },
-    onMutate: async (newTx) => {
-      // Invalidate both transactions and financial accounts since balance changes
-      await queryClient.cancelQueries({ queryKey: ["transactions"] })
-      await queryClient.cancelQueries({ queryKey: ["financial-accounts"] })
-
-      const previousTransactions = queryClient.getQueryData(["transactions"])
-      const previousAccounts = queryClient.getQueryData(["financial-accounts"])
-
-      // Optimistically update financial-accounts (balances)
-      if (previousAccounts) {
-        queryClient.setQueryData(["financial-accounts"], (old: any[]) => {
-          if (!old) return old;
-          return old.map(acc => {
-            if (acc.id === newTx.fromAccountId) {
-              return { ...acc, balance: Number(acc.balance) - Number(newTx.amount) };
-            }
-            if (acc.id === newTx.toAccountId) {
-              return { ...acc, balance: Number(acc.balance) + Number(newTx.amount) };
-            }
-            return acc;
-          });
-        });
-      }
-
-      // Prepend to transactions if it's a simple list
-      if (previousTransactions && Array.isArray(previousTransactions)) {
-        // This is a rough guess, but helps in simple filtered views.
-        // Note: Full optimistic transaction list update is complex with filters.
-        const tempTx = {
-          ...newTx,
-          id: "temp-" + Date.now(),
-          createdAt: new Date().toISOString(),
-          amount: Number(newTx.amount),
-          fromAccount: allAccounts.find(a => a.id === newTx.fromAccountId) || { name: "...", type: "..." },
-          toAccount: allAccounts.find(a => a.id === newTx.toAccountId) || { name: "...", type: "..." },
-          party: allAccounts.find(a => a.id === (isOut ? newTx.toAccountId : newTx.fromAccountId))?.partyId
-            ? { name: allAccounts.find(a => a.id === (isOut ? newTx.toAccountId : newTx.fromAccountId))?.name }
-            : null
-        };
-        queryClient.setQueryData(["transactions"], (old: any) => {
-          if (Array.isArray(old)) return [tempTx, ...old];
-          if (old?.transactions) return { ...old, transactions: [tempTx, ...old.transactions] };
-          return old;
-        });
-      }
-
-      return { previousTransactions, previousAccounts }
-    },
-    onError: (err, newTx, context) => {
-      queryClient.setQueryData(["transactions"], context?.previousTransactions)
-      queryClient.setQueryData(["financial-accounts"], context?.previousAccounts)
-      toast.error("Failed to save transaction")
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions"] })
-      queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
-    },
-    onSuccess: () => {
-      toast.success("Transaction recorded successfully", {
-        icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-      })
-      setOpen(false)
-
-      // Reset
-      setData({
-        id: undefined,
-        businessId: "",
-        amount: "",
-        date: format(new Date(), "yyyy-MM-dd"),
-        time: format(new Date(), "HH:mm"),
-        description: "",
-        partyId: partyId || null,
-        fromAccountId: "",
-        toAccountId: "",
-        userId: "",
-      })
-      setMoneyAccountId("")
-      setPartnerAccountId("")
-    }
-  })
-
-  const handleAddTransaction = async () => {
-    if (!data.amount || isNaN(Number(data.amount))) {
-      return toast.error("Please enter a valid amount")
-    }
-
-    if (!data.fromAccountId || !data.toAccountId) {
-      return toast.error("Please select both accounts")
-    }
-
-    const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
-    if (isNaN(combinedDateTime.getTime())) {
-      return toast.error("Please enter a valid date and time")
-    }
-
-    mutation.mutate({
-      ...data,
-      amount: Number(data.amount),
-      date: combinedDateTime,
-      description: data.description || null
-    })
-  }
+  const [isPending, setIsPending] = useState(false)
+ 
+   const handleAddTransaction = async () => {
+     if (!data.amount || isNaN(Number(data.amount))) {
+       return toast.error("Please enter a valid amount")
+     }
+ 
+     if (!data.fromAccountId || !data.toAccountId) {
+       return toast.error("Please select both accounts")
+     }
+ 
+     const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
+     if (isNaN(combinedDateTime.getTime())) {
+       return toast.error("Please enter a valid date and time")
+     }
+ 
+     setIsPending(true)
+     try {
+       await addTransaction({
+         ...data,
+         amount: Number(data.amount),
+         date: combinedDateTime,
+         description: data.description || null
+       }, path)
+       
+       toast.success("Transaction recorded successfully", {
+         icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+       })
+       setOpen(false)
+ 
+       // Reset
+       setData({
+         id: undefined,
+         businessId: "",
+         amount: "",
+         date: format(new Date(), "yyyy-MM-dd"),
+         time: format(new Date(), "HH:mm"),
+         description: "",
+         partyId: partyId || null,
+         fromAccountId: "",
+         toAccountId: "",
+         userId: "",
+       })
+       setMoneyAccountId("")
+       setPartnerAccountId("")
+       router.refresh()
+     } catch (err) {
+       toast.error("Failed to save transaction")
+     } finally {
+       setIsPending(false)
+     }
+   }
 
   // Filtering Logic
   const moneyAccounts = allAccounts.filter(a => a.type === FinancialAccountType.MONEY)
@@ -602,28 +547,28 @@ export const AddTransactionModal = ({
               >
                 Discard
               </Button>
-              <Button
-                onClick={handleAddTransaction}
-                disabled={loadingAccounts || mutation.isPending}
-                className={cn(
-                  "h-12 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
-                  isOut
-                    ? "bg-rose-600 hover:bg-rose-700 shadow-rose-200"
-                    : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
-                )}
-              >
-                {mutation.isPending ? (
-                  <>
-                    <Loader2 className="animate-spin" size={20} />
-                    Recording...
-                  </>
-                ) : (
-                  <>
-                    {isOut ? "Confirm Pay" : "Confirm Receive"}
-                    {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
-                  </>
-                )}
-              </Button>
+               <Button
+                 onClick={handleAddTransaction}
+                 disabled={loadingAccounts || isPending}
+                 className={cn(
+                   "h-12 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
+                   isOut
+                     ? "bg-rose-600 hover:bg-rose-700 shadow-rose-200"
+                     : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
+                 )}
+               >
+                 {isPending ? (
+                   <>
+                     <Loader2 className="animate-spin" size={20} />
+                     Recording...
+                   </>
+                 ) : (
+                   <>
+                     {isOut ? "Confirm Pay" : "Confirm Receive"}
+                     {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
+                   </>
+                 )}
+               </Button>
             </div>
           </div>
         </SheetContent>

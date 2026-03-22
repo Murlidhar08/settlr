@@ -1,18 +1,16 @@
-"use client"
-
+import { getFinancialAccountsWithBalance } from "@/actions/financial-account.actions"
 import { AccountCard } from "@/components/account/account-card"
 import { AddAccountModal } from "@/components/account/add-account-modal"
 import { FooterButtons } from "@/components/footer-buttons"
 import { Button } from "@/components/ui/button"
 import { Currency, FinancialAccountType } from "@/lib/generated/prisma/enums"
-import { useCachedAccountsWithBalance } from "@/lib/hooks/use-cached-queries"
 import { t } from "@/lib/languages/i18n"
 import { Plus, Wallet } from "lucide-react"
 
-export function AccountsContent({ language, currency }: { language: string, currency: Currency }) {
-    const { data: allAccounts = [], isLoading } = useCachedAccountsWithBalance()
+export async function AccountsContent({ language, currency }: { language: string, currency: Currency }) {
+    const allAccounts = await getFinancialAccountsWithBalance()
 
-    const accounts = allAccounts.filter(a => a.partyId === null);
+    const accounts = allAccounts?.filter(a => a.partyId === null) || [];
 
     const groupedAccounts = {
         [FinancialAccountType.MONEY]: accounts.filter(a => a.type === FinancialAccountType.MONEY),
@@ -23,37 +21,6 @@ export function AccountsContent({ language, currency }: { language: string, curr
         { type: FinancialAccountType.MONEY, title: t("accounts.money_title", language), subtitle: t("accounts.money_subtitle", language) },
         { type: FinancialAccountType.CATEGORY, title: t("accounts.business_title", language), subtitle: t("accounts.business_subtitle", language) },
     ];
-
-    if (isLoading) {
-        return (
-            <div className="w-full bg-background">
-                <div className="mx-auto w-full max-w-4xl px-6 py-8">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                        <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-                        <div className="h-8 w-12 bg-muted animate-pulse rounded" />
-                    </div>
-                    <div className="space-y-16">
-                        {[1, 2].map((section) => (
-                            <div key={section} className="space-y-6">
-                                <div className="flex items-center gap-4 px-1">
-                                    <div className="h-1 w-12 bg-muted animate-pulse rounded-full" />
-                                    <div className="space-y-2">
-                                        <div className="h-4 w-32 bg-muted animate-pulse rounded" />
-                                        <div className="h-3 w-24 bg-muted animate-pulse rounded" />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {[1, 2].map((i) => (
-                                        <div key={i} className="h-24 w-full bg-muted/30 rounded-2xl animate-pulse" />
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="w-full bg-background">

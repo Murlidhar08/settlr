@@ -1,23 +1,35 @@
 "use client"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { authClient } from "@/lib/auth/auth-client"
 import { envClient } from "@/lib/env.client"
-import { useCachedSession } from "@/lib/hooks/use-cached-queries"
 import { getInitials } from "@/utility/party"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 interface HeaderProps {
   title: string
   isProfile?: boolean
   leftAction?: React.ReactNode
+  initialSession?: any
 }
 
-const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
+const Header = ({ title, isProfile, leftAction, initialSession }: HeaderProps) => {
   const router = useRouter()
-  const { data: sessionData } = useCachedSession()
-  const session = sessionData?.session ? sessionData : null
+  const [session, setSession] = useState<any>(initialSession)
+  
+  useEffect(() => {
+    if (initialSession) return
+
+    const loadSession = async () => {
+      const { data: sessionData } = await authClient.getSession()
+      setSession(sessionData?.session ? sessionData : null)
+    }
+    loadSession()
+  }, [initialSession])
+
   const showProfile = isProfile ?? true
 
   const handleRedirect = () => {

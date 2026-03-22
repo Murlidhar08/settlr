@@ -1,15 +1,15 @@
 "use client"
 
 import {
+  getBusinessList,
   switchBusiness
 } from "@/actions/business.actions"
 import { useUserConfig } from "@/components/providers/user-config-provider"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useCachedBusinesses, useCachedSession } from "@/lib/hooks/use-cached-queries"
+import { authClient } from "@/lib/auth/auth-client"
 import { t } from "@/lib/languages/i18n"
 import { cn } from "@/lib/utils"
-import { useQueryClient } from "@tanstack/react-query"
 import { AnimatePresence, motion } from "framer-motion"
 import { Building2, Check, ChevronDown, Settings2 } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -28,22 +28,45 @@ interface Business {
 /* COMPONENT */
 /* ========================================================= */
 
-export default function SwitchBusiness() {
+export default function SwitchBusiness({
+  initialBusinesses = [],
+  initialSession = null
+}: {
+  initialBusinesses?: Business[]
+  initialSession?: any
+}) {
   const { language } = useUserConfig()
   const router = useRouter()
-  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null)
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(() => {
+    if (initialBusinesses.length > 0 && initialSession?.user) {
+      const activeBusinessId = initialSession.user.activeBusinessId
+      return initialBusinesses.find(b => b.id === activeBusinessId) ?? initialBusinesses[0]
+    }
+    return null
+  })
   const [popOpen, setPopOpen] = useState(false)
-
-  const { data: session } = useCachedSession()
-  const { data: businesses = [] } = useCachedBusinesses() as { data: Business[] }
+  const [businesses, setBusinesses] = useState<Business[]>(initialBusinesses)
+  const [session, setSession] = useState<any>(initialSession)
 
   /* ========================================================= */
   /* INIT: LOAD BUSINESSES + SESSION */
   /* ========================================================= */
 
   useEffect(() => {
+    if (initialBusinesses.length > 0 && initialSession) return
+
+    const loadData = async () => {
+      const { data: sessionData } = await authClient.getSession()
+      const businessData = await getBusinessList()
+      setSession(sessionData)
+      setBusinesses(businessData as Business[] || [])
+    }
+    loadData()
+  }, [initialBusinesses, initialSession])
+
+  useEffect(() => {
     const init = async () => {
-      if (!businesses.length || !session?.user) return
+      if (!businesses?.length || !session?.user) return
 
       const activeBusinessId = session.user.activeBusinessId
       const active = businesses.find(b => b.id === activeBusinessId) ?? businesses[0]
@@ -62,12 +85,9 @@ export default function SwitchBusiness() {
   /* HANDLERS */
   /* ========================================================= */
 
-  const queryClient = useQueryClient()
-
   const onChangeBusinessId = async (business: Business) => {
     setSelectedBusiness(business)
     await switchBusiness(business.id)
-    await queryClient.invalidateQueries()
     setPopOpen(false)
     router.refresh()
   }
@@ -79,7 +99,7 @@ export default function SwitchBusiness() {
   return (
     <>
       <Popover open={popOpen} onOpenChange={setPopOpen}>
-        <PopoverTrigger className="group flex min-w-0 items-center gap-2">
+        <PopoverTrigger className="group flex min-w-0 items-center gap-2 outline-hidden">
           <span className="text-muted-foreground hidden sm:inline">{t("business.label", language)} -</span>
 
           <span className="truncate text-xl font-semibold tracking-tight">
@@ -101,7 +121,7 @@ export default function SwitchBusiness() {
                 {t("business.switch", language)}
               </div>
 
-              {businesses.map(business => {
+              {businesses?.map(business => {
                 const isActive = business.id === selectedBusiness?.id
 
                 return (
