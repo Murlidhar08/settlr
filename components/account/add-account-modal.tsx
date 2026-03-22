@@ -27,6 +27,7 @@ import {
 import { useRouter } from "next/navigation"
 import { ReactNode, useEffect, useState } from "react"
 import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
 
 interface AddAccountModalProps {
     title?: string
@@ -113,6 +114,8 @@ export const AddAccountModal = ({
     }, [open, accountData])
 
     const [isPending, setIsPending] = useState(false)
+    const queryClient = useQueryClient()
+
     const handleSave = async () => {
         if (!data.name.trim()) {
             return toast.error("Please enter account name")
@@ -131,6 +134,7 @@ export const AddAccountModal = ({
                     icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                 })
             }
+            queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
             setOpen(false)
             router.refresh()
         } catch (error) {

@@ -18,15 +18,18 @@ import { Pencil, ShieldAlert, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
 
 export default function BackAccountHeaderClient({ account }: { account: FinancialAccount }) {
     const router = useRouter()
     const [isDeleting, setIsDeleting] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
+    const queryClient = useQueryClient()
 
     const handleDelete = async () => {
         try {
             await deleteFinancialAccount(account.id)
+            queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
             toast.success("Account deleted successfully")
             router.push("/accounts" as any)
         } catch (error: any) {

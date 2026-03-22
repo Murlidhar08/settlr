@@ -1,9 +1,8 @@
-import { cache } from "react";
-import { prisma } from "./prisma/prisma";
 import { getUserSession } from "./auth/auth";
 import { Currency, ThemeMode } from "./generated/prisma/enums";
+import { prisma } from "./prisma/prisma";
 
-export const getUserConfig = cache(async () => {
+export const getUserConfig = async () => {
   const session = await getUserSession()
   if (!session?.user?.id)
     return getDefaultConfig();
@@ -13,7 +12,7 @@ export const getUserConfig = cache(async () => {
   });
 
   return userSettings ?? getDefaultConfig();
-});
+};
 
 
 export function getDefaultConfig() {
