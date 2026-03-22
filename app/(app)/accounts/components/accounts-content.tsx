@@ -1,4 +1,4 @@
-import { getFinancialAccountsWithBalance } from "@/actions/financial-account.actions"
+import { getFinancialAccounts } from "@/actions/financial-account.actions"
 import { AccountCard } from "@/components/account/account-card"
 import { AddAccountModal } from "@/components/account/add-account-modal"
 import { FooterButtons } from "@/components/footer-buttons"
@@ -8,7 +8,7 @@ import { t } from "@/lib/languages/i18n"
 import { Plus, Wallet } from "lucide-react"
 
 export async function AccountsContent({ language, currency }: { language: string, currency: Currency }) {
-    const allAccounts = await getFinancialAccountsWithBalance()
+    const allAccounts = await getFinancialAccounts()
 
     const accounts = allAccounts?.filter(a => a.partyId === null) || [];
 

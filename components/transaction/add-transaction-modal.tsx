@@ -4,8 +4,8 @@
 import { format } from "date-fns"
 import { motion } from "framer-motion"
 import { ArrowDownLeft, ArrowUpRight, CalendarIcon, CheckCircle2, ChevronDownIcon, Clock, Loader2, Paperclip, Wallet } from "lucide-react"
-import { ReactNode, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { ReactNode, useEffect, useState } from "react"
 import { toast } from "sonner"
 
 // Components
@@ -18,7 +18,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Textarea } from "@/components/ui/textarea"
 
 // Actions
-import { getFinancialAccountsWithBalance } from "@/actions/financial-account.actions"
 import { addTransaction } from "@/actions/transaction.actions"
 
 // Library
@@ -27,6 +26,7 @@ import { CategoryType, FinancialAccountType } from "@/lib/generated/prisma/enums
 import { cn } from "@/lib/utils"
 
 // Types
+import { getFinancialAccounts } from "@/actions/financial-account.actions"
 import { ModalMode } from "@/types/transaction/ModalMode"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 interface TransactionProps {
@@ -97,7 +97,7 @@ export const AddTransactionModal = ({
         // Prevent redundant fetching if already loading
         setLoadingAccounts(true)
         try {
-          const accs = await getFinancialAccountsWithBalance()
+          const accs = await getFinancialAccounts()
           if (!isMounted) return
 
           setAllAccounts(accs as any)
@@ -216,57 +216,57 @@ export const AddTransactionModal = ({
   }, [moneyAccountId, partnerAccountId, currentDirection, mode, allAccounts])
 
   const [isPending, setIsPending] = useState(false)
- 
-   const handleAddTransaction = async () => {
-     if (!data.amount || isNaN(Number(data.amount))) {
-       return toast.error("Please enter a valid amount")
-     }
- 
-     if (!data.fromAccountId || !data.toAccountId) {
-       return toast.error("Please select both accounts")
-     }
- 
-     const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
-     if (isNaN(combinedDateTime.getTime())) {
-       return toast.error("Please enter a valid date and time")
-     }
- 
-     setIsPending(true)
-     try {
-       await addTransaction({
-         ...data,
-         amount: Number(data.amount),
-         date: combinedDateTime,
-         description: data.description || null
-       }, path)
-       
-       toast.success("Transaction recorded successfully", {
-         icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-       })
-       setOpen(false)
- 
-       // Reset
-       setData({
-         id: undefined,
-         businessId: "",
-         amount: "",
-         date: format(new Date(), "yyyy-MM-dd"),
-         time: format(new Date(), "HH:mm"),
-         description: "",
-         partyId: partyId || null,
-         fromAccountId: "",
-         toAccountId: "",
-         userId: "",
-       })
-       setMoneyAccountId("")
-       setPartnerAccountId("")
-       router.refresh()
-     } catch (err) {
-       toast.error("Failed to save transaction")
-     } finally {
-       setIsPending(false)
-     }
-   }
+
+  const handleAddTransaction = async () => {
+    if (!data.amount || isNaN(Number(data.amount))) {
+      return toast.error("Please enter a valid amount")
+    }
+
+    if (!data.fromAccountId || !data.toAccountId) {
+      return toast.error("Please select both accounts")
+    }
+
+    const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
+    if (isNaN(combinedDateTime.getTime())) {
+      return toast.error("Please enter a valid date and time")
+    }
+
+    setIsPending(true)
+    try {
+      await addTransaction({
+        ...data,
+        amount: Number(data.amount),
+        date: combinedDateTime,
+        description: data.description || null
+      }, path)
+
+      toast.success("Transaction recorded successfully", {
+        icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+      })
+      setOpen(false)
+
+      // Reset
+      setData({
+        id: undefined,
+        businessId: "",
+        amount: "",
+        date: format(new Date(), "yyyy-MM-dd"),
+        time: format(new Date(), "HH:mm"),
+        description: "",
+        partyId: partyId || null,
+        fromAccountId: "",
+        toAccountId: "",
+        userId: "",
+      })
+      setMoneyAccountId("")
+      setPartnerAccountId("")
+      router.refresh()
+    } catch (err) {
+      toast.error("Failed to save transaction")
+    } finally {
+      setIsPending(false)
+    }
+  }
 
   // Filtering Logic
   const moneyAccounts = allAccounts.filter(a => a.type === FinancialAccountType.MONEY)
@@ -478,9 +478,6 @@ export const AddTransactionModal = ({
                             <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
                               <div className="flex justify-between items-center w-full gap-4">
                                 <span>{acc.name}</span>
-                                <span className="text-xs font-bold tabular-nums text-muted-foreground mr-10">
-                                  ₹{acc.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </span>
                               </div>
                             </SelectItem>
                           ))}
@@ -547,28 +544,28 @@ export const AddTransactionModal = ({
               >
                 Discard
               </Button>
-               <Button
-                 onClick={handleAddTransaction}
-                 disabled={loadingAccounts || isPending}
-                 className={cn(
-                   "h-12 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
-                   isOut
-                     ? "bg-rose-600 hover:bg-rose-700 shadow-rose-200"
-                     : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
-                 )}
-               >
-                 {isPending ? (
-                   <>
-                     <Loader2 className="animate-spin" size={20} />
-                     Recording...
-                   </>
-                 ) : (
-                   <>
-                     {isOut ? "Confirm Pay" : "Confirm Receive"}
-                     {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
-                   </>
-                 )}
-               </Button>
+              <Button
+                onClick={handleAddTransaction}
+                disabled={loadingAccounts || isPending}
+                className={cn(
+                  "h-12 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
+                  isOut
+                    ? "bg-rose-600 hover:bg-rose-700 shadow-rose-200"
+                    : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
+                )}
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Recording...
+                  </>
+                ) : (
+                  <>
+                    {isOut ? "Confirm Pay" : "Confirm Receive"}
+                    {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </SheetContent>

@@ -134,19 +134,15 @@ export async function deleteFinancialAccount(id: string) {
     return { success: true };
 }
 
-export async function getFinancialAccountsWithBalance() {
+export async function getFinancialAccountBalance(accountId: string) {
     const session = await getUserSession();
     if (!session || !session.user.activeBusinessId) {
-        return [];
+        return 0;
     }
+
     const businessId = session.user.activeBusinessId;
-
-    const accounts = await prisma.financialAccount.findMany({
-        where: { businessId, isActive: true }
-    });
-
     const transactions = await prisma.transaction.findMany({
-        where: { businessId },
+        where: { businessId, OR: [{ fromAccountId: accountId }, { toAccountId: accountId }] },
         select: {
             amount: true,
             fromAccountId: true,
@@ -162,8 +158,5 @@ export async function getFinancialAccountsWithBalance() {
         balances[tx.toAccountId] = (balances[tx.toAccountId] || 0) + amount;
     });
 
-    return accounts.map(acc => ({
-        ...acc,
-        balance: balances[acc.id] || 0,
-    }));
+    return balances[accountId] || 0;
 }
