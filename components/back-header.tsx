@@ -10,7 +10,7 @@ import { ReactNode } from "react"
 // Components
 import { cn } from "@/lib/utils"
 import { Badge } from "./ui/badge"
-import { Button } from "./ui/button"
+import { Button, buttonVariants } from "./ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -98,17 +98,20 @@ const BackHeader = ({
       <div className="flex items-center">
         {menuItems.length > 0 ? (
           <DropdownMenu>
-            <DropdownMenuTrigger>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="h-11 w-11 rounded-2xl bg-secondary/80 hover:bg-secondary border border-border/50 shadow-sm transition-all text-foreground"
-                >
-                  <EllipsisVertical className="h-5 w-5" />
-                </Button>
-              </motion.div>
-            </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={cn(
+                  buttonVariants({ variant: "secondary", size: "icon" }),
+                  "h-11 w-11 rounded-2xl bg-secondary/80 hover:bg-secondary border border-border/50 shadow-sm transition-all text-foreground flex items-center justify-center outline-none"
+                )}
+              >
+                <EllipsisVertical className="h-5 w-5" />
+              </motion.button>
+            }
+          />
 
             <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 mt-2 shadow-2xl border-border/50">
               {menuItems.map((item, index) => (

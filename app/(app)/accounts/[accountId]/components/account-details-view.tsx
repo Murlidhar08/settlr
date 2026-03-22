@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { CategoryType, Currency, FinancialAccountType, MoneyType, PartyType } from "@/lib/generated/prisma/enums"
 import { cn } from "@/lib/utils"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { formatAmount } from "@/utility/commonFunction"
 import { getCurrencySymbol } from "@/utility/transaction"
 import { motion } from "framer-motion"
 import {
@@ -16,6 +17,7 @@ import {
     Briefcase,
     CreditCard,
     Landmark,
+    Plus,
     Scale, Settings2,
     Tag,
     TrendingDown,
@@ -85,6 +87,7 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
     return (
         <>
             <BackAccountHeaderClient account={account} />
+
             <div className="w-full bg-background relative pb-32">
                 <main className="relative z-10 mx-auto max-w-4xl px-4 py-8 space-y-12">
                     {/* Hero Stats Card */}
@@ -117,7 +120,7 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                                     <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] opacity-50">Current Standing</p>
                                     <div className="flex items-baseline gap-2">
                                         <span className="text-3xl sm:text-5xl font-black tracking-tighter tabular-nums">
-                                            {symbol}{Math.abs(stats.balance).toLocaleString()}
+                                            {symbol}{formatAmount(stats.balance)}
                                         </span>
                                         <span className={cn(
                                             "px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black tracking-widest",
@@ -135,14 +138,14 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                                         <ArrowDownLeft size={14} className="sm:size-4" />
                                         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Total In</span>
                                     </div>
-                                    <p className="text-lg sm:text-xl font-black tabular-nums">{symbol}{stats.totalIn.toLocaleString()}</p>
+                                    <p className="text-lg sm:text-xl font-black tabular-nums">{symbol}{formatAmount(stats.totalIn)}</p>
                                 </div>
                                 <div className="space-y-1.5 sm:space-y-2 rounded-2xl bg-white/5 border border-white/5 p-3 sm:p-4 backdrop-blur-sm">
                                     <div className="flex items-center gap-2 text-rose-400">
                                         <ArrowUpRight size={14} className="sm:size-4" />
                                         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Total Out</span>
                                     </div>
-                                    <p className="text-lg sm:text-xl font-black tabular-nums">{symbol}{stats.totalOut.toLocaleString()}</p>
+                                    <p className="text-lg sm:text-xl font-black tabular-nums">{symbol}{formatAmount(stats.totalOut)}</p>
                                 </div>
                             </div>
                         </div>
@@ -188,8 +191,9 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                         direction={TransactionDirection.OUT}
                         path={`/accounts/${account.id}`}
                     >
-                        <Button className="h-14 w-full md:w-auto md:px-24 rounded-full gap-3 font-semibold uppercase bg-slate-900 text-white shadow-xl shadow-slate-900/20 transition-all hover:bg-slate-800 hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 py-2">
-                            <span className="text-center font-black tracking-[0.2em] text-sm">
+                        <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
+                            <Plus className="size-6 sm:size-5" />
+                            <span className="hidden md:block text-center font-black tracking-[0.2em] text-sm">
                                 Add Entry
                             </span>
                         </Button>

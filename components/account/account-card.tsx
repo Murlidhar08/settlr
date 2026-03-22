@@ -3,6 +3,7 @@
 import { FinancialAccount } from "@/lib/generated/prisma/client"
 import { CategoryType, Currency, FinancialAccountType, MoneyType } from "@/lib/generated/prisma/enums"
 import { cn } from "@/lib/utils"
+import { formatAmount } from "@/utility/commonFunction"
 import { getCurrencySymbol } from "@/utility/transaction"
 import { motion } from "framer-motion"
 import {
@@ -119,7 +120,7 @@ export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
                             "text-2xl font-black tracking-tighter tabular-nums",
                             !isDarkCard && (account.balance > 0 ? "text-emerald-500" : account.balance < 0 ? "text-rose-500" : "")
                         )}>
-                            {getCurrencySymbol(currency)}{Math.abs(account.balance).toLocaleString("en-IN")}
+                            {getCurrencySymbol(currency)}{formatAmount(account.balance)}
                         </p>
                         <div className="flex items-center gap-1 opacity-60">
                             {account.balance >= 0 ? <ArrowDownLeft size={10} /> : <ArrowUpRight size={10} />}

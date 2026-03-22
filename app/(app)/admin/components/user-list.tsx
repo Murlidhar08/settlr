@@ -185,12 +185,14 @@ export function UserList({ initialUsers }: UserListProps) {
 
                 <div className="flex flex-wrap gap-2 sm:gap-3">
                     <DropdownMenu>
-                        <DropdownMenuTrigger>
-                            <Button variant="outline" className="flex-1 sm:flex-none h-10 sm:h-14 rounded-xl sm:rounded-3xl gap-2 px-4 sm:px-6 border-none bg-background shadow-sm text-[10px] sm:text-sm font-bold capitalize">
-                                <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
-                                {filterRole === "all" ? "All Roles" : filterRole}
-                            </Button>
-                        </DropdownMenuTrigger>
+                        <DropdownMenuTrigger
+                            render={
+                                <Button variant="outline" className="flex-1 sm:flex-none h-10 sm:h-14 rounded-xl sm:rounded-3xl gap-2 px-4 sm:px-6 border-none bg-background shadow-sm text-[10px] sm:text-sm font-bold capitalize">
+                                    <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
+                                    {filterRole === "all" ? "All Roles" : filterRole}
+                                </Button>
+                            }
+                        />
                         <DropdownMenuContent className="rounded-2xl w-40">
                             <DropdownMenuItem onClick={() => setFilterRole("all")}>All Roles</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setFilterRole("admin")}>Admins Only</DropdownMenuItem>
@@ -199,12 +201,14 @@ export function UserList({ initialUsers }: UserListProps) {
                     </DropdownMenu>
 
                     <DropdownMenu>
-                        <DropdownMenuTrigger>
-                            <Button variant="outline" className="flex-1 sm:flex-none h-10 sm:h-14 rounded-xl sm:rounded-3xl gap-2 px-4 sm:px-6 border-none bg-background shadow-sm text-[10px] sm:text-sm font-bold capitalize">
-                                <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
-                                {filterStatus === "all" ? "All Status" : filterStatus}
-                            </Button>
-                        </DropdownMenuTrigger>
+                        <DropdownMenuTrigger
+                            render={
+                                <Button variant="outline" className="flex-1 sm:flex-none h-10 sm:h-14 rounded-xl sm:rounded-3xl gap-2 px-4 sm:px-6 border-none bg-background shadow-sm text-[10px] sm:text-sm font-bold capitalize">
+                                    <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
+                                    {filterStatus === "all" ? "All Status" : filterStatus}
+                                </Button>
+                            }
+                        />
                         <DropdownMenuContent className="rounded-2xl w-40">
                             <DropdownMenuItem onClick={() => setFilterStatus("all")}>All Status</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setFilterStatus("active")}>Active</DropdownMenuItem>
@@ -213,12 +217,14 @@ export function UserList({ initialUsers }: UserListProps) {
                     </DropdownMenu>
 
                     <DropdownMenu>
-                        <DropdownMenuTrigger>
-                            <Button variant="outline" className="flex-1 sm:flex-none h-10 sm:h-14 rounded-xl sm:rounded-3xl gap-2 px-4 sm:px-6 border-none bg-background shadow-sm text-[10px] sm:text-sm font-bold capitalize">
-                                <Check className="h-3 w-3 sm:h-4 sm:w-4" />
-                                {filterVerified === "all" ? "All Verified" : filterVerified === "verified" ? "Verified" : "Unverified"}
-                            </Button>
-                        </DropdownMenuTrigger>
+                        <DropdownMenuTrigger
+                            render={
+                                <Button variant="outline" className="flex-1 sm:flex-none h-10 sm:h-14 rounded-xl sm:rounded-3xl gap-2 px-4 sm:px-6 border-none bg-background shadow-sm text-[10px] sm:text-sm font-bold capitalize">
+                                    <Check className="h-3 w-3 sm:h-4 sm:w-4" />
+                                    {filterVerified === "all" ? "All Verified" : filterVerified === "verified" ? "Verified" : "Unverified"}
+                                </Button>
+                            }
+                        />
                         <DropdownMenuContent className="rounded-2xl w-40">
                             <DropdownMenuItem onClick={() => setFilterVerified("all")}>All Users</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setFilterVerified("verified")}>Verified</DropdownMenuItem>
@@ -316,11 +322,13 @@ export function UserList({ initialUsers }: UserListProps) {
 
                                     <div className="flex items-center gap-2">
                                         <DropdownMenu>
-                                            <DropdownMenuTrigger>
-                                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-background/50 border border-border/50 opacity-100 transition-all hover:bg-primary/10 hover:border-primary/50" disabled={loading === user.id}>
-                                                    <MoreHorizontal size={18} />
-                                                </Button>
-                                            </DropdownMenuTrigger>
+                                            <DropdownMenuTrigger
+                                                render={
+                                                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-background/50 border border-border/50 opacity-100 transition-all hover:bg-primary/10 hover:border-primary/50" disabled={loading === user.id}>
+                                                        <MoreHorizontal size={18} />
+                                                    </Button>
+                                                }
+                                            />
                                             <DropdownMenuContent align="end" className="w-60 rounded-3xl p-2 border-none shadow-2xl bg-background/95 backdrop-blur-xl">
                                                 <DropdownMenuGroup>
                                                     {/* Role Management */}

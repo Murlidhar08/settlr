@@ -110,9 +110,9 @@ export function AccountsContent({ language, currency }: { language: string, curr
 
             <FooterButtons>
                 <AddAccountModal>
-                    <Button className="h-14 w-full md:w-auto md:px-24 rounded-full gap-3 font-semibold uppercase bg-slate-900 text-white shadow-xl shadow-slate-900/20 transition-all hover:bg-slate-800 hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 py-2">
-                        <Plus size={20} className="stroke-3" />
-                        <span className="text-center font-black tracking-[0.2em] text-sm">
+                    <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
+                        <Plus className="size-6 sm:size-5" />
+                        <span className="hidden md:block text-center font-black tracking-[0.2em] text-sm">
                             {t("accounts.new", language)}
                         </span>
                     </Button>
