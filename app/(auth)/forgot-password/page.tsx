@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
+import { AnimatePresence, motion, Variants } from "framer-motion";
 import { ArrowLeft, Mail, ShieldAlert, ShieldCheck } from "lucide-react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/auth-client";
 import { envClient } from "@/lib/env.client";
 
 const containerVariants: Variants = {
@@ -95,12 +95,14 @@ export default function ForgotPasswordPage() {
             <Image
               src="/images/logo/light_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={48}
               height={48}
               className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
             />
             <Image
               src="/images/logo/dark_logo.svg"
+              loading="eager"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
               width={48}
               height={48}
@@ -254,6 +256,7 @@ export default function ForgotPasswordPage() {
             <Image
               src="/images/logo/dark_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={140}
               height={140}
               className="relative z-10 group-hover:scale-110 transition-transform duration-500 drop-shadow-2xl"

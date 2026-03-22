@@ -1,23 +1,16 @@
-"use client"
-
-import { useQuery } from "@tanstack/react-query"
-import { getFinancialAccountsWithBalance } from "@/actions/financial-account.actions"
-import { AddAccountModal } from "@/components/account/add-account-modal"
+import { getFinancialAccounts } from "@/actions/financial-account.actions"
 import { AccountCard } from "@/components/account/account-card"
-import { Button } from "@/components/ui/button"
-import { Plus, Wallet } from "lucide-react"
-import { FinancialAccountType } from "@/lib/generated/prisma/enums"
-import { t } from "@/lib/languages/i18n"
+import { AddAccountModal } from "@/components/account/add-account-modal"
 import { FooterButtons } from "@/components/footer-buttons"
-import { Currency } from "@/lib/generated/prisma/enums"
+import { Button } from "@/components/ui/button"
+import { Currency, FinancialAccountType } from "@/lib/generated/prisma/enums"
+import { t } from "@/lib/languages/i18n"
+import { Plus, Wallet } from "lucide-react"
 
-export function AccountsContent({ language, currency }: { language: string, currency: Currency }) {
-    const { data: allAccounts = [], isLoading } = useQuery({
-        queryKey: ["financial-accounts"],
-        queryFn: () => getFinancialAccountsWithBalance(),
-    })
+export async function AccountsContent({ language, currency }: { language: string, currency: Currency }) {
+    const allAccounts = await getFinancialAccounts()
 
-    const accounts = allAccounts.filter(a => a.partyId === null);
+    const accounts = allAccounts?.filter(a => a.partyId === null) || [];
 
     const groupedAccounts = {
         [FinancialAccountType.MONEY]: accounts.filter(a => a.type === FinancialAccountType.MONEY),
@@ -28,37 +21,6 @@ export function AccountsContent({ language, currency }: { language: string, curr
         { type: FinancialAccountType.MONEY, title: t("accounts.money_title", language), subtitle: t("accounts.money_subtitle", language) },
         { type: FinancialAccountType.CATEGORY, title: t("accounts.business_title", language), subtitle: t("accounts.business_subtitle", language) },
     ];
-
-    if (isLoading) {
-        return (
-            <div className="w-full bg-background">
-                <div className="mx-auto w-full max-w-4xl px-6 py-8">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                        <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-                        <div className="h-8 w-12 bg-muted animate-pulse rounded" />
-                    </div>
-                    <div className="space-y-16">
-                        {[1, 2].map((section) => (
-                            <div key={section} className="space-y-6">
-                                <div className="flex items-center gap-4 px-1">
-                                    <div className="h-1 w-12 bg-muted animate-pulse rounded-full" />
-                                    <div className="space-y-2">
-                                        <div className="h-4 w-32 bg-muted animate-pulse rounded" />
-                                        <div className="h-3 w-24 bg-muted animate-pulse rounded" />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {[1, 2].map((i) => (
-                                        <div key={i} className="h-24 w-full bg-muted/30 rounded-2xl animate-pulse" />
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="w-full bg-background">
@@ -115,9 +77,9 @@ export function AccountsContent({ language, currency }: { language: string, curr
 
             <FooterButtons>
                 <AddAccountModal>
-                    <Button className="h-14 w-14 sm:h-16 sm:w-auto sm:px-8 rounded-full sm:rounded-2xl sm:gap-3 font-black uppercase tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all text-xs p-0 sm:py-2">
-                        <Plus size={20} className="stroke-3" />
-                        <span className="hidden sm:inline-block">
+                    <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
+                        <Plus className="size-6 sm:size-5" />
+                        <span className="hidden md:block text-center font-black tracking-[0.2em] text-sm">
                             {t("accounts.new", language)}
                         </span>
                     </Button>

@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
-import { motion, AnimatePresence } from "framer-motion"
+import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 

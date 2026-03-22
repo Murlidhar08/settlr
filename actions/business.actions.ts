@@ -1,8 +1,8 @@
 "use server";
 
 // Package
-import { getUserSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getUserSession } from "@/lib/auth/auth";
+import { prisma } from "@/lib/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
 export async function addBusiness(name: string) {
@@ -133,4 +133,3 @@ export async function getBusinessList() {
     where: { ownerId: session?.user.id }
   });
 }
-

@@ -1,19 +1,31 @@
 "use client"
 
-import { motion } from "framer-motion"
-import {
-    Wallet, ArrowUpRight, ArrowDownLeft, Receipt, Landmark, Banknote,
-    Tag, User2, Users, Truck, TrendingUp, TrendingDown,
-    Briefcase, Scale, Settings2, CreditCard, ChevronRight, History
-} from "lucide-react"
-import { FinancialAccountType, MoneyType, CategoryType, PartyType, Currency } from "@/lib/generated/prisma/enums"
-import { TransactionDirection } from "@/types/transaction/TransactionDirection"
-import { cn } from "@/lib/utils"
-import { getCurrencySymbol, formatAmount } from "@/utility/transaction"
-import { TransactionList } from "@/components/transaction/transaction-list"
 import { FooterButtons } from "@/components/footer-buttons"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
+import { TransactionList } from "@/components/transaction/transaction-list"
 import { Button } from "@/components/ui/button"
+import { CategoryType, Currency, FinancialAccountType, MoneyType, PartyType } from "@/lib/generated/prisma/enums"
+import { cn } from "@/lib/utils"
+import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { formatAmount } from "@/utility/commonFunction"
+import { getCurrencySymbol } from "@/utility/transaction"
+import { motion } from "framer-motion"
+import {
+    ArrowDownLeft,
+    ArrowUpRight,
+    Banknote,
+    Briefcase,
+    CreditCard,
+    Landmark,
+    Plus,
+    Scale, Settings2,
+    Tag,
+    TrendingDown,
+    TrendingUp,
+    Truck,
+    User2, Users,
+    Wallet
+} from "lucide-react"
 import BackAccountHeaderClient from "./back-account-header-client"
 
 interface AccountDetailsViewProps {
@@ -75,6 +87,7 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
     return (
         <>
             <BackAccountHeaderClient account={account} />
+
             <div className="w-full bg-background relative pb-32">
                 <main className="relative z-10 mx-auto max-w-4xl px-4 py-8 space-y-12">
                     {/* Hero Stats Card */}
@@ -107,7 +120,7 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                                     <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] opacity-50">Current Standing</p>
                                     <div className="flex items-baseline gap-2">
                                         <span className="text-3xl sm:text-5xl font-black tracking-tighter tabular-nums">
-                                            {symbol}{Math.abs(stats.balance).toLocaleString()}
+                                            {symbol}{formatAmount(stats.balance)}
                                         </span>
                                         <span className={cn(
                                             "px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black tracking-widest",
@@ -125,14 +138,14 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                                         <ArrowDownLeft size={14} className="sm:size-4" />
                                         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Total In</span>
                                     </div>
-                                    <p className="text-lg sm:text-xl font-black tabular-nums">{symbol}{stats.totalIn.toLocaleString()}</p>
+                                    <p className="text-lg sm:text-xl font-black tabular-nums">{symbol}{formatAmount(stats.totalIn)}</p>
                                 </div>
                                 <div className="space-y-1.5 sm:space-y-2 rounded-2xl bg-white/5 border border-white/5 p-3 sm:p-4 backdrop-blur-sm">
                                     <div className="flex items-center gap-2 text-rose-400">
                                         <ArrowUpRight size={14} className="sm:size-4" />
                                         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Total Out</span>
                                     </div>
-                                    <p className="text-lg sm:text-xl font-black tabular-nums">{symbol}{stats.totalOut.toLocaleString()}</p>
+                                    <p className="text-lg sm:text-xl font-black tabular-nums">{symbol}{formatAmount(stats.totalOut)}</p>
                                 </div>
                             </div>
                         </div>
@@ -172,32 +185,16 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                 </main>
 
                 <FooterButtons>
-                    {/* OUT Button */}
                     <AddTransactionModal
-                        title="Account Outflow"
+                        title="New Entry"
                         accountId={account.id}
                         direction={TransactionDirection.OUT}
                         path={`/accounts/${account.id}`}
                     >
-                        <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
-                            <ArrowUpRight className="h-6 w-6 sm:h-5 sm:w-5" />
-                            <span className="hidden md:block text-center">
-                                Pay Out
-                            </span>
-                        </Button>
-                    </AddTransactionModal>
-
-                    {/* IN Button */}
-                    <AddTransactionModal
-                        title="Account Inflow"
-                        accountId={account.id}
-                        direction={TransactionDirection.IN}
-                        path={`/accounts/${account.id}`}
-                    >
-                        <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
-                            <ArrowDownLeft className="h-6 w-6 sm:h-5 sm:w-5" />
-                            <span className="hidden md:block text-center">
-                                Receive
+                        <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
+                            <Plus className="size-6 sm:size-5" />
+                            <span className="hidden md:block text-center font-black tracking-[0.2em] text-sm">
+                                Add Entry
                             </span>
                         </Button>
                     </AddTransactionModal>

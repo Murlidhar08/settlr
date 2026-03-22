@@ -1,11 +1,8 @@
 "use client"
 
-import { Pencil, Trash2, Check, X, ShieldAlert } from "lucide-react"
-import { useState } from "react"
-import { BackHeader } from "@/components/back-header"
 import { deleteFinancialAccount } from "@/actions/financial-account.actions"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import { AddAccountModal } from "@/components/account/add-account-modal"
+import { BackHeader } from "@/components/back-header"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -16,8 +13,11 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { AddAccountModal } from "@/components/account/add-account-modal"
 import { FinancialAccount } from "@/lib/generated/prisma/client"
+import { Pencil, ShieldAlert, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { toast } from "sonner"
 
 export default function BackAccountHeaderClient({ account }: { account: FinancialAccount }) {
     const router = useRouter()

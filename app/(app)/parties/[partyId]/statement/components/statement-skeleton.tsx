@@ -1,7 +1,5 @@
 "use client";
 
-import { Header } from "@/components/header";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StatementSkeleton() {
     return (

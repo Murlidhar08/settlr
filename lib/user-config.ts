@@ -1,6 +1,6 @@
 import { cache } from "react";
-import { prisma } from "./prisma";
-import { getUserSession } from "./auth";
+import { prisma } from "./prisma/prisma";
+import { getUserSession } from "./auth/auth";
 import { Currency, ThemeMode } from "./generated/prisma/enums";
 
 export const getUserConfig = cache(async () => {

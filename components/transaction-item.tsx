@@ -1,13 +1,13 @@
 "use client"
 
-import Link from "next/link"
-import { ArrowDownLeft, ArrowUpRight, ArrowRight, Wallet2, Tag } from "lucide-react"
-import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
-import { formatAmount } from "@/utility/transaction"
-import { TransactionDirection } from "@/types/transaction/TransactionDirection"
-import { getTransactionPerspective, getPartyTransactionPerspective, getBusinessTransactionPerspective } from "@/lib/transaction-logic"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
+import { getBusinessTransactionPerspective, getPartyTransactionPerspective, getTransactionPerspective } from "@/lib/transaction-logic"
+import { cn } from "@/lib/utils"
+import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { formatAmount } from "@/utility/transaction"
+import { motion } from "framer-motion"
+import { ArrowDownLeft, ArrowRight, ArrowUpRight, Tag, Wallet2 } from "lucide-react"
+import Link from "next/link"
 
 interface TransactionProp {
   transactionId: string
@@ -44,7 +44,7 @@ const TransactionItem = ({
 }: TransactionProp) => {
   // Determine direction based on context
   const direction = accountId
-    ? (accountType === "PARTY"
+    ? (accountType === FinancialAccountType.PARTY
       ? getPartyTransactionPerspective(toAccountId, fromAccountId, accountId)
       : getTransactionPerspective(toAccountId, fromAccountId, accountId))
     : getBusinessTransactionPerspective(toAccountType, fromAccountType);
@@ -58,6 +58,7 @@ const TransactionItem = ({
   // Icon Selection
   const renderIcon = () => {
     if (isNeutral) return <Wallet2 size={18} className="text-indigo-500" />;
+
     return isIn ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />;
   };
 

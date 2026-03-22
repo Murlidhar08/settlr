@@ -1,12 +1,12 @@
 "use client"
 
-import { useMemo } from "react"
-import { useRouter } from "next/navigation"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useUserConfig } from "@/components/providers/user-config-provider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 
-import { getInitials } from "@/utility/party"
-import { formatAmount } from "@/utility/transaction"
+import { getInitials } from "@/utility/party";
+import { formatAmount } from "@/utility/transaction";
 
 const getRandomAvatarColor = () => {
   const hue = Math.floor(Math.random() * 360)
@@ -103,4 +103,4 @@ const PartyItem = ({
 }
 
 
-export { PartyItem }
+export { PartyItem };

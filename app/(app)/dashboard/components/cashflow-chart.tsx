@@ -1,9 +1,9 @@
-import { prisma } from "@/lib/prisma"
-import { getUserSession } from "@/lib/auth"
-import { getUserConfig } from "@/lib/user-config"
-import { subDays, startOfDay, format, eachDayOfInterval } from "date-fns"
-import { CashflowChartClient } from "./cashflow-chart-client"
+import { getUserSession } from "@/lib/auth/auth"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
+import { prisma } from "@/lib/prisma/prisma"
+import { getUserConfig } from "@/lib/user-config"
+import { eachDayOfInterval, format, startOfDay, subDays } from "date-fns"
+import { CashflowChartClient } from "./cashflow-chart-client"
 
 export async function CashflowChart() {
     const session = await getUserSession()

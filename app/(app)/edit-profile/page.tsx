@@ -1,21 +1,21 @@
 'use client'
 
-import { useEffect } from 'react'
-import { Camera, User, Phone, Mail, CheckCircle2, Edit3 } from 'lucide-react'
-import { useForm, UseFormRegisterReturn } from 'react-hook-form'
+import { motion } from 'framer-motion'
+import { Camera, CheckCircle2, Edit3, Mail, Phone, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import { useForm, UseFormRegisterReturn } from 'react-hook-form'
 import { toast } from 'sonner'
-import { motion, AnimatePresence } from 'framer-motion'
 
+import { BackHeader } from '@/components/back-header'
+import { FooterButtons } from '@/components/footer-buttons'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LoadingSwap } from '@/components/ui/loading-swap'
-import { authClient, useSession } from '@/lib/auth-client'
-import { BackHeader } from '@/components/back-header'
-import { getInitials } from '@/utility/party'
-import { FooterButtons } from '@/components/footer-buttons'
 import { Skeleton } from '@/components/ui/skeleton'
+import { authClient, useSession } from '@/lib/auth/auth-client'
+import { getInitials } from '@/utility/party'
 
 type ProfileFormValues = {
   name: string

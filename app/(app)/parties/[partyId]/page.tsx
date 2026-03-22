@@ -1,24 +1,24 @@
 // Packages
-import { ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react'
+import { Plus, Search } from 'lucide-react';
 
 // Components
-import { Input } from '@/components/ui/input'
-import { QuickActions } from './components/quick-action';
+import { Input } from '@/components/ui/input';
 import { BalanceCard } from './components/balance-card';
+import { QuickActions } from './components/quick-action';
 
 // Lib
-import { prisma } from '@/lib/prisma'
-import { getUserSession } from '@/lib/auth'
-import { TransactionList } from '@/components/transaction/transaction-list';
 import { FooterButtons } from '@/components/footer-buttons';
 import { AddTransactionModal } from '@/components/transaction/add-transaction-modal';
+import { TransactionList } from '@/components/transaction/transaction-list';
 import { Button } from '@/components/ui/button';
+import { getUserSession } from '@/lib/auth/auth';
+import { FinancialAccountType } from '@/lib/generated/prisma/enums';
+import { prisma } from '@/lib/prisma/prisma';
+import { calculateAccountStats } from '@/lib/transaction-logic';
 import { getUserConfig } from '@/lib/user-config';
+import { TransactionDirection } from '@/types/transaction/TransactionDirection';
 import { getCurrencySymbol } from '@/utility/transaction';
 import BackHeaderClient from './components/back-header-client';
-import { TransactionDirection } from '@/types/transaction/TransactionDirection';
-import { FinancialAccountType } from '@/lib/generated/prisma/enums';
-import { calculateAccountStats } from '@/lib/transaction-logic';
 
 export default async function PartyDetailsPage({ params }: { params: Promise<{ partyId: string }> }) {
   const partyId = (await params).partyId;
@@ -125,33 +125,18 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
 
         {/* Bottom Action Footer */}
         <FooterButtons>
-          {/* YOU PAY -> Money goes TO Party (from MONEY to PARTY) */}
           <AddTransactionModal
-            title="You Pay"
+            title="New Entry"
             direction={TransactionDirection.OUT}
             partyId={partyId}
             accountId={partyAccountId}
             path={`/parties/${partyId}`}
           >
-            <Button className="h-14 w-14 md:h-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
-              <ArrowUpRight className="h-6 w-6 sm:h-5 sm:w-5" />
-              <span className="hidden md:inline">You Pay</span>
-            </Button>
-          </AddTransactionModal>
-
-          {/* YOU RECEIVE -> Money comes FROM Party (from PARTY to MONEY) */}
-          <AddTransactionModal
-            title="You Receive"
-            direction={TransactionDirection.IN}
-            partyId={partyId}
-            accountId={partyAccountId}
-            path={`/parties/${partyId}`}
-          >
-            <Button
-              className="h-14 w-14 md:h-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2"
-            >
-              <ArrowDownLeft className="h-6 w-6 sm:h-5 sm:w-5" />
-              <span className="hidden md:inline">You Receive</span>
+            <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
+              <Plus className="size-6 sm:size-5" />
+              <span className="hidden md:block text-center font-black tracking-[0.2em] text-sm">
+                Add Entry
+              </span>
             </Button>
           </AddTransactionModal>
         </FooterButtons>

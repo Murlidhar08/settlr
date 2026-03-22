@@ -1,9 +1,9 @@
-import { TransactionItem } from "@/components/transaction-item";
 import { getRecentTransactions } from "@/actions/transaction.actions";
+import { TransactionItem } from "@/components/transaction-item";
 import { formatDate } from "@/utility/transaction";
 
-import { getUserConfig } from "@/lib/user-config";
 import { t } from "@/lib/languages/i18n";
+import { getUserConfig } from "@/lib/user-config";
 
 export default async function RecentTransaction() {
   const recentTransactions = await getRecentTransactions();

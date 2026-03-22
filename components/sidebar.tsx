@@ -1,24 +1,24 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import Image from "next/image";
+import { useSession } from "@/lib/auth/auth-client";
+import { envClient } from "@/lib/env.client";
+import { t } from "@/lib/languages/i18n";
+import clsx from "clsx";
 import {
-  LayoutDashboard,
-  User2Icon,
-  Wallet,
-  Settings,
   ChevronLeft,
   ChevronRight,
   LandmarkIcon,
+  LayoutDashboard,
+  Settings,
+  User2Icon,
   UserRoundCog,
+  Wallet,
 } from "lucide-react";
-import clsx from "clsx";
-import { useEffect, useState } from "react";
-import { envClient } from "@/lib/env.client";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { useUserConfig } from "./providers/user-config-provider";
-import { t } from "@/lib/languages/i18n";
-import { useSession } from "@/lib/auth-client";
 
 type NavItem = {
   label: string;
@@ -60,6 +60,7 @@ const Sidebar = () => {
             <Image
               src="/images/logo/light_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={34}
               height={34}
               className="dark:hidden"
@@ -67,6 +68,7 @@ const Sidebar = () => {
             <Image
               src="/images/logo/dark_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={34}
               height={34}
               className="hidden dark:block"
@@ -202,4 +204,5 @@ function MobileNavItem({ icon, label, active, href }: MobileNavItemProps) {
 }
 
 
-export { Sidebar }
+export { Sidebar };
+

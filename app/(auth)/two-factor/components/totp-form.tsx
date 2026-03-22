@@ -1,12 +1,12 @@
 "use client"
 
-import { useForm } from "react-hook-form"
-import { useRouter } from "next/navigation"
 import { KeyRound } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
 
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { authClient } from "@/lib/auth-client"
+import { Input } from "@/components/ui/input"
+import { authClient } from "@/lib/auth/auth-client"
 import { toast } from "sonner"
 
 type TotpFormValues = {

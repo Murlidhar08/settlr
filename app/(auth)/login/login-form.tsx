@@ -1,21 +1,21 @@
 "use client";
 
 // Packages
-import { useEffect, useState } from "react";
-import { Mail, EyeOff, Eye } from "lucide-react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import { Eye, EyeOff, Mail } from "lucide-react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // Lib
-import { authClient, signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth-client";
+import { authClient, signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth/auth-client";
 import { envClient } from "@/lib/env.client";
 
 // Components
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -114,6 +114,7 @@ export default function LoginForm({ providers }: LoginFormProps) {
             <Image
               src="/images/logo/light_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={48}
               height={48}
               className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
@@ -121,6 +122,7 @@ export default function LoginForm({ providers }: LoginFormProps) {
             <Image
               src="/images/logo/dark_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={48}
               height={48}
               className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"
@@ -307,6 +309,7 @@ export default function LoginForm({ providers }: LoginFormProps) {
             <Image
               src="/images/logo/dark_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={140}
               height={140}
               className="relative z-10 group-hover:scale-110 transition-transform duration-500 drop-shadow-2xl"

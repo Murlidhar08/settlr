@@ -1,11 +1,11 @@
 "use client";
 
-import { use } from "react";
 import { ArrowDown, ArrowUp, ChevronRight } from "lucide-react";
+import { use } from "react";
 
 import { Currency } from "@/lib/generated/prisma/enums";
-import { formatAmount } from "@/utility/transaction";
 import { PartyRes } from "@/types/party/PartyRes";
+import { formatAmount } from "@/utility/transaction";
 
 interface BalanceCardProps {
     promise: Promise<PartyRes[]>,

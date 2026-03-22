@@ -1,11 +1,11 @@
-import { notFound } from "next/navigation"
-import { prisma } from "@/lib/prisma"
-import { getUserSession } from "@/lib/auth"
-import { TransactionDetailView } from "./components/transaction-detail-view"
-import { getUserConfig } from "@/lib/user-config"
+import { getUserSession } from "@/lib/auth/auth"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
+import { prisma } from "@/lib/prisma/prisma"
 import { getTransactionPerspective } from "@/lib/transaction-logic"
+import { getUserConfig } from "@/lib/user-config"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { notFound } from "next/navigation"
+import { TransactionDetailView } from "./components/transaction-detail-view"
 
 export default async function TransactionDetailPage({ params }: { params: Promise<{ transactionId: string }> }) {
   const { transactionId } = await params;
@@ -19,9 +19,10 @@ export default async function TransactionDetailPage({ params }: { params: Promis
       businessId: session.user.activeBusinessId,
     },
     include: {
-      party: { select: { id: true, name: true } },
-      toAccount: { select: { type: true } },
-      fromAccount: { select: { type: true } }
+      party: { select: { id: true, name: true, contactNo: true } },
+      toAccount: { select: { id: true, name: true, type: true, moneyType: true, categoryType: true } },
+      fromAccount: { select: { id: true, name: true, type: true, moneyType: true, categoryType: true } },
+      user: { select: { name: true } }
     },
   })
 
@@ -43,5 +44,11 @@ export default async function TransactionDetailPage({ params }: { params: Promis
 
   const isIn = perspective === TransactionDirection.IN;
 
-  return <TransactionDetailView transaction={JSON.parse(JSON.stringify(transaction))} isIn={isIn} currency={currency} />
+  return (
+    <TransactionDetailView
+      transaction={JSON.parse(JSON.stringify(transaction))}
+      isIn={isIn}
+      currency={currency}
+    />
+  )
 }

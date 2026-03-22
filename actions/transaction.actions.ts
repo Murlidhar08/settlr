@@ -1,12 +1,12 @@
 "use server";
 
 // Lib
-import { prisma } from "@/lib/prisma";
-import { getUserSession } from "@/lib/auth";
-import { Transaction, Prisma } from "@/lib/generated/prisma/client";
-import { MoneyType, FinancialAccountType, CategoryType } from "@/lib/generated/prisma/enums";
-import { redirect } from "next/navigation"
+import { getUserSession } from "@/lib/auth/auth";
+import { Prisma } from "@/lib/generated/prisma/client";
+import { CategoryType, FinancialAccountType } from "@/lib/generated/prisma/enums";
+import { prisma } from "@/lib/prisma/prisma";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { cache } from "react";
 
 export async function addTransaction(transactionData: any, pathToRevalidate?: string) {
@@ -113,7 +113,7 @@ export async function addTransaction(transactionData: any, pathToRevalidate?: st
   };
 }
 
-export async function deleteTransaction(transactionId: string, partyId?: string) {
+export async function deleteTransaction(transactionId: string, redirectPath?: string) {
   const session = await getUserSession()
 
   if (!session?.user.activeBusinessId) {
@@ -127,12 +127,12 @@ export async function deleteTransaction(transactionId: string, partyId?: string)
     },
   })
 
-  // Redirect after delete
-  if (partyId)
-    redirect(`/parties/${partyId}`)
-  else
-    redirect("/parties")
+  // Redirect after delete if path is provided
+  if (redirectPath) {
+    redirect(redirectPath as any)
+  }
 
+  return { success: true }
 }
 
 export const getRecentTransactions = cache(async function getRecentTransactions() {

@@ -29,8 +29,12 @@ export function getTransactionPerspective(
     fromAccountId: string,
     contextAccountId: string,
 ): TransactionDirection | undefined {
-    if (toAccountId === contextAccountId) return TransactionDirection.IN;
-    if (fromAccountId === contextAccountId) return TransactionDirection.OUT;
+    if (toAccountId === contextAccountId)
+        return TransactionDirection.IN;
+
+    if (fromAccountId === contextAccountId)
+        return TransactionDirection.OUT;
+
     return undefined;
 }
 
@@ -61,16 +65,17 @@ export function getBusinessTransactionPerspective(
     toAccountType?: string,
     fromAccountType?: string
 ): TransactionDirection | undefined {
-    if (toAccountType === FinancialAccountType.MONEY && fromAccountType === FinancialAccountType.MONEY) {
-        return TransactionDirection.NEUTRAL;
-    }
 
-    if (toAccountType === FinancialAccountType.MONEY && fromAccountType !== FinancialAccountType.MONEY) {
+    // WithIn business transaction
+    if (toAccountType === FinancialAccountType.MONEY && fromAccountType === FinancialAccountType.MONEY)
+        return TransactionDirection.NEUTRAL;
+
+    if (toAccountType === FinancialAccountType.MONEY && fromAccountType !== FinancialAccountType.MONEY)
         return TransactionDirection.IN;
-    }
-    if (fromAccountType === FinancialAccountType.MONEY && toAccountType !== FinancialAccountType.MONEY) {
+
+    if (fromAccountType === FinancialAccountType.MONEY && toAccountType !== FinancialAccountType.MONEY)
         return TransactionDirection.OUT;
-    }
+
 
     // Default fallback: If it's entering a MONEY account, it's IN.
     if (toAccountType === FinancialAccountType.MONEY) return TransactionDirection.IN;
@@ -148,7 +153,7 @@ export function getSignedAmount(
     accountType?: string
 ): number | undefined {
 
-    const direction = accountType === "PARTY"
+    const direction = accountType === FinancialAccountType.PARTY
         ? getPartyTransactionPerspective(transaction.toAccountId, transaction.fromAccountId, accountId)
         : getTransactionPerspective(transaction.toAccountId, transaction.fromAccountId, accountId);
 

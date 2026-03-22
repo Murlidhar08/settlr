@@ -1,7 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, UserCheck, UserX, ShieldCheck } from "lucide-react";
+import { ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
 
 interface AdminStatsProps {
     totalUsers: number;
@@ -47,7 +46,7 @@ export function AdminStats({ totalUsers, activeUsers, bannedUsers, adminUsers }:
     ];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map((stat) => (
                 <div
                     key={stat.title}

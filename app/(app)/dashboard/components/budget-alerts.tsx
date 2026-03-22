@@ -1,9 +1,9 @@
-import { prisma } from "@/lib/prisma";
-import { getUserSession } from "@/lib/auth";
-import { getUserConfig } from "@/lib/user-config";
+import { getUserSession } from "@/lib/auth/auth";
 import { FinancialAccountType } from "@/lib/generated/prisma/enums";
+import { prisma } from "@/lib/prisma/prisma";
+import { getUserConfig } from "@/lib/user-config";
 import { formatAmount } from "@/utility/transaction";
-import { TrendingUp, TrendingDown, AlertCircle, Info } from "lucide-react";
+import { AlertCircle, Info } from "lucide-react";
 
 export async function BudgetAlerts() {
     const session = await getUserSession();

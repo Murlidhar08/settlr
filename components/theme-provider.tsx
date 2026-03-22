@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { ThemeMode } from "@/lib/generated/prisma/enums";
+import { useEffect } from "react";
 
 type Props = {
   theme: ThemeMode;

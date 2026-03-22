@@ -1,26 +1,45 @@
 "use client"
 
-import {
-    Wallet, Banknote, Landmark, CreditCard, Edit2,
-    TrendingUp, TrendingDown, Briefcase, Scale, Settings2, Tag, Cpu,
-    ChevronRight, ArrowDownLeft, ArrowUpRight
-} from "lucide-react"
+import { getFinancialAccountBalance } from "@/actions/financial-account.actions"
 import { FinancialAccount } from "@/lib/generated/prisma/client"
-import { MoneyType, FinancialAccountType, CategoryType, Currency } from "@/lib/generated/prisma/enums"
-import { AddAccountModal } from "./add-account-modal"
-import { motion } from "framer-motion"
+import { CategoryType, Currency, FinancialAccountType, MoneyType } from "@/lib/generated/prisma/enums"
 import { cn } from "@/lib/utils"
-import { useRouter } from "next/navigation"
+import { formatAmount } from "@/utility/commonFunction"
 import { getCurrencySymbol } from "@/utility/transaction"
+import { motion } from "framer-motion"
+import {
+    ArrowDownLeft, ArrowUpRight,
+    Banknote,
+    Briefcase,
+    ChevronRight,
+    Cpu,
+    CreditCard, Edit2,
+    Landmark,
+    Scale, Settings2, Tag,
+    TrendingDown,
+    TrendingUp,
+    Wallet
+} from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { AddAccountModal } from "./add-account-modal"
 
 interface AccountCardProps {
-    account: FinancialAccount & { balance: number }
+    account: FinancialAccount
     index: number
     currency: Currency
 }
 
 export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
     const router = useRouter()
+    const [balance, setBalance] = useState<number | null>(null)
+
+    useEffect(() => {
+        getFinancialAccountBalance(account.id)
+            .then((balance) => {
+                setBalance(balance)
+            })
+    }, [account.id])
 
     const getColors = () => {
         if (account.type === FinancialAccountType.MONEY) {
@@ -106,20 +125,40 @@ export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
                         {getIcon()}
                     </div>
 
-                    <div className="flex flex-col items-end">
-                        <p className={cn(
-                            "text-2xl font-black tracking-tighter tabular-nums",
-                            !isDarkCard && (account.balance > 0 ? "text-emerald-500" : account.balance < 0 ? "text-rose-500" : "")
-                        )}>
-                            {getCurrencySymbol(currency)}{Math.abs(account.balance).toLocaleString("en-IN")}
-                        </p>
-                        <div className="flex items-center gap-1 opacity-60">
-                            {account.balance >= 0 ? <ArrowDownLeft size={10} /> : <ArrowUpRight size={10} />}
-                            <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-                                {account.balance >= 0 ? "Balance" : "Debt"}
-                            </span>
+                    {/* Loading State */}
+                    {balance == null && (
+                        <div className="flex flex-col items-end">
+                            <p className={cn(
+                                "text-2xl font-black tracking-tighter tabular-nums",
+                                !isDarkCard && "text-gray-500"
+                            )}>
+                                {getCurrencySymbol(currency)}{"---"}
+                            </p>
+                            <div className="flex items-center gap-1 opacity-60">
+                                <span className="text-[10px] font-black uppercase tracking-widest leading-none">
+                                    {"Loading"}
+                                </span>
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+
+                    {balance !== null && (
+                        <div className="flex flex-col items-end">
+                            <p className={cn(
+                                "text-2xl font-black tracking-tighter tabular-nums",
+                                !isDarkCard && (balance > 0 ? "text-emerald-500" : balance < 0 ? "text-rose-500" : "")
+                            )}>
+                                {getCurrencySymbol(currency)}{formatAmount(balance)}
+                            </p>
+                            <div className="flex items-center gap-1 opacity-60">
+                                {balance >= 0 ? <ArrowDownLeft size={10} /> : <ArrowUpRight size={10} />}
+                                <span className="text-[10px] font-black uppercase tracking-widest leading-none">
+                                    {balance >= 0 ? "Balance" : "Debt"}
+                                </span>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex items-end justify-between">

@@ -1,14 +1,14 @@
 "use client";
 
-import { useSession } from "@/lib/auth-client";
-import { LinkAccountModalBody } from "../components/link-account-body";
 import { getCredientialAccounts } from "@/actions/user-settings.actions";
-import { useEffect, useState } from "react";
-import { auth } from "@/lib/auth";
 import { BackHeader } from "@/components/back-header";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
+import { auth } from "@/lib/auth/auth";
+import { useSession } from "@/lib/auth/auth-client";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { LinkAccountModalBody } from "../components/link-account-body";
 
 type Account = Awaited<ReturnType<typeof auth.api.listUserAccounts>>[number];
 

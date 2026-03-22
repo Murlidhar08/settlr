@@ -1,11 +1,11 @@
 "use client";
 
-import { useSession } from "@/lib/auth-client";
-import { SecurityModalBody } from "../components/security-body";
 import { BackHeader } from "@/components/back-header";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSession } from "@/lib/auth/auth-client";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { SecurityModalBody } from "../components/security-body";
 
 export default function SecurityPage() {
     const router = useRouter();

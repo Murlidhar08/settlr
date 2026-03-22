@@ -1,9 +1,9 @@
 "use server";
 
-import { getUserSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getUserSession } from "@/lib/auth/auth";
+import { CategoryType, FinancialAccountType, MoneyType, PartyType } from "@/lib/generated/prisma/enums";
+import { prisma } from "@/lib/prisma/prisma";
 import { revalidatePath } from "next/cache";
-import { FinancialAccountType, MoneyType, PartyType, CategoryType } from "@/lib/generated/prisma/enums";
 
 export async function getFinancialAccounts() {
     const session = await getUserSession();
@@ -15,10 +15,7 @@ export async function getFinancialAccounts() {
         where: {
             businessId: session.user.activeBusinessId,
             isActive: true,
-        },
-        orderBy: {
-            createdAt: "desc",
-        },
+        }
     });
 }
 
@@ -134,19 +131,15 @@ export async function deleteFinancialAccount(id: string) {
     return { success: true };
 }
 
-export async function getFinancialAccountsWithBalance() {
+export async function getFinancialAccountBalance(accountId: string) {
     const session = await getUserSession();
     if (!session || !session.user.activeBusinessId) {
-        return [];
+        return 0;
     }
+
     const businessId = session.user.activeBusinessId;
-
-    const accounts = await prisma.financialAccount.findMany({
-        where: { businessId, isActive: true }
-    });
-
     const transactions = await prisma.transaction.findMany({
-        where: { businessId },
+        where: { businessId, OR: [{ fromAccountId: accountId }, { toAccountId: accountId }] },
         select: {
             amount: true,
             fromAccountId: true,
@@ -162,8 +155,5 @@ export async function getFinancialAccountsWithBalance() {
         balances[tx.toAccountId] = (balances[tx.toAccountId] || 0) + amount;
     });
 
-    return accounts.map(acc => ({
-        ...acc,
-        balance: balances[acc.id] || 0,
-    }));
+    return balances[accountId] || 0;
 }

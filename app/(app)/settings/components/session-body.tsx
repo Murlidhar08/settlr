@@ -1,14 +1,14 @@
 'use client'
 
-import { Monitor, Smartphone, Trash2, Globe, ShieldQuestion } from 'lucide-react'
-import { motion } from 'framer-motion'
-import { Session } from 'better-auth'
-import { useRouter } from 'next/navigation'
 import { BetterAuthActionButton } from '@/components/auth/better-auth-action-button'
-import { authClient } from '@/lib/auth-client'
+import { useUserConfig } from '@/components/providers/user-config-provider'
+import { authClient } from '@/lib/auth/auth-client'
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/utility/transaction'
-import { useUserConfig } from '@/components/providers/user-config-provider'
+import { Session } from 'better-auth'
+import { motion } from 'framer-motion'
+import { Globe, Monitor, Smartphone, Trash2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 interface SessionModalBodyProps {
     sessions: Session[]
@@ -99,7 +99,7 @@ function SessionCard({
         const lowerUA = session.userAgent.toLowerCase();
         const isMobile = /mobile|iphone|ipad|android|blackberry|opera mini|iemobile/i.test(lowerUA);
         const isTablet = /tablet|ipad|playbook|silk/i.test(lowerUA);
-        
+
         let browser = "Web Browser";
         if (lowerUA.includes("firefox")) browser = "Firefox";
         else if (lowerUA.includes("opr") || lowerUA.includes("opera")) browser = "Opera";

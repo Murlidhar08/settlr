@@ -1,18 +1,17 @@
 "use client"
 
+import { Currency } from "@/lib/generated/prisma/enums"
+import { t } from "@/lib/languages/i18n"
+import { formatAmount } from "@/utility/transaction"
+import { motion } from "framer-motion"
 import { useMemo } from "react"
 import {
-    PieChart,
-    Pie,
     Cell,
+    Pie,
+    PieChart,
     ResponsiveContainer,
-    Tooltip,
-    Legend
+    Tooltip
 } from "recharts"
-import { motion } from "framer-motion"
-import { Currency } from "@/lib/generated/prisma/enums"
-import { formatAmount } from "@/utility/transaction"
-import { t } from "@/lib/languages/i18n"
 
 interface DistributionData {
     name: string

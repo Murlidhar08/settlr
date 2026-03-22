@@ -1,20 +1,20 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
 import { motion } from "framer-motion"
-import { ShieldCheck, Copy, RefreshCw } from "lucide-react"
+import { Copy, RefreshCw, ShieldCheck } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
 
 import { Button } from "@/components/ui/button"
-import { LoadingSwap } from "@/components/ui/loading-swap"
 import { Input } from "@/components/ui/input"
+import { LoadingSwap } from "@/components/ui/loading-swap"
 
-import { authClient } from "@/lib/auth-client"
-import { toast } from "sonner"
+import { authClient } from "@/lib/auth/auth-client"
 import dynamic from "next/dynamic"
+import { toast } from "sonner"
 
 const QRCode = dynamic(() => import("react-qr-code"), {
   ssr: false,

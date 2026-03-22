@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import { Eye, EyeOff, Mail, User } from "lucide-react";
 import Image from "next/image";
-import { Wallet, Mail, EyeOff, Eye, ShieldCheck, User } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/auth-client";
 import { envClient } from "@/lib/env.client";
 
 const containerVariants = {
@@ -113,6 +113,7 @@ export default function SignupPage() {
             <Image
               src="/images/logo/light_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={48}
               height={48}
               className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
@@ -120,6 +121,7 @@ export default function SignupPage() {
             <Image
               src="/images/logo/dark_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={48}
               height={48}
               className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"
@@ -282,6 +284,7 @@ export default function SignupPage() {
             <Image
               src="/images/logo/dark_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
+              loading="eager"
               width={140}
               height={140}
               className="relative z-10 group-hover:scale-110 transition-transform duration-500 drop-shadow-2xl"

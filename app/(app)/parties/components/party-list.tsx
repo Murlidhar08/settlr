@@ -1,31 +1,49 @@
 "use client";
-
-import { use } from "react";
+ 
 import { PartyType } from "@/lib/generated/prisma/enums";
-import { useQuery } from "@tanstack/react-query";
-import { getPartyList } from "@/actions/parties.actions";
-
-// components
 import { PartyItem } from "./party-item";
-
-// Types
 import { PartyRes } from "@/types/party/PartyRes";
-
+import { getPartyList } from "@/actions/parties.actions";
+import { AnimatePresence, motion } from "framer-motion";
+import { useState, useEffect } from "react";
+ 
 interface PartyListProp {
   partyType: PartyType
   promise?: Promise<PartyRes[]>
   search?: string
 }
-
-import { motion, AnimatePresence } from "framer-motion";
-
+ 
 const PartyList = ({ partyType, promise, search = "" }: PartyListProp) => {
-  const { data: partyLst = [] } = useQuery({
-    queryKey: ["parties", partyType, search],
-    queryFn: () => getPartyList(partyType, search),
-    initialData: promise ? use(promise) : undefined,
-  });
-
+  const [partyLst, setPartyLst] = useState<PartyRes[] | null>(null);
+  const [loading, setLoading] = useState(true);
+ 
+  useEffect(() => {
+    let isMounted = true;
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const list = await getPartyList(partyType, search);
+        if (isMounted) setPartyLst(list as any);
+      } catch (error) {
+        console.error("Failed to fetch party list:", error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchData();
+    return () => { isMounted = false; };
+  }, [partyType, search]);
+ 
+  if (loading && !partyLst) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-20 w-full animate-pulse rounded-2xl bg-muted/40" />
+        ))}
+      </div>
+    );
+  }
+ 
   return (
     <div className="space-y-3">
       <AnimatePresence mode="popLayout">
@@ -47,8 +65,8 @@ const PartyList = ({ partyType, promise, search = "" }: PartyListProp) => {
           </motion.div>
         ))}
       </AnimatePresence>
-
-      {!partyLst?.length && (
+ 
+      {!loading && !partyLst?.length && (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -70,11 +88,9 @@ const PartyList = ({ partyType, promise, search = "" }: PartyListProp) => {
           </div>
         </motion.div>
       )}
-
+ 
     </div>
   )
 }
-
-
-export { PartyList }
-
+ 
+export { PartyList };

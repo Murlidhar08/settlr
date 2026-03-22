@@ -1,23 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Building2, Plus, Pencil, Trash2, Check, X, ShieldAlert } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { BackHeader } from "@/components/back-header"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { useRouter } from "next/navigation"
-import { authClient } from "@/lib/auth-client"
-import { cn } from "@/lib/utils"
 import {
-    getBusinessList,
     addBusiness,
-    updateBusiness,
     deleteBusiness,
-    switchBusiness
+    getBusinessList,
+    switchBusiness,
+    updateBusiness
 } from "@/actions/business.actions"
-import { toast } from "sonner"
+import { BackHeader } from "@/components/back-header"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -28,6 +18,16 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { authClient } from "@/lib/auth/auth-client"
+import { cn } from "@/lib/utils"
+import { AnimatePresence, motion } from "framer-motion"
+import { Building2, Check, Loader2, Pencil, Plus, ShieldAlert, Trash2, X } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
 interface Business {
     id: string
@@ -44,6 +44,7 @@ export default function BusinessPage() {
     const [isAdding, setIsAdding] = useState(false)
     const [newName, setNewName] = useState("")
     const [deleteId, setDeleteId] = useState<string | null>(null)
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const fetchBusinesses = async () => {
         setIsLoading(true)
@@ -73,41 +74,52 @@ export default function BusinessPage() {
     }
 
     const handleAdd = async () => {
-        if (!newName.trim()) return
+        if (!newName.trim() || isSubmitting) return
+        setIsSubmitting(true)
         try {
             await addBusiness(newName)
             setNewName("")
             setIsAdding(false)
-            fetchBusinesses()
+            await fetchBusinesses()
             toast.success("Business created successfully")
         } catch (error: any) {
             toast.error(error.message || "Failed to create business")
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
     const handleUpdate = async (id: string) => {
-        if (!editName.trim()) return
+        if (!editName.trim() || isSubmitting) return
+        setIsSubmitting(true)
         try {
             await updateBusiness(id, editName)
             setEditingId(null)
-            fetchBusinesses()
+            await fetchBusinesses()
             toast.success("Business updated successfully")
         } catch (error: any) {
             toast.error(error.message || "Failed to update business")
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
     const handleDelete = async () => {
-        if (!deleteId) return
+        if (!deleteId || isSubmitting) return
+        setIsSubmitting(true)
         try {
             await deleteBusiness(deleteId)
             setDeleteId(null)
-            fetchBusinesses()
+            await fetchBusinesses()
             toast.success("Business deleted successfully")
         } catch (error: any) {
             toast.error(error.message || "Failed to delete business")
+        } finally {
+            setIsSubmitting(false)
         }
     }
+
+    const businessToDelete = businesses.find(b => b.id === deleteId);
 
     return (
         <div className="w-full bg-background pb-32">
@@ -262,16 +274,21 @@ export default function BusinessPage() {
                         </div>
                         <AlertDialogTitle className="text-center text-2xl font-black">Hold on!</AlertDialogTitle>
                         <AlertDialogDescription className="text-center text-base">
-                            This will permanently delete the business and all its associated data (Transactions, Parties, etc.). This action cannot be undone.
+                            This will permanently delete {businessToDelete ? <span className="font-bold text-foreground">"{businessToDelete.name}"</span> : "the business"} and all its associated data (Transactions, Parties, etc.). This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="gap-2 sm:gap-0">
                         <AlertDialogCancel className="h-12 rounded-2xl font-bold border-none bg-muted">Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            onClick={handleDelete}
-                            className="h-12 rounded-2xl font-bold bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-200"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleDelete();
+                            }}
+                            disabled={isSubmitting}
+                            className="h-12 rounded-2xl font-bold bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-200 gap-2"
                         >
-                            Yes, Delete Business
+                            {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : null}
+                            {isSubmitting ? "Deleting..." : "Yes, Delete Business"}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

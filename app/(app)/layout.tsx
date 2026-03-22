@@ -2,15 +2,15 @@
 import { redirect } from "next/navigation";
 
 // Lib
-import { getUserSession } from "@/lib/auth";
+import { getUserSession } from "@/lib/auth/auth";
 
 // Components
-import { Sidebar } from "@/components/sidebar";
 import { AppHeader } from "@/components/app-header";
-import { getDefaultConfig, getUserConfig } from "@/lib/user-config";
-import { UserConfigProvider } from "@/components/providers/user-config-provider";
-import { LayoutTransitions } from "@/components/layout-transitions";
 import { ImpersonationIndicator } from "@/components/auth/impersonation-indicator";
+import { LayoutTransitions } from "@/components/layout-transitions";
+import { UserConfigProvider } from "@/components/providers/user-config-provider";
+import { Sidebar } from "@/components/sidebar";
+import { getDefaultConfig, getUserConfig } from "@/lib/user-config";
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // User Config
@@ -31,7 +31,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
           {/* Main Content */}
           <div className="flex-1 flex flex-col min-w-0 h-full">
-            <AppHeader />
+            <AppHeader initialSession={session} />
             <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
               <LayoutTransitions>
                 {children}

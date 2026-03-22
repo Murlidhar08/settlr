@@ -1,9 +1,8 @@
 // Packages
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
-import { Toaster } from "@/components/ui/sonner"
-import type { Viewport } from 'next'
+import { Toaster } from "@/components/ui/sonner";
+import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
+import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
 
 // Style
 import "./globals.css";
@@ -12,11 +11,10 @@ import "./globals.css";
 import { envClient } from "@/lib/env.client";
 import { envServer } from "@/lib/env.server";
 
+import AppIconsMetaTags from "@/components/app-icons-metatags";
 import { ConfirmProvider } from "@/components/providers/confirm-provider";
 import { PromptProvider } from "@/components/providers/prompt-provider";
-import AppIconsMetaTags from "@/components/app-icons-metatags";
 import NextTopLoader from 'nextjs-toploader';
-import QueryProvider from "@/components/providers/query-provider";
 
 
 const nunitoSans = Nunito_Sans({
@@ -107,9 +105,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           />
           <ConfirmProvider>
             <PromptProvider>
-              <QueryProvider>
-                {children}
-              </QueryProvider>
+              {children}
             </PromptProvider>
 
             {/* Toast Container */}

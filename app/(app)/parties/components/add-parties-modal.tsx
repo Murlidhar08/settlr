@@ -1,14 +1,14 @@
 "use client"
 
-import { Building2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { ReactNode, useState } from "react"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { toast } from "sonner"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { motion } from "framer-motion"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { Building2, Loader2 } from "lucide-react"
+import { ReactNode, useState } from "react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 /* ========================================================= */
 /* ACTIONS + TYPES */
@@ -28,6 +28,7 @@ interface PartiesProps {
 /* ========================================================= */
 
 const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
 
   const [data, setData] = useState<PartyInput>({
@@ -46,57 +47,30 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
           ? "Add New Employee"
           : "Add New Party")
 
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation({
-    mutationFn: addParties,
-    onMutate: async (newParty) => {
-      // Cancel any outgoing refetches
-      // (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries({ queryKey: ["parties", type] })
-
-      // Snapshot the previous value
-      const previousParties = queryClient.getQueryData(["parties", type, ""])
-
-      // Optimistically update to the new value
-      queryClient.setQueryData(["parties", type, ""], (old: any) => [
-        {
-          ...newParty,
-          id: `temp-${Date.now()}`,
-          amount: 0,
-          profileUrl: null,
-        },
-        ...(old || []),
-      ])
-
-      // Return a context object with the snapshotted value
-      return { previousParties }
-    },
-    onError: (err, newParty, context) => {
-      queryClient.setQueryData(["parties", type, ""], context?.previousParties)
-      toast.error("Failed to add party")
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["parties", type] })
-    },
-    onSuccess: () => {
-      toast.success("Party added successfully")
-      setData({
-        type,
-        name: "",
-        contactNo: null,
-      })
-      setOpen(false)
-    }
-  })
-
-  const handleAddParty = async () => {
-    if (!data.name.trim()) {
-      return toast.error("Party name is required")
-    }
-
-    mutation.mutate(data)
-  }
+  const [isPending, setIsPending] = useState(false)
+ 
+   const handleAddParty = async () => {
+     if (!data.name.trim()) {
+       return toast.error("Party name is required")
+     }
+ 
+     setIsPending(true)
+     try {
+       await addParties(data)
+       toast.success("Party added successfully")
+       setData({
+         type,
+         name: "",
+         contactNo: null,
+       })
+       setOpen(false)
+       router.refresh()
+     } catch (err) {
+       toast.error("Failed to add party")
+     } finally {
+       setIsPending(false)
+     }
+   }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -193,12 +167,22 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
 
               <Button
                 onClick={handleAddParty}
-                className="h-14 flex-[1.5] rounded-2xl bg-primary text-white shadow-xl shadow-primary/20 active:scale-[0.97] transition-all font-black uppercase tracking-widest text-base"
+                disabled={isPending}
+                className="h-14 flex-[1.5] rounded-2xl bg-primary text-white shadow-xl shadow-primary/20 active:scale-[0.97] transition-all font-black uppercase tracking-widest text-base gap-2"
               >
-                Create {type === PartyType.CUSTOMER ? "Customer" :
-                  type === PartyType.SUPPLIER ? "Supplier" :
-                    type === PartyType.EMPLOYEE ? "Employee" :
-                      "Party"}
+                {isPending ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Hang on...
+                  </>
+                ) : (
+                  <>
+                    Create {type === PartyType.CUSTOMER ? "Customer" :
+                      type === PartyType.SUPPLIER ? "Supplier" :
+                        type === PartyType.EMPLOYEE ? "Employee" :
+                          "Party"}
+                  </>
+                )}
               </Button>
             </div>
           </div>

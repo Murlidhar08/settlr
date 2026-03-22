@@ -1,11 +1,11 @@
 "use client";
 
-import { useSession } from "@/lib/auth-client";
-import { DangerModalBody } from "../components/danger-body";
 import { BackHeader } from "@/components/back-header";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSession } from "@/lib/auth/auth-client";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { DangerModalBody } from "../components/danger-body";
 
 export default function DangerPage() {
     const router = useRouter();

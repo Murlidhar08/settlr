@@ -1,18 +1,17 @@
 'use client'
 
-import { Shield, Trash2, Plus, Link2 } from 'lucide-react'
-import { motion } from 'framer-motion'
 import { BetterAuthActionButton } from '@/components/auth/better-auth-action-button'
+import { auth } from '@/lib/auth/auth'
+import { authClient } from '@/lib/auth/auth-client'
 import {
     SUPPORTED_OAUTH_PROVIDER_DETAILS,
     SUPPORTED_OAUTH_PROVIDERS,
     SupportedOAuthProvider,
-} from '@/lib/o-auth-providers'
-import { useRouter } from 'next/navigation'
-import { auth } from '@/lib/auth'
-import { authClient } from '@/lib/auth-client'
-import { Button } from '@/components/ui/button'
+} from '@/lib/auth/o-auth-providers'
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
+import { Plus, Shield, Trash2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 type Account = Awaited<ReturnType<typeof auth.api.listUserAccounts>>[number]
 

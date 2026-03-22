@@ -1,9 +1,9 @@
 "use client";
 
-import { motion, AnimatePresence, TargetAndTransition } from "framer-motion";
-import { useEffect, useState } from "react";
-import Image from "next/image";
+import { AnimatePresence, motion, TargetAndTransition } from "framer-motion";
 import { useTheme } from "next-themes";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 const MESSAGES = [
     "Calculating your financial peace...",
@@ -113,6 +113,7 @@ export function LoadingScreen() {
                             alt="Logo"
                             width={120}
                             height={120}
+                            loading="eager"
                             priority
                             className="h-24 w-24 md:h-32 md:w-32 drop-shadow-2xl"
                         />

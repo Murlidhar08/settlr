@@ -1,36 +1,34 @@
 "use client"
 
 // Packages
-import { useState, useEffect, ReactNode } from "react"
-import { CalendarIcon, Wallet, Paperclip, ChevronDownIcon, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2 } from "lucide-react"
 import { format } from "date-fns"
-import { motion, AnimatePresence } from "framer-motion"
-import { toast } from "sonner"
+import { motion } from "framer-motion"
+import { ArrowDownLeft, ArrowUpRight, CalendarIcon, CheckCircle2, ChevronDownIcon, Clock, Loader2, Paperclip, Wallet } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { Loader2 } from "lucide-react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { ReactNode, useEffect, useState } from "react"
+import { toast } from "sonner"
 
 // Components
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
-import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Textarea } from "@/components/ui/textarea"
 
 // Actions
 import { addTransaction } from "@/actions/transaction.actions"
-import { getFinancialAccountsWithBalance } from "@/actions/financial-account.actions"
 
 // Library
 import { FinancialAccount } from "@/lib/generated/prisma/client"
-import { FinancialAccountType, CategoryType } from "@/lib/generated/prisma/enums"
+import { CategoryType, FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { cn } from "@/lib/utils"
 
 // Types
-import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { getFinancialAccounts } from "@/actions/financial-account.actions"
 import { ModalMode } from "@/types/transaction/ModalMode"
+import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 interface TransactionProps {
   title: string
   children: ReactNode
@@ -54,6 +52,7 @@ export const AddTransactionModal = ({
   open: controlledOpen,
   onOpenChange: setControlledOpen,
 }: TransactionProps) => {
+  const router = useRouter()
   const [internalOpen, setInternalOpen] = useState(false)
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen
   const setOpen = (val: boolean) => {
@@ -67,7 +66,8 @@ export const AddTransactionModal = ({
   const [dateOpen, setDateOpen] = useState(false)
   const [allAccounts, setAllAccounts] = useState<(FinancialAccount & { balance: number })[]>([])
   const [loadingAccounts, setLoadingAccounts] = useState(false)
-  const isOut = direction === TransactionDirection.OUT;
+  const [currentDirection, setCurrentDirection] = useState<TransactionDirection>(direction || TransactionDirection.OUT)
+  const isOut = currentDirection === TransactionDirection.OUT;
 
   // Selected IDs
   const [moneyAccountId, setMoneyAccountId] = useState<string>("")
@@ -97,7 +97,7 @@ export const AddTransactionModal = ({
         // Prevent redundant fetching if already loading
         setLoadingAccounts(true)
         try {
-          const accs = await getFinancialAccountsWithBalance()
+          const accs = await getFinancialAccounts()
           if (!isMounted) return
 
           setAllAccounts(accs as any)
@@ -181,7 +181,7 @@ export const AddTransactionModal = ({
     }
 
     return () => { isMounted = false }
-  }, [open, partyId, accountId, transactionData?.id, isOut]) // Stabilized dependencies
+  }, [open, partyId, accountId, transactionData?.id, currentDirection]) // Stabilized dependencies
 
   // Update data state whenever selections change
   useEffect(() => {
@@ -213,72 +213,33 @@ export const AddTransactionModal = ({
       toAccountId: to,
       partyId: partnerAcc?.partyId || null
     }))
-  }, [moneyAccountId, partnerAccountId, isOut, mode, allAccounts])
+  }, [moneyAccountId, partnerAccountId, currentDirection, mode, allAccounts])
 
-  const queryClient = useQueryClient()
+  const [isPending, setIsPending] = useState(false)
 
-  const mutation = useMutation({
-    mutationFn: async (payload: any) => {
-      return addTransaction(payload, path)
-    },
-    onMutate: async (newTx) => {
-      // Invalidate both transactions and financial accounts since balance changes
-      await queryClient.cancelQueries({ queryKey: ["transactions"] })
-      await queryClient.cancelQueries({ queryKey: ["financial-accounts"] })
+  const handleAddTransaction = async () => {
+    if (!data.amount || isNaN(Number(data.amount))) {
+      return toast.error("Please enter a valid amount")
+    }
 
-      const previousTransactions = queryClient.getQueryData(["transactions"])
-      const previousAccounts = queryClient.getQueryData(["financial-accounts"])
+    if (!data.fromAccountId || !data.toAccountId) {
+      return toast.error("Please select both accounts")
+    }
 
-      // Optimistically update financial-accounts (balances)
-      if (previousAccounts) {
-        queryClient.setQueryData(["financial-accounts"], (old: any[]) => {
-          if (!old) return old;
-          return old.map(acc => {
-            if (acc.id === newTx.fromAccountId) {
-              return { ...acc, balance: Number(acc.balance) - Number(newTx.amount) };
-            }
-            if (acc.id === newTx.toAccountId) {
-              return { ...acc, balance: Number(acc.balance) + Number(newTx.amount) };
-            }
-            return acc;
-          });
-        });
-      }
+    const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
+    if (isNaN(combinedDateTime.getTime())) {
+      return toast.error("Please enter a valid date and time")
+    }
 
-      // Prepend to transactions if it's a simple list
-      if (previousTransactions && Array.isArray(previousTransactions)) {
-        // This is a rough guess, but helps in simple filtered views.
-        // Note: Full optimistic transaction list update is complex with filters.
-        const tempTx = {
-          ...newTx,
-          id: "temp-" + Date.now(),
-          createdAt: new Date().toISOString(),
-          amount: Number(newTx.amount),
-          fromAccount: allAccounts.find(a => a.id === newTx.fromAccountId) || { name: "...", type: "..." },
-          toAccount: allAccounts.find(a => a.id === newTx.toAccountId) || { name: "...", type: "..." },
-          party: allAccounts.find(a => a.id === (isOut ? newTx.toAccountId : newTx.fromAccountId))?.partyId
-            ? { name: allAccounts.find(a => a.id === (isOut ? newTx.toAccountId : newTx.fromAccountId))?.name }
-            : null
-        };
-        queryClient.setQueryData(["transactions"], (old: any) => {
-          if (Array.isArray(old)) return [tempTx, ...old];
-          if (old?.transactions) return { ...old, transactions: [tempTx, ...old.transactions] };
-          return old;
-        });
-      }
+    setIsPending(true)
+    try {
+      await addTransaction({
+        ...data,
+        amount: Number(data.amount),
+        date: combinedDateTime,
+        description: data.description || null
+      }, path)
 
-      return { previousTransactions, previousAccounts }
-    },
-    onError: (err, newTx, context) => {
-      queryClient.setQueryData(["transactions"], context?.previousTransactions)
-      queryClient.setQueryData(["financial-accounts"], context?.previousAccounts)
-      toast.error("Failed to save transaction")
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions"] })
-      queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
-    },
-    onSuccess: () => {
       toast.success("Transaction recorded successfully", {
         icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
       })
@@ -299,29 +260,12 @@ export const AddTransactionModal = ({
       })
       setMoneyAccountId("")
       setPartnerAccountId("")
+      router.refresh()
+    } catch (err) {
+      toast.error("Failed to save transaction")
+    } finally {
+      setIsPending(false)
     }
-  })
-
-  const handleAddTransaction = async () => {
-    if (!data.amount || isNaN(Number(data.amount))) {
-      return toast.error("Please enter a valid amount")
-    }
-
-    if (!data.fromAccountId || !data.toAccountId) {
-      return toast.error("Please select both accounts")
-    }
-
-    const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
-    if (isNaN(combinedDateTime.getTime())) {
-      return toast.error("Please enter a valid date and time")
-    }
-
-    mutation.mutate({
-      ...data,
-      amount: Number(data.amount),
-      date: combinedDateTime,
-      description: data.description || null
-    })
   }
 
   // Filtering Logic
@@ -365,24 +309,52 @@ export const AddTransactionModal = ({
           side="right"
           className="w-full! h-full! sm:max-w-[70vw]! lg:max-w-[35vw]! border-l-0 sm:border-l p-0 flex flex-col overflow-hidden bg-background"
         >
-          <SheetHeader className="px-6 py-6 border-b bg-muted/20 backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-              <div className={cn(
-                "h-10 w-10 rounded-2xl flex items-center justify-center shadow-lg",
-                isOut ? "bg-rose-500 text-white shadow-rose-200" : "bg-emerald-500 text-white shadow-emerald-200"
-              )}>
-                {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
-              </div>
-              <div>
-                <SheetTitle className="text-xl font-black tracking-tight">{title}</SheetTitle>
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                  {mode} ENTRY
-                </p>
+          <SheetHeader className="px-4 py-4 border-b bg-muted/20 backdrop-blur-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  "h-10 w-10 rounded-2xl flex items-center justify-center shadow-lg transition-colors duration-400",
+                  isOut ? "bg-rose-500 text-white shadow-rose-200" : "bg-emerald-500 text-white shadow-emerald-200"
+                )}>
+                  {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
+                </div>
+                <div>
+                  <SheetTitle className="text-xl font-black tracking-tight">{title || "New Entry"}</SheetTitle>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                    {mode} ENTRY
+                  </p>
+                </div>
               </div>
             </div>
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {/* Money In/Out Toggle */}
+            <div className="bg-muted/50 p-1 mx-6 rounded-[20px] flex items-center shadow-inner border border-muted-foreground/5">
+              <button
+                onClick={() => setCurrentDirection(TransactionDirection.IN)}
+                className={cn(
+                  "flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-400 ease-out",
+                  !isOut
+                    ? "bg-background text-emerald-600 shadow-xl scale-[1.02] border border-emerald-100/50"
+                    : "text-muted-foreground/40 hover:text-muted-foreground/60"
+                )}
+              >
+                Money In
+              </button>
+              <button
+                onClick={() => setCurrentDirection(TransactionDirection.OUT)}
+                className={cn(
+                  "flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-400 ease-out",
+                  isOut
+                    ? "bg-background text-rose-600 shadow-xl scale-[1.02] border border-rose-100/50"
+                    : "text-muted-foreground/40 hover:text-muted-foreground/60"
+                )}
+              >
+                Money Out
+              </button>
+            </div>
+
             <motion.div
               variants={{
                 hidden: { opacity: 0 },
@@ -440,15 +412,17 @@ export const AddTransactionModal = ({
                     <CalendarIcon size={12} /> Date
                   </Label>
                   <Popover open={dateOpen} onOpenChange={setDateOpen}>
-                    <PopoverTrigger>
-                      <Button
-                        variant="outline"
-                        className="h-14 w-full justify-between rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all"
-                      >
-                        {format(new Date(data.date), "dd MMM yyyy")}
-                        <ChevronDownIcon size={16} className="text-muted-foreground" />
-                      </Button>
-                    </PopoverTrigger>
+                    <PopoverTrigger
+                      render={
+                        <Button
+                          variant="outline"
+                          className="h-14 w-full justify-between rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all"
+                        >
+                          {format(new Date(data.date), "dd MMM yyyy")}
+                          <ChevronDownIcon size={16} className="text-muted-foreground" />
+                        </Button>
+                      }
+                    />
                     <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden shadow-2xl border-0" align="start">
                       <Calendar
                         mode="single"
@@ -504,9 +478,6 @@ export const AddTransactionModal = ({
                             <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
                               <div className="flex justify-between items-center w-full gap-4">
                                 <span>{acc.name}</span>
-                                <span className="text-xs font-bold tabular-nums text-muted-foreground mr-10">
-                                  ₹{acc.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </span>
                               </div>
                             </SelectItem>
                           ))}
@@ -564,26 +535,26 @@ export const AddTransactionModal = ({
           </div>
 
           {/* Footer Actions */}
-          <div className="p-6 border-t bg-background/50 backdrop-blur-md pb-[env(safe-area-inset-bottom,24px)]">
+          <div className="p-2 border-t bg-background/50 backdrop-blur-md pb-[env(safe-area-inset-bottom,24px)]">
             <div className="flex gap-4">
               <Button
                 variant="outline"
                 onClick={() => setOpen(false)}
-                className="h-14 flex-1 rounded-2xl text-base font-bold border-2"
+                className="h-12 flex-1 rounded-2xl text-base font-bold border-2"
               >
                 Discard
               </Button>
               <Button
                 onClick={handleAddTransaction}
-                disabled={loadingAccounts || mutation.isPending}
+                disabled={loadingAccounts || isPending}
                 className={cn(
-                  "h-14 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
+                  "h-12 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
                   isOut
                     ? "bg-rose-600 hover:bg-rose-700 shadow-rose-200"
                     : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
                 )}
               >
-                {mutation.isPending ? (
+                {isPending ? (
                   <>
                     <Loader2 className="animate-spin" size={20} />
                     Recording...

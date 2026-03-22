@@ -1,15 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Filter, X, Calendar as CalendarIcon, ArrowUpRight, ArrowDownLeft, Wallet } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { MoneyType } from "@/lib/generated/prisma/enums";
+import { ArrowDownLeft, ArrowUpRight, Calendar as CalendarIcon, Filter } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export default function StatementFilters() {
     const router = useRouter();
@@ -53,16 +50,18 @@ export default function StatementFilters() {
             <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                 {/* Direction Filter */}
                 <Popover>
-                    <PopoverTrigger>
-                        <Button
-                            variant={currentDirection !== "All" ? "default" : "secondary"}
-                            size="sm"
-                            className="rounded-full shrink-0 gap-1.5"
-                        >
-                            {currentDirection === "IN" ? <ArrowDownLeft size={14} /> : currentDirection === "OUT" ? <ArrowUpRight size={14} /> : <Filter size={14} />}
-                            {currentDirection === "All" ? "Payment Type" : currentDirection === "IN" ? "Payment In" : "Payment Out"}
-                        </Button>
-                    </PopoverTrigger>
+                    <PopoverTrigger
+                        render={
+                            <Button
+                                variant={currentDirection !== "All" ? "default" : "secondary"}
+                                size="sm"
+                                className="rounded-full shrink-0 gap-1.5"
+                            >
+                                {currentDirection === "IN" ? <ArrowDownLeft size={14} /> : currentDirection === "OUT" ? <ArrowUpRight size={14} /> : <Filter size={14} />}
+                                {currentDirection === "All" ? "Payment Type" : currentDirection === "IN" ? "Payment In" : "Payment Out"}
+                            </Button>
+                        }
+                    />
                     <PopoverContent className="w-40 p-1 rounded-2xl" align="start">
                         {["All", "IN", "OUT"].map((dir) => (
                             <button
@@ -81,16 +80,18 @@ export default function StatementFilters() {
 
                 {/* Date Range Filter */}
                 <Popover>
-                    <PopoverTrigger>
-                        <Button
-                            variant={currentStartDate || currentEndDate ? "default" : "secondary"}
-                            size="sm"
-                            className="rounded-full shrink-0 gap-1.5"
-                        >
-                            <CalendarIcon size={14} />
-                            {currentStartDate ? (currentEndDate ? `${format(new Date(currentStartDate), "dd MMM")} - ${format(new Date(currentEndDate), "dd MMM")}` : format(new Date(currentStartDate), "dd MMM")) : "Date Range"}
-                        </Button>
-                    </PopoverTrigger>
+                    <PopoverTrigger
+                        render={
+                            <Button
+                                variant={currentStartDate || currentEndDate ? "default" : "secondary"}
+                                size="sm"
+                                className="rounded-full shrink-0 gap-1.5"
+                            >
+                                <CalendarIcon size={14} />
+                                {currentStartDate ? (currentEndDate ? `${format(new Date(currentStartDate), "dd MMM")} - ${format(new Date(currentEndDate), "dd MMM")}` : format(new Date(currentStartDate), "dd MMM")) : "Date Range"}
+                            </Button>
+                        }
+                    />
                     <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden" align="start">
                         <div className="p-3 border-b flex items-center justify-between bg-muted/50">
                             <span className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Select Date Range</span>

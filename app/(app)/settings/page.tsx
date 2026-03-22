@@ -1,34 +1,34 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import {
-  ChevronRight,
-  PaintbrushIcon,
-  DollarSign,
-  Calendar,
-  Clock,
-  Languages,
-  CloudUpload,
-  Download,
-  ExternalLink,
-  LogOut,
-  Moon,
-  Sun,
-  Laptop,
-  Link2Icon,
-  LockKeyhole,
-  KeyRoundIcon,
-  Trash2Icon,
-  Terminal,
-} from "lucide-react";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/components/ui/avatar"
+} from "@/components/ui/avatar";
+import { motion } from "framer-motion";
+import {
+  Calendar,
+  ChevronRight,
+  Clock,
+  DollarSign,
+  KeyRoundIcon,
+  Languages,
+  Laptop,
+  Link2Icon,
+  LockKeyhole,
+  LogOut,
+  Moon,
+  PaintbrushIcon,
+  Sun,
+  Terminal,
+  Trash2Icon
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 
+import { getAppVersion, upsertUserSettings } from "@/actions/user-settings.actions";
+import { useUserConfig } from "@/components/providers/user-config-provider";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -36,18 +36,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { signOut, useSession } from "@/lib/auth/auth-client";
+import { envClient } from "@/lib/env.client";
+import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
+import { t } from "@/lib/languages/i18n";
 import { cn } from "@/lib/utils";
-import { signOut } from "@/lib/auth-client";
+import { getInitials } from "@/utility/party";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
-import { envClient } from "@/lib/env.client";
-import { getAppVersion, upsertUserSettings } from "@/actions/user-settings.actions";
-import { useSession } from "@/lib/auth-client";
-import { getInitials } from "@/utility/party";
-import { useUserConfig } from "@/components/providers/user-config-provider";
-import { t } from "@/lib/languages/i18n";
 
 export default function SettingsPage() {
   const router = useRouter();

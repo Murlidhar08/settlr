@@ -1,23 +1,32 @@
 "use client"
 
-import {
-    Wallet, CheckCircle2, Plus, CreditCard, Banknote, Landmark, Info,
-    ChevronDownIcon, User2, Users, Truck, TrendingUp, TrendingDown,
-    Briefcase, Scale, Settings2, Tag, Edit2
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { useState, useEffect, ReactNode } from "react"
-import { FinancialAccountType, MoneyType, PartyType, CategoryType } from "@/lib/generated/prisma/enums"
 import { addFinancialAccount, updateFinancialAccount } from "@/actions/financial-account.actions"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { FinancialAccount } from "@/lib/generated/prisma/client"
-import { motion, AnimatePresence, Variants } from "framer-motion"
+import { CategoryType, FinancialAccountType, MoneyType, PartyType } from "@/lib/generated/prisma/enums"
 import { cn } from "@/lib/utils"
-import { toast } from "sonner"
+import { AnimatePresence, motion, Variants } from "framer-motion"
+import {
+    Banknote,
+    Briefcase,
+    CheckCircle2,
+    CreditCard,
+    Edit2,
+    Info,
+    Landmark,
+    Loader2,
+    Plus,
+    Scale, Settings2, Tag,
+    TrendingDown,
+    TrendingUp,
+    Wallet
+} from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { ReactNode, useEffect, useState } from "react"
+import { toast } from "sonner"
 
 interface AddAccountModalProps {
     title?: string
@@ -103,61 +112,32 @@ export const AddAccountModal = ({
         }
     }, [open, accountData])
 
-    const queryClient = useQueryClient()
-
-    const mutation = useMutation({
-        mutationFn: async (payload: any) => {
-            if (accountData) {
-                return updateFinancialAccount(accountData.id, payload)
-            } else {
-                return addFinancialAccount(payload)
-            }
-        },
-        onMutate: async (newAccount) => {
-            await queryClient.cancelQueries({ queryKey: ["financial-accounts"] })
-            const previousAccounts = queryClient.getQueryData(["financial-accounts"])
-
-            queryClient.setQueryData(["financial-accounts"], (old: any) => {
-                if (accountData) {
-                    return old?.map((a: any) => a.id === accountData.id ? { ...a, ...newAccount } : a)
-                }
-                return [
-                    {
-                        ...newAccount,
-                        id: `temp-${Date.now()}`,
-                        balance: 0,
-                        partyId: null,
-                        isSystem: false,
-                        isActive: true,
-                        createdAt: new Date(),
-                        updatedAt: new Date(),
-                    },
-                    ...(old || []),
-                ]
-            })
-
-            return { previousAccounts }
-        },
-        onError: (err, newAccount, context) => {
-            queryClient.setQueryData(["financial-accounts"], context?.previousAccounts)
-            toast.error("Failed to save account")
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
-        },
-        onSuccess: () => {
-            toast.success(accountData ? "Account updated successfully" : "Account created successfully", {
-                icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-            })
-            setOpen(false)
-        }
-    })
-
+    const [isPending, setIsPending] = useState(false)
     const handleSave = async () => {
         if (!data.name.trim()) {
             return toast.error("Please enter account name")
         }
-        mutation.mutate(data)
+        
+        setIsPending(true)
+        try {
+            if (accountData) {
+                await updateFinancialAccount(accountData.id, data)
+                toast.success("Account updated successfully", {
+                    icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                })
+            } else {
+                await addFinancialAccount(data)
+                toast.success("Account created successfully", {
+                    icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                })
+            }
+            setOpen(false)
+            router.refresh()
+        } catch (error) {
+            toast.error("Failed to save account")
+        } finally {
+            setIsPending(false)
+        }
     }
 
     const containerVariants: Variants = {
@@ -318,11 +298,20 @@ export const AddAccountModal = ({
                             </Button>
                             <Button
                                 onClick={handleSave}
-                                disabled={mutation.isPending}
+                                disabled={isPending}
                                 className="h-14 flex-2 rounded-2xl text-primary-foreground text-base font-black uppercase tracking-widest gap-2 shadow-xl shadow-primary/20 active:scale-[0.97] transition-all bg-primary hover:bg-primary/90"
                             >
-                                {mutation.isPending ? "Saving..." : (accountData ? "Update Account" : "Create Account")}
-                                {!mutation.isPending && <CheckCircle2 size={20} />}
+                                {isPending ? (
+                                    <>
+                                        <Loader2 className="animate-spin" size={20} />
+                                        Just a sec...
+                                    </>
+                                ) : (
+                                    <>
+                                        {accountData ? "Update Account" : "Create Account"}
+                                        <CheckCircle2 size={20} />
+                                    </>
+                                )}
                             </Button>
                         </div>
                     </div>

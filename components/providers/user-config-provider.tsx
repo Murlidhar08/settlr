@@ -22,8 +22,8 @@ export const useUserConfig = () => {
   return ctx
 }
 
-import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
+import { useEffect, useState } from "react"
 
 export function UserConfigProvider({ config, children }: { config: Omit<userSettings, 'setTheme'>, children: React.ReactNode }) {
   const [theme, setThemeState] = useState<ThemeMode>(config.theme)

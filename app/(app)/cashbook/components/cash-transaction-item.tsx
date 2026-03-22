@@ -1,5 +1,5 @@
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import clsx from "clsx";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 export default function CashTransactionItem({
   name,

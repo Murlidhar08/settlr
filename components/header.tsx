@@ -1,22 +1,35 @@
 "use client"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useSession } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
+import { envClient } from "@/lib/env.client"
 import { getInitials } from "@/utility/party"
+import { motion } from "framer-motion"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { envClient } from "@/lib/env.client"
-import { motion, AnimatePresence } from "framer-motion"
+import { useEffect, useState } from "react"
 
 interface HeaderProps {
   title: string
   isProfile?: boolean
   leftAction?: React.ReactNode
+  initialSession?: any
 }
 
-const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
+const Header = ({ title, isProfile, leftAction, initialSession }: HeaderProps) => {
   const router = useRouter()
-  const { data: session } = useSession();
+  const [session, setSession] = useState<any>(initialSession)
+  
+  useEffect(() => {
+    if (initialSession) return
+
+    const loadSession = async () => {
+      const { data: sessionData } = await authClient.getSession()
+      setSession(sessionData?.session ? sessionData : null)
+    }
+    loadSession()
+  }, [initialSession])
+
   const showProfile = isProfile ?? true
 
   const handleRedirect = () => {
@@ -45,6 +58,7 @@ const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
               <Image
                 src="/images/logo/light_logo.svg"
                 alt={envClient.NEXT_PUBLIC_APP_NAME}
+                loading="eager"
                 width={36}
                 height={36}
                 className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
@@ -52,6 +66,7 @@ const Header = ({ title, isProfile, leftAction }: HeaderProps) => {
               <Image
                 src="/images/logo/dark_logo.svg"
                 alt={envClient.NEXT_PUBLIC_APP_NAME}
+                loading="eager"
                 width={36}
                 height={36}
                 className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"
