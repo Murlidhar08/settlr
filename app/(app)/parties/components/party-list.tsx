@@ -14,7 +14,7 @@ interface PartyListProp {
 
 const PartyList = ({ partyType, promise, search = "" }: PartyListProp) => {
   const { data: partyLst, isLoading: loading } = useQuery({
-    queryKey: ["party-list", partyType, search],
+    queryKey: ["party-list", partyType],
     queryFn: () => promise,
   });
 

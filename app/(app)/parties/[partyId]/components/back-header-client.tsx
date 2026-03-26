@@ -21,6 +21,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { useQueryClient } from "@tanstack/react-query"
 import { Building2, Pencil, ShieldAlert, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -28,6 +29,7 @@ import { toast } from "sonner"
 
 export default function BackHeaderClient({ party }: { party: any }) {
   const router = useRouter()
+  const queryClient = useQueryClient();
   const [isDeleting, setIsDeleting] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState({
@@ -38,6 +40,9 @@ export default function BackHeaderClient({ party }: { party: any }) {
   const handleDelete = async () => {
     const success = await deleteParty(party.id)
     if (success) {
+      queryClient.invalidateQueries({ queryKey: ["party-list", party?.type] })
+      queryClient.removeQueries({ queryKey: ["party-detail", party.id] })
+      queryClient.removeQueries({ queryKey: ["party-transactions", party.id] })
       toast.success("Party and all transactions deleted")
       router.push("/parties" as any)
     } else {

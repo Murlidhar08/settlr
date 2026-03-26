@@ -1,13 +1,13 @@
 "use client"
 
 // Packages
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { format } from "date-fns"
 import { motion } from "framer-motion"
 import { ArrowDownLeft, ArrowUpRight, CalendarIcon, CheckCircle2, ChevronDownIcon, Clock, Loader2, Paperclip, Wallet } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ReactNode, useEffect, useState } from "react"
 import { toast } from "sonner"
-import { useQueryClient } from "@tanstack/react-query"
 
 // Components
 import { Button } from "@/components/ui/button"
@@ -65,10 +65,12 @@ export const AddTransactionModal = ({
   }
 
   const [dateOpen, setDateOpen] = useState(false)
-  const [allAccounts, setAllAccounts] = useState<(FinancialAccount & { balance: number })[]>([])
-  const [loadingAccounts, setLoadingAccounts] = useState(false)
   const [currentDirection, setCurrentDirection] = useState<TransactionDirection>(direction || TransactionDirection.OUT)
   const isOut = currentDirection === TransactionDirection.OUT;
+
+  // TODO: Use tanstack query HERE
+  const [allAccounts, setAllAccounts] = useState<(FinancialAccount & { balance: number })[]>([])
+  const [loadingAccounts, setLoadingAccounts] = useState(false)
 
   // Selected IDs
   const [moneyAccountId, setMoneyAccountId] = useState<string>("")
@@ -216,8 +218,102 @@ export const AddTransactionModal = ({
     }))
   }, [moneyAccountId, partnerAccountId, currentDirection, mode, allAccounts])
 
-  const [isPending, setIsPending] = useState(false)
   const queryClient = useQueryClient()
+
+  const transactionMutation = useMutation({
+    mutationFn: async (vars: { data: any, path?: string }) => {
+      return await addTransaction({
+        ...vars.data,
+        amount: Number(vars.data.amount),
+        date: new Date(`${vars.data.date}T${vars.data.time}:00`),
+        description: vars.data.description || null
+      }, vars.path)
+    },
+    onMutate: async (vars) => {
+      const { data: txData } = vars;
+      // 1. Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["financial-accounts"] })
+      await queryClient.cancelQueries({ queryKey: ["cashbook-transactions"] })
+      if (txData.partyId) {
+        await queryClient.cancelQueries({ queryKey: ["party-detail", txData.partyId] })
+        await queryClient.cancelQueries({ queryKey: ["party-transactions", txData.partyId] })
+      }
+      if (txData.fromAccountId) await queryClient.cancelQueries({ queryKey: ["financial-account", txData.fromAccountId] })
+      if (txData.toAccountId) await queryClient.cancelQueries({ queryKey: ["financial-account", txData.toAccountId] })
+
+      // 2. Snapshot the previous values
+      const previousParties = queryClient.getQueriesData({ queryKey: ["party-transactions"] })
+      const previousCashbook = queryClient.getQueriesData({ queryKey: ["cashbook-transactions"] })
+      const previousFromBalance = txData.fromAccountId ? queryClient.getQueryData(["financial-account", txData.fromAccountId]) : null
+      const previousToBalance = txData.toAccountId ? queryClient.getQueryData(["financial-account", txData.toAccountId]) : null
+
+      const newTx = {
+        ...txData,
+        id: "temp-id-" + Date.now(),
+        amount: Number(txData.amount),
+        date: new Date(`${txData.date}T${txData.time}:00`),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
+      // 3. Optimistically update
+      // Update lists
+      if (txData.partyId) {
+        queryClient.setQueriesData(
+          { queryKey: ["party-transactions", txData.partyId] },
+          (old: any) => [newTx, ...(old || [])]
+        )
+      }
+      queryClient.setQueriesData(
+        { queryKey: ["cashbook-transactions"] },
+        (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            transactions: [newTx, ...(old.transactions || [])],
+            totalIn: old.totalIn + (txData.toAccountId && txData.fromAccountId ? 0 : (!isOut ? Number(txData.amount) : 0)), // Simplified logic
+            totalOut: old.totalOut + (txData.toAccountId && txData.fromAccountId ? 0 : (isOut ? Number(txData.amount) : 0))
+          }
+        }
+      )
+
+      // Update balances
+      if (txData.fromAccountId) {
+        queryClient.setQueryData(["financial-account", txData.fromAccountId], (old: number) => (old || 0) - Number(txData.amount))
+      }
+      if (txData.toAccountId) {
+        queryClient.setQueryData(["financial-account", txData.toAccountId], (old: number) => (old || 0) + Number(txData.amount))
+      }
+
+      return { previousParties, previousCashbook, previousFromBalance, previousToBalance }
+    },
+    onError: (err, vars, context: any) => {
+      // Rollback
+      if (context?.previousParties) {
+        context.previousParties.forEach(([key, value]: any) => queryClient.setQueryData(key, value))
+      }
+      if (context?.previousCashbook) {
+        context.previousCashbook.forEach(([key, value]: any) => queryClient.setQueryData(key, value))
+      }
+      if (vars.data.fromAccountId && context?.previousFromBalance !== undefined) {
+        queryClient.setQueryData(["financial-account", vars.data.fromAccountId], context.previousFromBalance)
+      }
+      if (vars.data.toAccountId && context?.previousToBalance !== undefined) {
+        queryClient.setQueryData(["financial-account", vars.data.toAccountId], context.previousToBalance)
+      }
+      toast.error("Failed to save transaction")
+    },
+    onSettled: (data, err, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
+      queryClient.invalidateQueries({ queryKey: ["cashbook-transactions"] })
+      if (vars.data.fromAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", vars.data.fromAccountId] })
+      if (vars.data.toAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", vars.data.toAccountId] })
+      if (vars.data.partyId) {
+        queryClient.invalidateQueries({ queryKey: ["party-detail", vars.data.partyId] })
+        queryClient.invalidateQueries({ queryKey: ["party-transactions", vars.data.partyId] })
+      }
+    }
+  })
 
   const handleAddTransaction = async () => {
     if (!data.amount || isNaN(Number(data.amount))) {
@@ -233,51 +329,29 @@ export const AddTransactionModal = ({
       return toast.error("Please enter a valid date and time")
     }
 
-    setIsPending(true)
-    try {
-      await addTransaction({
-        ...data,
-        amount: Number(data.amount),
-        date: combinedDateTime,
-        description: data.description || null
-      }, path)
+    transactionMutation.mutate({ data, path })
 
-      queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
-      queryClient.invalidateQueries({ queryKey: ["cashbook-transactions"] })
-      
-      if (data.fromAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", data.fromAccountId] })
-      if (data.toAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", data.toAccountId] })
-      if (data.partyId) {
-        queryClient.invalidateQueries({ queryKey: ["party", data.partyId] })
-        queryClient.invalidateQueries({ queryKey: ["party-transactions", data.partyId] })
-      }
+    toast.success("Transaction recorded successfully", {
+      icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+    })
+    setOpen(false)
 
-      toast.success("Transaction recorded successfully", {
-        icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-      })
-      setOpen(false)
-
-      // Reset
-      setData({
-        id: undefined,
-        businessId: "",
-        amount: "",
-        date: format(new Date(), "yyyy-MM-dd"),
-        time: format(new Date(), "HH:mm"),
-        description: "",
-        partyId: partyId || null,
-        fromAccountId: "",
-        toAccountId: "",
-        userId: "",
-      })
-      setMoneyAccountId("")
-      setPartnerAccountId("")
-      router.refresh()
-    } catch (err) {
-      toast.error("Failed to save transaction")
-    } finally {
-      setIsPending(false)
-    }
+    // Reset
+    setData({
+      id: undefined,
+      businessId: "",
+      amount: "",
+      date: format(new Date(), "yyyy-MM-dd"),
+      time: format(new Date(), "HH:mm"),
+      description: "",
+      partyId: partyId || null,
+      fromAccountId: "",
+      toAccountId: "",
+      userId: "",
+    })
+    setMoneyAccountId("")
+    setPartnerAccountId("")
+    router.refresh()
   }
 
   // Filtering Logic
@@ -558,7 +632,7 @@ export const AddTransactionModal = ({
               </Button>
               <Button
                 onClick={handleAddTransaction}
-                disabled={loadingAccounts || isPending}
+                disabled={loadingAccounts || transactionMutation.isPending}
                 className={cn(
                   "h-12 flex-2 rounded-2xl text-white text-base font-black uppercase tracking-widest gap-2 shadow-xl active:scale-[0.97] transition-all",
                   isOut
@@ -566,7 +640,7 @@ export const AddTransactionModal = ({
                     : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
                 )}
               >
-                {isPending ? (
+                {transactionMutation.isPending ? (
                   <>
                     <Loader2 className="animate-spin" size={20} />
                     Recording...

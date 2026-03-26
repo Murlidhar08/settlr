@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import { Building2, Loader2 } from "lucide-react"
-import { ReactNode, useState } from "react"
 import { useRouter } from "next/navigation"
+import { ReactNode, useState } from "react"
 import { toast } from "sonner"
 
 /* ========================================================= */
@@ -30,12 +31,70 @@ interface PartiesProps {
 const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
   const router = useRouter()
   const [open, setOpen] = useState(false)
+  const queryClient = useQueryClient()
 
   const [data, setData] = useState<PartyInput>({
     type,
     name: "",
     contactNo: null,
   })
+
+  const partyMutation = useMutation({
+    mutationFn: (partyData: PartyInput) => addParties(partyData),
+    onMutate: async (newParty) => {
+      // 1. Cancel refetches
+      await queryClient.cancelQueries({ queryKey: ["party-list", type] })
+
+      // 2. Snapshot
+      const previousParties = queryClient.getQueriesData({ queryKey: ["party-list", type] })
+
+      // 3. Optimistically update
+      const tempId = "temp-" + Date.now();
+      const optimisticParty = {
+        ...newParty,
+        id: tempId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        // Mocking structure if necessary...
+      }
+
+      queryClient.setQueriesData({ queryKey: ["party-list", type] }, (old: any) => {
+        if (!old) return [optimisticParty];
+        return [...old, optimisticParty];
+      })
+
+      return { previousParties }
+    },
+    onError: (err, newParty, context: any) => {
+      if (context?.previousParties) {
+        context.previousParties.forEach(([key, value]: any) => queryClient.setQueryData(key, value))
+      }
+      toast.error("Failed to add party")
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["party-list", type] })
+    }
+  })
+
+  const handleAddParty = async () => {
+    if (!data.name.trim()) {
+      return toast.error("Party name is required")
+    }
+
+    partyMutation.mutate(data, {
+      onSuccess: () => {
+        toast.success("Party added successfully")
+        queryClient.invalidateQueries({ queryKey: ["party-list", type] })
+        setData({
+          type,
+          name: "",
+          contactNo: null,
+        })
+        setOpen(false)
+        router.refresh()
+      }
+    })
+  }
 
   const resolvedTitle =
     title ??
@@ -46,31 +105,6 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
         : type === PartyType.EMPLOYEE
           ? "Add New Employee"
           : "Add New Party")
-
-  const [isPending, setIsPending] = useState(false)
- 
-   const handleAddParty = async () => {
-     if (!data.name.trim()) {
-       return toast.error("Party name is required")
-     }
- 
-     setIsPending(true)
-     try {
-       await addParties(data)
-       toast.success("Party added successfully")
-       setData({
-         type,
-         name: "",
-         contactNo: null,
-       })
-       setOpen(false)
-       router.refresh()
-     } catch (err) {
-       toast.error("Failed to add party")
-     } finally {
-       setIsPending(false)
-     }
-   }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -167,10 +201,10 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
 
               <Button
                 onClick={handleAddParty}
-                disabled={isPending}
+                disabled={partyMutation.isPending}
                 className="h-14 flex-[1.5] rounded-2xl bg-primary text-white shadow-xl shadow-primary/20 active:scale-[0.97] transition-all font-black uppercase tracking-widest text-base gap-2"
               >
-                {isPending ? (
+                {partyMutation.isPending ? (
                   <>
                     <Loader2 className="animate-spin" size={20} />
                     Hang on...
