@@ -1,39 +1,23 @@
 "use client";
- 
+
 import { PartyType } from "@/lib/generated/prisma/enums";
-import { PartyItem } from "./party-item";
 import { PartyRes } from "@/types/party/PartyRes";
-import { getPartyList } from "@/actions/parties.actions";
+import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect } from "react";
- 
+import { PartyItem } from "./party-item";
+
 interface PartyListProp {
   partyType: PartyType
   promise?: Promise<PartyRes[]>
   search?: string
 }
- 
+
 const PartyList = ({ partyType, promise, search = "" }: PartyListProp) => {
-  const [partyLst, setPartyLst] = useState<PartyRes[] | null>(null);
-  const [loading, setLoading] = useState(true);
- 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const list = await getPartyList(partyType, search);
-        if (isMounted) setPartyLst(list as any);
-      } catch (error) {
-        console.error("Failed to fetch party list:", error);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-    fetchData();
-    return () => { isMounted = false; };
-  }, [partyType, search]);
- 
+  const { data: partyLst, isLoading: loading } = useQuery({
+    queryKey: ["party-list", partyType, search],
+    queryFn: () => promise,
+  });
+
   if (loading && !partyLst) {
     return (
       <div className="space-y-3">
@@ -43,7 +27,7 @@ const PartyList = ({ partyType, promise, search = "" }: PartyListProp) => {
       </div>
     );
   }
- 
+
   return (
     <div className="space-y-3">
       <AnimatePresence mode="popLayout">
@@ -65,7 +49,7 @@ const PartyList = ({ partyType, promise, search = "" }: PartyListProp) => {
           </motion.div>
         ))}
       </AnimatePresence>
- 
+
       {!loading && !partyLst?.length && (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -88,9 +72,8 @@ const PartyList = ({ partyType, promise, search = "" }: PartyListProp) => {
           </div>
         </motion.div>
       )}
- 
     </div>
   )
 }
- 
+
 export { PartyList };

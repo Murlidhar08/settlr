@@ -2,50 +2,26 @@
 
 // Package
 import { getUserSession } from "@/lib/auth/auth";
+import { Transaction } from "@/lib/generated/prisma/client";
 import { FinancialAccountType, PartyType } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/prisma/prisma";
 import { calculateAccountStats } from "@/lib/transaction-logic";
 import { PartyInput, PartyRes } from "@/types/party/PartyRes";
 import { revalidatePath } from "next/cache";
 
-export async function addParties(partyData: PartyInput): Promise<boolean> {
-  const session = await getUserSession();
-
-  if (!session || !session.user.activeBusinessId) {
-    console.error("User is not logged in.")
-    return false;
-  }
-
-  const businessId = session.user.activeBusinessId;
-
-  try {
-    await prisma.$transaction(async (tx) => {
-      const party = await tx.party.create({
-        data: {
-          businessId: businessId,
-          contactNo: partyData.contactNo,
-          name: partyData.name
-        },
-      });
-
-      await tx.financialAccount.create({
-        data: {
-          name: `${party.name.toLowerCase().replace(/\s+/g, '_')}_Leger`,
-          businessId: businessId,
-          type: FinancialAccountType.PARTY,
-          partyType: partyData.type,
-          partyId: party.id,
-        },
-      });
-    });
-
-    revalidatePath("/parties")
-    revalidatePath("/accounts")
-    return true;
-  } catch (error) {
-    console.error("Failed to add party and account:", error);
-    return false;
-  }
+export async function getPartyDetails(partyId: string) {
+  return await prisma.party.findFirst({
+    where: { id: partyId },
+    select: {
+      id: true,
+      name: true,
+      contactNo: true,
+      financialAccounts: {
+        select: { id: true, partyType: true },
+        take: 1
+      }
+    }
+  })
 }
 
 export async function getPartyList(type: PartyType, search?: string): Promise<PartyRes[]> {
@@ -136,6 +112,46 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
   });
 }
 
+export async function addParties(partyData: PartyInput): Promise<boolean> {
+  const session = await getUserSession();
+
+  if (!session || !session.user.activeBusinessId) {
+    console.error("User is not logged in.")
+    return false;
+  }
+
+  const businessId = session.user.activeBusinessId;
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const party = await tx.party.create({
+        data: {
+          businessId: businessId,
+          contactNo: partyData.contactNo,
+          name: partyData.name
+        },
+      });
+
+      await tx.financialAccount.create({
+        data: {
+          name: `${party.name.toLowerCase().replace(/\s+/g, '_')}_Leger`,
+          businessId: businessId,
+          type: FinancialAccountType.PARTY,
+          partyType: partyData.type,
+          partyId: party.id,
+        },
+      });
+    });
+
+    revalidatePath("/parties")
+    revalidatePath("/accounts")
+    return true;
+  } catch (error) {
+    console.error("Failed to add party and account:", error);
+    return false;
+  }
+}
+
 export async function updateParty(partyId: string, partyData: Partial<PartyInput>): Promise<boolean> {
   const session = await getUserSession();
 
@@ -201,4 +217,23 @@ export async function deleteParty(partyId: string): Promise<boolean> {
 
   revalidatePath("/parties");
   return true;
+}
+
+export async function getPartyTransactions(partyId: string): Promise<Transaction[]> {
+  const session = await getUserSession();
+
+  return await prisma.transaction.findMany({
+    where: {
+      businessId: session?.user.activeBusinessId || "",
+      partyId: partyId
+    },
+    include: {
+      fromAccount: { select: { id: true, name: true, type: true } },
+      toAccount: { select: { id: true, name: true, type: true } },
+    },
+    orderBy: [
+      { date: "desc" },
+      { createdAt: "desc" }
+    ]
+  })
 }

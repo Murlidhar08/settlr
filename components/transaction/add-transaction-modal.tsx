@@ -7,6 +7,7 @@ import { ArrowDownLeft, ArrowUpRight, CalendarIcon, CheckCircle2, ChevronDownIco
 import { useRouter } from "next/navigation"
 import { ReactNode, useEffect, useState } from "react"
 import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
 
 // Components
 import { Button } from "@/components/ui/button"
@@ -216,6 +217,7 @@ export const AddTransactionModal = ({
   }, [moneyAccountId, partnerAccountId, currentDirection, mode, allAccounts])
 
   const [isPending, setIsPending] = useState(false)
+  const queryClient = useQueryClient()
 
   const handleAddTransaction = async () => {
     if (!data.amount || isNaN(Number(data.amount))) {
@@ -239,6 +241,16 @@ export const AddTransactionModal = ({
         date: combinedDateTime,
         description: data.description || null
       }, path)
+
+      queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
+      queryClient.invalidateQueries({ queryKey: ["cashbook-transactions"] })
+      
+      if (data.fromAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", data.fromAccountId] })
+      if (data.toAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", data.toAccountId] })
+      if (data.partyId) {
+        queryClient.invalidateQueries({ queryKey: ["party", data.partyId] })
+        queryClient.invalidateQueries({ queryKey: ["party-transactions", data.partyId] })
+      }
 
       toast.success("Transaction recorded successfully", {
         icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />

@@ -6,6 +6,7 @@ import { CategoryType, Currency, FinancialAccountType, MoneyType } from "@/lib/g
 import { cn } from "@/lib/utils"
 import { formatAmount } from "@/utility/commonFunction"
 import { getCurrencySymbol } from "@/utility/transaction"
+import { useQuery } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import {
     ArrowDownLeft, ArrowUpRight,
@@ -21,7 +22,6 @@ import {
     Wallet
 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
 import { AddAccountModal } from "./add-account-modal"
 
 interface AccountCardProps {
@@ -32,14 +32,11 @@ interface AccountCardProps {
 
 export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
     const router = useRouter()
-    const [balance, setBalance] = useState<number | null>(null)
 
-    useEffect(() => {
-        getFinancialAccountBalance(account.id)
-            .then((balance) => {
-                setBalance(balance)
-            })
-    }, [account.id])
+    const { data: balance, isLoading } = useQuery({
+        queryKey: ["financial-account", account.id],
+        queryFn: () => getFinancialAccountBalance(account.id),
+    });
 
     const getColors = () => {
         if (account.type === FinancialAccountType.MONEY) {
@@ -143,7 +140,7 @@ export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
                     )}
 
 
-                    {balance !== null && (
+                    {balance !== undefined && !isLoading && (
                         <div className="flex flex-col items-end">
                             <p className={cn(
                                 "text-2xl font-black tracking-tighter tabular-nums",
