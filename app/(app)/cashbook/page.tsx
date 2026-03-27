@@ -26,9 +26,9 @@ export default async function CashbookPage({ searchParams }: CashbookPageProps) 
 
   const today = format(new Date(), "yyyy-MM-dd");
 
-  const hasOtherFilters = params.search || params.category;
-  const effectiveStartDate = params.startDate || (!hasOtherFilters ? today : undefined);
-  const effectiveEndDate = params.endDate || (!hasOtherFilters ? today : undefined);
+  const isSearchActive = !!params.search;
+  const effectiveStartDate = params.startDate || (!isSearchActive ? today : undefined);
+  const effectiveEndDate = params.endDate || (!isSearchActive ? today : undefined);
 
   return (
     <div className="w-full flex-1 bg-background">
