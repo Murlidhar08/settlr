@@ -1,5 +1,4 @@
-import { getAccountTransactions } from "@/actions/transaction.actions";
-import { calculateAccountStats } from "@/lib/transaction-logic";
+import { getAccountStats, getAccountTransactions } from "@/actions/transaction.actions";
 import { getUserConfig } from "@/lib/user-config";
 import { Suspense } from "react";
 import { AccountDetailsView } from "./components/account-details-view";
@@ -15,16 +14,18 @@ export default async function AccountDetailsPage({ params }: { params: Promise<{
 }
 
 async function AccountContent({ accountId }: { accountId: string }) {
-    const { account, transactions } = await getAccountTransactions(accountId);
-    const userConfig = await getUserConfig();
-
-    const { totalIn, totalOut, balance } = calculateAccountStats(transactions, accountId, account.type);
+    const [{ account, transactions, totalTransactions }, stats, userConfig] = await Promise.all([
+        getAccountTransactions(accountId, { page: 1, limit: 20 }),
+        getAccountStats(accountId),
+        getUserConfig()
+    ]);
 
     return (
         <AccountDetailsView
             account={account}
-            transactions={transactions}
-            stats={{ totalIn, totalOut, balance }}
+            initialTransactions={transactions}
+            totalTransactions={totalTransactions}
+            stats={stats}
             currency={userConfig.currency}
             language={userConfig.language}
         />

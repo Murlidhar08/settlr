@@ -1,7 +1,7 @@
 "use client";
 
 import { useUserConfig } from "@/components/providers/user-config-provider";
-import { TransactionItem } from "@/components/transaction-item";
+import { TransactionItem } from "@/components/transaction/transaction-item";
 import { TransactionRes } from "@/types/transaction/TransactionData";
 import { formatDate, formatTime } from "@/utility/transaction";
 import { isToday, isYesterday } from "date-fns";
@@ -17,11 +17,15 @@ interface transactionListProp {
 
 function TransactionGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1 w-full">
-      <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-        {label}
-      </span>
-      {children}
+    <div className="flex flex-col gap-2 w-full">
+      <div className="flex items-start justify-start my-2">
+        <span className="px-3 py-1 rounded-full bg-muted/40 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 border border-muted-foreground/5 backdrop-blur-sm">
+          {label}
+        </span>
+      </div>
+      <div className="flex flex-col gap-1 w-full">
+        {children}
+      </div>
     </div>
   )
 }
@@ -72,7 +76,7 @@ const TransactionList = ({ transactions, accountId, accountType }: transactionLi
         Object.entries(groupTransactionsByDate(transactions))
           .map(([label, groupTxs]) => (
             <TransactionGroup key={label} label={label}>
-              <div className="space-y-2 mt-2">
+              <div className="space-y-2 mt-1">
                 {groupTxs.map((transaction) => (
                   <TransactionItem
                     key={transaction.id}

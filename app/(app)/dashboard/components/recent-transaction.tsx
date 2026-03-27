@@ -1,5 +1,5 @@
 import { getRecentTransactions } from "@/actions/transaction.actions";
-import { TransactionItem } from "@/components/transaction-item";
+import { TransactionItem } from "@/components/transaction/transaction-item";
 import { formatDate } from "@/utility/transaction";
 
 import { t } from "@/lib/languages/i18n";

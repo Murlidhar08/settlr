@@ -39,6 +39,7 @@ export function CashbookContent({
         <p className="mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
           Transactions
         </p>
+
         <CashbookList transactions={transactions} isLoading={isLoading} />
       </div>
     </div>

@@ -69,7 +69,7 @@ export function PartyDetailsContent({ partyId, currency }: PartyDetailsContentPr
             />
 
             {/* Main Content */}
-            <div className="mx-auto max-w-4xl mt-6 space-y-8 px-6">
+            <div className="mx-auto max-w-4xl mt-2 space-y-8 px-6">
                 <main className="pb-24">
                     {/* Balance Card */}
                     <BalanceCard
@@ -79,12 +79,12 @@ export function PartyDetailsContent({ partyId, currency }: PartyDetailsContentPr
                     />
 
                     {/* Quick Actions */}
-                    <div className='w-full mt-4'>
+                    <div className='w-full mt-2'>
                         <QuickActions partyId={partyId} contact={partyDetails?.contactNo} />
                     </div>
 
                     {/* Search */}
-                    <section className="sticky top-16 z-10 bg-background px-4 py-4 lg:static lg:px-0">
+                    <section className="sticky top-16 z-10 bg-background px-4 py-2 lg:static lg:px-0">
                         <div className="relative">
                             <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
