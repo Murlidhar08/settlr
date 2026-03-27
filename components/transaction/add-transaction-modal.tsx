@@ -1,12 +1,12 @@
 "use client"
 
 // Packages
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { format } from "date-fns"
 import { motion } from "framer-motion"
 import { ArrowDownLeft, ArrowUpRight, CalendarIcon, CheckCircle2, ChevronDownIcon, Clock, Loader2, Paperclip, Wallet } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { ReactNode, useEffect, useState } from "react"
+import { ReactNode, useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
 // Components
@@ -68,9 +68,12 @@ export const AddTransactionModal = ({
   const [currentDirection, setCurrentDirection] = useState<TransactionDirection>(direction || TransactionDirection.OUT)
   const isOut = currentDirection === TransactionDirection.OUT;
 
-  // TODO: Use tanstack query HERE
-  const [allAccounts, setAllAccounts] = useState<(FinancialAccount & { balance: number })[]>([])
-  const [loadingAccounts, setLoadingAccounts] = useState(false)
+  // TanStack Query for accounts
+  const { data: allAccounts = [], isLoading: loadingAccounts } = useQuery({
+    queryKey: ["financial-accounts"],
+    queryFn: () => getFinancialAccounts(),
+    enabled: !!open,
+  });
 
   // Selected IDs
   const [moneyAccountId, setMoneyAccountId] = useState<string>("")
@@ -92,78 +95,67 @@ export const AddTransactionModal = ({
   // Mode Detection
   const [mode, setMode] = useState<ModalMode>(ModalMode.CASHBOOK)
 
+  const lastInitializedRef = useRef<string>("")
+ 
   useEffect(() => {
-    let isMounted = true
-
-    if (open) {
-      const fetchAccounts = async () => {
-        // Prevent redundant fetching if already loading
-        setLoadingAccounts(true)
-        try {
-          const accs = await getFinancialAccounts()
-          if (!isMounted) return
-
-          setAllAccounts(accs as any)
-
-          if (transactionData) {
-            // Bulk update to reduce re-renders
-            setData((pre: any) => ({
-              ...pre,
-              ...transactionData,
-              amount: Number(transactionData.amount).toFixed(2),
-              date: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "yyyy-MM-dd"),
-              time: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "HH:mm"),
-            }))
-
-            const from = accs.find(a => a.id === transactionData.fromAccountId)
-            if (from?.type === FinancialAccountType.MONEY) {
-              setMoneyAccountId(from.id)
-              setPartnerAccountId(transactionData.toAccountId)
-            } else {
-              setMoneyAccountId(transactionData.toAccountId)
-              setPartnerAccountId(transactionData.fromAccountId)
-            }
+    if (open && !loadingAccounts && allAccounts.length > 0) {
+      const initializationKey = `${currentDirection}-${transactionData?.id}-${accountId}-${partyId}`
+ 
+      if (lastInitializedRef.current !== initializationKey) {
+        if (transactionData) {
+          setData((pre: any) => ({
+            ...pre,
+            ...transactionData,
+            amount: Number(transactionData.amount).toFixed(2),
+            date: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "yyyy-MM-dd"),
+            time: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "HH:mm"),
+          }))
+ 
+          const from = allAccounts.find(a => a.id === transactionData.fromAccountId)
+          if (from?.type === FinancialAccountType.MONEY) {
+            setMoneyAccountId(from.id)
+            setPartnerAccountId(transactionData.toAccountId)
           } else {
-            let inferredMode: ModalMode = ModalMode.CASHBOOK
-            let initialMoneyAcc = ""
-            let initialPartnerAcc = ""
-
-            const currentAcc = accs.find(a => a.id === accountId)
-            const partyAcc = partyId ? accs.find(a => a.partyId === partyId) : null
-
-            if (partyId || (currentAcc && currentAcc.type === FinancialAccountType.PARTY)) {
-              inferredMode = ModalMode.PARTY
-              const partyAccount = partyAcc || currentAcc
-              initialPartnerAcc = partyAccount?.id || ""
-              initialMoneyAcc = accs.find(a => a.type === FinancialAccountType.MONEY)?.id || ""
-            } else if (currentAcc && currentAcc.type === FinancialAccountType.MONEY) {
-              inferredMode = ModalMode.ACCOUNT
-              initialMoneyAcc = currentAcc.id
-              initialPartnerAcc = accs.find(a => a.id !== currentAcc.id && a.partyId === null)?.id || ""
-            } else {
-              inferredMode = ModalMode.CASHBOOK
-              const moneyAccs = accs.filter(a => a.type === FinancialAccountType.MONEY)
-              initialMoneyAcc = moneyAccs[0]?.id || ""
-              const targetCat = isOut ? CategoryType.EXPENSE : CategoryType.INCOME
-              initialPartnerAcc = accs.find(a => a.type === FinancialAccountType.CATEGORY && a.categoryType === targetCat)?.id || ""
-            }
-
-            setMode(inferredMode)
-            setMoneyAccountId(initialMoneyAcc)
-            setPartnerAccountId(initialPartnerAcc)
-            setData((pre: any) => ({
-              ...pre,
-              partyId: accs.find(a => a.id === initialPartnerAcc)?.partyId || null
-            }))
+            setMoneyAccountId(transactionData.toAccountId)
+            setPartnerAccountId(transactionData.fromAccountId)
           }
-        } catch (err) {
-          if (isMounted) toast.error("Failed to load accounts")
-        } finally {
-          if (isMounted) setLoadingAccounts(false)
+        } else {
+          let inferredMode: ModalMode = ModalMode.CASHBOOK
+          let initialMoneyAcc = ""
+          let initialPartnerAcc = ""
+ 
+          const currentAcc = allAccounts.find(a => a.id === accountId)
+          const partyAcc = partyId ? allAccounts.find(a => a.partyId === partyId) : null
+ 
+          if (partyId || (currentAcc && currentAcc.type === FinancialAccountType.PARTY)) {
+            inferredMode = ModalMode.PARTY
+            const partyAccount = partyAcc || currentAcc
+            initialPartnerAcc = partyAccount?.id || ""
+            initialMoneyAcc = allAccounts.find(a => a.type === FinancialAccountType.MONEY)?.id || ""
+          } else if (currentAcc && currentAcc.type === FinancialAccountType.MONEY) {
+            inferredMode = ModalMode.ACCOUNT
+            initialMoneyAcc = currentAcc.id
+            initialPartnerAcc = allAccounts.find(a => a.id !== currentAcc.id && a.partyId === null)?.id || ""
+          } else {
+            inferredMode = ModalMode.CASHBOOK
+            const moneyAccs = allAccounts.filter(a => a.type === FinancialAccountType.MONEY)
+            initialMoneyAcc = moneyAccs[0]?.id || ""
+            const targetCat = isOut ? CategoryType.EXPENSE : CategoryType.INCOME
+            initialPartnerAcc = allAccounts.find(a => a.type === FinancialAccountType.CATEGORY && a.categoryType === targetCat)?.id || ""
+          }
+ 
+          setMode(inferredMode)
+          setMoneyAccountId(initialMoneyAcc)
+          setPartnerAccountId(initialPartnerAcc)
+          setData((pre: any) => ({
+            ...pre,
+            partyId: allAccounts.find(a => a.id === initialPartnerAcc)?.partyId || null
+          }))
         }
+        lastInitializedRef.current = initializationKey
       }
-      fetchAccounts()
-    } else {
+    } else if (!open) {
+      lastInitializedRef.current = ""
       // Cleanup for next open
       if (!transactionData) {
         setData({
@@ -182,9 +174,7 @@ export const AddTransactionModal = ({
         setPartnerAccountId("")
       }
     }
-
-    return () => { isMounted = false }
-  }, [open, partyId, accountId, transactionData?.id, currentDirection]) // Stabilized dependencies
+  }, [open, loadingAccounts, allAccounts, partyId, accountId, transactionData?.id, currentDirection, isOut])
 
   // Update data state whenever selections change
   useEffect(() => {
