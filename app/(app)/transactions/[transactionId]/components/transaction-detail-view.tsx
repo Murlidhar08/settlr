@@ -11,6 +11,7 @@ import { formatAmount, formatDate, formatTime } from "@/utility/transaction"
 import { motion } from "framer-motion"
 import { ArrowDownLeft, ArrowRight, ArrowUpRight, CalendarDays, Check, Clock, Hash, History, Pencil, PenSquareIcon, Phone, Trash2, User } from "lucide-react"
 
+import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
@@ -41,236 +42,269 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
     }
 
     return (
-        <div className="min-h-full bg-background relative">
+        <div className="min-h-full bg-background relative selection:bg-primary/10">
             {/* Dynamic Animated Background */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden isolate">
                 <motion.div
                     animate={{
-                        scale: [1, 1.1, 1],
-                        opacity: [0.3, 0.5, 0.3]
+                        scale: [1, 1.15, 1],
+                        opacity: [0.2, 0.4, 0.2]
                     }}
                     transition={{
-                        duration: 15,
+                        duration: 12,
                         repeat: Infinity,
-                        ease: "linear"
+                        ease: "easeInOut"
                     }}
-                    style={{ willChange: "transform, opacity" }}
-                    className={`absolute -top-1/4 -right-1/4 w-full h-full rounded-full blur-[100px] ${isIn ? "bg-emerald-500/15" : "bg-rose-500/15"}`}
+                    className={`absolute -top-1/4 -right-1/4 w-[80%] h-[80%] rounded-full blur-[120px] ${isIn ? "bg-emerald-500/20" : "bg-rose-500/20"}`}
                 />
                 <motion.div
                     animate={{
                         scale: [1.1, 1, 1.1],
-                        opacity: [0.2, 0.4, 0.2]
+                        opacity: [0.15, 0.3, 0.15]
                     }}
                     transition={{
-                        duration: 20,
+                        duration: 18,
                         repeat: Infinity,
-                        ease: "linear"
+                        ease: "easeInOut"
                     }}
-                    style={{ willChange: "transform, opacity" }}
-                    className="absolute -bottom-1/4 -left-1/4 w-full h-full rounded-full blur-[100px] bg-primary/5"
+                    className="absolute -bottom-1/4 -left-1/4 w-[80%] h-[80%] rounded-full blur-[120px] bg-indigo-500/10"
                 />
             </div>
 
             <BackHeader
                 title="Transaction Details"
-                description={transaction.description}
+                description={transaction.description || "Detailed audit of the financial record"}
                 menuItems={[
                     {
                         icon: <Pencil size={18} />,
-                        label: "Edit",
+                        label: "Edit Entry",
                         onClick: () => setIsEditOpen(true),
                         destructive: false
                     },
                     {
                         icon: <Trash2 size={18} />,
-                        label: "Delete",
+                        label: "Delete Permanent",
                         onClick: async () => await onDelete(),
                         destructive: true
                     }
                 ]}
             />
 
-            <main className="relative z-10 mx-auto max-w-6xl px-4 pb-36 pt-12 md:px-6">
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-16">
+            <main className="relative z-10 mx-auto max-w-6xl px-4 pb-32 pt-4 md:px-8">
+                <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-12">
 
-                    {/* LEFT COLUMN: BADGE & AMOUNT (Fixed/Sticky on Desktop) */}
-                    <div className="lg:col-span-2 space-y-10 lg:sticky lg:top-28 h-fit">
-                        {/* STATUS SECTION */}
+                    {/* LEFT COLUMN: BADGE & AMOUNT (Sticky) */}
+                    <div className="lg:col-span-5 space-y-8 lg:sticky lg:top-28 h-fit">
+                        {/* STATUS HERO */}
                         <motion.section
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-6"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ type: "spring", stiffness: 100 }}
+                            className="flex flex-col items-center lg:items-start text-center lg:text-left gap-4"
                         >
                             <motion.div
-                                initial={{ scale: 0, rotate: -180 }}
+                                initial={{ scale: 0, rotate: -20 }}
                                 animate={{ scale: 1, rotate: 0 }}
-                                transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                                className={`flex h-24 w-24 items-center justify-center rounded-[2.5rem] shadow-2xl relative group ${isIn
-                                    ? "bg-emerald-500 text-white shadow-emerald-500/20"
-                                    : "bg-rose-500 text-white shadow-rose-500/20"
-                                    }`}
+                                transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
+                                className={cn(
+                                    "flex h-20 w-20 items-center justify-center rounded-3xl shadow-xl relative group",
+                                    isIn ? "bg-emerald-500 text-white shadow-emerald-500/30" : "bg-rose-500 text-white shadow-rose-500/30"
+                                )}
                             >
-                                <div className="absolute inset-0 rounded-[2.5rem] bg-white/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <Check className="h-10 w-10 relative z-10" />
+                                <div className="absolute inset-0 rounded-3xl bg-white/20 blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 scale-110" />
+                                <Check className="h-8 w-8 relative z-10 stroke-3" />
                             </motion.div>
 
-                            <div className="space-y-2">
-                                <motion.h1
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: 0.05 }}
-                                    className="text-3xl font-black tracking-tighter sm:text-4xl lg:text-5xl"
-                                >
-                                    Transaction Verified
-                                </motion.h1>
-                                <motion.p
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: 0.1 }}
-                                    className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60 flex items-center justify-center lg:justify-start gap-2"
-                                >
-                                    <Clock className="h-3 w-3" />
-                                    <span suppressHydrationWarning>
-                                        {formatDate(transaction.date, dateFormat)} • {formatTime(transaction.date, timeFormat)}
-                                    </span>
-                                </motion.p>
+                            <div className="space-y-1">
+                                <h1 className="text-2xl sm:text-3xl font-black tracking-tighter leading-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                                    Transaction Audit
+                                </h1>
+                                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/40 backdrop-blur-md border border-border/10">
+                                        <CalendarDays className="h-3 w-3 text-primary/60" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60" suppressHydrationWarning>
+                                            {formatDate(transaction.date, dateFormat)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/40 backdrop-blur-md border border-border/10">
+                                        <Clock className="h-3 w-3 text-primary/60" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60" suppressHydrationWarning>
+                                            {formatTime(transaction.date, timeFormat)}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </motion.section>
 
                         {/* AMOUNT CARD */}
                         <motion.section
-                            initial={{ opacity: 0, scale: 0.98 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.1 }}
-                            className="relative group overflow-hidden rounded-[3rem] border border-border/50 bg-card p-8 sm:p-10 text-center lg:text-left shadow-2xl transition-all hover:border-primary/20"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="relative group overflow-hidden rounded-[2.5rem] border border-border/40 bg-card p-6 lg:p-8 text-center lg:text-left shadow-lg transition-all hover:bg-card/80 hover:border-primary/20 active:scale-[0.99]"
                         >
-                            <div className={`absolute top-0 left-0 w-full h-1.5 ${isIn ? "bg-emerald-500" : "bg-rose-500"}`} />
+                            <div className={cn("absolute top-0 left-0 w-1.5 h-full", isIn ? "bg-emerald-500" : "bg-rose-500")} />
 
-                            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-70 mb-6">
-                                Financial Impact
+                            <div className="absolute top-0 right-0 p-4 opacity-[0.03] rotate-12 group-hover:rotate-0 transition-transform duration-700">
+                                {isIn ? <ArrowDownLeft size={120} /> : <ArrowUpRight size={120} />}
+                            </div>
+
+                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 mb-4">
+                                Net Impact
                             </p>
 
-                            <motion.p
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 }}
-                                className={`text-5xl font-black tracking-tighter sm:text-6xl break-all ${isIn ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
-                                    }`}
-                            >
-                                {formatAmount(transaction.amount, configCurrency, true, isIn ? 'IN' : 'OUT')}
-                            </motion.p>
+                            <div className="space-y-4 relative z-10">
+                                <p className={cn(
+                                    "text-4xl sm:text-5xl font-black tracking-tighter tabular-nums drop-shadow-sm",
+                                    isIn ? "text-emerald-600" : "text-rose-600"
+                                )}>
+                                    {formatAmount(transaction.amount, configCurrency, true, isIn ? 'IN' : 'OUT')}
+                                </p>
 
-                            <div className="mt-8 flex justify-center lg:justify-start">
-                                <motion.span
-                                    initial={{ opacity: 0, y: 5 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.3 }}
-                                    className={`inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-[10px] font-black uppercase tracking-[0.15em] border ${isIn
-                                        ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
-                                        : "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20"
-                                        }`}
-                                >
-                                    {isIn ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
-                                    {isIn ? "Inward Remittance" : "Outward Payment"}
-                                </motion.span>
+                                <div className="pt-2 flex justify-center lg:justify-start">
+                                    <div className={cn(
+                                        "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] shadow-md transition-transform hover:-translate-y-1",
+                                        isIn
+                                            ? "bg-emerald-500 text-white shadow-emerald-500/20"
+                                            : "bg-rose-500 text-white shadow-rose-500/20"
+                                    )}>
+                                        {isIn ? <ArrowDownLeft className="h-4 w-4 stroke-3" /> : <ArrowUpRight className="h-4 w-4 stroke-3" />}
+                                        {isIn ? "Inward" : "Outward"}
+                                    </div>
+                                </div>
                             </div>
                         </motion.section>
                     </div>
 
-                    {/* RIGHT COLUMN: DETAILS BOX */}
-                    <div className="lg:col-span-3">
+                    {/* RIGHT COLUMN: DATA GRID */}
+                    <div className="lg:col-span-7 space-y-8">
+                        {/* Transaction Flow */}
+                        <motion.section
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="rounded-[2.5rem] border border-border/40 bg-card/40 backdrop-blur-xl p-5 sm:p-6 shadow-md overflow-hidden"
+                        >
+                            <div className="mb-4 flex items-center gap-2 px-1">
+                                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/70">Flow Pathway</p>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/20 p-4 sm:p-5 rounded-3xl border border-border/10 relative shadow-inner">
+                                <AccountNode account={transaction.fromAccount} label="Origin" isSource={true} side={isIn ? "left" : "right"} />
+
+                                <div className="relative group shrink-0">
+                                    <div className="h-10 w-10 rounded-xl bg-background border-2 border-border/60 flex items-center justify-center shadow-lg relative z-10 rotate-45 group-hover:rotate-90 transition-transform duration-500">
+                                        <ArrowRight className="h-5 w-5 text-primary -rotate-45 group-hover:-rotate-90 transition-transform" />
+                                    </div>
+                                </div>
+
+                                <AccountNode account={transaction.toAccount} label="Destination" isSource={false} side={isIn ? "right" : "left"} />
+                            </div>
+                        </motion.section>
+
+                        {/* Audit Details */}
                         <motion.section
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.4 }}
-                            className="rounded-[3rem] border border-border/50 bg-card/50 backdrop-blur-xl p-8 sm:p-12 shadow-2xl space-y-14 relative overflow-hidden"
+                            className="rounded-[2.5rem] border border-border/40 bg-card/40 backdrop-blur-xl p-5 sm:p-6 shadow-md"
                         >
-                            {/* Money Flow Visualization */}
-                            <div className="space-y-8">
-                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-50 px-2">Transaction Chain</p>
-                                <div className="flex flex-col sm:flex-row items-center justify-between gap-6 bg-muted/20 p-8 sm:p-10 rounded-[2.5rem] border border-border/10 relative">
-                                    <AccountNode account={transaction.fromAccount} label="From" isSource={true} />
-                                    <div className="h-14 w-14 rounded-full bg-background border-2 border-border flex items-center justify-center shadow-lg relative z-10 shrink-0">
-                                        <ArrowRight className="h-6 w-6 text-primary animate-pulse" />
-                                    </div>
-                                    <AccountNode account={transaction.toAccount} label="To" isSource={false} />
-                                </div>
+                            <div className="mb-6 flex items-center gap-2 px-1">
+                                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/70">Audit Trail</p>
                             </div>
 
-                            <div className="space-y-10">
-                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-50 px-2">Core Information</p>
+                            <div className="grid grid-cols-1 gap-1">
+                                <DetailRow icon={<Hash className="h-5 w-5 text-indigo-500" />} label="Ref Number">
+                                    <span className="font-mono font-black text-foreground/80 text-[13px] break-all select-all">
+                                        {transaction.id}
+                                    </span>
+                                </DetailRow>
 
-                                <div className="space-y-6">
-                                    <DetailRow icon={<Hash className="h-4 w-4 text-primary" />} label="Reference ID">
-                                        <span className="font-mono font-black opacity-80 text-right text-xs break-all">
-                                            {transaction.id}
-                                        </span>
-                                    </DetailRow>
+                                <Divider />
 
-                                    <div className="h-px bg-linear-to-r from-transparent via-border to-transparent" />
+                                {transaction.party && (
+                                    <>
+                                        <DetailRow icon={<User className="h-5 w-5 text-blue-500" />} label="Entity Relation">
+                                            <div className="text-right">
+                                                <p className="font-black text-xl tracking-tight text-primary">{transaction.party.name}</p>
+                                                {transaction.party.contactNo && (
+                                                    <div className="flex items-center justify-end gap-2 mt-1 px-3 py-1 rounded-full bg-primary/5 border border-primary/10">
+                                                        <Phone size={10} className="text-primary/60" />
+                                                        <span className="text-[10px] font-black text-primary/80">{transaction.party.contactNo}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </DetailRow>
+                                        <Divider />
+                                    </>
+                                )}
 
-                                    {transaction.party && (
-                                        <>
-                                            <DetailRow icon={<User className="h-4 w-4 text-primary" />} label="Linked Party">
-                                                <div className="text-right">
-                                                    <p className="font-black text-xl tracking-tight">{transaction.party.name}</p>
-                                                    {transaction.party.contactNo && (
-                                                        <p className="text-[10px] font-bold text-muted-foreground flex items-center justify-end gap-1.5 mt-1">
-                                                            <Phone size={12} className="opacity-60" /> {transaction.party.contactNo}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </DetailRow>
-                                            <div className="h-px bg-linear-to-r from-transparent via-border to-transparent" />
-                                        </>
-                                    )}
-
-                                    <DetailRow icon={<PenSquareIcon className="h-4 w-4 text-primary" />} label="Recorded By">
-                                        <span className="font-black text-lg opacity-90 text-right">
-                                            {transaction.user.name}
-                                        </span>
-                                    </DetailRow>
-
-                                    <div className="h-px bg-linear-to-r from-transparent via-border to-transparent" />
-
-                                    <DetailRow icon={<CalendarDays className="h-4 w-4 text-primary" />} label="Created On">
-                                        <span className="font-bold opacity-80 text-right text-xs">
-                                            {formatDate(transaction.createdAt, dateFormat)} — {formatTime(transaction.createdAt, timeFormat)}
-                                        </span>
-                                    </DetailRow>
-
-                                    {transaction.updatedAt > transaction.createdAt && (
-                                        <>
-                                            <div className="h-px bg-linear-to-r from-transparent via-border to-transparent" />
-                                            <DetailRow icon={<History className="h-4 w-4 text-primary" />} label="Last Modified">
-                                                <span className="font-bold opacity-80 text-right text-xs">
-                                                    {formatDate(transaction.updatedAt, dateFormat)} — {formatTime(transaction.updatedAt, timeFormat)}
-                                                </span>
-                                            </DetailRow>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-
-                            {transaction.description && (
-                                <div className="pt-6">
-                                    <div className="space-y-6">
-                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-50 px-2">Narrative / Notes</p>
-                                        <div className="rounded-[2.5rem] bg-secondary/30 p-10 text-base font-semibold leading-relaxed border border-border/20 relative group">
-                                            <div className="absolute top-6 right-8 text-[60px] font-black italic text-border/20 pointer-events-none select-none leading-none">“</div>
-                                            <p className="italic opacity-80 relative z-10">{transaction.description}</p>
+                                <DetailRow icon={<PenSquareIcon className="h-5 w-5 text-emerald-500" />} label="Log Originator">
+                                    <div className="flex items-center justify-end gap-3 text-right">
+                                        <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                                            <span className="text-[10px] font-black text-emerald-600">{transaction.user.name.charAt(0)}</span>
                                         </div>
+                                        <span className="font-black text-lg text-foreground/80">{transaction.user.name}</span>
+                                    </div>
+                                </DetailRow>
+
+                                <Divider />
+
+                                <DetailRow icon={<CalendarDays className="h-5 w-5 text-amber-500" />} label="Recorded At">
+                                    <div className="text-right flex flex-col items-end">
+                                        <span className="font-black text-[14px] text-foreground/80">
+                                            {formatDate(transaction.createdAt, dateFormat)}
+                                        </span>
+                                        <span className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-widest">{formatTime(transaction.createdAt, timeFormat)}</span>
+                                    </div>
+                                </DetailRow>
+
+                                {transaction.updatedAt > transaction.createdAt && (
+                                    <>
+                                        <Divider />
+                                        <DetailRow icon={<History className="h-5 w-5 text-rose-500" />} label="Modified History">
+                                            <div className="text-right flex flex-col items-end opacity-60">
+                                                <span className="font-black text-[14px]">
+                                                    {formatDate(transaction.updatedAt, dateFormat)}
+                                                </span>
+                                                <span className="text-[11px] font-bold uppercase tracking-widest">{formatTime(transaction.updatedAt, timeFormat)}</span>
+                                            </div>
+                                        </DetailRow>
+                                    </>
+                                )}
+                            </div>
+                        </motion.section>
+
+                        {/* Description Box */}
+                        {transaction.description && (
+                            <motion.section
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.5 }}
+                                className="group relative"
+                            >
+                                <div className="relative rounded-[2.5rem] border border-border/40 bg-card/60 backdrop-blur-xl p-6 sm:p-8 shadow-md">
+                                    <div className="mb-4 flex items-center gap-2">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/70">Narrative</p>
+                                    </div>
+                                    <div className="relative">
+                                        <div className="absolute -top-4 -left-2 text-[80px] font-black italic text-primary/5 pointer-events-none select-none leading-none group-hover:text-primary/10 transition-colors">“</div>
+                                        <p className="text-lg sm:text-xl font-semibold italic text-foreground/80 leading-relaxed relative z-10 pl-3 border-l-2 border-primary/20 group-hover:border-primary/40 transition-colors">
+                                            {transaction.description}
+                                        </p>
                                     </div>
                                 </div>
-                            )}
-                        </motion.section>
+                            </motion.section>
+                        )}
                     </div>
                 </div>
             </main>
 
             <AddTransactionModal
-                title="Edit Transaction"
+                title="Edit Entry Audit"
                 transactionData={transaction}
                 direction={isIn ? TransactionDirection.IN : TransactionDirection.OUT}
                 partyId={transaction.partyId}
@@ -283,19 +317,39 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
     )
 }
 
-function AccountNode({ account, label, isSource }: { account: any, label: string, isSource: boolean }) {
+function Divider() {
+    return <div className="h-px w-full bg-linear-to-r from-transparent via-border/40 to-transparent my-3" />
+}
+
+function AccountNode({ account, label, isSource, side }: { account: any, label: string, isSource: boolean, side: 'left' | 'right' }) {
     return (
-        <div className="flex flex-col items-center text-center space-y-3 flex-1 px-4">
-            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60 leading-none">{label}</span>
-            <div className={`p-4 rounded-2xl w-full max-w-[160px] flex items-center justify-center shadow-md border ${isSource ? "bg-background border-border" : "bg-primary/5 border-primary/20"}`}>
+        <motion.div
+            whileHover={{ y: -3 }}
+            className="flex flex-col items-center text-center space-y-2 flex-1 px-2 max-w-[180px]"
+        >
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/30 leading-none">{label}</span>
+            <div className={cn(
+                "relative p-3 rounded-2xl w-full flex items-center justify-center shadow-md border-2 transition-all duration-300",
+                isSource
+                    ? "bg-background border-border/60 hover:border-primary/40"
+                    : "bg-primary/5 border-primary/20 hover:bg-primary/10 hover:border-primary/60"
+            )}>
                 <div className="flex flex-col items-center gap-1 overflow-hidden">
-                    <span className="font-black text-sm tracking-tight truncate w-full px-1">{account.name}</span>
-                    <span className="text-[8px] font-black uppercase tracking-widest opacity-40 truncate w-full">
-                        {account.categoryType || account.moneyType || account.type}
-                    </span>
+                    <span className="font-black text-[13px] tracking-tighter text-foreground truncate w-full px-1">{account.name}</span>
+                    <div className="px-1.5 py-0.5 rounded-full bg-muted/40 border border-border/10">
+                        <span className="text-[7.5px] font-black uppercase tracking-widest text-muted-foreground/60 block truncate max-w-[80px]">
+                            {account.categoryType || account.moneyType || account.type}
+                        </span>
+                    </div>
                 </div>
+
+                {/* Visual indicator for flow side */}
+                <div className={cn(
+                    "absolute top-1/2 -translate-y-1/2 h-6 w-0.5 rounded-full",
+                    side === 'left' ? "-left-px bg-primary/20" : "-right-px bg-primary/20"
+                )} />
             </div>
-        </div>
+        </motion.div>
     )
 }
 
@@ -309,14 +363,14 @@ function DetailRow({
     children: React.ReactNode
 }) {
     return (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 px-2">
-            <div className="flex items-center gap-4">
-                <div className="p-2.5 rounded-xl bg-primary/5 border border-primary/10 shadow-inner">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-1 py-1 group/row hover:bg-muted/5 rounded-3xl transition-colors">
+            <div className="flex items-center gap-5">
+                <div className="p-2 rounded-2xl bg-muted/50 border border-border/10 shadow-inner group-hover/row:scale-110 transition-transform duration-300">
                     {icon}
                 </div>
-                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70 leading-none">{label}</span>
+                <span className="text-[12px] font-black uppercase tracking-[0.3em] text-muted-foreground/50 group-hover/row:text-foreground/60 transition-colors leading-none">{label}</span>
             </div>
-            <div className="w-full sm:w-auto overflow-hidden text-right">
+            <div className="w-full sm:w-auto text-center sm:text-right overflow-hidden">
                 {children}
             </div>
         </div>
