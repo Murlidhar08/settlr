@@ -14,6 +14,7 @@ import { envServer } from "@/lib/env.server";
 import AppIconsMetaTags from "@/components/app-icons-metatags";
 import { ConfirmProvider } from "@/components/providers/confirm-provider";
 import { PromptProvider } from "@/components/providers/prompt-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 import NextTopLoader from 'nextjs-toploader';
 
 
@@ -103,17 +104,19 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             speed={200}
             shadow="0 0 10px oklch(0.541 0.281 293.009),0 0 5px oklch(0.541 0.281 293.009)"
           />
-          <ConfirmProvider>
-            <PromptProvider>
-              {children}
-            </PromptProvider>
+          <QueryProvider>
+            <ConfirmProvider>
+              <PromptProvider>
+                {children}
+              </PromptProvider>
 
-            {/* Toast Container */}
-            <Toaster
-              position="top-right"
-              expand={false}
-            />
-          </ConfirmProvider>
+              {/* Toast Container */}
+              <Toaster
+                position="top-right"
+                expand={false}
+              />
+            </ConfirmProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

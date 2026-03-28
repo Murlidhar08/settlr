@@ -7,7 +7,6 @@ import { CategoryType, FinancialAccountType } from "@/lib/generated/prisma/enums
 import { prisma } from "@/lib/prisma/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { cache } from "react";
 
 export async function addTransaction(transactionData: any, pathToRevalidate?: string) {
   const session = await getUserSession();
@@ -135,7 +134,7 @@ export async function deleteTransaction(transactionId: string, redirectPath?: st
   return { success: true }
 }
 
-export const getRecentTransactions = cache(async function getRecentTransactions() {
+export const getRecentTransactions = async function getRecentTransactions() {
   const session = await getUserSession();
   let businessId = session?.user.activeBusinessId;
 
@@ -174,9 +173,9 @@ export const getRecentTransactions = cache(async function getRecentTransactions(
     ...tx,
     amount: Number(tx.amount)
   }));
-});
+};
 
-export const getCashbookTransactions = cache(async function getCashbookTransactions(filters: {
+export const getCashbookTransactions = async function getCashbookTransactions(filters: {
   category?: string;
   search?: string;
   startDate?: string;
@@ -255,9 +254,9 @@ export const getCashbookTransactions = cache(async function getCashbookTransacti
     totalIn,
     totalOut,
   };
-});
+};
 
-export const getPartyStatement = cache(async function getPartyStatement(partyId: string, filters: {
+export const getPartyStatement = async function getPartyStatement(partyId: string, filters: {
   mode?: string;
   direction?: string;
   startDate?: string;
@@ -332,9 +331,9 @@ export const getPartyStatement = cache(async function getPartyStatement(partyId:
     party: partyWithTyped,
     transactions: transactions.map(tx => ({ ...tx, amount: Number(tx.amount) })),
   };
-});
+};
 
-export const getAccountTransactions = cache(async function getAccountTransactions(accountId: string) {
+export const getAccountStats = async function getAccountStats(accountId: string) {
   const session = await getUserSession();
   const businessId = session?.user.activeBusinessId || "";
 
@@ -346,25 +345,102 @@ export const getAccountTransactions = cache(async function getAccountTransaction
     throw new Error("Account not found");
   }
 
-  const transactions = await prisma.transaction.findMany({
-    where: {
-      businessId,
-      OR: [
-        { fromAccountId: accountId },
-        { toAccountId: accountId },
-      ],
-    },
-    orderBy: { date: "desc" },
-    include: {
-      fromAccount: { select: { name: true, type: true } },
-      toAccount: { select: { name: true, type: true } },
-      party: { select: { name: true } }
-    }
+  const [inResult, outResult] = await Promise.all([
+    prisma.transaction.aggregate({
+      where: {
+        businessId,
+        toAccountId: accountId,
+      },
+      _sum: {
+        amount: true,
+      },
+    }),
+    prisma.transaction.aggregate({
+      where: {
+        businessId,
+        fromAccountId: accountId,
+      },
+      _sum: {
+        amount: true,
+      },
+    }),
+  ]);
+
+  const totalIn = Number(inResult._sum.amount || 0);
+  const totalOut = Number(outResult._sum.amount || 0);
+
+  // Logic for perspective flipping if it's a PARTY account
+  // In Settlr, for a PARTY account:
+  // getPartyTransactionPerspective flips the raw perspective.
+  // raw IN (to party) => business perspective OUT
+  // raw OUT (from party) => business perspective IN
+  
+  if (account.type === FinancialAccountType.PARTY) {
+    return {
+      totalIn: totalOut, // Flipped
+      totalOut: totalIn, // Flipped
+      balance: totalOut - totalIn,
+    };
+  }
+
+  return {
+    totalIn,
+    totalOut,
+    balance: totalIn - totalOut,
+  };
+};
+
+export const getAccountTransactions = async function getAccountTransactions(
+  accountId: string,
+  pagination?: { limit?: number; page?: number }
+) {
+  const session = await getUserSession();
+  const businessId = session?.user.activeBusinessId || "";
+
+  const account = await prisma.financialAccount.findUnique({
+    where: { id: accountId, businessId },
   });
+
+  if (!account) {
+    throw new Error("Account not found");
+  }
+
+  const limit = pagination?.limit || 20;
+  const page = pagination?.page || 1;
+  const skip = (page - 1) * limit;
+
+  const [transactions, totalTransactions] = await Promise.all([
+    prisma.transaction.findMany({
+      where: {
+        businessId,
+        OR: [
+          { fromAccountId: accountId },
+          { toAccountId: accountId },
+        ],
+      },
+      orderBy: { date: "desc" },
+      take: limit,
+      skip: skip,
+      include: {
+        fromAccount: { select: { name: true, type: true } },
+        toAccount: { select: { name: true, type: true } },
+        party: { select: { name: true } }
+      }
+    }),
+    prisma.transaction.count({
+      where: {
+        businessId,
+        OR: [
+          { fromAccountId: accountId },
+          { toAccountId: accountId },
+        ],
+      }
+    })
+  ]);
 
   return {
     account,
-    totalTransactions: transactions.length,
+    totalTransactions,
     transactions: transactions.map(tx => ({ ...tx, amount: Number(tx.amount) })),
   };
-});
+};

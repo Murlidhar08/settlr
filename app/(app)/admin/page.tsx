@@ -11,37 +11,32 @@ export default async function AdminPage() {
 
     // Guard: Only admins can access this page
     const isAdmin = session?.user.role === "admin";
-    if (!isAdmin) {
-        redirect("/dashboard");
-    }
-
-    const usersList = await auth.api.listUsers({
+    
+    const usersList = isAdmin ? await auth.api.listUsers({
         headers: await headers(),
         query: { limit: 100, sortBy: "createdAt", sortDirection: "desc" },
-    })
+    }) : null;
 
     if (!isAdmin) {
         return (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6 animate-in fade-in zoom-in duration-500">
-                <div className="group relative">
-                    <div className="absolute -inset-4 bg-rose-500/20 rounded-full blur-2xl group-hover:bg-rose-500/30 transition-all duration-500" />
-                    <div className="relative p-6 bg-rose-500/10 rounded-[2.5rem] border border-rose-500/20 shadow-2xl shadow-rose-500/10">
-                        <ShieldAlert className="text-rose-500 h-16 w-16" strokeWidth={1.5} />
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-8 animate-in fade-in zoom-in duration-500">
+                <div className="relative">
+                    <div className="absolute -inset-8 bg-rose-500/10 rounded-full blur-3xl" />
+                    <div className="relative p-6 bg-rose-500/5 rounded-2xl border border-rose-500/20 shadow-sm">
+                        <ShieldAlert className="text-rose-500 h-12 w-12" strokeWidth={1.5} />
                     </div>
                 </div>
                 <div className="space-y-2">
-                    <h2 className="text-3xl font-black tracking-tight text-foreground">Access Restricted</h2>
-                    <p className="text-muted-foreground font-semibold max-w-sm mx-auto leading-relaxed italic">
-                        &quot;{"You do not have the necessary permissions to access this administrative resource."}&quot;
+                    <h2 className="text-2xl font-bold tracking-tight text-foreground">Access Restricted</h2>
+                    <p className="text-sm text-muted-foreground font-medium max-w-sm mx-auto leading-relaxed">
+                        You do not have the necessary permissions to access this administrative resource.
                     </p>
                 </div>
-                <div className="flex gap-4">
-                    <a href="/dashboard">
-                        <button className="px-8 py-3 bg-foreground text-background font-black rounded-2xl hover:scale-105 transition-all shadow-xl shadow-foreground/10 active:scale-95 text-xs uppercase tracking-widest">
-                            Go Back
-                        </button>
-                    </a>
-                </div>
+                <a href="/dashboard">
+                    <button className="px-10 py-3 bg-foreground text-background font-semibold rounded-xl hover:shadow-lg transition-all active:scale-[0.98] text-[11px] uppercase tracking-widest">
+                        Return to Dashboard
+                    </button>
+                </a>
             </div>
         );
     }
@@ -80,7 +75,7 @@ export default async function AdminPage() {
     const activeUsers = totalUsers - bannedUsers;
 
     return (
-        <div className="flex-1 px-4 space-y-6 sm:space-y-8 pb-32 pt-4">
+        <div className="flex-1 px-4 space-y-6 pb-32 pt-6">
             {/* Stats Grid */}
             <AdminStats
                 totalUsers={totalUsers}

@@ -14,6 +14,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { FinancialAccount } from "@/lib/generated/prisma/client"
+import { useQueryClient } from "@tanstack/react-query"
 import { Pencil, ShieldAlert, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -23,10 +24,13 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
     const router = useRouter()
     const [isDeleting, setIsDeleting] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
+    const queryClient = useQueryClient()
 
     const handleDelete = async () => {
         try {
             await deleteFinancialAccount(account.id)
+            queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
+            queryClient.removeQueries({ queryKey: ["financial-account", account.id] })
             toast.success("Account deleted successfully")
             router.push("/accounts" as any)
         } catch (error: any) {

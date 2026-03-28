@@ -68,12 +68,13 @@ const TransactionItem = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ scale: 1.005, y: -2 }}
+      whileHover={{ scale: 1.005, y: -1 }}
       whileTap={{ scale: 0.995 }}
       className="w-full"
     >
       <Link href={`/transactions/${transactionId}`} className="block group">
-        <div className="flex items-center gap-4 p-4 rounded-[1.5rem] border bg-card/40 backdrop-blur-sm transition-all hover:bg-card hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 active:bg-muted/50">
+        <div className="flex items-center gap-5 p-4 rounded-2xl border bg-card/40 backdrop-blur-sm transition-all hover:bg-card hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 active:bg-muted/50">
+
           {/* Icon Container */}
           <div className={cn(
             "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-all duration-500 group-hover:rotate-12",
@@ -131,7 +132,7 @@ const TransactionItem = ({
           </div>
         </div>
       </Link>
-    </motion.div>
+    </motion.div >
   )
 }
 

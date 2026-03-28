@@ -1,14 +1,25 @@
-import { getFinancialAccounts } from "@/actions/financial-account.actions"
-import { AccountCard } from "@/components/account/account-card"
-import { AddAccountModal } from "@/components/account/add-account-modal"
-import { FooterButtons } from "@/components/footer-buttons"
-import { Button } from "@/components/ui/button"
-import { Currency, FinancialAccountType } from "@/lib/generated/prisma/enums"
-import { t } from "@/lib/languages/i18n"
-import { Plus, Wallet } from "lucide-react"
+"use client";
 
-export async function AccountsContent({ language, currency }: { language: string, currency: Currency }) {
-    const allAccounts = await getFinancialAccounts()
+import { getFinancialAccounts } from "@/actions/financial-account.actions";
+import { AccountCard } from "@/components/account/account-card";
+import { AccountsSkeleton } from "@/components/account/accounts-skeleton";
+import { AddAccountModal } from "@/components/account/add-account-modal";
+import { FooterButtons } from "@/components/footer-buttons";
+import { Button } from "@/components/ui/button";
+import { Currency, FinancialAccountType } from "@/lib/generated/prisma/enums";
+import { t } from "@/lib/languages/i18n";
+import { useQuery } from "@tanstack/react-query";
+import { Plus, Wallet } from "lucide-react";
+
+export function AccountsContent({ language, currency }: { language: string, currency: Currency }) {
+    const { data: allAccounts, isLoading } = useQuery({
+        queryKey: ["financial-accounts"],
+        queryFn: () => getFinancialAccounts(),
+    });
+
+    if (isLoading) {
+        return <AccountsSkeleton />;
+    }
 
     const accounts = allAccounts?.filter(a => a.partyId === null) || [];
 

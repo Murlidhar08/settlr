@@ -62,7 +62,7 @@ export default function CashSummary({
         {symbol}{formatAmount(Math.abs(cashBalance))}
       </motion.h2>
 
-      <div className="mt-6 sm:mt-10 grid grid-cols-2 gap-3 sm:gap-4">
+      <div className="mt-6 sm:mt-10 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         {/* Total In */}
         <motion.div
           whileHover={{ y: -2 }}

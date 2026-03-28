@@ -1,5 +1,6 @@
 "use client"
 
+import { getAccountTransactions } from "@/actions/transaction.actions"
 import { FooterButtons } from "@/components/footer-buttons"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
 import { TransactionList } from "@/components/transaction/transaction-list"
@@ -24,13 +25,16 @@ import {
     TrendingUp,
     Truck,
     User2, Users,
-    Wallet
+    Wallet,
+    Loader2
 } from "lucide-react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import BackAccountHeaderClient from "./back-account-header-client"
 
 interface AccountDetailsViewProps {
     account: any
-    transactions: any[]
+    initialTransactions: any[]
+    totalTransactions: number
     stats: {
         totalIn: number
         totalOut: number
@@ -40,8 +44,52 @@ interface AccountDetailsViewProps {
     language: string
 }
 
-export function AccountDetailsView({ account, transactions, stats, currency, language }: AccountDetailsViewProps) {
+export function AccountDetailsView({ account, initialTransactions, totalTransactions, stats, currency, language }: AccountDetailsViewProps) {
     const symbol = getCurrencySymbol(currency)
+    const [transactions, setTransactions] = useState(initialTransactions)
+    const [page, setPage] = useState(1)
+    const [loading, setLoading] = useState(false)
+    const [hasMore, setHasMore] = useState(initialTransactions.length < totalTransactions)
+    const observer = useRef<IntersectionObserver | null>(null)
+
+    const lastTransactionRef = useCallback(
+        (node: HTMLDivElement) => {
+            if (loading) return
+            if (observer.current) observer.current.disconnect()
+            observer.current = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && hasMore) {
+                    setPage((prevPage) => prevPage + 1)
+                }
+            })
+            if (node) observer.current.observe(node)
+        },
+        [loading, hasMore]
+    )
+
+    useEffect(() => {
+        if (page === 1) return
+
+        const loadMoreTransactions = async () => {
+            setLoading(true)
+            try {
+                const { transactions: nextTransactions } = await getAccountTransactions(account.id, {
+                    page,
+                    limit: 20,
+                })
+
+                if (nextTransactions.length < 20) {
+                    setHasMore(false)
+                }
+                setTransactions((prev) => [...prev, ...nextTransactions])
+            } catch (error) {
+                console.error("Failed to load more transactions:", error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadMoreTransactions()
+    }, [page, account.id, totalTransactions])
 
     const getIcon = (size = 24) => {
         switch (account.type) {
@@ -166,7 +214,7 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                                 <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/70">Statement Ledger</h2>
                             </div>
                             <div className="text-[10px] font-black uppercase tracking-widest opacity-40">
-                                {transactions.length} Total Records
+                                {totalTransactions} Total Records
                             </div>
                         </div>
 
@@ -180,6 +228,22 @@ export function AccountDetailsView({ account, transactions, stats, currency, lan
                                 accountId={account.id}
                                 accountType={account.type}
                             />
+
+                            {/* Infinite Scroll Trigger */}
+                            <div
+                                ref={lastTransactionRef}
+                                className="h-20 flex items-center justify-center mt-8"
+                            >
+                                {loading && (
+                                    <div className="flex items-center gap-3 text-muted-foreground">
+                                        <Loader2 className="size-5 animate-spin" />
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Loading more...</span>
+                                    </div>
+                                )}
+                                {!hasMore && transactions.length > 0 && (
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">End of records</p>
+                                )}
+                            </div>
                         </motion.div>
                     </div>
                 </main>

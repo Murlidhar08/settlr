@@ -3,7 +3,6 @@ import { PartyType } from "@/lib/generated/prisma/enums";
 import { Suspense } from "react";
 
 // Components
-import { getUserConfig } from "@/lib/user-config";
 import * as motion from "framer-motion/client";
 import CustomersTab from "./components/customers-tab";
 import { PartiesClientProvider, PartiesTabContent } from "./components/parties-client-wrapper";
@@ -15,7 +14,6 @@ interface PageProps {
 
 export default async function Parties({ searchParams }: PageProps) {
   const params = await searchParams;
-  const { language } = await getUserConfig();
   const currentTab = typeof params.tab === 'string' ? params.tab : "customers";
   const searchQuery = typeof params.search === 'string' ? params.search : "";
 

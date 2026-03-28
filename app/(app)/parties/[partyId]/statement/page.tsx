@@ -5,7 +5,7 @@ import { Suspense } from "react";
 
 // Components
 import { BackHeader } from "@/components/back-header";
-import { TransactionItem } from "@/components/transaction-item";
+import { TransactionItem } from "@/components/transaction/transaction-item";
 import { Card } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma/prisma";
 import ExportPDFButton from "./components/export-pdf-button";

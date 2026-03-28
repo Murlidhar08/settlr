@@ -1,6 +1,7 @@
 "use client";
 
 import { ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AdminStatsProps {
     totalUsers: number;
@@ -14,7 +15,7 @@ export function AdminStats({ totalUsers, activeUsers, bannedUsers, adminUsers }:
         {
             title: "Total Users",
             value: totalUsers,
-            icon: <Users className="h-5 w-5 sm:h-7 sm:w-7 text-white" />,
+            icon: <Users className="h-4 w-4 sm:h-5 sm:w-5 text-white" />,
             bgColor: "bg-indigo-600 dark:bg-indigo-500/90 shadow-indigo-500/20",
             glowColor: "bg-white/20",
             description: "Registered",
@@ -22,7 +23,7 @@ export function AdminStats({ totalUsers, activeUsers, bannedUsers, adminUsers }:
         {
             title: "Active",
             value: activeUsers,
-            icon: <UserCheck className="h-5 w-5 sm:h-7 sm:w-7 text-white" />,
+            icon: <UserCheck className="h-4 w-4 sm:h-5 sm:w-5 text-white" />,
             bgColor: "bg-emerald-600 dark:bg-emerald-500/90 shadow-emerald-500/20",
             glowColor: "bg-emerald-400/20",
             description: "Non-banned",
@@ -30,7 +31,7 @@ export function AdminStats({ totalUsers, activeUsers, bannedUsers, adminUsers }:
         {
             title: "Banned",
             value: bannedUsers,
-            icon: <UserX className="h-5 w-5 sm:h-7 sm:w-7 text-white" />,
+            icon: <UserX className="h-4 w-4 sm:h-5 sm:w-5 text-white" />,
             bgColor: "bg-rose-600 dark:bg-rose-500/90 shadow-rose-500/20",
             glowColor: "bg-rose-400/20",
             description: "Restricted",
@@ -38,7 +39,7 @@ export function AdminStats({ totalUsers, activeUsers, bannedUsers, adminUsers }:
         {
             title: "Admins",
             value: adminUsers,
-            icon: <ShieldCheck className="h-5 w-5 sm:h-7 sm:w-7 text-white" />,
+            icon: <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 text-white" />,
             bgColor: "bg-slate-900 dark:bg-slate-950 shadow-slate-900/20",
             glowColor: "bg-indigo-500/30",
             description: "Privileged",
@@ -46,31 +47,35 @@ export function AdminStats({ totalUsers, activeUsers, bannedUsers, adminUsers }:
     ];
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map((stat) => (
                 <div
                     key={stat.title}
-                    className={`relative overflow-hidden rounded-3xl group p-5 sm:p-6 text-white shadow-2xl transition-all hover:-translate-y-1 border border-white/10 backdrop-blur-md ${stat.bgColor}`}
+                    className={cn(
+                        "relative overflow-hidden rounded-2xl group p-4 sm:p-5 text-white transition-all hover:shadow-lg hover:-translate-y-1 border border-white/20 active:scale-[0.98]",
+                        stat.bgColor
+                    )}
                 >
-                    <div className={`absolute -top-20 -right-20 h-48 w-48 rounded-full blur-3xl group-hover:scale-110 transition-all duration-700 ${stat.glowColor}`} />
-
                     <div className="relative z-10 flex justify-between items-start">
                         <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">{stat.title}</p>
-                            <p className="text-2xl font-black tracking-tighter sm:text-3xl">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/80">{stat.title}</p>
+                            <p className="text-2xl sm:text-3xl font-black tracking-tight leading-none">
                                 {stat.value}
                             </p>
                         </div>
-                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                        <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-xl border border-white/30 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
                             {stat.icon}
                         </div>
                     </div>
 
-                    <div className="relative z-10 mt-4 flex items-center gap-2">
-                        <div className="px-3 py-1 rounded-full bg-white/10 border border-white/10 backdrop-blur-md">
-                            <span className="text-[9px] font-bold text-white/60 uppercase tracking-widest">{stat.description}</span>
+                    <div className="relative z-10 mt-4 flex items-center">
+                        <div className="px-2 py-0.5 rounded-md bg-white/10 border border-white/10">
+                            <span className="text-[9px] font-bold text-white/70 uppercase tracking-widest">{stat.description}</span>
                         </div>
                     </div>
+
+                    {/* Vibration Glow */}
+                    <div className={cn("absolute -bottom-6 -right-6 h-28 w-28 rounded-full blur-2xl opacity-40 group-hover:opacity-60 transition-opacity", stat.glowColor)} />
                 </div>
             ))}
         </div>
