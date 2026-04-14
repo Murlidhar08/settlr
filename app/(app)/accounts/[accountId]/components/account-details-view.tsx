@@ -18,6 +18,7 @@ import {
     Briefcase,
     CreditCard,
     Landmark,
+    Loader2,
     Plus,
     Scale, Settings2,
     Tag,
@@ -25,8 +26,7 @@ import {
     TrendingUp,
     Truck,
     User2, Users,
-    Wallet,
-    Loader2
+    Wallet
 } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import BackAccountHeaderClient from "./back-account-header-client"
@@ -143,8 +143,9 @@ export function AccountDetailsView({ account, initialTransactions, totalTransact
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={cn(
-                            "relative overflow-hidden rounded-[2.5rem] sm:rounded-[3rem] p-6 sm:p-8 shadow-2xl border-2 border-white/10 bg-linear-to-br",
-                            getThemeColors()
+                            "relative overflow-hidden rounded-[2.5rem] sm:rounded-[3rem] p-6 sm:p-8 shadow-2xl border-2 border-white/10 bg-linear-to-br transition-all duration-500",
+                            getThemeColors(),
+                            !account.isActive && "grayscale opacity-60 contrast-75"
                         )}
                     >
                         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 sm:gap-8">
@@ -208,7 +209,7 @@ export function AccountDetailsView({ account, initialTransactions, totalTransact
 
                     {/* Transaction List */}
                     <div className="space-y-8">
-                        <div className="flex items-center justify-between px-2">
+                        <div className={cn("flex items-center justify-between px-2", !account.isActive && "grayscale-50")}>
                             <div className="flex items-center gap-4">
                                 <div className="h-1 w-12 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
                                 <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/70">Statement Ledger</h2>
@@ -219,6 +220,7 @@ export function AccountDetailsView({ account, initialTransactions, totalTransact
                         </div>
 
                         <motion.div
+                            className={cn(!account.isActive && "grayscale-50")}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.2 }}
@@ -248,21 +250,24 @@ export function AccountDetailsView({ account, initialTransactions, totalTransact
                     </div>
                 </main>
 
-                <FooterButtons>
-                    <AddTransactionModal
-                        title="New Entry"
-                        accountId={account.id}
-                        direction={TransactionDirection.OUT}
-                        path={`/accounts/${account.id}`}
-                    >
-                        <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
-                            <Plus className="size-6 sm:size-5" />
-                            <span className="hidden md:block text-center font-black tracking-[0.2em] text-sm">
-                                Add Entry
-                            </span>
-                        </Button>
-                    </AddTransactionModal>
-                </FooterButtons>
+                {/* Add Transaction Button */}
+                {account.isActive && (
+                    <FooterButtons>
+                        <AddTransactionModal
+                            title="New Entry"
+                            accountId={account.id}
+                            direction={TransactionDirection.OUT}
+                            path={`/accounts/${account.id}`}
+                        >
+                            <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
+                                <Plus className="size-6 sm:size-5" />
+                                <span className="hidden md:block text-center font-black tracking-[0.2em] text-sm">
+                                    Add Entry
+                                </span>
+                            </Button>
+                        </AddTransactionModal>
+                    </FooterButtons>
+                )}
             </div>
         </>
     );

@@ -1,6 +1,6 @@
 "use client"
 
-import { deleteFinancialAccount } from "@/actions/financial-account.actions"
+import { deleteFinancialAccount, toggleFinancialAccountActive } from "@/actions/financial-account.actions"
 import { AddAccountModal } from "@/components/account/add-account-modal"
 import { BackHeader } from "@/components/back-header"
 import {
@@ -58,6 +58,22 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                             label: "Edit",
                             onClick: () => setIsEditing(true),
                             destructive: false
+                        },
+                        {
+                            icon: <ShieldAlert size={18} />,
+                            label: account.isActive ? "Deactivate" : "Activate",
+                            onClick: async () => {
+                                try {
+                                    await toggleFinancialAccountActive(account.id, !account.isActive)
+                                    queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
+                                    queryClient.invalidateQueries({ queryKey: ["financial-account", account.id] })
+                                    toast.success(`Account ${account.isActive ? "deactivated" : "activated"} successfully`)
+                                    router.refresh()
+                                } catch (error: any) {
+                                    toast.error(error.message || "Failed to toggle account status")
+                                }
+                            },
+                            destructive: account.isActive
                         },
                         {
                             icon: <Trash2 size={18} />,

@@ -10,11 +10,12 @@ interface PartyListProp {
   partyType: PartyType
   promise?: Promise<PartyRes[]>
   search?: string
+  includeInactive?: boolean
 }
 
-const PartyList = ({ partyType, promise, search = "" }: PartyListProp) => {
+const PartyList = ({ partyType, promise, search = "", includeInactive = false }: PartyListProp) => {
   const { data: partyLst, isLoading: loading } = useQuery({
-    queryKey: ["party-list", partyType],
+    queryKey: ["party-list", partyType, includeInactive],
     queryFn: () => promise,
   });
 
@@ -45,6 +46,7 @@ const PartyList = ({ partyType, promise, search = "" }: PartyListProp) => {
               subtitle={item.contactNo || "No contact info"}
               amount={item.amount}
               avatarUrl={item.profileUrl || undefined}
+              isActive={item.isActive}
             />
           </motion.div>
         ))}

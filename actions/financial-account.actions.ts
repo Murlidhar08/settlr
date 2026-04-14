@@ -5,17 +5,22 @@ import { CategoryType, FinancialAccountType, MoneyType, PartyType } from "@/lib/
 import { prisma } from "@/lib/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
-export async function getFinancialAccounts() {
+export async function getFinancialAccounts(includeInactive: boolean = false) {
     const session = await getUserSession();
     if (!session || !session.user.activeBusinessId) {
         return [];
     }
 
+    const where: any = {
+        businessId: session.user.activeBusinessId,
+    };
+
+    if (!includeInactive) {
+        where.isActive = true;
+    }
+
     return await prisma.financialAccount.findMany({
-        where: {
-            businessId: session.user.activeBusinessId,
-            isActive: true,
-        }
+        where
     });
 }
 
@@ -156,4 +161,25 @@ export async function getFinancialAccountBalance(accountId: string) {
     });
 
     return balances[accountId] || 0;
+}
+
+export async function toggleFinancialAccountActive(id: string, isActive: boolean) {
+    const session = await getUserSession();
+    if (!session || !session.user.activeBusinessId) {
+        throw new Error("Unauthorized");
+    }
+
+    const account = await prisma.financialAccount.update({
+        where: {
+            id,
+            businessId: session.user.activeBusinessId,
+        },
+        data: {
+            isActive,
+        },
+    });
+
+    revalidatePath("/accounts");
+    revalidatePath(`/accounts/${id}`);
+    return account;
 }

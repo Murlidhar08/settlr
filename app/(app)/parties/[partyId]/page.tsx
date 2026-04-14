@@ -6,5 +6,8 @@ export default async function PartyDetailsPage({ params }: { params: Promise<{ p
     const { partyId } = await params;
     const { currency } = await getUserConfig();
 
-    return <PartyDetailsContent partyId={partyId} currency={currency} />;
+    return <PartyDetailsContent
+        partyId={partyId}
+        currency={currency}
+    />;
 }

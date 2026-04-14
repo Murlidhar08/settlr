@@ -90,7 +90,8 @@ export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
             className={cn(
                 "group relative overflow-hidden p-6 rounded-[2.5rem] border-2 shadow-sm transition-all duration-300 cursor-pointer",
                 "bg-linear-to-br",
-                getColors()
+                getColors(),
+                !account.isActive && "grayscale opacity-60 contrast-75"
             )}
         >
             {/* ATM Card Style Elements */}

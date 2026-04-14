@@ -2,12 +2,14 @@
 
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import clsx from "clsx";
 
 interface BalanceCardProps {
   totalReceived: number;
   totalPaid: number;
   currency?: string;
+  isInactive?: boolean;
 }
 
 const formatAmount = (amount: number) =>
@@ -20,6 +22,7 @@ export function BalanceCard({
   totalReceived,
   totalPaid,
   currency,
+  isInactive
 }: BalanceCardProps) {
   const netBalance = totalReceived - totalPaid;
 
@@ -33,7 +36,11 @@ export function BalanceCard({
       : "Settled";
 
   return (
-    <Card className="relative m-1 overflow-hidden rounded-[2.5rem] border bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+    <Card className={cn(
+      "relative m-1 overflow-hidden rounded-[2.5rem] border bg-card shadow-xs transition-all duration-300",
+      !isInactive && "hover:-translate-y-1 hover:shadow-lg",
+      isInactive && "grayscale-75"
+    )}>
       {/* Accent bar */}
       <div
         className={clsx(
@@ -46,7 +53,7 @@ export function BalanceCard({
         )}
       />
 
-      <div className="grid gap-6 px-8 py-10 lg:grid-cols-3 lg:gap-8">
+      <div className="grid gap-6 px-8 py-10 lg:grid-cols-3 lg:gap-8 relative z-10">
         {/* Left content */}
         <div className="space-y-6 lg:col-span-2">
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-70">

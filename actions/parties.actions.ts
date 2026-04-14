@@ -16,6 +16,7 @@ export async function getPartyDetails(partyId: string) {
       id: true,
       name: true,
       contactNo: true,
+      isActive: true,
       financialAccounts: {
         select: { id: true, partyType: true },
         take: 1
@@ -24,7 +25,7 @@ export async function getPartyDetails(partyId: string) {
   })
 }
 
-export async function getPartyList(type: PartyType, search?: string): Promise<PartyRes[]> {
+export async function getPartyList(type: PartyType, search?: string, includeInactive: boolean = false): Promise<PartyRes[]> {
   const session = await getUserSession();
   const businessId = session?.user?.activeBusinessId;
   if (!businessId)
@@ -32,14 +33,17 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
 
   const where: any = {
     businessId,
-    isActive: true,
     financialAccounts: {
       some: {
         partyType: type,
-        isActive: true
       }
     }
   };
+
+  if (!includeInactive) {
+    where.isActive = true;
+    where.financialAccounts.some.isActive = true;
+  }
 
   if (search) {
     where.OR = [
@@ -56,6 +60,7 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
       name: true,
       contactNo: true,
       profileUrl: true,
+      isActive: true,
     },
     orderBy: {
       createdAt: "desc"
@@ -107,6 +112,7 @@ export async function getPartyList(type: PartyType, search?: string): Promise<Pa
       name: party.name,
       contactNo: party.contactNo,
       profileUrl: party.profileUrl,
+      isActive: party.isActive,
       amount: Number(balance.toFixed(2)),
     };
   });
@@ -236,4 +242,35 @@ export async function getPartyTransactions(partyId: string): Promise<Transaction
       { createdAt: "desc" }
     ]
   })
+}
+
+export async function togglePartyActive(partyId: string, isActive: boolean): Promise<boolean> {
+  const session = await getUserSession();
+
+  if (!session || !session.user.activeBusinessId) {
+    return false;
+  }
+
+  const businessId = session.user.activeBusinessId;
+
+  try {
+    await prisma.$transaction([
+      prisma.party.update({
+        where: { id: partyId, businessId },
+        data: { isActive }
+      }),
+      prisma.financialAccount.updateMany({
+        where: { partyId, businessId },
+        data: { isActive }
+      })
+    ]);
+
+    revalidatePath("/parties");
+    revalidatePath(`/parties/${partyId}`);
+    revalidatePath("/accounts");
+    return true;
+  } catch (error) {
+    console.error("Failed to toggle party active status:", error);
+    return false;
+  }
 }
