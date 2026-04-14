@@ -22,7 +22,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { addTransaction } from "@/actions/transaction.actions"
 
 // Library
-import { FinancialAccount } from "@/lib/generated/prisma/client"
 import { CategoryType, FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { cn } from "@/lib/utils"
 
@@ -41,6 +40,8 @@ interface TransactionProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }
+
+const EMPTY_ACCOUNTS: any[] = [];
 
 export const AddTransactionModal = ({
   title,
@@ -69,7 +70,7 @@ export const AddTransactionModal = ({
   const isOut = currentDirection === TransactionDirection.OUT;
 
   // TanStack Query for accounts
-  const { data: allAccounts = [], isLoading: loadingAccounts } = useQuery({
+  const { data: allAccounts = EMPTY_ACCOUNTS, isLoading: loadingAccounts } = useQuery({
     queryKey: ["financial-accounts"],
     queryFn: () => getFinancialAccounts(),
     enabled: !!open,
@@ -154,7 +155,7 @@ export const AddTransactionModal = ({
         }
         lastInitializedRef.current = initializationKey
       }
-    } else if (!open) {
+    } else if (!open && lastInitializedRef.current !== "") {
       lastInitializedRef.current = ""
       // Cleanup for next open
       if (!transactionData) {
