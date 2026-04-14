@@ -142,25 +142,28 @@ export async function getFinancialAccountBalance(accountId: string) {
         return 0;
     }
 
-    const businessId = session.user.activeBusinessId;
-    const transactions = await prisma.transaction.findMany({
-        where: { businessId, OR: [{ fromAccountId: accountId }, { toAccountId: accountId }] },
-        select: {
-            amount: true,
-            fromAccountId: true,
-            toAccountId: true,
-        },
-        orderBy: { date: "desc" },
-    });
+    const [totalIn, totalOut] = await Promise.all([
+        prisma.transaction.aggregate({
+            where: {
+                toAccountId: accountId,
+                businessId: session.user.activeBusinessId,
+            },
+            _sum: {
+                amount: true,
+            },
+        }),
+        prisma.transaction.aggregate({
+            where: {
+                fromAccountId: accountId,
+                businessId: session.user.activeBusinessId,
+            },
+            _sum: {
+                amount: true,
+            },
+        }),
+    ]);
 
-    const balances: Record<string, number> = {};
-    transactions.forEach(tx => {
-        const amount = Number(tx.amount);
-        balances[tx.fromAccountId] = (balances[tx.fromAccountId] || 0) - amount;
-        balances[tx.toAccountId] = (balances[tx.toAccountId] || 0) + amount;
-    });
-
-    return balances[accountId] || 0;
+    return Number(totalIn._sum.amount || 0) - Number(totalOut._sum.amount || 0);
 }
 
 export async function toggleFinancialAccountActive(id: string, isActive: boolean) {

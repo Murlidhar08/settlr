@@ -1,6 +1,5 @@
 "use client";
 
-import { getFinancialAccounts } from "@/actions/financial-account.actions";
 import { AccountCard } from "@/components/account/account-card";
 import { AccountsSkeleton } from "@/components/account/accounts-skeleton";
 import { AddAccountModal } from "@/components/account/add-account-modal";
@@ -9,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Currency, FinancialAccountType } from "@/lib/generated/prisma/enums";
 import { t } from "@/lib/languages/i18n";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
+import { useFinancialAccounts } from "@/tanstacks/financial-account";
 import { Eye, EyeOff, Plus, Wallet } from "lucide-react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export function AccountsContent({
@@ -26,7 +25,6 @@ export function AccountsContent({
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-
     const [showInactive, setShowInactive] = useState(initialShowInactive);
 
     const toggleInactive = () => {
@@ -42,10 +40,7 @@ export function AccountsContent({
         router.push(`${pathname}?${params.toString()}` as any, { scroll: false });
     };
 
-    const { data: allAccounts, isLoading } = useQuery({
-        queryKey: ["financial-accounts", showInactive],
-        queryFn: () => getFinancialAccounts(showInactive),
-    });
+    const { allAccounts, isLoading } = useFinancialAccounts(showInactive);
 
     if (isLoading) {
         return <AccountsSkeleton />;
