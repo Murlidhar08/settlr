@@ -1,5 +1,10 @@
 "use client";
 
+// Lib
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth/auth-client";
+import { envClient } from "@/lib/env.client";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, EyeOff, Mail, User } from "lucide-react";
 import Image from "next/image";
@@ -7,11 +12,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth/auth-client";
-import { envClient } from "@/lib/env.client";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -34,15 +34,6 @@ const itemVariants = {
 };
 
 export default function SignupPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    authClient.getSession()
-      .then((session) => {
-        if (session.data) router.push("/dashboard");
-      });
-  }, [router])
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,6 +44,16 @@ export default function SignupPage() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    authClient.getSession()
+      .then((session) => {
+        if (session.data) router.push("/dashboard");
+      });
+  }, [router])
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +94,6 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background select-none overflow-hidden">
-
       {/* LEFT PANEL */}
       <motion.div
         initial="hidden"
