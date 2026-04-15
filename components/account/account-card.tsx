@@ -1,12 +1,11 @@
 "use client"
 
-import { getFinancialAccountBalance } from "@/actions/financial-account.actions"
 import { FinancialAccount } from "@/lib/generated/prisma/client"
 import { CategoryType, Currency, FinancialAccountType, MoneyType } from "@/lib/generated/prisma/enums"
 import { cn } from "@/lib/utils"
+import { useFinancialAccountBalance } from "@/tanstacks/financial-account"
 import { formatAmount } from "@/utility/commonFunction"
 import { getCurrencySymbol } from "@/utility/transaction"
-import { useQuery } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import {
     ArrowDownLeft, ArrowUpRight,
@@ -33,10 +32,7 @@ interface AccountCardProps {
 export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
     const router = useRouter()
 
-    const { data: balance, isLoading } = useQuery({
-        queryKey: ["financial-account", account.id],
-        queryFn: () => getFinancialAccountBalance(account.id),
-    });
+    const { balance, isLoading } = useFinancialAccountBalance(account.id);
 
     const getColors = () => {
         if (account.type === FinancialAccountType.MONEY) {
@@ -90,7 +86,8 @@ export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
             className={cn(
                 "group relative overflow-hidden p-6 rounded-[2.5rem] border-2 shadow-sm transition-all duration-300 cursor-pointer",
                 "bg-linear-to-br",
-                getColors()
+                getColors(),
+                !account.isActive && "grayscale opacity-60 contrast-75"
             )}
         >
             {/* ATM Card Style Elements */}

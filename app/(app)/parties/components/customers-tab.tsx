@@ -13,10 +13,11 @@ import { PartyList } from "./party-list";
 interface PartyListProp {
   partyType: PartyType;
   search?: string;
+  includeInactive?: boolean;
 }
 
-export default async function CustomersTab({ partyType, search }: PartyListProp) {
-  const partiesPromise = getPartyList(partyType, search);
+export default async function CustomersTab({ partyType, search, includeInactive = false }: PartyListProp) {
+  const partiesPromise = getPartyList(partyType, search, includeInactive);
   const { currency } = await getUserConfig();
 
   return (
@@ -36,7 +37,12 @@ export default async function CustomersTab({ partyType, search }: PartyListProp)
           ))}
         </div>
       }>
-        <PartyList partyType={partyType} promise={partiesPromise} search={search} />
+        <PartyList
+          partyType={partyType}
+          promise={partiesPromise}
+          search={search}
+          includeInactive={includeInactive}
+        />
       </Suspense>
 
       <FooterButtons>

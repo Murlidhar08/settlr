@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 
+import { cn } from "@/lib/utils";
 import { getInitials } from "@/utility/party";
 import { formatAmount } from "@/utility/transaction";
 
@@ -19,6 +20,7 @@ interface PartyItemProps {
   amount: number
   subtitle?: string
   avatarUrl?: string
+  isActive?: boolean
 }
 
 const PartyItem = ({
@@ -27,6 +29,7 @@ const PartyItem = ({
   amount,
   subtitle,
   avatarUrl,
+  isActive = true,
 }: PartyItemProps) => {
   const router = useRouter()
   const { currency } = useUserConfig();
@@ -41,7 +44,10 @@ const PartyItem = ({
     <>
       <div
         onClick={() => router.push(`/parties/${id}`)}
-        className="group relative flex items-center gap-4 rounded-[2rem] border-2 border-primary/10 bg-background p-4 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] dark:shadow-none dark:bg-muted/10 transition-all hover:border-primary/30 hover:bg-muted/5 hover:-translate-y-1 active:scale-[0.98] cursor-pointer"
+        className={cn(
+          "group relative flex items-center gap-4 rounded-[2rem] border-2 border-primary/10 bg-background p-4 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] dark:shadow-none dark:bg-muted/10 transition-all hover:border-primary/30 hover:bg-muted/5 hover:-translate-y-1 active:scale-[0.98] cursor-pointer",
+          !isActive && "grayscale-100"
+        )}
       >
         <div className="relative">
           <Avatar className="h-14 w-14 ring-2 ring-background shadow-sm transition-transform duration-500 group-hover:scale-105">
@@ -104,3 +110,4 @@ const PartyItem = ({
 
 
 export { PartyItem };
+

@@ -5,17 +5,22 @@ import { CategoryType, FinancialAccountType, MoneyType, PartyType } from "@/lib/
 import { prisma } from "@/lib/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
-export async function getFinancialAccounts() {
+export async function getFinancialAccounts(includeInactive: boolean = false) {
     const session = await getUserSession();
     if (!session || !session.user.activeBusinessId) {
         return [];
     }
 
+    const where: any = {
+        businessId: session.user.activeBusinessId,
+    };
+
+    if (!includeInactive) {
+        where.isActive = true;
+    }
+
     return await prisma.financialAccount.findMany({
-        where: {
-            businessId: session.user.activeBusinessId,
-            isActive: true,
-        }
+        where
     });
 }
 
@@ -137,23 +142,47 @@ export async function getFinancialAccountBalance(accountId: string) {
         return 0;
     }
 
-    const businessId = session.user.activeBusinessId;
-    const transactions = await prisma.transaction.findMany({
-        where: { businessId, OR: [{ fromAccountId: accountId }, { toAccountId: accountId }] },
-        select: {
-            amount: true,
-            fromAccountId: true,
-            toAccountId: true,
+    const [totalIn, totalOut] = await Promise.all([
+        prisma.transaction.aggregate({
+            where: {
+                toAccountId: accountId,
+                businessId: session.user.activeBusinessId,
+            },
+            _sum: {
+                amount: true,
+            },
+        }),
+        prisma.transaction.aggregate({
+            where: {
+                fromAccountId: accountId,
+                businessId: session.user.activeBusinessId,
+            },
+            _sum: {
+                amount: true,
+            },
+        }),
+    ]);
+
+    return Number(totalIn._sum.amount || 0) - Number(totalOut._sum.amount || 0);
+}
+
+export async function toggleFinancialAccountActive(id: string, isActive: boolean) {
+    const session = await getUserSession();
+    if (!session || !session.user.activeBusinessId) {
+        throw new Error("Unauthorized");
+    }
+
+    const account = await prisma.financialAccount.update({
+        where: {
+            id,
+            businessId: session.user.activeBusinessId,
         },
-        orderBy: { date: "desc" },
+        data: {
+            isActive,
+        },
     });
 
-    const balances: Record<string, number> = {};
-    transactions.forEach(tx => {
-        const amount = Number(tx.amount);
-        balances[tx.fromAccountId] = (balances[tx.fromAccountId] || 0) - amount;
-        balances[tx.toAccountId] = (balances[tx.toAccountId] || 0) + amount;
-    });
-
-    return balances[accountId] || 0;
+    revalidatePath("/accounts");
+    revalidatePath(`/accounts/${id}`);
+    return account;
 }

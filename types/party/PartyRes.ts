@@ -6,6 +6,7 @@ export interface PartyRes {
   amount: number
   contactNo?: string | null
   profileUrl?: string | null
+  isActive?: boolean
 }
 
 export interface PartyInput {

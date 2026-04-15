@@ -1,6 +1,6 @@
 "use client"
 
-import { deleteParty, updateParty } from "@/actions/parties.actions"
+import { deleteParty, updateParty, togglePartyActive } from "@/actions/parties.actions"
 import { BackHeader } from "@/components/back-header"
 import {
   AlertDialog,
@@ -80,6 +80,22 @@ export default function BackHeaderClient({ party }: { party: any }) {
             label: "Edit",
             onClick: () => setIsEditing(true),
             destructive: false
+          },
+          {
+            icon: <ShieldAlert size={18} />,
+            label: party.isActive ? "Deactivate" : "Activate",
+            onClick: async () => {
+              const success = await togglePartyActive(party.id, !party.isActive)
+              if (success) {
+                queryClient.invalidateQueries({ queryKey: ["party-list", party?.type] })
+                queryClient.invalidateQueries({ queryKey: ["party-detail", party.id] })
+                toast.success(`Party ${party.isActive ? "deactivated" : "activated"} successfully`)
+                router.refresh()
+              } else {
+                toast.error("Failed to toggle party status")
+              }
+            },
+            destructive: party.isActive
           },
           {
             icon: <Trash2 size={18} />,

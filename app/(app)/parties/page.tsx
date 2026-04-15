@@ -16,6 +16,7 @@ export default async function Parties({ searchParams }: PageProps) {
   const params = await searchParams;
   const currentTab = typeof params.tab === 'string' ? params.tab : "customers";
   const searchQuery = typeof params.search === 'string' ? params.search : "";
+  const includeInactive = params.inactive === 'true';
 
   const partyType =
     currentTab === "suppliers" ? PartyType.SUPPLIER :
@@ -50,6 +51,7 @@ export default async function Parties({ searchParams }: PageProps) {
               <CustomersTab
                 partyType={partyType}
                 search={searchQuery}
+                includeInactive={includeInactive}
               />
             </Suspense>
           </PartiesTabContent>

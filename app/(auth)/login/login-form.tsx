@@ -50,6 +50,8 @@ export default function LoginForm({ providers }: LoginFormProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [discordLoading, setDiscordLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [lastLogin, setLastLogin] = useState("");
 
@@ -83,11 +85,23 @@ export default function LoginForm({ providers }: LoginFormProps) {
   };
 
   const handleGoogle = async () => {
-    await signInWithGoogle();
+    setGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      console.error(err);
+      setGoogleLoading(false);
+    }
   };
 
   const handleDiscordLogin = async () => {
-    await signInWithDiscord();
+    setDiscordLoading(true);
+    try {
+      await signInWithDiscord();
+    } catch (err) {
+      console.error(err);
+      setDiscordLoading(false);
+    }
   }
 
   const hasSocialLogin = providers.google || providers.discord;
@@ -211,7 +225,7 @@ export default function LoginForm({ providers }: LoginFormProps) {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || googleLoading || discordLoading}
               className="relative rounded-2xl h-14 w-full text-lg font-bold shadow-xl shadow-primary/10 hover:shadow-primary/25 transition-all duration-300 active:scale-[0.98]"
             >
               {loading ? (
@@ -244,11 +258,16 @@ export default function LoginForm({ providers }: LoginFormProps) {
                   <Button
                     onClick={handleGoogle}
                     variant="outline"
-                    className="relative rounded-2xl h-14 px-6 flex items-center justify-center gap-3 hover:bg-muted/50 border-muted-foreground/10 transition-all duration-300 active:scale-[0.98]"
+                    disabled={googleLoading || loading || discordLoading}
+                    className="relative rounded-2xl h-14 px-6 flex items-center justify-center gap-3 hover:bg-muted/50 border-muted-foreground/10 transition-all duration-300 active:scale-[0.98] group/google"
                   >
-                    <Image src="/google.svg" alt="Google" width={22} height={22} />
-                    <span className="font-semibold">Google</span>
-                    {lastLogin === "google" && (
+                    {googleLoading ? (
+                      <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                    ) : (
+                      <Image src="/google.svg" alt="Google" width={22} height={22} className="group-hover/google:scale-110 transition-transform" />
+                    )}
+                    <span className="font-semibold">{googleLoading ? "Connecting..." : "Google"}</span>
+                    {lastLogin === "google" && !googleLoading && (
                       <Badge variant="secondary" className="absolute -top-3 -right-2 px-3 py-1 bg-background border-primary/20 text-primary shadow-sm">Last used</Badge>
                     )}
                   </Button>
@@ -258,11 +277,16 @@ export default function LoginForm({ providers }: LoginFormProps) {
                   <Button
                     onClick={handleDiscordLogin}
                     variant="outline"
-                    className="relative rounded-2xl h-14 px-6 flex items-center justify-center gap-3 hover:bg-muted/50 border-muted-foreground/10 transition-all duration-300 active:scale-[0.98]"
+                    disabled={discordLoading || loading || googleLoading}
+                    className="relative rounded-2xl h-14 px-6 flex items-center justify-center gap-3 hover:bg-muted/50 border-muted-foreground/10 transition-all duration-300 active:scale-[0.98] group/discord"
                   >
-                    <Image src="/discord.svg" alt="Discord" width={22} height={22} />
-                    <span className="font-semibold">Discord</span>
-                    {lastLogin === "discord" && (
+                    {discordLoading ? (
+                      <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                    ) : (
+                      <Image src="/discord.svg" alt="Discord" width={22} height={22} className="group-hover/discord:scale-110 transition-transform" />
+                    )}
+                    <span className="font-semibold">{discordLoading ? "Connecting..." : "Discord"}</span>
+                    {lastLogin === "discord" && !discordLoading && (
                       <Badge variant="secondary" className="absolute -top-3 -right-2 px-3 py-1 bg-background border-primary/20 text-primary shadow-sm">Last used</Badge>
                     )}
                   </Button>
