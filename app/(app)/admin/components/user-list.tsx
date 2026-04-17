@@ -14,12 +14,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth/auth-client";
-import { format } from "date-fns";
 import {
-    Activity,
     Ban,
-    Briefcase,
-    Calendar,
     Check,
     Filter,
     MoreHorizontal,
@@ -35,6 +31,9 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { comprehensiveDeleteUser } from "@/actions/admin.actions";
+import { useAdminUsers } from "@/tanstacks/admin";
+
 interface User {
     id: string;
     email: string;
@@ -49,19 +48,18 @@ interface User {
     emailVerified?: boolean;
 }
 
-interface UserListProps {
-    initialUsers: User[];
-}
-
-export function UserList({ initialUsers }: UserListProps) {
+export function UserList() {
     const confirm = useConfirm();
     const prompt = usePrompt();
-    const [users, setUsers] = useState<User[]>(initialUsers);
-    const [loading, setLoading] = useState<string | null>(null);
+    const { data: usersData, isLoading, refetch } = useAdminUsers();
+
+    const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [search, setSearch] = useState("");
     const [filterRole, setFilterRole] = useState<string>("all");
     const [filterStatus, setFilterStatus] = useState<string>("all");
     const [filterVerified, setFilterVerified] = useState<string>("all");
+
+    const users = usersData || [];
 
     const filteredUsers = users.filter(user => {
         const matchesSearch = user.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -78,20 +76,19 @@ export function UserList({ initialUsers }: UserListProps) {
     });
 
     const handleAction = async (userId: string, action: () => Promise<any>, successMsg: string) => {
-        setLoading(userId);
+        setActionLoading(userId);
         try {
-            const { error } = await action();
-            if (error) {
-                toast.error(error.message || "Something went wrong");
+            const res = await action();
+            if (res?.error) {
+                toast.error(res.error.message || res.error || "Something went wrong");
                 return;
             }
             toast.success(successMsg);
-            // Refresh user list (ideally we should fetch again, but for now we manually update)
-            // Note: better-auth client doesn't automatically re-export listUsers so we might need to handle state carefully
+            refetch();
         } catch (err) {
             toast.error("Failed to perform action");
         } finally {
-            setLoading(null);
+            setActionLoading(null);
         }
     };
 
@@ -101,8 +98,6 @@ export function UserList({ initialUsers }: UserListProps) {
             () => authClient.admin.setRole({ userId, role: role as "admin" | "user" }),
             `Role updated to ${role}`
         );
-
-        setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u));
     };
 
     const banUser = async (userId: string) => {
@@ -121,7 +116,6 @@ export function UserList({ initialUsers }: UserListProps) {
             () => authClient.admin.banUser({ userId, banReason }),
             "User banned successfully"
         );
-        setUsers(prev => prev.map(u => u.id === userId ? { ...u, banned: true } : u));
     };
 
     const impersonateUser = async (userId: string) => {
@@ -153,10 +147,9 @@ export function UserList({ initialUsers }: UserListProps) {
 
         await handleAction(
             userId,
-            () => authClient.admin.removeUser({ userId }),
-            "User deleted successfully"
+            () => comprehensiveDeleteUser(userId),
+            "User and all associated data deleted successfully"
         );
-        setUsers(prev => prev.filter(u => u.id !== userId));
     };
 
 
@@ -166,7 +159,6 @@ export function UserList({ initialUsers }: UserListProps) {
             () => authClient.admin.unbanUser({ userId }),
             "User unbanned successfully"
         );
-        setUsers(prev => prev.map(u => u.id === userId ? { ...u, banned: false } : u));
     };
 
     return (
@@ -250,7 +242,7 @@ export function UserList({ initialUsers }: UserListProps) {
                             <UserX className="mx-auto h-12 w-12 text-muted-foreground/10 mb-3" />
                             <p className="text-muted-foreground text-sm font-bold uppercase tracking-wider">No matches found</p>
                         </div>
-                    ) : ( 
+                    ) : (
                         filteredUsers?.map((user) => (
                             <div
                                 key={user.id}
@@ -314,7 +306,7 @@ export function UserList({ initialUsers }: UserListProps) {
                                     <DropdownMenu>
                                         <DropdownMenuTrigger
                                             render={
-                                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-muted/30 border border-transparent hover:border-primary/20 hover:bg-primary/5 hover:text-primary transition-all duration-300 shadow-inner" disabled={loading === user.id}>
+                                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-muted/30 border border-transparent hover:border-primary/20 hover:bg-primary/5 hover:text-primary transition-all duration-300 shadow-inner" disabled={actionLoading === user.id}>
                                                     <MoreHorizontal size={18} className="opacity-60" />
                                                 </Button>
                                             }
