@@ -1,6 +1,5 @@
 "use client"
 
-import { getPartyDetails, getPartyTransactions } from '@/actions/parties.actions';
 import { FooterButtons } from '@/components/footer-buttons';
 import { AddTransactionModal } from '@/components/transaction/add-transaction-modal';
 import { TransactionList } from '@/components/transaction/transaction-list';
@@ -9,12 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Currency, FinancialAccountType } from '@/lib/generated/prisma/enums';
 import { calculateAccountStats } from '@/lib/transaction-logic';
 import { cn } from "@/lib/utils";
+import { usePartyDetails, usePartyTransactions } from '@/tanstacks/parties';
 import { TransactionDirection } from '@/types/transaction/TransactionDirection';
 import { getCurrencySymbol } from '@/utility/transaction';
-import { useQuery } from '@tanstack/react-query';
 import { Plus, Search } from 'lucide-react';
 import BackHeaderClient from './back-header-client';
 import { BalanceCard } from './balance-card';
+import { PartyDetailsSkeleton } from './party-details-skeleton';
 import { QuickActions } from './quick-action';
 
 interface PartyDetailsContentProps {
@@ -23,26 +23,15 @@ interface PartyDetailsContentProps {
 }
 
 export function PartyDetailsContent({ partyId, currency }: PartyDetailsContentProps) {
-    const { data: party, isLoading: partyLoading } = useQuery({
-        queryKey: ["party-detail", partyId],
-        queryFn: () => getPartyDetails(partyId),
-    });
-
-    const { data: transactions, isLoading: transactionsLoading } = useQuery({
-        queryKey: ["party-transactions", partyId],
-        queryFn: () => getPartyTransactions(partyId),
-    });
+    const { data: party, isLoading: partyLoading } = usePartyDetails(partyId);
+    const { data: transactions, isLoading: transactionsLoading } = usePartyTransactions(partyId);
 
     if (partyLoading || transactionsLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-muted-foreground animate-pulse">Loading party details...</div>
-            </div>
-        );
+        return <PartyDetailsSkeleton />;
     }
 
     if (!party) {
-        return <div>Party not found</div>;
+        return <div className="p-8 text-center text-muted-foreground uppercase tracking-widest font-black">Party not found</div>;
     }
 
     const partyAccountId = party.financialAccounts[0]?.id;

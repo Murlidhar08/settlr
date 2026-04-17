@@ -1,23 +1,18 @@
 "use client";
 
 import { PartyType } from "@/lib/generated/prisma/enums";
-import { PartyRes } from "@/types/party/PartyRes";
-import { useQuery } from "@tanstack/react-query";
+import { useParties } from "@/tanstacks/parties";
 import { AnimatePresence, motion } from "framer-motion";
 import { PartyItem } from "./party-item";
 
 interface PartyListProp {
   partyType: PartyType
-  promise?: Promise<PartyRes[]>
   search?: string
   includeInactive?: boolean
 }
 
-const PartyList = ({ partyType, promise, search = "", includeInactive = false }: PartyListProp) => {
-  const { data: partyLst, isLoading: loading } = useQuery({
-    queryKey: ["party-list", partyType, includeInactive],
-    queryFn: () => promise,
-  });
+const PartyList = ({ partyType, search = "", includeInactive = false }: PartyListProp) => {
+  const { data: partyLst, isLoading: loading } = useParties(partyType, search, includeInactive);
 
   if (loading && !partyLst) {
     return (
@@ -79,3 +74,4 @@ const PartyList = ({ partyType, promise, search = "", includeInactive = false }:
 }
 
 export { PartyList };
+
