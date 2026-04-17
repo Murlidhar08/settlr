@@ -444,3 +444,53 @@ export const getAccountTransactions = async function getAccountTransactions(
     transactions: transactions.map(tx => ({ ...tx, amount: Number(tx.amount) })),
   };
 };
+
+export const getBudgetInsights = async function getBudgetInsights() {
+  const session = await getUserSession();
+  const businessId = session?.user.activeBusinessId;
+
+  if (!businessId) return null;
+
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  // Fetch transactions for the current month
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      businessId,
+      date: { gte: startOfMonth }
+    },
+    include: {
+      fromAccount: { select: { name: true, type: true } },
+      toAccount: { select: { name: true, type: true } }
+    }
+  });
+
+  const categories: Record<string, number> = {};
+  let totalIncome = 0;
+  let totalExpense = 0;
+
+  transactions.forEach(tx => {
+    const amount = Number(tx.amount);
+    // Expense categorization
+    if (tx.fromAccount.type === FinancialAccountType.MONEY && tx.toAccount.type === FinancialAccountType.CATEGORY) {
+      categories[tx.toAccount.name] = (categories[tx.toAccount.name] || 0) + amount;
+      totalExpense += amount;
+    }
+    // Income categorization
+    if (tx.fromAccount.type === FinancialAccountType.CATEGORY && tx.toAccount.type === FinancialAccountType.MONEY) {
+      totalIncome += amount;
+    }
+  });
+
+  const sortedCategories = Object.entries(categories).sort((a, b) => b[1] - a[1]);
+  const topExpense = sortedCategories[0];
+
+  return {
+    totalIncome,
+    totalExpense,
+    topExpense,
+    hasTransactions: transactions.length > 0
+  };
+};
