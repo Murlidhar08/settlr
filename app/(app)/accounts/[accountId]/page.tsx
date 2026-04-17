@@ -1,33 +1,19 @@
-import { getAccountStats, getAccountTransactions } from "@/actions/transaction.actions";
 import { getUserConfig } from "@/lib/user-config";
 import { Suspense } from "react";
 import { AccountDetailsView } from "./components/account-details-view";
+import { AccountDetailsSkeleton } from "./components/account-details-skeleton";
 
 export default async function AccountDetailsPage({ params }: { params: Promise<{ accountId: string }> }) {
     const { accountId } = await params;
+    const { currency, language } = await getUserConfig();
 
     return (
-        <Suspense fallback={null}>
-            <AccountContent accountId={accountId} />
+        <Suspense fallback={<AccountDetailsSkeleton />}>
+            <AccountDetailsView
+                accountId={accountId}
+                currency={currency}
+                language={language}
+            />
         </Suspense>
-    );
-}
-
-async function AccountContent({ accountId }: { accountId: string }) {
-    const [{ account, transactions, totalTransactions }, stats, userConfig] = await Promise.all([
-        getAccountTransactions(accountId, { page: 1, limit: 20 }),
-        getAccountStats(accountId),
-        getUserConfig()
-    ]);
-
-    return (
-        <AccountDetailsView
-            account={account}
-            initialTransactions={transactions}
-            totalTransactions={totalTransactions}
-            stats={stats}
-            currency={userConfig.currency}
-            language={userConfig.language}
-        />
     );
 }

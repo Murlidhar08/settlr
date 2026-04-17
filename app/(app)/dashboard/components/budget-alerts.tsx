@@ -5,16 +5,13 @@ import { Currency } from "@/lib/generated/prisma/enums";
 import { useBudgetInsights } from "@/tanstacks/dashboard";
 import { formatAmount } from "@/utility/transaction";
 import { AlertCircle, Info } from "lucide-react";
-import { useSession } from "@/lib/auth/auth-client";
 
 interface BudgetAlertsProps {
     currency: Currency;
 }
 
 export function BudgetAlerts({ currency }: BudgetAlertsProps) {
-    const { data: session } = useSession();
-    const businessId = session?.user?.activeBusinessId;
-    const { data: insights, isLoading } = useBudgetInsights(businessId);
+    const { data: insights, isLoading } = useBudgetInsights();
 
     if (isLoading) {
         return <BudgetAlertsSkeleton />;
