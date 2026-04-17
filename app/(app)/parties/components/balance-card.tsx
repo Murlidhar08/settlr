@@ -1,21 +1,28 @@
 "use client";
 
 import { ArrowDown, ArrowUp, ChevronRight } from "lucide-react";
-import { use } from "react";
 
 import { Currency } from "@/lib/generated/prisma/enums";
-import { PartyRes } from "@/types/party/PartyRes";
 import { formatAmount } from "@/utility/transaction";
 
+import { PartyType } from "@/lib/generated/prisma/enums";
+import { useParties } from "@/tanstacks/parties";
+
 interface BalanceCardProps {
-    promise: Promise<PartyRes[]>,
-    currency: Currency
+    partyType: PartyType;
+    search?: string;
+    includeInactive?: boolean;
+    currency: Currency;
 }
 
 import { motion } from "framer-motion";
 
-export default function BalanceCard({ promise, currency }: BalanceCardProps) {
-    const parties = use(promise);
+export default function BalanceCard({ partyType, search, includeInactive, currency }: BalanceCardProps) {
+    const { data: parties, isLoading } = useParties(partyType, search, includeInactive);
+
+    if (isLoading || !parties) {
+        return <div className="h-28 w-full animate-pulse rounded-2xl bg-muted/20 border border-muted/30" />;
+    }
 
     const totalAmountRaw = parties.reduce((sum, party) => sum + party.amount, 0);
     const totalAmount = Number(totalAmountRaw.toFixed(3));

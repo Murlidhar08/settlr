@@ -9,7 +9,7 @@ export function LayoutTransitions({ children }: { children: React.ReactNode }) {
     return (
         <motion.main
             key={pathname}
-            className="flex-1 flex flex-col bg-background w-full pb-34"
+            className="flex-1 flex flex-col bg-background w-full"
         >
             {children}
         </motion.main>

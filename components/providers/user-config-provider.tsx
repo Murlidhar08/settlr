@@ -9,6 +9,9 @@ interface userSettings {
   timeFormat: string,
   language: string,
   theme: ThemeMode,
+  defAccId?: string | null,
+  defIncomeAccId?: string | null,
+  defExpenseAccId?: string | null,
   setTheme: (theme: ThemeMode) => void,
 }
 

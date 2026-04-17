@@ -1,52 +1,25 @@
-import { getUserSession } from "@/lib/auth/auth";
-import { FinancialAccountType } from "@/lib/generated/prisma/enums";
-import { prisma } from "@/lib/prisma/prisma";
-import { getUserConfig } from "@/lib/user-config";
+"use client"
+
+import { Skeleton } from "@/components/ui/skeleton";
+import { Currency } from "@/lib/generated/prisma/enums";
+import { useBudgetInsights } from "@/tanstacks/dashboard";
 import { formatAmount } from "@/utility/transaction";
 import { AlertCircle, Info } from "lucide-react";
 
-export async function BudgetAlerts() {
-    const session = await getUserSession();
-    const { currency } = await getUserConfig();
-    const businessId = session?.user.activeBusinessId;
+interface BudgetAlertsProps {
+    currency: Currency;
+}
 
-    if (!businessId) return null;
+export function BudgetAlerts({ currency }: BudgetAlertsProps) {
+    const { data: insights, isLoading } = useBudgetInsights();
 
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
+    if (isLoading) {
+        return <BudgetAlertsSkeleton />;
+    }
 
-    // Fetch transactions for the current month
-    const transactions = await prisma.transaction.findMany({
-        where: {
-            businessId,
-            date: { gte: startOfMonth }
-        },
-        include: {
-            fromAccount: { select: { name: true, type: true } },
-            toAccount: { select: { name: true, type: true } }
-        }
-    });
+    if (!insights) return null;
 
-    const categories: Record<string, number> = {};
-    let totalIncome = 0;
-    let totalExpense = 0;
-
-    transactions.forEach(tx => {
-        const amount = Number(tx.amount);
-        // Expense categorization
-        if (tx.fromAccount.type === FinancialAccountType.MONEY && tx.toAccount.type === FinancialAccountType.CATEGORY) {
-            categories[tx.toAccount.name] = (categories[tx.toAccount.name] || 0) + amount;
-            totalExpense += amount;
-        }
-        // Income categorization
-        if (tx.fromAccount.type === FinancialAccountType.CATEGORY && tx.toAccount.type === FinancialAccountType.MONEY) {
-            totalIncome += amount;
-        }
-    });
-
-    const sortedCategories = Object.entries(categories).sort((a, b) => b[1] - a[1]);
-    const topExpense = sortedCategories[0];
+    const { totalIncome, totalExpense, topExpense, hasTransactions } = insights;
 
     return (
         <div className="space-y-4">
@@ -87,11 +60,48 @@ export async function BudgetAlerts() {
                 </div>
             </div>
 
-            {!topExpense && transactions.length > 0 && (
+            {!topExpense && hasTransactions && (
                 <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-center">
                     <p className="text-xs text-muted-foreground/60 italic">No specific spending alerts for this month.</p>
                 </div>
             )}
+        </div>
+    );
+}
+
+export function BudgetAlertsSkeleton() {
+    return (
+        <div className="space-y-4">
+            {/* Top Expense Insight Skeleton */}
+            <div className="p-5 rounded-3xl bg-muted/10 border border-border/50 space-y-3">
+                <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded-full" />
+                    <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="h-4 w-full rounded-lg" />
+            </div>
+
+            {/* Savings Reflection Skeleton */}
+            <div className="p-5 rounded-3xl bg-muted/10 border border-border/50 space-y-4">
+                <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded-full" />
+                    <Skeleton className="h-3 w-32" />
+                </div>
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <Skeleton className="h-3 w-20" />
+                        <Skeleton className="h-3 w-16" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <Skeleton className="h-3 w-20" />
+                        <Skeleton className="h-3 w-16" />
+                    </div>
+                    <div className="pt-2 mt-2 border-t border-border/50 flex items-center justify-between">
+                        <Skeleton className="h-3 w-12" />
+                        <Skeleton className="h-4 w-20" />
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

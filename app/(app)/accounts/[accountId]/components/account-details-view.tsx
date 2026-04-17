@@ -2,6 +2,7 @@
 
 import { getAccountTransactions } from "@/actions/transaction.actions"
 import { FooterButtons } from "@/components/footer-buttons"
+import { useUserConfig } from "@/components/providers/user-config-provider"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
 import { TransactionList } from "@/components/transaction/transaction-list"
 import { Button } from "@/components/ui/button"
@@ -12,7 +13,8 @@ import { formatAmount } from "@/utility/commonFunction"
 import { getCurrencySymbol } from "@/utility/transaction"
 import { motion } from "framer-motion"
 import {
-    ArrowDownLeft,
+    ArrowDownLeft, ArrowDownToLine,
+    ArrowUpFromLine,
     ArrowUpRight,
     Banknote,
     Briefcase,
@@ -21,6 +23,7 @@ import {
     Loader2,
     Plus,
     Scale, Settings2,
+    ShieldAlert,
     Tag,
     TrendingDown,
     TrendingUp,
@@ -31,30 +34,42 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react"
 import BackAccountHeaderClient from "./back-account-header-client"
 
+import { useAccountStats, useAccountTransactions } from "@/tanstacks/financial-account"
+import { AccountDetailsSkeleton } from "./account-details-skeleton"
+
 interface AccountDetailsViewProps {
-    account: any
-    initialTransactions: any[]
-    totalTransactions: number
-    stats: {
-        totalIn: number
-        totalOut: number
-        balance: number
-    }
+    accountId: string
     currency: Currency
     language: string
 }
 
-export function AccountDetailsView({ account, initialTransactions, totalTransactions, stats, currency, language }: AccountDetailsViewProps) {
+export function AccountDetailsView({ accountId, currency, language }: AccountDetailsViewProps) {
+    // 1. All Hooks at the very top
+    const { defAccId, defIncomeAccId, defExpenseAccId } = useUserConfig()
     const symbol = getCurrencySymbol(currency)
-    const [transactions, setTransactions] = useState(initialTransactions)
+    const { data: statsData, isLoading: statsLoading } = useAccountStats(accountId)
+    const { data: transData, isLoading: transLoading } = useAccountTransactions(accountId)
+
+    const [transactions, setTransactions] = useState<any[]>([])
     const [page, setPage] = useState(1)
     const [loading, setLoading] = useState(false)
-    const [hasMore, setHasMore] = useState(initialTransactions.length < totalTransactions)
+    const [hasMore, setHasMore] = useState(false)
     const observer = useRef<IntersectionObserver | null>(null)
+
+    useEffect(() => {
+        if (transData) {
+            setTransactions(transData.transactions)
+            setHasMore(transData.transactions.length < transData.totalTransactions)
+        }
+    }, [transData])
+
+    const { account } = transData || {}
+    const stats = statsData
+    const totalTransactions = transData?.totalTransactions
 
     const lastTransactionRef = useCallback(
         (node: HTMLDivElement) => {
-            if (loading) return
+            if (loading || !transData) return
             if (observer.current) observer.current.disconnect()
             observer.current = new IntersectionObserver((entries) => {
                 if (entries[0].isIntersecting && hasMore) {
@@ -63,11 +78,11 @@ export function AccountDetailsView({ account, initialTransactions, totalTransact
             })
             if (node) observer.current.observe(node)
         },
-        [loading, hasMore]
+        [loading, hasMore, transData]
     )
 
     useEffect(() => {
-        if (page === 1) return
+        if (page === 1 || !transData || !account) return
 
         const loadMoreTransactions = async () => {
             setLoading(true)
@@ -89,7 +104,19 @@ export function AccountDetailsView({ account, initialTransactions, totalTransact
         }
 
         loadMoreTransactions()
-    }, [page, account.id, totalTransactions])
+    }, [page, account, totalTransactions, transData])
+
+    // 2. Early returns AFTER all hooks
+    if (statsLoading || transLoading || stats == undefined) {
+        return <AccountDetailsSkeleton />
+    }
+
+    if (!statsData || !transData || !account) return null
+
+    // 3. Helpers and logic
+    const isDefaultAcc = defAccId === accountId
+    const isDefaultIncome = defIncomeAccId === accountId
+    const isDefaultExpense = defExpenseAccId === accountId
 
     const getIcon = (size = 24) => {
         switch (account.type) {
@@ -136,7 +163,7 @@ export function AccountDetailsView({ account, initialTransactions, totalTransact
         <>
             <BackAccountHeaderClient account={account} />
 
-            <div className="w-full bg-background relative pb-32">
+            <div className="w-full bg-background relative pb-34">
                 <main className="relative z-10 mx-auto max-w-4xl px-4 py-8 space-y-12">
                     {/* Hero Stats Card */}
                     <motion.div
@@ -158,6 +185,26 @@ export function AccountDetailsView({ account, initialTransactions, totalTransact
                                         {getIcon(24)}
                                     </div>
                                     <div>
+                                        <div className="flex flex-wrap gap-2 mb-1">
+                                            {isDefaultAcc && (
+                                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/10 border-white/20 text-white">
+                                                    <ShieldAlert size={8} strokeWidth={3} />
+                                                    Primary
+                                                </div>
+                                            )}
+                                            {isDefaultIncome && (
+                                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/10 border-white/20 text-white">
+                                                    <ArrowDownToLine size={8} strokeWidth={3} />
+                                                    Def. Income
+                                                </div>
+                                            )}
+                                            {isDefaultExpense && (
+                                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/10 border-white/20 text-white">
+                                                    <ArrowUpFromLine size={8} strokeWidth={3} />
+                                                    Def. Expense
+                                                </div>
+                                            )}
+                                        </div>
                                         <h1 className="text-xl sm:text-2xl font-black tracking-tight">{account.name}</h1>
                                         <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
                                             {account.moneyType || account.partyType || account.categoryType || account.type}

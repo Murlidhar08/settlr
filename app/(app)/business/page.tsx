@@ -122,7 +122,7 @@ export default function BusinessPage() {
     const businessToDelete = businesses.find(b => b.id === deleteId);
 
     return (
-        <div className="w-full bg-background pb-32">
+        <div className="w-full bg-background pb-34">
             <BackHeader title="Manage Businesses" />
 
             <div className="mx-auto max-w-2xl p-6 space-y-6">

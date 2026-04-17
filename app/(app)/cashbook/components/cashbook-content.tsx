@@ -1,8 +1,7 @@
 "use client"
 
-import { getCashbookTransactions } from "@/actions/transaction.actions"
 import { Currency } from "@/lib/generated/prisma/enums"
-import { useQuery } from "@tanstack/react-query"
+import { useCashbook } from "@/tanstacks/cashbook"
 import CashSummary from "./cash-summary"
 import { CashbookList } from "./cashbook-list"
 
@@ -22,10 +21,7 @@ export function CashbookContent({
   currency
 }: CashbookContentProps) {
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["cashbook-transactions", search, category, startDate, endDate],
-    queryFn: () => getCashbookTransactions({ search, category, startDate, endDate }),
-  });
+  const { data, isLoading } = useCashbook({ search, category, startDate, endDate });
 
   const transactions = data?.transactions ?? []
   const totalIn = data?.totalIn ?? 0

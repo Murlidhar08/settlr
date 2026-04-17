@@ -1,7 +1,6 @@
 import { Plus } from "lucide-react";
 import { Suspense } from "react";
 
-import { getPartyList } from "@/actions/parties.actions";
 import { FooterButtons } from "@/components/footer-buttons";
 import { Button } from "@/components/ui/button";
 import { PartyType } from "@/lib/generated/prisma/enums";
@@ -17,13 +16,17 @@ interface PartyListProp {
 }
 
 export default async function CustomersTab({ partyType, search, includeInactive = false }: PartyListProp) {
-  const partiesPromise = getPartyList(partyType, search, includeInactive);
   const { currency } = await getUserConfig();
 
   return (
     <main className="flex-1 w-full space-y-4">
-      <Suspense fallback={<div className="h-28 w-full animate-pulse rounded-2xl bg-muted" />}>
-        <BalanceCard promise={partiesPromise} currency={currency} />
+      <Suspense fallback={<div className="h-28 w-full animate-pulse rounded-2xl bg-muted/20 border border-muted/30" />}>
+        <BalanceCard
+          partyType={partyType}
+          search={search}
+          includeInactive={includeInactive}
+          currency={currency}
+        />
       </Suspense>
 
       <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -33,13 +36,12 @@ export default async function CustomersTab({ partyType, search, includeInactive 
       <Suspense fallback={
         <div className="space-y-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-16 w-full animate-pulse rounded-xl bg-muted/50" />
+            <div key={i} className="h-16 w-full animate-pulse rounded-xl bg-muted/20 border border-muted/30" />
           ))}
         </div>
       }>
         <PartyList
           partyType={partyType}
-          promise={partiesPromise}
           search={search}
           includeInactive={includeInactive}
         />

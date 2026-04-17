@@ -1,6 +1,7 @@
 "use client"
 
 import { deleteFinancialAccount, toggleFinancialAccountActive } from "@/actions/financial-account.actions"
+import { upsertUserSettings } from "@/actions/user-settings.actions"
 import { AddAccountModal } from "@/components/account/add-account-modal"
 import { BackHeader } from "@/components/back-header"
 import {
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { FinancialAccount } from "@/lib/generated/prisma/client"
 import { useQueryClient } from "@tanstack/react-query"
-import { Pencil, ShieldAlert, Trash2 } from "lucide-react"
+import { ArrowDownToLine, ArrowUpFromLine, Pencil, ShieldAlert, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -44,8 +45,56 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                 title={account?.name}
                 description={account?.moneyType || account?.categoryType || account?.type}
                 backUrl={'/accounts' as any}
-                menuItems={
-                    account.isSystem ? [
+                menuItems={[
+                    ...(account.type === 'MONEY' ? [
+                        {
+                            icon: <ShieldAlert size={18} />,
+                            label: "Set as Primary Account",
+                            onClick: async () => {
+                                try {
+                                    await upsertUserSettings({ defAccId: account.id })
+                                    toast.success("Primary money account updated")
+                                    router.refresh()
+                                } catch (err) {
+                                    toast.error("Failed to update settings")
+                                }
+                            },
+                            destructive: false
+                        }
+                    ] : []),
+                    ...(account.type === 'CATEGORY' && account.categoryType === 'INCOME' ? [
+                        {
+                            icon: <ArrowDownToLine size={18} />,
+                            label: "Set as Default Income",
+                            onClick: async () => {
+                                try {
+                                    await upsertUserSettings({ defIncomeAccId: account.id })
+                                    toast.success("Default income category set")
+                                    router.refresh()
+                                } catch (err) {
+                                    toast.error("Failed to update settings")
+                                }
+                            },
+                            destructive: false
+                        }
+                    ] : []),
+                    ...(account.type === 'CATEGORY' && account.categoryType === 'EXPENSE' ? [
+                        {
+                            icon: <ArrowUpFromLine size={18} />,
+                            label: "Set as Default Expense",
+                            onClick: async () => {
+                                try {
+                                    await upsertUserSettings({ defExpenseAccId: account.id })
+                                    toast.success("Default expense category set")
+                                    router.refresh()
+                                } catch (err) {
+                                    toast.error("Failed to update settings")
+                                }
+                            },
+                            destructive: false
+                        }
+                    ] : []),
+                    ...(account.isSystem ? [
                         {
                             icon: <Pencil size={18} />,
                             label: "Rename",
@@ -54,35 +103,35 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                         }
                     ] : [
                         {
-                            icon: <Pencil size={18} />,
-                            label: "Edit",
-                            onClick: () => setIsEditing(true),
-                            destructive: false
+                             icon: <Pencil size={18} />,
+                             label: "Edit",
+                             onClick: () => setIsEditing(true),
+                             destructive: false
                         },
                         {
-                            icon: <ShieldAlert size={18} />,
-                            label: account.isActive ? "Deactivate" : "Activate",
-                            onClick: async () => {
-                                try {
-                                    await toggleFinancialAccountActive(account.id, !account.isActive)
-                                    queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
-                                    queryClient.invalidateQueries({ queryKey: ["financial-account", account.id] })
-                                    toast.success(`Account ${account.isActive ? "deactivated" : "activated"} successfully`)
-                                    router.refresh()
-                                } catch (error: any) {
-                                    toast.error(error.message || "Failed to toggle account status")
-                                }
-                            },
-                            destructive: account.isActive
+                             icon: <ShieldAlert size={18} />,
+                             label: account.isActive ? "Deactivate" : "Activate",
+                             onClick: async () => {
+                                 try {
+                                     await toggleFinancialAccountActive(account.id, !account.isActive)
+                                     queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
+                                     queryClient.invalidateQueries({ queryKey: ["financial-account", account.id] })
+                                     toast.success(`Account ${account.isActive ? "deactivated" : "activated"} successfully`)
+                                     router.refresh()
+                                 } catch (error: any) {
+                                     toast.error(error.message || "Failed to toggle account status")
+                                 }
+                             },
+                             destructive: account.isActive
                         },
                         {
-                            icon: <Trash2 size={18} />,
-                            label: "Delete",
-                            onClick: () => setIsDeleting(true),
-                            destructive: true
+                             icon: <Trash2 size={18} />,
+                             label: "Delete",
+                             onClick: () => setIsDeleting(true),
+                             destructive: true
                         }
-                    ]
-                }
+                    ])
+                ]}
             />
 
             {/* Edit Modal (Reusing existing AddAccountModal for editing) */}

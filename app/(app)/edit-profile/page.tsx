@@ -116,7 +116,7 @@ export default function EditProfilePage() {
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="relative w-full bg-background pb-12"
+      className="relative w-full bg-background pb-34"
     >
       <BackHeader title='Edit Profile' backUrl={'/profile' as any} />
 
