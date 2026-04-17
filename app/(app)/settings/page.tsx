@@ -23,10 +23,10 @@ import {
   Terminal,
   Trash2Icon
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 
-import { getAppVersion, upsertUserSettings } from "@/actions/user-settings.actions";
+import { upsertUserSettings } from "@/actions/user-settings.actions";
 import { useUserConfig } from "@/components/providers/user-config-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,10 +45,13 @@ import { getInitials } from "@/utility/party";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
+import { useAppVersion } from "@/tanstacks/settings";
+
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, setTheme, ...userConfig } = useUserConfig();
   const { data: session, isPending } = useSession();
+  const { data: versionData } = useAppVersion();
 
   const [currency, setCurrency] = useState<Currency>(userConfig.currency);
   const [dateFormat, setDateFormat] = useState(userConfig.dateFormat);
@@ -59,21 +62,13 @@ export default function SettingsPage() {
   const searchParams = useSearchParams();
   const isDebug = searchParams.get("debug") === "true";
 
-  const [version, setVersion] = useState<string>("Pending ...");
-
-  const initialized = useRef(false);
+  const version = versionData || "Pending ...";
 
   useEffect(() => {
-    if (isPending) return;
-    if (initialized.current) return;
-
-    getAppVersion().then(res => setVersion(res));
-    initialized.current = true;
-
     // Load dev mode from localStorage
     const savedDevMode = localStorage.getItem("dev_mode") === "true";
     setIsDevMode(savedDevMode);
-  }, [isPending, session]);
+  }, []);
 
   if (isPending)
     return <SettingsSkeleton />;
@@ -356,19 +351,37 @@ export default function SettingsPage() {
   );
 }
 
+import { Skeleton } from "@/components/ui/skeleton";
+
 function SettingsSkeleton() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6">
-        <div className="h-24 w-full animate-pulse rounded-2xl bg-muted" />
-        <div className="space-y-4">
-          <div className="h-4 w-24 animate-pulse bg-muted rounded" />
-          <div className="h-48 w-full animate-pulse rounded-2xl bg-muted" />
+      <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6 animate-pulse">
+        {/* Profile Card Skeleton */}
+        <div className="h-28 w-full rounded-[2rem] bg-muted/10 border border-border/50 p-6 flex items-center gap-4">
+          <Skeleton className="h-16 w-16 rounded-full" />
+          <div className="space-y-2 flex-1">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <div className="h-10 w-10 rounded-full bg-muted/20" />
         </div>
-        <div className="space-y-4">
-          <div className="h-4 w-24 animate-pulse bg-muted rounded" />
-          <div className="h-64 w-full animate-pulse rounded-2xl bg-muted" />
-        </div>
+
+        {/* Sections Skeletons */}
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="space-y-4">
+            <div className="h-4 w-28 ml-2 bg-muted/20 rounded-md" />
+            <div className="rounded-2xl border bg-muted/5 divide-y divide-border/20">
+              {[...Array(i === 2 ? 4 : 3)].map((_, j) => (
+                <div key={j} className="h-16 flex items-center px-4 gap-4">
+                  <div className="h-8 w-8 rounded-full bg-muted/20" />
+                  <div className="h-4 flex-1 bg-muted/20 rounded-md" />
+                  <div className="h-10 w-28 rounded-xl bg-muted/20" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
