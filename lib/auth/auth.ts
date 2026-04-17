@@ -215,6 +215,9 @@ export const auth = betterAuth({
               timeFormat: true,
               language: true,
               theme: true,
+              defAccId: true,
+              defIncomeAccId: true,
+              defExpenseAccId: true,
             },
           },
         },
@@ -235,6 +238,9 @@ export const auth = betterAuth({
             timeFormat: settings?.timeFormat ?? "hh:mm a",
             language: settings?.language ?? "en",
             theme: settings?.theme ?? ThemeMode.AUTO,
+            defAccId: settings?.defAccId ?? null,
+            defIncomeAccId: settings?.defIncomeAccId ?? null,
+            defExpenseAccId: settings?.defExpenseAccId ?? null,
           },
         },
 
@@ -319,8 +325,10 @@ export const auth = betterAuth({
 
 export type Auth = typeof auth;
 
-export const getUserSession = async () => {
+import { cache } from "react";
+
+export const getUserSession = cache(async () => {
   return await auth.api.getSession({
     headers: await headers()
   });
-};
+});

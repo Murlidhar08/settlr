@@ -13,7 +13,7 @@ export default async function AccountsPage({ searchParams }: PageProps) {
     const includeInactive = params.inactive === 'true';
 
     return (
-        <div className="flex-1 w-full bg-background pb-32">
+        <div className="flex-1 w-full bg-background pb-34">
             <Suspense fallback={<AccountsSkeleton />}>
                 <AccountsContent
                     language={language}

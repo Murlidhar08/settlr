@@ -43,32 +43,13 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
 
     return (
         <div className="min-h-full bg-background relative selection:bg-primary/10">
-            {/* Dynamic Animated Background */}
+            {/* Optimized Background Components (Reduced complexity) */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden isolate">
-                <motion.div
-                    animate={{
-                        scale: [1, 1.15, 1],
-                        opacity: [0.2, 0.4, 0.2]
-                    }}
-                    transition={{
-                        duration: 12,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                    }}
-                    className={`absolute -top-1/4 -right-1/4 w-[80%] h-[80%] rounded-full blur-[120px] ${isIn ? "bg-emerald-500/20" : "bg-rose-500/20"}`}
-                />
-                <motion.div
-                    animate={{
-                        scale: [1.1, 1, 1.1],
-                        opacity: [0.15, 0.3, 0.15]
-                    }}
-                    transition={{
-                        duration: 18,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                    }}
-                    className="absolute -bottom-1/4 -left-1/4 w-[80%] h-[80%] rounded-full blur-[120px] bg-indigo-500/10"
-                />
+                <div className={cn(
+                    "absolute -top-1/4 -right-1/4 w-[80%] h-[80%] rounded-full opacity-10 blur-[100px] transition-colors duration-1000",
+                    isIn ? "bg-emerald-500" : "bg-rose-500"
+                )} />
+                <div className="absolute -bottom-1/4 -left-1/4 w-[80%] h-[80%] rounded-full opacity-5 blur-[100px] bg-indigo-500" />
             </div>
 
             <BackHeader
@@ -97,36 +78,35 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                     <div className="lg:col-span-5 space-y-8 lg:sticky lg:top-28 h-fit">
                         {/* STATUS HERO */}
                         <motion.section
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ type: "spring", stiffness: 100 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
                             className="flex flex-col items-center lg:items-start text-center lg:text-left gap-4"
                         >
                             <motion.div
-                                initial={{ scale: 0, rotate: -20 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 25 }}
                                 className={cn(
                                     "flex h-20 w-20 items-center justify-center rounded-3xl shadow-xl relative group",
                                     isIn ? "bg-emerald-500 text-white shadow-emerald-500/30" : "bg-rose-500 text-white shadow-rose-500/30"
                                 )}
                             >
-                                <div className="absolute inset-0 rounded-3xl bg-white/20 blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 scale-110" />
                                 <Check className="h-8 w-8 relative z-10 stroke-3" />
                             </motion.div>
 
                             <div className="space-y-1">
-                                <h1 className="text-2xl sm:text-3xl font-black tracking-tighter leading-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                                <h1 className="text-2xl sm:text-3xl font-black tracking-tighter leading-tight text-foreground">
                                     Transaction Audit
                                 </h1>
                                 <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/40 backdrop-blur-md border border-border/10">
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/40 border border-border/10">
                                         <CalendarDays className="h-3 w-3 text-primary/60" />
                                         <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60" suppressHydrationWarning>
                                             {formatDate(transaction.date, dateFormat)}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/40 backdrop-blur-md border border-border/10">
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/40 border border-border/10">
                                         <Clock className="h-3 w-3 text-primary/60" />
                                         <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60" suppressHydrationWarning>
                                             {formatTime(transaction.date, timeFormat)}
@@ -138,14 +118,14 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
 
                         {/* AMOUNT CARD */}
                         <motion.section
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                            className="relative group overflow-hidden rounded-[2.5rem] border border-border/40 bg-card p-6 lg:p-8 text-center lg:text-left shadow-lg transition-all hover:bg-card/80 hover:border-primary/20 active:scale-[0.99]"
+                            transition={{ delay: 0.05, duration: 0.3 }}
+                            className="relative group overflow-hidden rounded-[2.5rem] border border-border/40 bg-card p-6 lg:p-8 text-center lg:text-left shadow-lg transition-all active:scale-[0.99]"
                         >
                             <div className={cn("absolute top-0 left-0 w-1.5 h-full", isIn ? "bg-emerald-500" : "bg-rose-500")} />
 
-                            <div className="absolute top-0 right-0 p-4 opacity-[0.03] rotate-12 group-hover:rotate-0 transition-transform duration-700">
+                            <div className="absolute top-0 right-0 p-4 opacity-[0.03] transition-transform duration-700">
                                 {isIn ? <ArrowDownLeft size={120} /> : <ArrowUpRight size={120} />}
                             </div>
 
@@ -155,7 +135,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
 
                             <div className="space-y-4 relative z-10">
                                 <p className={cn(
-                                    "text-4xl sm:text-5xl font-black tracking-tighter tabular-nums drop-shadow-sm",
+                                    "text-4xl sm:text-5xl font-black tracking-tighter tabular-nums",
                                     isIn ? "text-emerald-600" : "text-rose-600"
                                 )}>
                                     {formatAmount(transaction.amount, configCurrency, true, isIn ? 'IN' : 'OUT')}
@@ -163,7 +143,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
 
                                 <div className="pt-2 flex justify-center lg:justify-start">
                                     <div className={cn(
-                                        "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] shadow-md transition-transform hover:-translate-y-1",
+                                        "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] shadow-md",
                                         isIn
                                             ? "bg-emerald-500 text-white shadow-emerald-500/20"
                                             : "bg-rose-500 text-white shadow-rose-500/20"
@@ -180,22 +160,22 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                     <div className="lg:col-span-7 space-y-8">
                         {/* Transaction Flow */}
                         <motion.section
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
-                            className="rounded-[2.5rem] border border-border/40 bg-card/40 backdrop-blur-xl p-5 sm:p-6 shadow-md overflow-hidden"
+                            transition={{ delay: 0.1, duration: 0.3 }}
+                            className="rounded-[2.5rem] border border-border/40 bg-card/40 backdrop-blur-md p-5 sm:p-6 shadow-md"
                         >
                             <div className="mb-4 flex items-center gap-2 px-1">
                                 <div className="h-1.5 w-1.5 rounded-full bg-primary" />
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/70">Flow Pathway</p>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/20 p-4 sm:p-5 rounded-3xl border border-border/10 relative shadow-inner">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/10 p-4 sm:p-5 rounded-3xl border border-border/10 relative">
                                 <AccountNode account={transaction.fromAccount} label="Origin" isSource={true} side={isIn ? "left" : "right"} />
 
-                                <div className="relative group shrink-0">
-                                    <div className="h-10 w-10 rounded-xl bg-background border-2 border-border/60 flex items-center justify-center shadow-lg relative z-10 rotate-45 group-hover:rotate-90 transition-transform duration-500">
-                                        <ArrowRight className="h-5 w-5 text-primary -rotate-45 group-hover:-rotate-90 transition-transform" />
+                                <div className="relative shrink-0">
+                                    <div className="h-10 w-10 rounded-xl bg-background border-2 border-border/60 flex items-center justify-center shadow-lg relative z-10 rotate-45">
+                                        <ArrowRight className="h-5 w-5 text-primary -rotate-45" />
                                     </div>
                                 </div>
 
@@ -205,10 +185,10 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
 
                         {/* Audit Details */}
                         <motion.section
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                            className="rounded-[2.5rem] border border-border/40 bg-card/40 backdrop-blur-xl p-5 sm:p-6 shadow-md"
+                            transition={{ delay: 0.15, duration: 0.3 }}
+                            className="rounded-[2.5rem] border border-border/40 bg-card/40 backdrop-blur-md p-5 sm:p-6 shadow-md"
                         >
                             <div className="mb-6 flex items-center gap-2 px-1">
                                 <div className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -242,10 +222,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                                 )}
 
                                 <DetailRow icon={<PenSquareIcon className="h-5 w-5 text-emerald-500" />} label="Log Originator">
-                                    <div className="flex items-center justify-end gap-3 text-right">
-                                        <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                                            <span className="text-[10px] font-black text-emerald-600">{transaction.user.name.charAt(0)}</span>
-                                        </div>
+                                    <div className="flex items-center justify-start md:justify-end gap-3 text-right">
                                         <span className="font-black text-lg text-foreground/80">{transaction.user.name}</span>
                                     </div>
                                 </DetailRow>
@@ -253,7 +230,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                                 <Divider />
 
                                 <DetailRow icon={<CalendarDays className="h-5 w-5 text-amber-500" />} label="Recorded At">
-                                    <div className="text-right flex flex-col items-end">
+                                    <div className="text-start md:text-right flex flex-col items-start md:items-end">
                                         <span className="font-black text-[14px] text-foreground/80">
                                             {formatDate(transaction.createdAt, dateFormat)}
                                         </span>
@@ -265,11 +242,13 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                                     <>
                                         <Divider />
                                         <DetailRow icon={<History className="h-5 w-5 text-rose-500" />} label="Modified History">
-                                            <div className="text-right flex flex-col items-end opacity-60">
+                                            <div className="text-start md:text-right flex flex-col items-start md:items-end opacity-60">
                                                 <span className="font-black text-[14px]">
                                                     {formatDate(transaction.updatedAt, dateFormat)}
                                                 </span>
-                                                <span className="text-[11px] font-bold uppercase tracking-widest">{formatTime(transaction.updatedAt, timeFormat)}</span>
+                                                <span className="text-[11px] font-bold uppercase tracking-widest">
+                                                    {formatTime(transaction.updatedAt, timeFormat)}
+                                                </span>
                                             </div>
                                         </DetailRow>
                                     </>
@@ -280,19 +259,19 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                         {/* Description Box */}
                         {transaction.description && (
                             <motion.section
-                                initial={{ opacity: 0, scale: 0.98 }}
+                                initial={{ opacity: 0, scale: 0.99 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.5 }}
+                                transition={{ delay: 0.2, duration: 0.3 }}
                                 className="group relative"
                             >
-                                <div className="relative rounded-[2.5rem] border border-border/40 bg-card/60 backdrop-blur-xl p-6 sm:p-8 shadow-md">
+                                <div className="relative rounded-[2.5rem] border border-border/40 bg-card/60 backdrop-blur-md p-6 sm:p-8 shadow-md">
                                     <div className="mb-4 flex items-center gap-2">
                                         <div className="h-1.5 w-1.5 rounded-full bg-primary" />
                                         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/70">Narrative</p>
                                     </div>
                                     <div className="relative">
-                                        <div className="absolute -top-4 -left-2 text-[80px] font-black italic text-primary/5 pointer-events-none select-none leading-none group-hover:text-primary/10 transition-colors">“</div>
-                                        <p className="text-lg sm:text-xl font-semibold italic text-foreground/80 leading-relaxed relative z-10 pl-3 border-l-2 border-primary/20 group-hover:border-primary/40 transition-colors">
+                                        <div className="absolute -top-4 -left-2 text-[80px] font-black italic text-primary/5 pointer-events-none select-none leading-none">“</div>
+                                        <p className="text-lg sm:text-xl font-semibold italic text-foreground/80 leading-relaxed relative z-10 pl-3 border-l-2 border-primary/20">
                                             {transaction.description}
                                         </p>
                                     </div>
@@ -323,16 +302,13 @@ function Divider() {
 
 function AccountNode({ account, label, isSource, side }: { account: any, label: string, isSource: boolean, side: 'left' | 'right' }) {
     return (
-        <motion.div
-            whileHover={{ y: -3 }}
-            className="flex flex-col items-center text-center space-y-2 flex-1 px-2 max-w-[180px]"
-        >
+        <div className="flex flex-col items-center text-center space-y-2 flex-1 px-2 max-w-[180px]">
             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/30 leading-none">{label}</span>
             <div className={cn(
-                "relative p-3 rounded-2xl w-full flex items-center justify-center shadow-md border-2 transition-all duration-300",
+                "relative p-3 rounded-2xl w-full flex items-center justify-center shadow-md border-2 transition-all",
                 isSource
-                    ? "bg-background border-border/60 hover:border-primary/40"
-                    : "bg-primary/5 border-primary/20 hover:bg-primary/10 hover:border-primary/60"
+                    ? "bg-background border-border/60"
+                    : "bg-primary/5 border-primary/20"
             )}>
                 <div className="flex flex-col items-center gap-1 overflow-hidden">
                     <span className="font-black text-[13px] tracking-tighter text-foreground truncate w-full px-1">{account.name}</span>
@@ -343,13 +319,12 @@ function AccountNode({ account, label, isSource, side }: { account: any, label: 
                     </div>
                 </div>
 
-                {/* Visual indicator for flow side */}
                 <div className={cn(
                     "absolute top-1/2 -translate-y-1/2 h-6 w-0.5 rounded-full",
                     side === 'left' ? "-left-px bg-primary/20" : "-right-px bg-primary/20"
                 )} />
             </div>
-        </motion.div>
+        </div>
     )
 }
 
@@ -363,14 +338,14 @@ function DetailRow({
     children: React.ReactNode
 }) {
     return (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-1 py-1 group/row hover:bg-muted/5 rounded-3xl transition-colors">
-            <div className="flex items-center gap-5">
-                <div className="p-2 rounded-2xl bg-muted/50 border border-border/10 shadow-inner group-hover/row:scale-110 transition-transform duration-300">
+        <div className="flex flex-col sm:flex-row items-start md:items-center justify-between gap-2 px-1 py-1 group/row hover:bg-muted/5 rounded-3xl transition-colors">
+            <div className="flex items-start md:items-center gap-5">
+                <div className="p-2 rounded-2xl bg-muted/50 border border-border/10 shadow-inner transition-transform duration-300">
                     {icon}
                 </div>
-                <span className="text-[12px] font-black uppercase tracking-[0.3em] text-muted-foreground/50 group-hover/row:text-foreground/60 transition-colors leading-none">{label}</span>
+                <span className="text-[12px] font-black uppercase tracking-[0.3em] text-muted-foreground/50 transition-colors leading-none">{label}</span>
             </div>
-            <div className="w-full sm:w-auto text-center sm:text-right overflow-hidden">
+            <div className="w-full sm:w-auto text-start md:text-center overflow-hidden">
                 {children}
             </div>
         </div>

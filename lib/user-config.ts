@@ -4,14 +4,10 @@ import { prisma } from "./prisma/prisma";
 
 export const getUserConfig = async () => {
   const session = await getUserSession()
-  if (!session?.user?.id)
+  if (!session?.session?.userSettings)
     return getDefaultConfig();
 
-  const userSettings = await prisma.userSettings.findUnique({
-    where: { userId: session.user.id }
-  });
-
-  return userSettings ?? getDefaultConfig();
+  return session.session.userSettings;
 };
 
 

@@ -49,7 +49,7 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="w-full bg-background">
+        <div className="w-full bg-background pb-34">
             <motion.div
                 variants={containerVariants}
                 initial="hidden"

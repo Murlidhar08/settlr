@@ -1,9 +1,9 @@
 "use client";
 
 import { useAdminUsers } from "@/tanstacks/admin";
+import { AdminSkeleton } from "./admin-skeleton";
 import { AdminStats } from "./admin-stats";
 import { UserList } from "./user-list";
-import { AdminSkeleton } from "./admin-skeleton";
 
 export function AdminContent() {
     const { data: users, isLoading } = useAdminUsers();
@@ -20,7 +20,7 @@ export function AdminContent() {
     const activeUsers = totalUsers - bannedUsers;
 
     return (
-        <div className="flex-1 px-4 space-y-6 pb-32 pt-6">
+        <div className="flex-1 px-4 space-y-6 pb-34 pt-6">
             {/* Stats Grid */}
             <AdminStats
                 totalUsers={totalUsers}

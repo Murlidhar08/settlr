@@ -105,13 +105,13 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-34">
 
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6"
+        className="mx-auto max-w-4xl mt-6 space-y-8 px-6"
       >
         {/* USER */}
         <motion.div
