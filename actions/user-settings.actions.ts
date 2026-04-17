@@ -22,6 +22,9 @@ export async function upsertUserSettings(data: UserSettingsInput) {
       timeFormat: data.timeFormat ?? "hh:mm a",
       language: data.language ?? "en",
       theme: data.theme ?? ThemeMode.AUTO,
+      defAccId: data.defAccId,
+      defIncomeAccId: data.defIncomeAccId,
+      defExpenseAccId: data.defExpenseAccId,
     },
     update: {
       ...data,

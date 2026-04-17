@@ -29,6 +29,8 @@ import { cn } from "@/lib/utils"
 import { getFinancialAccounts } from "@/actions/financial-account.actions"
 import { ModalMode } from "@/types/transaction/ModalMode"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { useUserConfig } from "../providers/user-config-provider"
+
 interface TransactionProps {
   title: string
   children: ReactNode
@@ -55,6 +57,7 @@ export const AddTransactionModal = ({
   onOpenChange: setControlledOpen,
 }: TransactionProps) => {
   const router = useRouter()
+  const { defAccId, defIncomeAccId, defExpenseAccId } = useUserConfig()
   const [internalOpen, setInternalOpen] = useState(false)
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen
   const setOpen = (val: boolean) => {
@@ -132,7 +135,9 @@ export const AddTransactionModal = ({
             inferredMode = ModalMode.PARTY
             const partyAccount = partyAcc || currentAcc
             initialPartnerAcc = partyAccount?.id || ""
-            initialMoneyAcc = allAccounts.find(a => a.type === FinancialAccountType.MONEY)?.id || ""
+            
+            // USE DEFAULT MONEY ACCOUNT FOR PARTIES TOO
+            initialMoneyAcc = defAccId || allAccounts.find(a => a.type === FinancialAccountType.MONEY)?.id || ""
           } else if (currentAcc && currentAcc.type === FinancialAccountType.MONEY) {
             inferredMode = ModalMode.ACCOUNT
             initialMoneyAcc = currentAcc.id
@@ -140,9 +145,14 @@ export const AddTransactionModal = ({
           } else {
             inferredMode = ModalMode.CASHBOOK
             const moneyAccs = allAccounts.filter(a => a.type === FinancialAccountType.MONEY)
-            initialMoneyAcc = moneyAccs[0]?.id || ""
+            
+            // USE DEFAULT MONEY ACCOUNT
+            initialMoneyAcc = defAccId || moneyAccs[0]?.id || ""
+            
+            // USE DEFAULT CATEGORY ACCOUNTS
+            const defaultCatAccId = isOut ? defExpenseAccId : defIncomeAccId;
             const targetCat = isOut ? CategoryType.EXPENSE : CategoryType.INCOME
-            initialPartnerAcc = allAccounts.find(a => a.type === FinancialAccountType.CATEGORY && a.categoryType === targetCat)?.id || ""
+            initialPartnerAcc = defaultCatAccId || allAccounts.find(a => a.type === FinancialAccountType.CATEGORY && a.categoryType === targetCat)?.id || ""
           }
  
           setMode(inferredMode)
@@ -175,7 +185,7 @@ export const AddTransactionModal = ({
         setPartnerAccountId("")
       }
     }
-  }, [open, loadingAccounts, allAccounts, partyId, accountId, transactionData?.id, currentDirection, isOut])
+  }, [open, loadingAccounts, allAccounts, partyId, accountId, transactionData?.id, currentDirection, isOut, defAccId, defIncomeAccId, defExpenseAccId])
 
   // Update data state whenever selections change
   useEffect(() => {

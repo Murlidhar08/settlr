@@ -2,6 +2,7 @@
 
 import { getAccountTransactions } from "@/actions/transaction.actions"
 import { FooterButtons } from "@/components/footer-buttons"
+import { useUserConfig } from "@/components/providers/user-config-provider"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
 import { TransactionList } from "@/components/transaction/transaction-list"
 import { Button } from "@/components/ui/button"
@@ -12,7 +13,8 @@ import { formatAmount } from "@/utility/commonFunction"
 import { getCurrencySymbol } from "@/utility/transaction"
 import { motion } from "framer-motion"
 import {
-    ArrowDownLeft,
+    ArrowDownLeft, ArrowDownToLine,
+    ArrowUpFromLine,
     ArrowUpRight,
     Banknote,
     Briefcase,
@@ -21,6 +23,7 @@ import {
     Loader2,
     Plus,
     Scale, Settings2,
+    ShieldAlert,
     Tag,
     TrendingDown,
     TrendingUp,
@@ -41,6 +44,8 @@ interface AccountDetailsViewProps {
 }
 
 export function AccountDetailsView({ accountId, currency, language }: AccountDetailsViewProps) {
+    // 1. All Hooks at the very top
+    const { defAccId, defIncomeAccId, defExpenseAccId } = useUserConfig()
     const symbol = getCurrencySymbol(currency)
     const { data: statsData, isLoading: statsLoading } = useAccountStats(accountId)
     const { data: transData, isLoading: transLoading } = useAccountTransactions(accountId)
@@ -101,11 +106,17 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
         loadMoreTransactions()
     }, [page, account, totalTransactions, transData])
 
+    // 2. Early returns AFTER all hooks
     if (statsLoading || transLoading || stats == undefined) {
         return <AccountDetailsSkeleton />
     }
 
     if (!statsData || !transData || !account) return null
+
+    // 3. Helpers and logic
+    const isDefaultAcc = defAccId === accountId
+    const isDefaultIncome = defIncomeAccId === accountId
+    const isDefaultExpense = defExpenseAccId === accountId
 
     const getIcon = (size = 24) => {
         switch (account.type) {
@@ -174,6 +185,26 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                                         {getIcon(24)}
                                     </div>
                                     <div>
+                                        <div className="flex flex-wrap gap-2 mb-1">
+                                            {isDefaultAcc && (
+                                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/10 border-white/20 text-white">
+                                                    <ShieldAlert size={8} strokeWidth={3} />
+                                                    Primary
+                                                </div>
+                                            )}
+                                            {isDefaultIncome && (
+                                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/10 border-white/20 text-white">
+                                                    <ArrowDownToLine size={8} strokeWidth={3} />
+                                                    Def. Income
+                                                </div>
+                                            )}
+                                            {isDefaultExpense && (
+                                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/10 border-white/20 text-white">
+                                                    <ArrowUpFromLine size={8} strokeWidth={3} />
+                                                    Def. Expense
+                                                </div>
+                                            )}
+                                        </div>
                                         <h1 className="text-xl sm:text-2xl font-black tracking-tight">{account.name}</h1>
                                         <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
                                             {account.moneyType || account.partyType || account.categoryType || account.type}

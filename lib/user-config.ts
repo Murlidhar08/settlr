@@ -22,5 +22,8 @@ export function getDefaultConfig() {
     timeFormat: "hh:mm a",
     language: "en",
     theme: ThemeMode.AUTO,
+    defAccId: null as string | null,
+    defIncomeAccId: null as string | null,
+    defExpenseAccId: null as string | null,
   }
 }

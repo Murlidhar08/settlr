@@ -8,19 +8,20 @@ import { formatAmount } from "@/utility/commonFunction"
 import { getCurrencySymbol } from "@/utility/transaction"
 import { motion } from "framer-motion"
 import {
-    ArrowDownLeft, ArrowUpRight,
+    ArrowDownLeft, ArrowDownToLine, ArrowUpFromLine, ArrowUpRight,
     Banknote,
     Briefcase,
     ChevronRight,
     Cpu,
     CreditCard, Edit2,
     Landmark,
-    Scale, Settings2, Tag,
+    Scale, Settings2, ShieldAlert, Tag,
     TrendingDown,
     TrendingUp,
     Wallet
 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useUserConfig } from "../providers/user-config-provider"
 import { AddAccountModal } from "./add-account-modal"
 
 interface AccountCardProps {
@@ -31,6 +32,10 @@ interface AccountCardProps {
 
 export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
     const router = useRouter()
+    const { defAccId, defIncomeAccId, defExpenseAccId } = useUserConfig()
+    const isDefaultAcc = defAccId === account.id
+    const isDefaultIncome = defIncomeAccId === account.id
+    const isDefaultExpense = defExpenseAccId === account.id
 
     const { balance, isLoading } = useFinancialAccountBalance(account.id);
 
@@ -157,6 +162,35 @@ export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
 
                 <div className="flex items-end justify-between">
                     <div className="space-y-1 max-w-[70%]">
+                        <div className="flex flex-wrap gap-2 mb-2">
+                            {isDefaultAcc && (
+                                <div className={cn(
+                                    "flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border",
+                                    isDarkCard ? "bg-white/10 border-white/20 text-white" : "bg-primary/5 border-primary/10 text-primary"
+                                )}>
+                                    <ShieldAlert size={8} strokeWidth={3} />
+                                    Primary
+                                </div>
+                            )}
+                            {isDefaultIncome && (
+                                <div className={cn(
+                                    "flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border",
+                                    isDarkCard ? "bg-white/10 border-white/20 text-white" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
+                                )}>
+                                    <ArrowDownToLine size={8} strokeWidth={3} />
+                                    Def. Income
+                                </div>
+                            )}
+                            {isDefaultExpense && (
+                                <div className={cn(
+                                    "flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border",
+                                    isDarkCard ? "bg-white/10 border-white/20 text-white" : "bg-rose-500/10 border-rose-500/20 text-rose-500"
+                                )}>
+                                    <ArrowUpFromLine size={8} strokeWidth={3} />
+                                    Def. Expense
+                                </div>
+                            )}
+                        </div>
                         <h3 className="text-xl font-black tracking-tight leading-none group-hover:translate-x-1 transition-transform">{account.name}</h3>
                         <p className={cn(
                             "text-[10px] font-black uppercase tracking-[0.2em] truncate",

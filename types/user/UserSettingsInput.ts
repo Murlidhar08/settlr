@@ -6,4 +6,7 @@ export interface UserSettingsInput {
   timeFormat?: string
   language?: string
   theme?: ThemeMode
+  defAccId?: string | null
+  defIncomeAccId?: string | null
+  defExpenseAccId?: string | null
 }

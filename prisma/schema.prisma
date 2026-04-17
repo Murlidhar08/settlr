@@ -94,14 +94,17 @@ model TwoFactor {
 }
 
 model UserSettings {
-  userId     String    @id
-  currency   Currency  @default(INR)
-  dateFormat String    @default("dd/MM/yyyy")
-  timeFormat String    @default("hh:mm a")
-  language   String    @default("en")
-  theme      ThemeMode @default(AUTO)
-  createdAt  DateTime  @default(now())
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String    @id
+  currency        Currency  @default(INR)
+  dateFormat      String    @default("dd/MM/yyyy")
+  timeFormat      String    @default("hh:mm a")
+  language        String    @default("en")
+  theme           ThemeMode @default(AUTO)
+  defAccId        String?
+  defIncomeAccId  String?
+  defExpenseAccId String?
+  createdAt       DateTime  @default(now())
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("userSettings")
 }
