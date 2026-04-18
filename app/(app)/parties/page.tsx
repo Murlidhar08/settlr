@@ -36,7 +36,7 @@ export default async function Parties({ searchParams }: PageProps) {
   );
 
   return (
-    <div className="w-full bg-background mx-auto max-w-4xl mt-6 space-y-8 px-6">
+    <div className="w-full bg-background mx-auto max-w-4xl mt-6 space-y-8 px-6 pb-34">
       <PartiesClientProvider currentTab={currentTab}>
         <PartyFilters />
 

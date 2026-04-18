@@ -21,6 +21,7 @@ export const auth = betterAuth({
   appName: envServer.NEXT_PUBLIC_APP_NAME,
   baseURL: envServer.BETTER_AUTH_URL,
   secret: envServer.BETTER_AUTH_SECRET,
+  errorPage: "/login", // Redirect back to login, we will handle error there
   trustedOrigins: [
     envServer.BETTER_AUTH_URL,
     ...(envServer.BETTER_AUTH_TRUSTED_ORIGINS ? envServer.BETTER_AUTH_TRUSTED_ORIGINS.split(",") : []),
@@ -196,6 +197,8 @@ export const auth = betterAuth({
           activeBusinessId: true,
           twoFactorEnabled: true,
           role: true,
+          banned: true,
+          banReason: true,
 
           // current session context
           sessions: {
@@ -251,6 +254,8 @@ export const auth = betterAuth({
           contactNo: dbUser?.contactNo,
           address: dbUser?.address,
           twoFactorEnabled: dbUser?.twoFactorEnabled ?? false,
+          banned: dbUser?.banned ?? false,
+          banReason: dbUser?.banReason ?? null,
         },
       }
     }),

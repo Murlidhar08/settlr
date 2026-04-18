@@ -22,6 +22,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   if (!session)
     redirect("/login");
 
+  if (session.user.banned)
+    redirect("/banned");
+
   return (
     <UserConfigProvider config={userConfig}>
       <div className="h-screen bg-background text-foreground transition-colors duration-300 overflow-hidden">

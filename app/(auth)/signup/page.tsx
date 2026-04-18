@@ -50,7 +50,10 @@ export default function SignupPage() {
   useEffect(() => {
     authClient.getSession()
       .then((session) => {
-        if (session.data) router.push("/dashboard");
+        if (session.data) {
+          if (session.data.user.banned) router.push("/banned");
+          else router.push("/dashboard");
+        }
       });
   }, [router])
 
