@@ -13,5 +13,9 @@ export default async function Home() {
         redirect("/login");
     }
 
+    if (session.user.banned) {
+        redirect("/banned");
+    }
+
     redirect("/dashboard");
 }

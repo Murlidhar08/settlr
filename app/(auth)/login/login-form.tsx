@@ -57,10 +57,21 @@ export default function LoginForm({ providers }: LoginFormProps) {
 
   // Redirect to dashboard
   useEffect(() => {
+    // Check for error parameter
+    const searchParams = new URLSearchParams(window.location.search);
+    const errorParam = searchParams.get("error");
+    if (errorParam === "banned") {
+      const description = searchParams.get("error_description");
+      router.push(`/banned${description ? `?reason=${encodeURIComponent(description)}` : ""}` as any);
+      return;
+    }
+
     authClient.getSession()
       .then((session) => {
-        if (session.data)
-          router.push("/dashboard");
+        if (session.data) {
+          if (session.data.user.banned) router.push("/banned");
+          else router.push("/dashboard");
+        }
       });
 
     // Last Login Method
@@ -74,8 +85,17 @@ export default function LoginForm({ providers }: LoginFormProps) {
 
     try {
       const result = await signIn.email({ email, password });
-      if (result.error) setError(result.error.message || "Sign in failed");
-      else router.push("/dashboard");
+      if (result.error) {
+        setError(result.error.message || "Sign in failed");
+      } else {
+        // We need to get the session again or just check the user returned in result if available
+        // Better Auth signIn returns the user in data.user
+        if (result.data?.user?.banned) {
+          const reason = result.data.user.banReason;
+          router.push(`/banned${reason ? `?reason=${encodeURIComponent(reason)}` : ""}` as any);
+        }
+        else router.push("/dashboard");
+      }
     } catch (err) {
       setError("An error occurred during sign in");
       console.error(err)
