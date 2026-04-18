@@ -4,6 +4,7 @@ import { useSession } from "@/lib/auth/auth-client";
 import { envClient } from "@/lib/env.client";
 import { t } from "@/lib/languages/i18n";
 import clsx from "clsx";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronLeft,
   ChevronRight,
@@ -111,8 +112,8 @@ const Sidebar = () => {
       </aside>
 
       {/* ================= Mobile Bottom Nav ================= */}
-      <nav className="fixed bottom-0 z-50 w-full border-t border-sidebar-border bg-sidebar/90 backdrop-blur-xl lg:hidden">
-        <div className="flex h-16 items-center justify-around px-2">
+      <div className="fixed bottom-4 left-0 right-0 z-50 flex justify-center lg:hidden px-4">
+        <nav className="w-full max-w-md h-18 px-2 py-2 bg-background/80 dark:bg-card/80 backdrop-blur-2xl border border-border shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-[2.5rem] flex items-center justify-around relative">
           {navItems.map((item) => {
             const active = pathname?.startsWith(item.href);
 
@@ -124,8 +125,10 @@ const Sidebar = () => {
               />
             );
           })}
-        </div>
-      </nav>
+        </nav>
+      </div>
+      {/* Bottom Shade */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-linear-to-t from-background to-transparent h-28 pointer-events-none lg:hidden"></div>
 
       <div className={`hidden lg:block shrink-0 ${collapsed ? "w-20" : "w-64"}`} />
     </>
@@ -179,26 +182,42 @@ interface MobileNavItemProps {
   href: string;
 }
 
-function MobileNavItem({ icon, label, active, href }: MobileNavItemProps) {
+function MobileNavItem({ icon, active, href }: MobileNavItemProps) {
   return (
     <Link
       href={href as any}
-      className={clsx(
-        "flex flex-col items-center justify-center transition-all duration-300 active:scale-90 h-full min-w-[64px]",
-        active ? "text-primary" : "text-muted-foreground"
-      )}
+      className="flex flex-col items-center justify-center transition-all duration-300 active:scale-95 group h-full w-full relative"
     >
-      <span className={clsx(
-        "transition-all duration-300",
-        active ? "scale-100 mb-0.5" : "scale-90 opacity-60"
+      <div className={clsx(
+        "relative flex flex-col items-center justify-center h-full w-full transition-all duration-500 rounded-[1.5rem] overflow-hidden",
+        active
+          ? "bg-primary/20 text-primary shadow-[inset_0_0_15px_rgba(var(--primary-rgb),0.15)]"
+          : "bg-transparent text-muted-foreground hover:bg-muted/15"
       )}>
-        {icon}
-      </span>
-      {active && (
-        <span className="text-[8px] font-black uppercase tracking-widest animate-in fade-in slide-in-from-bottom-1 duration-300">
-          {label}
-        </span>
-      )}
+        {/* ICON with smooth transition */}
+        <div className="relative w-6 h-6 flex items-center justify-center">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active ? "active" : "inactive"}
+              initial={{ opacity: 0, scale: 0.5, rotate: active ? -15 : 15 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              exit={{ opacity: 0, scale: 0.5 }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              {icon}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Animated Active Background Indicator */}
+        {active && (
+          <motion.div
+            layoutId="active-pill"
+            className="absolute inset-0 bg-primary/10 -z-10"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          />
+        )}
+      </div>
     </Link>
   );
 }
