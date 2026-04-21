@@ -11,7 +11,7 @@ import { revalidatePath } from "next/cache";
 
 export async function getPartyDetails(partyId: string) {
   return await prisma.party.findFirst({
-    where: { id: partyId },
+    where: { id: partyId, isDelete: false },
     select: {
       id: true,
       name: true,
@@ -33,9 +33,11 @@ export async function getPartyList(type: PartyType, search?: string, includeInac
 
   const where: any = {
     businessId,
+    isDelete: false,
     financialAccounts: {
       some: {
         partyType: type,
+        isDelete: false,
       }
     }
   };
@@ -76,7 +78,8 @@ export async function getPartyList(type: PartyType, search?: string, includeInac
   const transactions = await prisma.transaction.findMany({
     where: {
       businessId,
-      partyId: { in: partyIds }
+      partyId: { in: partyIds },
+      isDelete: false
     },
     select: {
       partyId: true,
@@ -90,7 +93,8 @@ export async function getPartyList(type: PartyType, search?: string, includeInac
   const partyAccounts = await prisma.financialAccount.findMany({
     where: {
       businessId,
-      partyId: { in: partyIds }
+      partyId: { in: partyIds },
+      isDelete: false
     },
     select: {
       id: true,
@@ -195,29 +199,18 @@ export async function deleteParty(partyId: string): Promise<boolean> {
     where: { partyId, businessId }
   });
 
-  if (transactionCount > 0) {
-    // Soft delete if transactions exist
-    await prisma.$transaction([
-      prisma.party.update({
-        where: { id: partyId, businessId },
-        data: { isActive: false }
-      }),
-      prisma.financialAccount.updateMany({
-        where: { partyId, businessId },
-        data: { isActive: false }
-      })
-    ]);
-    revalidatePath("/parties");
-    return true;
-  }
-
-  // Hard delete if no transactions
   await prisma.$transaction([
-    prisma.financialAccount.deleteMany({
-      where: { partyId, businessId }
+    prisma.transaction.updateMany({
+      where: { partyId, businessId },
+      data: { isDelete: true }
     }),
-    prisma.party.delete({
-      where: { id: partyId, businessId }
+    prisma.financialAccount.updateMany({
+      where: { partyId, businessId },
+      data: { isDelete: true }
+    }),
+    prisma.party.update({
+      where: { id: partyId, businessId },
+      data: { isDelete: true }
     })
   ]);
 
@@ -231,7 +224,8 @@ export async function getPartyTransactions(partyId: string): Promise<Transaction
   return await prisma.transaction.findMany({
     where: {
       businessId: session?.user.activeBusinessId || "",
-      partyId: partyId
+      partyId: partyId,
+      isDelete: false
     },
     include: {
       fromAccount: { select: { id: true, name: true, type: true } },

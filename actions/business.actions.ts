@@ -85,24 +85,27 @@ export async function deleteBusiness(id: string) {
 
   // Check if it's the only business - optional but recommended
   const count = await prisma.business.count({
-    where: { ownerId: session.user.id }
+    where: { ownerId: session.user.id, isDelete: false }
   });
 
   if (count <= 1) {
     throw new Error("You must have at least one business.");
   }
 
-  await prisma.business.delete({
+  await prisma.business.update({
     where: {
       id: id,
       ownerId: session.user.id // Security check
+    },
+    data: {
+      isDelete: true
     }
   });
 
   // If the deleted business was active, switch to another one
   if (session.user.activeBusinessId === id) {
     const other = await prisma.business.findFirst({
-      where: { ownerId: session.user.id }
+      where: { ownerId: session.user.id, isDelete: false }
     });
     if (other) {
       await prisma.user.update({
@@ -130,6 +133,6 @@ export async function getBusinessList() {
       id: true,
       name: true
     },
-    where: { ownerId: session?.user.id }
+    where: { ownerId: session?.user.id, isDelete: false }
   });
 }

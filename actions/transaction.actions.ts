@@ -25,8 +25,8 @@ export async function addTransaction(transactionData: any, pathToRevalidate?: st
 
   // Fetch accounts to validate business and types
   const [fromAccount, toAccount] = await Promise.all([
-    prisma.financialAccount.findUnique({ where: { id: transactionData.fromAccountId } }),
-    prisma.financialAccount.findUnique({ where: { id: transactionData.toAccountId } })
+    prisma.financialAccount.findUnique({ where: { id: transactionData.fromAccountId, isDelete: false } }),
+    prisma.financialAccount.findUnique({ where: { id: transactionData.toAccountId, isDelete: false } })
   ]);
 
   if (!fromAccount || !toAccount) throw new Error("One or both accounts not found");
@@ -49,7 +49,7 @@ export async function addTransaction(transactionData: any, pathToRevalidate?: st
   }
 
   if (transactionData.partyId) {
-    const party = await prisma.party.findUnique({ where: { id: transactionData.partyId } });
+    const party = await prisma.party.findUnique({ where: { id: transactionData.partyId, isDelete: false } });
     if (!party?.isActive) throw new Error("Cannot perform transactions with an inactive party.");
     if (party.businessId !== businessId) throw new Error("Party does not belong to this business.");
   }
@@ -119,11 +119,14 @@ export async function deleteTransaction(transactionId: string, redirectPath?: st
     throw new Error("Unauthorized")
   }
 
-  await prisma.transaction.delete({
+  await prisma.transaction.update({
     where: {
       id: transactionId,
       businessId: session.user.activeBusinessId,
     },
+    data: {
+      isDelete: true
+    }
   })
 
   // Redirect after delete if path is provided
@@ -151,6 +154,7 @@ export const getRecentTransactions = async function getRecentTransactions() {
   const transactions = await prisma.transaction.findMany({
     where: {
       businessId: businessId,
+      isDelete: false
     },
     orderBy: {
       date: "desc",
@@ -196,6 +200,7 @@ export const getCashbookTransactions = async function getCashbookTransactions(fi
 
   const where: any = {
     businessId,
+    isDelete: false,
   };
 
   // Account type filter (Cash/Online) removed as mode is gone
@@ -268,6 +273,7 @@ export const getPartyStatement = async function getPartyStatement(partyId: strin
   const where: any = {
     businessId,
     partyId,
+    isDelete: false,
   };
 
   // direction filter (translated to perspective in the component, but here we can handle it at DB if we know party account)
@@ -350,6 +356,7 @@ export const getAccountStats = async function getAccountStats(accountId: string)
       where: {
         businessId,
         toAccountId: accountId,
+        isDelete: false,
       },
       _sum: {
         amount: true,
@@ -359,6 +366,7 @@ export const getAccountStats = async function getAccountStats(accountId: string)
       where: {
         businessId,
         fromAccountId: accountId,
+        isDelete: false,
       },
       _sum: {
         amount: true,
@@ -417,6 +425,7 @@ export const getAccountTransactions = async function getAccountTransactions(
           { fromAccountId: accountId },
           { toAccountId: accountId },
         ],
+        isDelete: false,
       },
       orderBy: { date: "desc" },
       take: limit,
@@ -434,6 +443,7 @@ export const getAccountTransactions = async function getAccountTransactions(
           { fromAccountId: accountId },
           { toAccountId: accountId },
         ],
+        isDelete: false,
       }
     })
   ]);
@@ -459,7 +469,8 @@ export const getBudgetInsights = async function getBudgetInsights() {
   const transactions = await prisma.transaction.findMany({
     where: {
       businessId,
-      date: { gte: startOfMonth }
+      date: { gte: startOfMonth },
+      isDelete: false
     },
     include: {
       fromAccount: { select: { name: true, type: true } },

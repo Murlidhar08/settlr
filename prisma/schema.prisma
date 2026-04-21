@@ -119,6 +119,7 @@ model Business {
   financialAccounts FinancialAccount[]
   parties           Party[]
   transactions      Transaction[]
+  isDelete          Boolean            @default(false)
 
   @@index([ownerId])
   @@map("business")
@@ -141,6 +142,7 @@ model FinancialAccount {
   party                Party?               @relation(fields: [partyId], references: [id])
   sentTransactions     Transaction[]        @relation("SentTransactions")
   receivedTransactions Transaction[]        @relation("ReceivedTransactions")
+  isDelete             Boolean              @default(false)
 
   @@unique([businessId, name])
   @@index([businessId])
@@ -160,6 +162,7 @@ model Party {
   financialAccounts FinancialAccount[]
   business          Business           @relation(fields: [businessId], references: [id])
   transactions      Transaction[]
+  isDelete          Boolean            @default(false)
 
   @@unique([businessId, name])
   @@index([businessId])
@@ -183,6 +186,7 @@ model Transaction {
   party         Party?           @relation(fields: [partyId], references: [id])
   toAccount     FinancialAccount @relation("ReceivedTransactions", fields: [toAccountId], references: [id])
   user          User             @relation(fields: [userId], references: [id])
+  isDelete      Boolean          @default(false)
 
   @@index([businessId])
   @@index([businessId, date])

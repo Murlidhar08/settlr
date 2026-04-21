@@ -4,13 +4,6 @@ export default function Loading() {
     return (
         <div className="w-full bg-background min-h-screen">
             <div className="mx-auto w-full max-w-4xl px-6 py-8">
-                {/* Header Skeleton */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                    <div className="space-y-1">
-                        <Skeleton className="h-4 w-24 rounded" />
-                        <Skeleton className="h-8 w-48 rounded-lg" />
-                    </div>
-                </div>
 
                 <div className="space-y-16">
                     {/* Section 1 */}
