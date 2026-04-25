@@ -4,9 +4,6 @@
 export const AccountsSkeleton = () => {
     return (
         <div className="w-full bg-background min-h-screen">
-            {/* Header Skeleton */}
-            <div className="sticky top-0 z-40 h-20 w-full bg-background/80 border-b animate-pulse" />
-
             <div className="mx-auto w-full max-w-4xl px-6 py-8">
                 {/* Title Section Skeleton */}
                 <div className="flex items-center justify-between mb-12">

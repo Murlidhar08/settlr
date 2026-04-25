@@ -94,17 +94,14 @@ model TwoFactor {
 }
 
 model UserSettings {
-  userId          String    @id
-  currency        Currency  @default(INR)
-  dateFormat      String    @default("dd/MM/yyyy")
-  timeFormat      String    @default("hh:mm a")
-  language        String    @default("en")
-  theme           ThemeMode @default(AUTO)
-  defAccId        String?
-  defIncomeAccId  String?
-  defExpenseAccId String?
-  createdAt       DateTime  @default(now())
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String    @id
+  currency   Currency  @default(INR)
+  dateFormat String    @default("dd/MM/yyyy")
+  timeFormat String    @default("hh:mm a")
+  language   String    @default("en")
+  theme      ThemeMode @default(AUTO)
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("userSettings")
 }
@@ -115,11 +112,14 @@ model Business {
   ownerId           String
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @default(now()) @updatedAt
+  isDelete          Boolean            @default(false)
+  defAccId          String?
+  defIncomeAccId    String?
+  defExpenseAccId   String?
   owner             User               @relation(fields: [ownerId], references: [id])
   financialAccounts FinancialAccount[]
   parties           Party[]
   transactions      Transaction[]
-  isDelete          Boolean            @default(false)
 
   @@index([ownerId])
   @@map("business")

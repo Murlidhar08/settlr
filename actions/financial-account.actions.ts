@@ -125,11 +125,11 @@ export async function deleteFinancialAccount(id: string) {
     });
 
     revalidatePath("/accounts");
-    return { 
-        success: true, 
-        message: transactionCount > 0 
-            ? "Account moved to recycle bin as it has transaction history." 
-            : "Account moved to recycle bin." 
+    return {
+        success: true,
+        message: transactionCount > 0
+            ? "Account moved to recycle bin as it has transaction history."
+            : "Account moved to recycle bin."
     };
 }
 
@@ -184,4 +184,27 @@ export async function toggleFinancialAccountActive(id: string, isActive: boolean
     revalidatePath("/accounts");
     revalidatePath(`/accounts/${id}`);
     return account;
+}
+
+export async function setAccountAsDefault(accountId: string, type: 'GENERAL' | 'INCOME' | 'EXPENSE') {
+    const session = await getUserSession();
+    if (!session || !session.user.activeBusinessId) {
+        throw new Error("Unauthorized");
+    }
+
+    const businessId = session.user.activeBusinessId;
+
+    const data: any = {};
+    if (type === 'GENERAL') data.defAccId = accountId;
+    if (type === 'INCOME') data.defIncomeAccId = accountId;
+    if (type === 'EXPENSE') data.defExpenseAccId = accountId;
+
+    await prisma.business.update({
+        where: { id: businessId, ownerId: session.user.id },
+        data
+    });
+
+    revalidatePath("/accounts");
+    revalidatePath("/dashboard");
+    return { success: true };
 }

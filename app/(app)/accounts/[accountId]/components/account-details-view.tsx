@@ -1,5 +1,6 @@
 "use client"
 
+import { setAccountAsDefault } from "@/actions/financial-account.actions"
 import { getAccountTransactions } from "@/actions/transaction.actions"
 import { FooterButtons } from "@/components/footer-buttons"
 import { useUserConfig } from "@/components/providers/user-config-provider"
@@ -31,7 +32,8 @@ import {
     User2, Users,
     Wallet
 } from "lucide-react"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState, useTransition } from "react"
+import { toast } from "sonner"
 import BackAccountHeaderClient from "./back-account-header-client"
 
 import { useAccountStats, useAccountTransactions } from "@/tanstacks/financial-account"
@@ -49,6 +51,7 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
     const symbol = getCurrencySymbol(currency)
     const { data: statsData, isLoading: statsLoading } = useAccountStats(accountId)
     const { data: transData, isLoading: transLoading } = useAccountTransactions(accountId)
+    const [isPending, startTransition] = useTransition()
 
     const [transactions, setTransactions] = useState<any[]>([])
     const [page, setPage] = useState(1)
@@ -159,6 +162,17 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
         }
     }
 
+    const handleSetDefault = async (type: 'GENERAL' | 'INCOME' | 'EXPENSE') => {
+        startTransition(async () => {
+            try {
+                await setAccountAsDefault(accountId, type)
+                toast.success("Default account updated")
+            } catch (error: any) {
+                toast.error(error.message || "Failed to update default account")
+            }
+        })
+    }
+
     return (
         <>
             <BackAccountHeaderClient account={account} />
@@ -186,23 +200,47 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                                     </div>
                                     <div>
                                         <div className="flex flex-wrap gap-2 mb-1">
-                                            {isDefaultAcc && (
+                                            {isDefaultAcc ? (
                                                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/10 border-white/20 text-white">
                                                     <ShieldAlert size={8} strokeWidth={3} />
                                                     Primary
                                                 </div>
+                                            ) : account.type === FinancialAccountType.MONEY && (
+                                                <button
+                                                    disabled={isPending}
+                                                    onClick={() => handleSetDefault('GENERAL')}
+                                                    className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/5 border-white/10 text-white/50 hover:bg-white/20 hover:text-white transition-all"
+                                                >
+                                                    Set as Primary
+                                                </button>
                                             )}
-                                            {isDefaultIncome && (
+                                            {isDefaultIncome ? (
                                                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/10 border-white/20 text-white">
                                                     <ArrowDownToLine size={8} strokeWidth={3} />
                                                     Def. Income
                                                 </div>
+                                            ) : account.type === FinancialAccountType.CATEGORY && account.categoryType === CategoryType.INCOME && (
+                                                <button
+                                                    disabled={isPending}
+                                                    onClick={() => handleSetDefault('INCOME')}
+                                                    className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/5 border-white/10 text-white/50 hover:bg-white/20 hover:text-white transition-all"
+                                                >
+                                                    Set as Def. Income
+                                                </button>
                                             )}
-                                            {isDefaultExpense && (
+                                            {isDefaultExpense ? (
                                                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/10 border-white/20 text-white">
                                                     <ArrowUpFromLine size={8} strokeWidth={3} />
                                                     Def. Expense
                                                 </div>
+                                            ) : account.type === FinancialAccountType.CATEGORY && account.categoryType === CategoryType.EXPENSE && (
+                                                <button
+                                                    disabled={isPending}
+                                                    onClick={() => handleSetDefault('EXPENSE')}
+                                                    className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/5 border-white/10 text-white/50 hover:bg-white/20 hover:text-white transition-all"
+                                                >
+                                                    Set as Def. Expense
+                                                </button>
                                             )}
                                         </div>
                                         <h1 className="text-xl sm:text-2xl font-black tracking-tight">{account.name}</h1>

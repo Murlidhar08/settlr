@@ -60,18 +60,32 @@ export async function switchBusiness(businessId: string, redirectTo?: string | n
   }
 }
 
-export async function updateBusiness(id: string, name: string) {
-  if (!name) throw new Error("Business name is required");
-
+export async function updateBusiness(
+  id: string,
+  name?: string,
+  defaults?: {
+    defAccId?: string | null;
+    defIncomeAccId?: string | null;
+    defExpenseAccId?: string | null;
+  }
+) {
   const session = await getUserSession();
   if (!session) return null;
+
+  const data: any = {};
+  if (name) data.name = name;
+  if (defaults) {
+    if (defaults.defAccId !== undefined) data.defAccId = defaults.defAccId;
+    if (defaults.defIncomeAccId !== undefined) data.defIncomeAccId = defaults.defIncomeAccId;
+    if (defaults.defExpenseAccId !== undefined) data.defExpenseAccId = defaults.defExpenseAccId;
+  }
 
   const updated = await prisma.business.update({
     where: {
       id: id,
       ownerId: session.user.id // Security check
     },
-    data: { name }
+    data
   });
 
   revalidatePath("/dashboard");
