@@ -40,9 +40,7 @@ export default async function Page() {
       </section>
 
       {/* Global Stats Grid */}
-      <Suspense fallback={<StatusGridSkeletons />}>
-        <SummaryCard />
-      </Suspense>
+      <SummaryCard />
 
       {/* Visual Analytics Row */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
