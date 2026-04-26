@@ -11,8 +11,7 @@ import { BudgetAlerts, BudgetAlertsSkeleton } from "./components/budget-alerts";
 import SwitchBusiness from "./components/business-switch";
 import { CashflowChart } from "./components/cashflow-chart";
 import RecentTransaction from "./components/recent-transaction";
-import { StatusGridSkeletons } from "./components/status-card-loading";
-import SummaryCard from "./components/summary-card";
+import SummaryCard, { SummaryCardSkeleton } from "./components/summary-card";
 import { TransactionListSkeletons } from "./components/transaction-item-skeleton";
 
 export default async function Page() {
@@ -40,7 +39,9 @@ export default async function Page() {
       </section>
 
       {/* Global Stats Grid */}
-      <SummaryCard />
+      <Suspense fallback={<SummaryCardSkeleton />}>
+        <SummaryCard currency={currency} language={language} />
+      </Suspense>
 
       {/* Visual Analytics Row */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
