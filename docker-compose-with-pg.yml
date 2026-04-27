@@ -7,12 +7,9 @@ services:
       - POSTGRES_DB=settlr
       - POSTGRES_PASSWORD=settlr
       - POSTGRES_USER=settlr
-      - PUID=1000
       - TZ=Asia/Kolkata
     ports:
-      - target: 5432
-        published: "5432"
-        protocol: tcp
+      - '5433:5432'
     restart: unless-stopped
     volumes:
       - type: bind
@@ -25,7 +22,7 @@ services:
       timeout: 5s
       retries: 5
 
-  settlr:
+  settlr-web:
     container_name: settlr
     image: settlr:latest
     build:
@@ -56,13 +53,15 @@ services:
       - FROM_EMAIL=settlr@example.com
 
       # Google login
-      - GOOGLE_CLIENT_ID=
-      - GOOGLE_CLIENT_SECRET=
+      - GOOGLE_CLIENT_ID=dummy
+      - GOOGLE_CLIENT_SECRET=dummy
 
       # Discord
-      - DISCORD_CLIENT_ID=
-      - DISCORD_CLIENT_SECRET=
+      - DISCORD_CLIENT_ID=dummy
+      - DISCORD_CLIENT_SECRET=dummy
     depends_on:
       postgresql:
         condition: service_healthy
+    command: >
+      sh -c "npx prisma migrate deploy && npx prisma generate && node server.js"
     restart: unless-stopped
