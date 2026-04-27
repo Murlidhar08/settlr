@@ -51,8 +51,8 @@ export default function SignupPage() {
     authClient.getSession()
       .then((session) => {
         if (session.data) {
-          if (session.data.user.banned) router.push("/banned");
-          else router.push("/dashboard");
+          if (session.data.user.banned) router.push("/banned" as any);
+          else router.push("/dashboard" as any);
         }
       });
   }, [router])

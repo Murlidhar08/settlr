@@ -14,8 +14,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { LoadingSwap } from '@/components/ui/loading-swap'
 import { Skeleton } from '@/components/ui/skeleton'
-import { authClient, useSession } from '@/lib/auth/auth-client'
+import { authClient } from '@/lib/auth/auth-client'
 import { getInitials } from '@/utility/party'
+import { useCurrentUser } from '@/tanstacks/user'
 
 type ProfileFormValues = {
   name: string
@@ -40,27 +41,27 @@ const itemVariants = {
 
 export default function EditProfilePage() {
   const router = useRouter()
-  const { data: session, isPending } = useSession()
+  const { data: user, isLoading } = useCurrentUser()
 
   const { register, handleSubmit, formState: { isSubmitting }, reset } = useForm<ProfileFormValues>({
     defaultValues: {
-      name: session?.user?.name || '',
-      email: session?.user?.email || '',
-      contactNo: session?.user?.contactNo || '',
+      name: user?.name || '',
+      email: user?.email || '',
+      contactNo: user?.contactNo || '',
     },
   })
 
   useEffect(() => {
-    if (session?.user) {
+    if (user) {
       reset({
-        name: session.user.name ?? '',
-        email: session.user.email ?? '',
-        contactNo: session?.user?.contactNo || '',
+        name: user.name ?? '',
+        email: user.email ?? '',
+        contactNo: user?.contactNo || '',
       })
     }
-  }, [session, reset])
+  }, [user, reset])
 
-  if (isPending) return <EditProfileSkeleton />;
+  if (isLoading) return <EditProfileSkeleton />;
 
   async function onSubmit(data: ProfileFormValues) {
     try {
@@ -73,7 +74,7 @@ export default function EditProfilePage() {
         })
       )
 
-      if (data.email !== session?.user?.email) {
+      if (data.email !== user?.email) {
         promises.push(
           authClient.changeEmail({
             newEmail: data.email,
@@ -97,7 +98,7 @@ export default function EditProfilePage() {
         return
       }
 
-      if (data.email !== session?.user?.email) {
+      if (data.email !== user?.email) {
         toast.success('Verify your new email address to complete the change.')
       } else {
         toast.success('Profile updated successfully')
@@ -125,9 +126,9 @@ export default function EditProfilePage() {
         <motion.section variants={itemVariants} className="flex flex-col items-center py-10 relative">
           <div className="relative group">
             <Avatar className="h-32 w-32 ring-4 ring-background shadow-2xl transition-transform duration-500 group-hover:scale-105">
-              <AvatarImage src={session?.user?.image || ''} />
+              <AvatarImage src={user?.image || ''} />
               <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary">
-                {getInitials(session?.user?.name)}
+                {getInitials(user?.name)}
               </AvatarFallback>
             </Avatar>
             <motion.button
@@ -174,7 +175,7 @@ export default function EditProfilePage() {
         {/* Submit */}
         <FooterButtons>
           <Button
-            onClick={() => router.push("/edit-profile" as any)}
+            type="submit"
             className="h-14 w-auto p-8 rounded-full gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:bg-primary/90 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 py-2"
           >
             <LoadingSwap isLoading={isSubmitting}>
@@ -243,4 +244,3 @@ function Field({
     </div>
   )
 }
-

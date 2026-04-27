@@ -1,7 +1,6 @@
 "use client"
 
 import { setAccountAsDefault } from "@/actions/financial-account.actions"
-import { getAccountTransactions } from "@/actions/transaction.actions"
 import { FooterButtons } from "@/components/footer-buttons"
 import { useUserConfig } from "@/components/providers/user-config-provider"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
@@ -32,7 +31,7 @@ import {
     User2, Users,
     Wallet
 } from "lucide-react"
-import { useCallback, useEffect, useRef, useState, useTransition } from "react"
+import { useCallback, useRef, useTransition } from "react"
 import { toast } from "sonner"
 import BackAccountHeaderClient from "./back-account-header-client"
 
@@ -46,77 +45,45 @@ interface AccountDetailsViewProps {
 }
 
 export function AccountDetailsView({ accountId, currency, language }: AccountDetailsViewProps) {
-    // 1. All Hooks at the very top
     const { defAccId, defIncomeAccId, defExpenseAccId } = useUserConfig()
     const symbol = getCurrencySymbol(currency)
     const { data: statsData, isLoading: statsLoading } = useAccountStats(accountId)
-    const { data: transData, isLoading: transLoading } = useAccountTransactions(accountId)
+    const { 
+        data: transData, 
+        isLoading: transLoading, 
+        fetchNextPage, 
+        hasNextPage, 
+        isFetchingNextPage 
+    } = useAccountTransactions(accountId)
+    
     const [isPending, startTransition] = useTransition()
-
-    const [transactions, setTransactions] = useState<any[]>([])
-    const [page, setPage] = useState(1)
-    const [loading, setLoading] = useState(false)
-    const [hasMore, setHasMore] = useState(false)
     const observer = useRef<IntersectionObserver | null>(null)
-
-    useEffect(() => {
-        if (transData) {
-            setTransactions(transData.transactions)
-            setHasMore(transData.transactions.length < transData.totalTransactions)
-        }
-    }, [transData])
-
-    const { account } = transData || {}
-    const stats = statsData
-    const totalTransactions = transData?.totalTransactions
 
     const lastTransactionRef = useCallback(
         (node: HTMLDivElement) => {
-            if (loading || !transData) return
+            if (isFetchingNextPage) return
             if (observer.current) observer.current.disconnect()
             observer.current = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && hasMore) {
-                    setPage((prevPage) => prevPage + 1)
+                if (entries[0].isIntersecting && hasNextPage) {
+                    fetchNextPage()
                 }
             })
             if (node) observer.current.observe(node)
         },
-        [loading, hasMore, transData]
+        [isFetchingNextPage, hasNextPage, fetchNextPage]
     )
 
-    useEffect(() => {
-        if (page === 1 || !transData || !account) return
-
-        const loadMoreTransactions = async () => {
-            setLoading(true)
-            try {
-                const { transactions: nextTransactions } = await getAccountTransactions(account.id, {
-                    page,
-                    limit: 20,
-                })
-
-                if (nextTransactions.length < 20) {
-                    setHasMore(false)
-                }
-                setTransactions((prev) => [...prev, ...nextTransactions])
-            } catch (error) {
-                console.error("Failed to load more transactions:", error)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        loadMoreTransactions()
-    }, [page, account, totalTransactions, transData])
-
-    // 2. Early returns AFTER all hooks
-    if (statsLoading || transLoading || stats == undefined) {
+    if (statsLoading || transLoading || !statsData || !transData) {
         return <AccountDetailsSkeleton />
     }
 
-    if (!statsData || !transData || !account) return null
+    const transactions = transData.pages.flatMap(page => page.transactions)
+    const account = transData.pages[0]?.account
+    const stats = statsData
+    const totalTransactions = transData.pages[0]?.totalTransactions
 
-    // 3. Helpers and logic
+    if (!account) return null
+
     const isDefaultAcc = defAccId === accountId
     const isDefaultIncome = defIncomeAccId === accountId
     const isDefaultExpense = defExpenseAccId === accountId
@@ -144,7 +111,7 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
         }
     }
 
-    const isDarkCard = true; // All our hero variants now use fixed high-contrast gradients
+    const isDarkCard = true;
 
     const getThemeColors = () => {
         const isPositive = stats.balance >= 0;
@@ -321,13 +288,13 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                                 ref={lastTransactionRef}
                                 className="h-20 flex items-center justify-center mt-8"
                             >
-                                {loading && (
+                                {isFetchingNextPage && (
                                     <div className="flex items-center gap-3 text-muted-foreground">
                                         <Loader2 className="size-5 animate-spin" />
                                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">Loading more...</span>
                                     </div>
                                 )}
-                                {!hasMore && transactions.length > 0 && (
+                                {!hasNextPage && transactions.length > 0 && (
                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">End of records</p>
                                 )}
                             </div>

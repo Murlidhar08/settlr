@@ -3,7 +3,6 @@
 import {
     addBusiness,
     deleteBusiness,
-    getBusinessList,
     switchBusiness,
     updateBusiness
 } from "@/actions/business.actions"
@@ -21,46 +20,30 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { authClient } from "@/lib/auth/auth-client"
+import { useSession } from "@/lib/auth/auth-client"
+import { Business } from "@/lib/generated/prisma/client"
 import { cn } from "@/lib/utils"
+import { useBusinessList } from "@/tanstacks/business"
 import { AnimatePresence, motion } from "framer-motion"
 import { Building2, Check, Loader2, Pencil, Plus, ShieldAlert, Trash2, X } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { toast } from "sonner"
-
-interface Business {
-    id: string
-    name: string
-}
 
 export default function BusinessPage() {
     const router = useRouter()
-    const [businesses, setBusinesses] = useState<Business[]>([])
-    const [activeId, setActiveId] = useState<string | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
+    const { data: session } = useSession()
+    const activeId = session?.user?.activeBusinessId || null
+
+    const { data, isLoading, refetch } = useBusinessList()
+    const businesses = data ?? [] as Business[]
+
     const [editingId, setEditingId] = useState<string | null>(null)
     const [editName, setEditName] = useState("")
     const [isAdding, setIsAdding] = useState(false)
     const [newName, setNewName] = useState("")
     const [deleteId, setDeleteId] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
-
-    const fetchBusinesses = async () => {
-        setIsLoading(true)
-        const [list, sessionRes] = await Promise.all([
-            getBusinessList(),
-            authClient.getSession()
-        ])
-
-        setBusinesses(list as Business[] || [])
-        setActiveId(sessionRes.data?.user?.activeBusinessId || null)
-        setIsLoading(false)
-    }
-
-    useEffect(() => {
-        fetchBusinesses()
-    }, [])
 
     const handleSwitch = async (id: string) => {
         if (editingId) return;
@@ -80,7 +63,7 @@ export default function BusinessPage() {
             await addBusiness(newName)
             setNewName("")
             setIsAdding(false)
-            await fetchBusinesses()
+            await refetch()
             toast.success("Business created successfully")
         } catch (error: any) {
             toast.error(error.message || "Failed to create business")
@@ -95,7 +78,7 @@ export default function BusinessPage() {
         try {
             await updateBusiness(id, editName)
             setEditingId(null)
-            await fetchBusinesses()
+            await refetch()
             toast.success("Business updated successfully")
         } catch (error: any) {
             toast.error(error.message || "Failed to update business")
@@ -110,7 +93,7 @@ export default function BusinessPage() {
         try {
             await deleteBusiness(deleteId)
             setDeleteId(null)
-            await fetchBusinesses()
+            await refetch()
             toast.success("Business deleted successfully")
         } catch (error: any) {
             toast.error(error.message || "Failed to delete business")

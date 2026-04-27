@@ -69,8 +69,8 @@ export default function LoginForm({ providers }: LoginFormProps) {
     authClient.getSession()
       .then((session) => {
         if (session.data) {
-          if (session.data.user.banned) router.push("/banned");
-          else router.push("/dashboard");
+          if (session.data.user.banned) router.push("/banned" as any);
+          else router.push("/dashboard" as any);
         }
       });
 
@@ -94,7 +94,7 @@ export default function LoginForm({ providers }: LoginFormProps) {
           const reason = result.data.user.banReason;
           router.push(`/banned${reason ? `?reason=${encodeURIComponent(reason)}` : ""}` as any);
         }
-        else router.push("/dashboard");
+        else router.push("/dashboard" as any);
       }
     } catch (err) {
       setError("An error occurred during sign in");

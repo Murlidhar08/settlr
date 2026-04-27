@@ -140,7 +140,7 @@ export async function getBusinessList() {
 
   if (!session) {
     console.error("User is not logged in.")
-    return null;
+    return [];
   }
 
   return await prisma.business?.findMany({

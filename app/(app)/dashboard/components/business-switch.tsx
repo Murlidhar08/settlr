@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { getSession, useSession } from "@/lib/auth/auth-client"
 import { t } from "@/lib/languages/i18n"
 import { cn } from "@/lib/utils"
-import { useBusinessList } from "@/tanstacks/dashboard"
+import { useBusinessList } from "@/tanstacks/business"
 import { AnimatePresence, motion } from "framer-motion"
 import { Building2, Check, ChevronDown, Settings2 } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -38,7 +38,7 @@ export default function SwitchBusiness() {
   const { data: businesses, isLoading: isBusinessesLoading } = useBusinessList();
   const { data: session, isPending: isSessionLoading } = useSession();
   const activeBusinessId = session?.user?.activeBusinessId;
-  const selectedBusiness = businesses?.find((b) => b.id === activeBusinessId) ?? businesses?.[0];
+  const selectedBusiness = businesses?.find((b: Business) => b.id === activeBusinessId) ?? businesses?.[0];
   const isLoading = isBusinessesLoading || isSessionLoading || isSwitching;
 
   /* ========================================================= */
@@ -98,7 +98,7 @@ export default function SwitchBusiness() {
               )}
 
               {/* List of Businesses */}
-              {businesses?.map(business => {
+              {businesses?.map((business: Business) => {
                 const isActive = business.id === selectedBusiness?.id
 
                 return (

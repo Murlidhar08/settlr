@@ -16,7 +16,7 @@ import { getDefaultConfig, getUserConfig } from "@/lib/user-config";
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Check if setup is needed
   if (await isSetupRequired()) {
-    redirect("/setup");
+    redirect("/setup" as any);
   }
 
   // User Config
@@ -26,10 +26,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const session = await getUserSession();
 
   if (!session)
-    redirect("/login");
+    redirect("/login" as any);
 
   if (session.user.banned)
-    redirect("/banned");
+    redirect("/banned" as any);
 
   return (
     <UserConfigProvider config={userConfig}>

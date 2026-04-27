@@ -10,12 +10,12 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
 
   // Check if setup is needed
   if (pathname !== "/setup" && await isSetupRequired()) {
-    redirect("/setup");
+    redirect("/setup" as any);
   }
 
   // If setup is NOT needed and user is trying to access /setup, redirect to login
   if (pathname === "/setup" && !await isSetupRequired()) {
-    redirect("/login");
+    redirect("/login" as any);
   }
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">

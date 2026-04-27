@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 export default async function Home() {
     // Check if setup is needed
     if (await isSetupRequired()) {
-        redirect("/setup");
+        redirect("/setup" as any);
     }
 
     // Get session on the server
@@ -17,12 +17,12 @@ export default async function Home() {
 
     // Auth-based redirect
     if (!session) {
-        redirect("/login");
+        redirect("/login" as any);
     }
 
     if (session.user.banned) {
-        redirect("/banned");
+        redirect("/banned" as any);
     }
 
-    redirect("/dashboard");
+    redirect("/dashboard" as any);
 }
