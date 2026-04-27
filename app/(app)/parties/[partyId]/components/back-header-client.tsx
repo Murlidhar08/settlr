@@ -60,6 +60,8 @@ export default function BackHeaderClient({ party }: { party: any }) {
     })
 
     if (success) {
+      queryClient.invalidateQueries({ queryKey: ["party-list", party?.type] })
+      queryClient.invalidateQueries({ queryKey: ["party-detail", party.id] })
       toast.success("Party updated successfully")
       setIsEditing(false)
       router.refresh()

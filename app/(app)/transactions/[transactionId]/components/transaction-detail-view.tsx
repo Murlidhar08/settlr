@@ -9,8 +9,10 @@ import { AddTransactionModal } from "@/components/transaction/add-transaction-mo
 import { Currency } from "@/lib/generated/prisma/enums"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 import { formatAmount, formatDate, formatTime } from "@/utility/transaction"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import { ArrowDownLeft, ArrowRight, ArrowUpRight, CalendarDays, Check, Clock, Hash, History, Pencil, PenSquareIcon, Phone, Trash2, User } from "lucide-react"
+import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
@@ -28,6 +30,28 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
     const router = useRouter()
     const [isEditOpen, setIsEditOpen] = useState(false)
 
+    const queryClient = useQueryClient()
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => deleteTransaction(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
+            queryClient.invalidateQueries({ queryKey: ["cashbook-transactions"] })
+            queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] })
+            queryClient.invalidateQueries({ queryKey: ["budget-insights"] })
+            if (transaction.fromAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", transaction.fromAccountId] })
+            if (transaction.toAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", transaction.toAccountId] })
+            if (transaction.partyId) {
+                queryClient.invalidateQueries({ queryKey: ["party-detail", transaction.partyId] })
+                queryClient.invalidateQueries({ queryKey: ["party-transactions", transaction.partyId] })
+            }
+            toast.success("Transaction deleted successfully")
+            router.back()
+        },
+        onError: () => {
+            toast.error("Failed to delete transaction")
+        }
+    })
+
     const onDelete = async () => {
         const ok = await confirm({
             title: "Delete transaction?",
@@ -38,8 +62,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
 
         if (!ok) return
 
-        await deleteTransaction(transaction.id)
-        router.back()
+        deleteMutation.mutate(transaction.id)
     }
 
     return (

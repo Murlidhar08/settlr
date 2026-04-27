@@ -15,6 +15,8 @@ import { Globe, Mail, Save, Server, ShieldCheck, Fingerprint, CreditCard, Layout
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+const emailRegex = /^([^<]+<)?([^@\s<>]+@[^@\s<>.]+\.[^@\s<>.]+)>?$/;
+
 const appConfigSchema = z.object({
     appName: z.string().min(1, "App name is required"),
     appDescription: z.string().min(1, "Description is required"),
@@ -23,7 +25,9 @@ const appConfigSchema = z.object({
     smtpUser: z.string().optional().nullable(),
     smtpPass: z.string().optional().nullable(),
     smtpSecure: z.boolean().default(false),
-    fromEmail: z.string().optional().nullable().or(z.literal("")),
+    fromEmail: z.string().refine((val) => !val || emailRegex.test(val), {
+        message: "Invalid email format. Use 'email@example.com' or 'Name <email@example.com>'",
+    }).optional().nullable().or(z.literal("")),
     googleClientId: z.string().optional().nullable(),
     googleClientSecret: z.string().optional().nullable(),
     discordClientId: z.string().optional().nullable(),
@@ -32,12 +36,15 @@ const appConfigSchema = z.object({
 
 type AppConfigValues = z.infer<typeof appConfigSchema>;
 
+import { useQueryClient } from "@tanstack/react-query";
+
 interface AppSettingsFormProps {
     initialData: any;
 }
 
 export function AppSettingsForm({ initialData }: AppSettingsFormProps) {
     const [loading, setLoading] = useState(false);
+    const queryClient = useQueryClient();
 
     const form = useForm<AppConfigValues>({
         resolver: zodResolver(appConfigSchema) as any,
@@ -61,6 +68,7 @@ export function AppSettingsForm({ initialData }: AppSettingsFormProps) {
         setLoading(true);
         try {
             await updateAppConfig(data as any);
+            queryClient.invalidateQueries({ queryKey: ["admin-app-config"] });
             toast.success("Application settings updated successfully");
         } catch (error: any) {
             toast.error(error.message || "Failed to update settings");

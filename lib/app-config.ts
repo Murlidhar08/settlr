@@ -20,6 +20,10 @@ export async function getAppConfig() {
           smtpPass: envServer.SMTP_PASS,
           smtpSecure: envServer.SMTP_SECURE === "true",
           fromEmail: envServer.FROM_EMAIL,
+          googleClientId: envServer.GOOGLE_CLIENT_ID,
+          googleClientSecret: envServer.GOOGLE_CLIENT_SECRET,
+          discordClientId: envServer.DISCORD_CLIENT_ID,
+          discordClientSecret: envServer.DISCORD_CLIENT_SECRET
         }
       });
     }
@@ -37,6 +41,10 @@ export async function getAppConfig() {
       smtpPass: envServer.SMTP_PASS || "",
       smtpSecure: envServer.SMTP_SECURE === "true",
       fromEmail: envServer.FROM_EMAIL || "",
+      googleClientId: envServer.GOOGLE_CLIENT_ID || "",
+      googleClientSecret: envServer.GOOGLE_CLIENT_SECRET || "",
+      discordClientId: envServer.DISCORD_CLIENT_ID || "",
+      discordClientSecret: envServer.DISCORD_CLIENT_SECRET || ""
     };
   }
 }
