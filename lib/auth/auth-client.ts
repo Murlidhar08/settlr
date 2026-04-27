@@ -8,7 +8,7 @@ import { Auth } from "./auth";
 export const authClient = createAuthClient({
   session: {
     cookieCache: {
-      enabled: true,
+      enabled: false,
     },
   },
   plugins: [
@@ -27,7 +27,7 @@ export const authClient = createAuthClient({
 /**
  * Re-export helpers for convenience
  */
-export const { signIn, signUp, signOut, useSession, resetPassword } = authClient
+export const { signIn, signUp, signOut, useSession, getSession, resetPassword } = authClient
 
 /**
  * Social providers

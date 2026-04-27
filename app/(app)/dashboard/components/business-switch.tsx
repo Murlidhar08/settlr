@@ -7,7 +7,7 @@ import { useUserConfig } from "@/components/providers/user-config-provider"
 import { Button } from "@/components/ui/button"
 import LoadingText from "@/components/ui/loading-text"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useSession } from "@/lib/auth/auth-client"
+import { getSession, useSession } from "@/lib/auth/auth-client"
 import { t } from "@/lib/languages/i18n"
 import { cn } from "@/lib/utils"
 import { useBusinessList } from "@/tanstacks/dashboard"
@@ -33,20 +33,35 @@ export default function SwitchBusiness() {
   const router = useRouter();
   const { language } = useUserConfig();
   const [popOpen, setPopOpen] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
+  const [switchingId, setSwitchingId] = useState<string | null>(null);
   const { data: businesses, isLoading: isBusinessesLoading } = useBusinessList();
   const { data: session, isPending: isSessionLoading } = useSession();
   const activeBusinessId = session?.user?.activeBusinessId;
   const selectedBusiness = businesses?.find((b) => b.id === activeBusinessId) ?? businesses?.[0];
-  const isLoading = isBusinessesLoading || isSessionLoading;
+  const isLoading = isBusinessesLoading || isSessionLoading || isSwitching;
 
   /* ========================================================= */
   /* HANDLERS */
   /* ========================================================= */
   const onChangeBusinessId = async (business: Business) => {
-    // Optimistically update or just wait for revalidation
-    await switchBusiness(business.id);
-    setPopOpen(false);
-    router.refresh();
+    if (business.id === selectedBusiness?.id) {
+      setPopOpen(false);
+      return;
+    }
+
+    setIsSwitching(true);
+    setSwitchingId(business.id);
+    try {
+      await switchBusiness(business.id);
+      await getSession();
+      // Direct effect: force a full reload and redirect to dashboard
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Failed to switch business:", error);
+      setIsSwitching(false);
+      setSwitchingId(null);
+    }
   };
 
   /* ========================================================= */
@@ -89,21 +104,27 @@ export default function SwitchBusiness() {
                 return (
                   <button
                     key={business.id}
+                    disabled={isSwitching}
                     onClick={() => onChangeBusinessId(business)}
                     className={cn(
                       "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm transition",
                       isActive
                         ? "bg-primary/10 text-primary font-semibold"
-                        : "hover:bg-muted"
+                        : "hover:bg-muted",
+                      isSwitching && "opacity-50 cursor-not-allowed"
                     )}
                   >
-                    <Building2 className="h-4 w-4 shrink-0" />
+                    {switchingId === business.id ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    ) : (
+                      <Building2 className="h-4 w-4 shrink-0" />
+                    )}
 
                     <span className="flex-1 truncate text-left">
                       {business.name}
                     </span>
 
-                    {isActive && <Check className="h-4 w-4" />}
+                    {isActive && !isSwitching && <Check className="h-4 w-4" />}
                   </button>
                 )
               })}

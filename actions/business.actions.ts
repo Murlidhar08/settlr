@@ -49,6 +49,7 @@ export async function switchBusiness(businessId: string, redirectTo?: string | n
     });
 
     // 4. Revalidate paths to clear Next.js Data Cache
+    revalidatePath("/dashboard");
     if (redirectTo) {
       revalidatePath(redirectTo);
     }
