@@ -85,23 +85,13 @@ export function AppSettingsForm({ initialData }: AppSettingsFormProps) {
                 description="Core application identity and global settings."
                 icon={<Layout className="w-5 h-5" />}
             >
-                <div className="grid gap-6 sm:grid-cols-2">
-                    <div className="space-y-2">
-                        <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">App Name</Label>
-                        <Input
-                            {...form.register("appName")}
-                            className="h-12 rounded-2xl border-none bg-muted/40 shadow-inner focus-visible:ring-primary/20 transition-all font-bold"
-                            placeholder="e.g. Settlr"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">Support Email</Label>
-                        <Input
-                            {...form.register("fromEmail")}
-                            className="h-12 rounded-2xl border-none bg-muted/40 shadow-inner focus-visible:ring-primary/20 transition-all font-bold"
-                            placeholder="noreply@example.com"
-                        />
-                    </div>
+                <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">App Name</Label>
+                    <Input
+                        {...form.register("appName")}
+                        className="h-12 rounded-2xl border-none bg-muted/40 shadow-inner focus-visible:ring-primary/20 transition-all font-bold"
+                        placeholder="e.g. Settlr"
+                    />
                 </div>
                 <div className="space-y-2">
                     <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">Description</Label>
@@ -119,6 +109,14 @@ export function AppSettingsForm({ initialData }: AppSettingsFormProps) {
                 description="Configuration for transactional emails."
                 icon={<Mail className="w-5 h-5" />}
             >
+                <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">Support Email</Label>
+                    <Input
+                        {...form.register("fromEmail")}
+                        className="h-12 rounded-2xl border-none bg-muted/40 shadow-inner focus-visible:ring-primary/20 transition-all font-bold"
+                        placeholder="noreply@example.com"
+                    />
+                </div>
                 <div className="grid gap-6 sm:grid-cols-3">
                     <div className="sm:col-span-2 space-y-2">
                         <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">Host</Label>
