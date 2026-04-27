@@ -60,18 +60,32 @@ export async function switchBusiness(businessId: string, redirectTo?: string | n
   }
 }
 
-export async function updateBusiness(id: string, name: string) {
-  if (!name) throw new Error("Business name is required");
-
+export async function updateBusiness(
+  id: string,
+  name?: string,
+  defaults?: {
+    defAccId?: string | null;
+    defIncomeAccId?: string | null;
+    defExpenseAccId?: string | null;
+  }
+) {
   const session = await getUserSession();
   if (!session) return null;
+
+  const data: any = {};
+  if (name) data.name = name;
+  if (defaults) {
+    if (defaults.defAccId !== undefined) data.defAccId = defaults.defAccId;
+    if (defaults.defIncomeAccId !== undefined) data.defIncomeAccId = defaults.defIncomeAccId;
+    if (defaults.defExpenseAccId !== undefined) data.defExpenseAccId = defaults.defExpenseAccId;
+  }
 
   const updated = await prisma.business.update({
     where: {
       id: id,
       ownerId: session.user.id // Security check
     },
-    data: { name }
+    data
   });
 
   revalidatePath("/dashboard");
@@ -85,24 +99,27 @@ export async function deleteBusiness(id: string) {
 
   // Check if it's the only business - optional but recommended
   const count = await prisma.business.count({
-    where: { ownerId: session.user.id }
+    where: { ownerId: session.user.id, isDelete: false }
   });
 
   if (count <= 1) {
     throw new Error("You must have at least one business.");
   }
 
-  await prisma.business.delete({
+  await prisma.business.update({
     where: {
       id: id,
       ownerId: session.user.id // Security check
+    },
+    data: {
+      isDelete: true
     }
   });
 
   // If the deleted business was active, switch to another one
   if (session.user.activeBusinessId === id) {
     const other = await prisma.business.findFirst({
-      where: { ownerId: session.user.id }
+      where: { ownerId: session.user.id, isDelete: false }
     });
     if (other) {
       await prisma.user.update({
@@ -130,6 +147,6 @@ export async function getBusinessList() {
       id: true,
       name: true
     },
-    where: { ownerId: session?.user.id }
+    where: { ownerId: session?.user.id, isDelete: false }
   });
 }

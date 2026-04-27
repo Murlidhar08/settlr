@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatusGridSkeletons } from "./components/status-card-loading";
+import { SummaryCardSkeleton } from "./components/summary-card";
 import { TransactionListSkeletons } from "./components/transaction-item-skeleton";
 import { BudgetAlertsSkeleton } from "./components/budget-alerts";
 
@@ -18,7 +18,7 @@ export default function DashboardLoading() {
       </section>
 
       {/* Global Stats Grid Skeleton */}
-      <StatusGridSkeletons />
+      <SummaryCardSkeleton />
 
       {/* Visual Analytics Row Skeleton */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

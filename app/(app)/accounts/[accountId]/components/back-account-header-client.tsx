@@ -1,7 +1,6 @@
 "use client"
 
-import { deleteFinancialAccount, toggleFinancialAccountActive } from "@/actions/financial-account.actions"
-import { upsertUserSettings } from "@/actions/user-settings.actions"
+import { deleteFinancialAccount, setAccountAsDefault, toggleFinancialAccountActive } from "@/actions/financial-account.actions"
 import { AddAccountModal } from "@/components/account/add-account-modal"
 import { BackHeader } from "@/components/back-header"
 import {
@@ -52,7 +51,7 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                             label: "Set as Primary Account",
                             onClick: async () => {
                                 try {
-                                    await upsertUserSettings({ defAccId: account.id })
+                                    await setAccountAsDefault(account.id, 'GENERAL')
                                     toast.success("Primary money account updated")
                                     router.refresh()
                                 } catch (err) {
@@ -68,7 +67,7 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                             label: "Set as Default Income",
                             onClick: async () => {
                                 try {
-                                    await upsertUserSettings({ defIncomeAccId: account.id })
+                                    await setAccountAsDefault(account.id, 'INCOME')
                                     toast.success("Default income category set")
                                     router.refresh()
                                 } catch (err) {
@@ -84,7 +83,7 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                             label: "Set as Default Expense",
                             onClick: async () => {
                                 try {
-                                    await upsertUserSettings({ defExpenseAccId: account.id })
+                                    await setAccountAsDefault(account.id, 'EXPENSE')
                                     toast.success("Default expense category set")
                                     router.refresh()
                                 } catch (err) {

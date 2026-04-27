@@ -13,6 +13,7 @@ export async function getFinancialAccounts(includeInactive: boolean = false) {
 
     const where: any = {
         businessId: session.user.activeBusinessId,
+        isDelete: false,
     };
 
     if (!includeInactive) {
@@ -62,7 +63,7 @@ export async function updateFinancialAccount(id: string, data: {
     }
 
     const existing = await prisma.financialAccount.findUnique({
-        where: { id, businessId: session.user.activeBusinessId }
+        where: { id, businessId: session.user.activeBusinessId, isDelete: false }
     });
 
     if (existing?.isSystem) {
@@ -97,43 +98,39 @@ export async function deleteFinancialAccount(id: string) {
     }
 
     const existing = await prisma.financialAccount.findUnique({
-        where: { id, businessId: session.user.activeBusinessId }
+        where: { id, businessId: session.user.activeBusinessId, isDelete: false }
     });
 
-    if (existing?.isSystem) {
+    if (!existing) {
+        throw new Error("Account not found");
+    }
+
+    if (existing.isSystem) {
         throw new Error("System accounts cannot be deleted");
     }
 
-    // Check if account has transactions before deleting? 
-    // Let's check for transactions
     const transactionCount = await prisma.transaction.count({
         where: {
             OR: [
                 { fromAccountId: id },
                 { toAccountId: id }
-            ]
+            ],
+            isDelete: false
         }
     });
 
-    if (transactionCount > 0) {
-        // Soft delete if transactions exist
-        await prisma.financialAccount.update({
-            where: { id, businessId: session.user.activeBusinessId },
-            data: { isActive: false }
-        });
-        revalidatePath("/accounts");
-        return { success: true, message: "Account deactivated as it has transaction history." };
-    }
-
-    await prisma.financialAccount.delete({
-        where: {
-            id,
-            businessId: session.user.activeBusinessId,
-        },
+    await prisma.financialAccount.update({
+        where: { id, businessId: session.user.activeBusinessId },
+        data: { isDelete: true }
     });
 
     revalidatePath("/accounts");
-    return { success: true };
+    return {
+        success: true,
+        message: transactionCount > 0
+            ? "Account moved to recycle bin as it has transaction history."
+            : "Account moved to recycle bin."
+    };
 }
 
 export async function getFinancialAccountBalance(accountId: string) {
@@ -147,6 +144,7 @@ export async function getFinancialAccountBalance(accountId: string) {
             where: {
                 toAccountId: accountId,
                 businessId: session.user.activeBusinessId,
+                isDelete: false,
             },
             _sum: {
                 amount: true,
@@ -156,6 +154,7 @@ export async function getFinancialAccountBalance(accountId: string) {
             where: {
                 fromAccountId: accountId,
                 businessId: session.user.activeBusinessId,
+                isDelete: false,
             },
             _sum: {
                 amount: true,
@@ -185,4 +184,27 @@ export async function toggleFinancialAccountActive(id: string, isActive: boolean
     revalidatePath("/accounts");
     revalidatePath(`/accounts/${id}`);
     return account;
+}
+
+export async function setAccountAsDefault(accountId: string, type: 'GENERAL' | 'INCOME' | 'EXPENSE') {
+    const session = await getUserSession();
+    if (!session || !session.user.activeBusinessId) {
+        throw new Error("Unauthorized");
+    }
+
+    const businessId = session.user.activeBusinessId;
+
+    const data: any = {};
+    if (type === 'GENERAL') data.defAccId = accountId;
+    if (type === 'INCOME') data.defIncomeAccId = accountId;
+    if (type === 'EXPENSE') data.defExpenseAccId = accountId;
+
+    await prisma.business.update({
+        where: { id: businessId, ownerId: session.user.id },
+        data
+    });
+
+    revalidatePath("/accounts");
+    revalidatePath("/dashboard");
+    return { success: true };
 }

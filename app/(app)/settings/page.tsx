@@ -21,7 +21,8 @@ import {
   PaintbrushIcon,
   Sun,
   Terminal,
-  Trash2Icon
+  Trash2Icon,
+  Skull
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -299,6 +300,17 @@ export default function SettingsPage() {
           </Section>
         </motion.div>
 
+        {/* DATA MANAGEMENT */}
+        <motion.div variants={itemVariants}>
+          <Section title="Data Management">
+            <NavigationRow
+              icon={Trash2Icon}
+              label="Recycle Bin"
+              onClick={() => router.push("/settings/recycle-bin" as any)}
+            />
+          </Section>
+        </motion.div>
+
         {/* SECURITY */}
         <motion.div variants={itemVariants}>
           <Section title="Security & Privacy">
@@ -312,13 +324,13 @@ export default function SettingsPage() {
               label="Safety & Security"
               onClick={() => router.push("/settings/security" as any)}
             />
-            <NavigationRow
+             <NavigationRow
               icon={KeyRoundIcon}
               label="Active Sessions"
               onClick={() => router.push("/settings/session-management" as any)}
             />
             <NavigationRow
-              icon={Trash2Icon}
+              icon={Skull}
               label="Danger Zone"
               labelClassName="text-rose-600"
               iconContainerClassName="bg-rose-100 text-rose-600"

@@ -31,5 +31,3 @@ export function TransactionListSkeletons() {
     </div>
   )
 }
-
-export default TransactionListSkeletons;
