@@ -3,6 +3,14 @@
 import { auth, getUserSession } from "@/lib/auth/auth";
 import { prisma } from "@/lib/prisma/prisma";
 import { headers } from "next/headers";
+import { getAppConfig } from "@/lib/app-config";
+
+export async function getAdminAppConfig() {
+    const session = await getUserSession();
+    if (session?.user.role !== "admin") throw new Error("Unauthorized");
+
+    return await getAppConfig();
+}
 
 export async function getAdminUsers() {
     const session = await getUserSession();

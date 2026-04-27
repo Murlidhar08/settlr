@@ -4,6 +4,7 @@ const envSchema = zod.object({
   // Application
   NODE_ENV: zod.string().nonempty(),
   NEXT_PUBLIC_APP_NAME: zod.string().nonempty(),
+  NEXT_PUBLIC_APP_DESCRIPTION: zod.string().nonempty(),
 
   //  Database
   DATABASE_URL: zod.string().nonempty(),
