@@ -239,17 +239,17 @@ enum CategoryType {
 }
 
 model AppConfig {
-  id                 String  @id @default("singleton")
-  appName            String  @default("Settlr")
-  appDescription     String  @default("Settlr for managing personal finance")
-  smtpHost           String?
-  smtpPort           Int?    @default(587)
-  smtpUser           String?
-  smtpPass           String?
-  smtpSecure         Boolean? @default(false)
-  fromEmail          String?
-  googleClientId     String?
-  googleClientSecret String?
+  id                  String   @id @default("singleton")
+  appName             String   @default("Settlr")
+  appDescription      String   @default("Settlr for managing personal finance")
+  smtpHost            String?
+  smtpPort            Int?     @default(587)
+  smtpUser            String?
+  smtpPass            String?
+  smtpSecure          Boolean? @default(false)
+  fromEmail           String?
+  googleClientId      String?
+  googleClientSecret  String?
   discordClientId     String?
   discordClientSecret String?
 

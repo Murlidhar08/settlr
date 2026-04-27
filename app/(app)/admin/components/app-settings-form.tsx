@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -12,7 +11,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { updateAppConfig } from "@/actions/admin/app-config";
-import { Globe, Mail, Save, Server, ShieldCheck, Fingerprint } from "lucide-react";
+import { Globe, Mail, Save, Server, ShieldCheck, Fingerprint, CreditCard, Layout } from "lucide-react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const appConfigSchema = z.object({
     appName: z.string().min(1, "App name is required"),
@@ -52,7 +53,7 @@ export function AppSettingsForm({ initialData }: AppSettingsFormProps) {
             googleClientId: initialData.googleClientId || "",
             googleClientSecret: initialData.googleClientSecret || "",
             discordClientId: initialData.discordClientId || "",
-            discordClientSecret: initialData.discordClientSecret || "",
+            discordClientSecret: initialData.discordClientSecret || ""
         },
     });
 
@@ -69,238 +70,189 @@ export function AppSettingsForm({ initialData }: AppSettingsFormProps) {
     };
 
     return (
-        <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* General Settings */}
-            <Card className="border-muted-foreground/10 shadow-sm overflow-hidden rounded-2xl">
-                <CardHeader className="bg-muted/30 pb-4 border-b border-muted-foreground/5">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-xl">
-                            <Globe className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <CardTitle>General Settings</CardTitle>
-                            <CardDescription>Basic application information and branding.</CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-6">
-                    <div className="grid gap-6 sm:grid-cols-2">
-                        <div className="space-y-2">
-                            <Label htmlFor="appName">Application Name</Label>
-                            <Input
-                                id="appName"
-                                {...form.register("appName")}
-                                className="h-11 rounded-xl"
-                                placeholder="e.g. Settlr"
-                            />
-                            {form.formState.errors.appName && (
-                                <p className="text-xs text-destructive">{form.formState.errors.appName.message}</p>
-                            )}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="fromEmail">From Email Address</Label>
-                            <Input
-                                id="fromEmail"
-                                {...form.register("fromEmail")}
-                                className="h-11 rounded-xl"
-                                placeholder="noreply@example.com"
-                            />
-                            {form.formState.errors.fromEmail && (
-                                <p className="text-xs text-destructive">{form.formState.errors.fromEmail.message}</p>
-                            )}
-                        </div>
+        <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-10">
+            {/* General & Branding Card */}
+            <ConfigCard
+                title="General & Branding"
+                description="Core application identity and global settings."
+                icon={<Layout className="w-5 h-5" />}
+            >
+                <div className="grid gap-6 sm:grid-cols-2">
+                    <div className="space-y-2">
+                        <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">App Name</Label>
+                        <Input
+                            {...form.register("appName")}
+                            className="h-12 rounded-2xl border-none bg-muted/40 shadow-inner focus-visible:ring-primary/20 transition-all font-bold"
+                            placeholder="e.g. Settlr"
+                        />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="appDescription">Application Description</Label>
-                        <Textarea
-                            id="appDescription"
-                            {...form.register("appDescription")}
-                            className="min-h-[100px] rounded-xl resize-none"
-                            placeholder="A brief description of your application..."
+                        <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">Support Email</Label>
+                        <Input
+                            {...form.register("fromEmail")}
+                            className="h-12 rounded-2xl border-none bg-muted/40 shadow-inner focus-visible:ring-primary/20 transition-all font-bold"
+                            placeholder="noreply@example.com"
                         />
-                        {form.formState.errors.appDescription && (
-                            <p className="text-xs text-destructive">{form.formState.errors.appDescription.message}</p>
-                        )}
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+                <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">Description</Label>
+                    <Textarea
+                        {...form.register("appDescription")}
+                        className="min-h-[100px] rounded-2xl border-none bg-muted/40 shadow-inner focus-visible:ring-primary/20 transition-all font-bold resize-none"
+                        placeholder="A brief description..."
+                    />
+                </div>
+            </ConfigCard>
 
-            {/* SMTP Settings */}
-            <Card className="border-muted-foreground/10 shadow-sm overflow-hidden rounded-2xl">
-                <CardHeader className="bg-muted/30 pb-4 border-b border-muted-foreground/5">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-xl">
-                            <Server className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <CardTitle>Email Server (SMTP)</CardTitle>
-                            <CardDescription>Configure outgoing email settings for notifications and auth.</CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-6">
-                    <div className="grid gap-6 sm:grid-cols-3">
-                        <div className="sm:col-span-2 space-y-2">
-                            <Label htmlFor="smtpHost">SMTP Host</Label>
-                            <Input
-                                id="smtpHost"
-                                {...form.register("smtpHost")}
-                                className="h-11 rounded-xl"
-                                placeholder="smtp.example.com"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="smtpPort">SMTP Port</Label>
-                            <Input
-                                id="smtpPort"
-                                type="number"
-                                {...form.register("smtpPort")}
-                                className="h-11 rounded-xl"
-                                placeholder="587"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid gap-6 sm:grid-cols-2">
-                        <div className="space-y-2">
-                            <Label htmlFor="smtpUser">SMTP User</Label>
-                            <Input
-                                id="smtpUser"
-                                {...form.register("smtpUser")}
-                                className="h-11 rounded-xl"
-                                placeholder="user@example.com"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="smtpPass">SMTP Password</Label>
-                            <Input
-                                id="smtpPass"
-                                type="password"
-                                {...form.register("smtpPass")}
-                                className="h-11 rounded-xl"
-                                placeholder="••••••••"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2 p-4 bg-muted/20 rounded-xl border border-muted-foreground/5">
-                        <Checkbox
-                            id="smtpSecure"
-                            checked={form.watch("smtpSecure")}
-                            onCheckedChange={(checked) => form.setValue("smtpSecure", !!checked)}
+            {/* Email Server Card */}
+            <ConfigCard
+                title="Email Server (SMTP)"
+                description="Configuration for transactional emails."
+                icon={<Mail className="w-5 h-5" />}
+            >
+                <div className="grid gap-6 sm:grid-cols-3">
+                    <div className="sm:col-span-2 space-y-2">
+                        <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">Host</Label>
+                        <Input
+                            {...form.register("smtpHost")}
+                            className="h-12 rounded-2xl border-none bg-muted/40 shadow-inner focus-visible:ring-primary/20 transition-all font-bold"
+                            placeholder="smtp.example.com"
                         />
-                        <div className="grid gap-1.5 leading-none">
-                            <Label
-                                htmlFor="smtpSecure"
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                                Use SSL/TLS (Secure Connection)
-                            </Label>
-                            <p className="text-xs text-muted-foreground">
-                                Enable if your SMTP server requires SSL (typically port 465).
-                            </p>
-                        </div>
                     </div>
-                </CardContent>
-            </Card>
+                    <div className="space-y-2">
+                        <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">Port</Label>
+                        <Input
+                            type="number"
+                            {...form.register("smtpPort")}
+                            className="h-12 rounded-2xl border-none bg-muted/40 shadow-inner focus-visible:ring-primary/20 transition-all font-bold"
+                        />
+                    </div>
+                </div>
+                <div className="grid gap-6 sm:grid-cols-2">
+                    <div className="space-y-2">
+                        <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">User</Label>
+                        <Input
+                            {...form.register("smtpUser")}
+                            className="h-12 rounded-2xl border-none bg-muted/40 shadow-inner focus-visible:ring-primary/20 transition-all font-bold"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">Password</Label>
+                        <Input
+                            type="password"
+                            {...form.register("smtpPass")}
+                            className="h-12 rounded-2xl border-none bg-muted/40 shadow-inner focus-visible:ring-primary/20 transition-all font-bold"
+                        />
+                    </div>
+                </div>
+                <div className="flex items-center space-x-3 p-4 rounded-2xl bg-primary/5 border border-primary/10">
+                    <Checkbox
+                        id="smtpSecure"
+                        checked={form.watch("smtpSecure")}
+                        onCheckedChange={(checked) => form.setValue("smtpSecure", !!checked)}
+                        className="rounded-lg h-6 w-6 border-primary/20 data-[state=checked]:bg-primary"
+                    />
+                    <div className="grid gap-1">
+                        <Label htmlFor="smtpSecure" className="text-sm font-black">Secure Connection (SSL/TLS)</Label>
+                        <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest italic">Use for port 465</p>
+                    </div>
+                </div>
+            </ConfigCard>
 
-            {/* Authentication Settings */}
-            <Card className="border-muted-foreground/10 shadow-sm overflow-hidden rounded-2xl">
-                <CardHeader className="bg-muted/30 pb-4 border-b border-muted-foreground/5">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-xl">
-                            <Fingerprint className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <CardTitle>Authentication (OAuth)</CardTitle>
-                            <CardDescription>Configure external login providers.</CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-8">
+            {/* Email Auth Card (OAuth) */}
+            <ConfigCard
+                title="Email Auth (OAuth)"
+                description="Social login providers configuration."
+                icon={<Fingerprint className="w-5 h-5" />}
+            >
+                <div className="space-y-6">
                     {/* Google */}
-                    <div className="space-y-4">
+                    <div className="p-5 rounded-2xl border-2 border-dashed border-muted-foreground/10 space-y-4">
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center">
                                 <Globe className="w-4 h-4 text-rose-500" />
                             </div>
-                            <h3 className="font-bold text-sm">Google Cloud Console</h3>
+                            <h4 className="font-black text-[11px] uppercase tracking-widest">Google Auth</h4>
                         </div>
-                        <div className="grid gap-6 sm:grid-cols-2 ml-10">
-                            <div className="space-y-2">
-                                <Label htmlFor="googleClientId">Client ID</Label>
-                                <Input
-                                    id="googleClientId"
-                                    {...form.register("googleClientId")}
-                                    className="h-11 rounded-xl"
-                                    placeholder="xxx-yyy.apps.googleusercontent.com"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="googleClientSecret">Client Secret</Label>
-                                <Input
-                                    id="googleClientSecret"
-                                    type="password"
-                                    {...form.register("googleClientSecret")}
-                                    className="h-11 rounded-xl"
-                                    placeholder="••••••••"
-                                />
-                            </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <Input
+                                {...form.register("googleClientId")}
+                                className="h-11 rounded-xl border-none bg-background shadow-inner text-xs font-bold"
+                                placeholder="Client ID"
+                            />
+                            <Input
+                                type="password"
+                                {...form.register("googleClientSecret")}
+                                className="h-11 rounded-xl border-none bg-background shadow-inner text-xs font-bold"
+                                placeholder="Client Secret"
+                            />
                         </div>
                     </div>
 
                     {/* Discord */}
-                    <div className="space-y-4">
+                    <div className="p-5 rounded-2xl border-2 border-dashed border-muted-foreground/10 space-y-4">
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center">
                                 <Globe className="w-4 h-4 text-indigo-500" />
                             </div>
-                            <h3 className="font-bold text-sm">Discord Developer Portal</h3>
+                            <h4 className="font-black text-[11px] uppercase tracking-widest">Discord Auth</h4>
                         </div>
-                        <div className="grid gap-6 sm:grid-cols-2 ml-10">
-                            <div className="space-y-2">
-                                <Label htmlFor="discordClientId">Client ID</Label>
-                                <Input
-                                    id="discordClientId"
-                                    {...form.register("discordClientId")}
-                                    className="h-11 rounded-xl"
-                                    placeholder="123456789"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="discordClientSecret">Client Secret</Label>
-                                <Input
-                                    id="discordClientSecret"
-                                    type="password"
-                                    {...form.register("discordClientSecret")}
-                                    className="h-11 rounded-xl"
-                                    placeholder="••••••••"
-                                />
-                            </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <Input
+                                {...form.register("discordClientId")}
+                                className="h-11 rounded-xl border-none bg-background shadow-inner text-xs font-bold"
+                                placeholder="Client ID"
+                            />
+                            <Input
+                                type="password"
+                                {...form.register("discordClientSecret")}
+                                className="h-11 rounded-xl border-none bg-background shadow-inner text-xs font-bold"
+                                placeholder="Client Secret"
+                            />
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </ConfigCard>
 
-            <div className="flex items-center justify-end gap-4 pb-10">
+            <div className="sticky bottom-0 bg-background/80 backdrop-blur-md pt-4 pb-10 flex justify-end">
                 <Button
                     type="submit"
                     disabled={loading}
-                    className="h-12 px-12 rounded-xl font-bold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98]"
+                    className="h-14 px-16 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/20 transition-all hover:shadow-primary/40 active:scale-[0.98] bg-primary text-white"
                 >
-                    {loading ? (
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                            Saving...
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <Save className="w-4 h-4" />
-                            Save All Settings
-                        </div>
-                    )}
+                    {loading ? "Saving Settings..." : "Sync All Config"}
                 </Button>
             </div>
         </form>
+    );
+}
+
+function ConfigCard({ title, description, icon, children }: {
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+    children: React.ReactNode;
+}) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="group relative rounded-[2.5rem] border-2 border-primary/5 bg-card p-6 sm:p-10 shadow-xl shadow-primary/5 transition-all hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/20"
+        >
+            <div className="flex items-center gap-4 mb-8">
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center transition-transform group-hover:rotate-12">
+                    {icon}
+                </div>
+                <div>
+                    <h3 className="text-xl font-black tracking-tight">{title}</h3>
+                    <p className="text-sm font-bold text-muted-foreground/60">{description}</p>
+                </div>
+            </div>
+            <div className="space-y-6">
+                {children}
+            </div>
+        </motion.div>
     );
 }

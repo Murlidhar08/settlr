@@ -3,6 +3,7 @@
 import { deleteTransaction } from "@/actions/transaction.actions"
 import { BackHeader } from "@/components/back-header"
 import { useConfirm } from "@/components/providers/confirm-provider"
+import { FormattedDate, FormattedTime } from "@/components/ui/date-time"
 import { useUserConfig } from "@/components/providers/user-config-provider"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
 import { Currency } from "@/lib/generated/prisma/enums"
@@ -22,7 +23,7 @@ interface TransactionDetailViewProps {
 }
 
 export function TransactionDetailView({ transaction, isIn, currency = Currency.INR }: TransactionDetailViewProps) {
-    const { dateFormat, timeFormat, currency: configCurrency } = useUserConfig()
+    const { currency: configCurrency, dateFormat, timeFormat } = useUserConfig()
     const confirm = useConfirm()
     const router = useRouter()
     const [isEditOpen, setIsEditOpen] = useState(false)
@@ -103,13 +104,13 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/40 border border-border/10">
                                         <CalendarDays className="h-3 w-3 text-primary/60" />
                                         <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60" suppressHydrationWarning>
-                                            {formatDate(transaction.date, dateFormat)}
+                                            <FormattedDate date={transaction.date} />
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/40 border border-border/10">
                                         <Clock className="h-3 w-3 text-primary/60" />
                                         <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60" suppressHydrationWarning>
-                                            {formatTime(transaction.date, timeFormat)}
+                                            <FormattedTime date={transaction.date} />
                                         </span>
                                     </div>
                                 </div>

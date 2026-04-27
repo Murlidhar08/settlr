@@ -1,13 +1,11 @@
 import { getRecentTransactions } from "@/actions/transaction.actions";
-import { TransactionItem } from "@/components/transaction/transaction-item";
-import { formatDate } from "@/utility/transaction";
-
+import { DashboardTransactionItem } from "./transaction-item";
 import { t } from "@/lib/languages/i18n";
 import { getUserConfig } from "@/lib/user-config";
 
 export default async function RecentTransaction() {
   const recentTransactions = await getRecentTransactions();
-  const { currency, dateFormat, language } = await getUserConfig();
+  const { currency, language } = await getUserConfig();
 
   return (
     <div className="space-y-3">
@@ -19,20 +17,17 @@ export default async function RecentTransaction() {
 
       {recentTransactions.map((tx) => {
         return (
-          <TransactionItem
+          <DashboardTransactionItem
             key={tx.id}
             transactionId={tx.id}
             title={tx.description || ""}
-            subtitle={formatDate(tx.date, dateFormat)}
+            date={tx.date}
             amount={Number(tx.amount)}
             currency={currency}
             fromAccountId={tx.fromAccountId}
             toAccountId={tx.toAccountId}
-            fromAccount={tx.fromAccount?.name}
-            toAccount={tx.toAccount?.name}
             fromAccountType={tx.fromAccount?.type}
             toAccountType={tx.toAccount?.type}
-            partyName={tx.party?.name}
           />
         );
       })}
