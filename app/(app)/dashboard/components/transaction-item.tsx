@@ -59,7 +59,7 @@ export function DashboardTransactionItem({
       whileTap={{ scale: 0.99 }}
       className="group"
     >
-      <Link href={`/transactions/${transactionId}`} className="flex items-center gap-4 p-3 rounded-2xl border border-muted-foreground/10 bg-card/50 backdrop-blur-sm hover:border-primary/30 hover:bg-card hover:shadow-lg hover:shadow-primary/5 transition-all">
+      <Link href={`/transactions/${transactionId}` as any} className="flex items-center gap-4 p-3 rounded-2xl border border-muted-foreground/10 bg-card/50 backdrop-blur-sm hover:border-primary/30 hover:bg-card hover:shadow-lg hover:shadow-primary/5 transition-all">
         <div className={cn(
           "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors",
           isNeutral
