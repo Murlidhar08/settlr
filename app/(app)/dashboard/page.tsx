@@ -4,7 +4,6 @@ import { getUserConfig } from "@/lib/user-config";
 import { Suspense } from "react";
 
 // Components
-import { getBusinessList } from "@/actions/business.actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AccountsDistribution } from "./components/accounts-distribution";
 import { BudgetAlerts, BudgetAlertsSkeleton } from "./components/budget-alerts";
@@ -16,7 +15,6 @@ import { TransactionListSkeletons } from "./components/transaction-item-skeleton
 
 export default async function Page() {
   const session = await getUserSession();
-  const businesses = await getBusinessList();
   const { language, currency } = await getUserConfig();
 
   const firstName = session?.user.name?.split(" ")[0] || "User";
@@ -34,7 +32,7 @@ export default async function Page() {
           </p>
         </div>
         <div className="shrink-0">
-          <SwitchBusiness initialBusinesses={businesses || []} initialSession={session} />
+          <SwitchBusiness />
         </div>
       </section>
 
