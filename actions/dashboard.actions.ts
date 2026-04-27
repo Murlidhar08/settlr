@@ -1,18 +1,14 @@
 "use server";
 
-import { getUserSession } from "@/lib/auth/auth";
 import { FinancialAccountType } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/prisma/prisma";
 import { getTransactionPerspective } from "@/lib/transaction-logic";
 import { TransactionDirection } from "@/types/transaction/TransactionDirection";
 
-export async function getDashboardSummary() {
-  const session = await getUserSession();
-  if (!session?.user.activeBusinessId) {
-    return null;
+export async function getDashboardSummary(businessId?: string | null) {
+  if (!businessId) {
+    return;
   }
-
-  const businessId = session.user.activeBusinessId;
 
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
