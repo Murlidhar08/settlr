@@ -12,7 +12,7 @@ services:
       - '5433:5432'
     restart: always
     networks:
-      - prisma-network
+      - settlr-network
     volumes:
       - type: bind
         source: /DATA/AppData/postgresql/data
@@ -65,6 +65,24 @@ services:
       postgresql:
         condition: service_healthy
     restart: unless-stopped
+    networks:
+      - settlr-network
+
+  prisma-studio: 
+    image: node:lts-alpine3.17
+    working_dir: /usr/src/app 
+    volumes: 
+      - .:/usr/src/app
+    command: npx prisma studio --port 5555 --browser none
+    ports: 
+      - "5555:5555"
+    environment:
+      - DATABASE_URL=postgresql://settlr:settlr@postgresql:5432/settlr
+    networks: 
+      - settlr-network
+    depends_on: 
+      postgresql: 
+        condition: service_healthy
 
 networks:
-  prisma-network:
+  settlr-network:
