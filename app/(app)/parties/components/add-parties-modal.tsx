@@ -73,6 +73,7 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["party-list", type] })
+      queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
     }
   })
 

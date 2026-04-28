@@ -3,13 +3,16 @@
 import { deleteTransaction } from "@/actions/transaction.actions"
 import { BackHeader } from "@/components/back-header"
 import { useConfirm } from "@/components/providers/confirm-provider"
+import { FormattedDate, FormattedTime } from "@/components/ui/date-time"
 import { useUserConfig } from "@/components/providers/user-config-provider"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
 import { Currency } from "@/lib/generated/prisma/enums"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 import { formatAmount, formatDate, formatTime } from "@/utility/transaction"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import { ArrowDownLeft, ArrowRight, ArrowUpRight, CalendarDays, Check, Clock, Hash, History, Pencil, PenSquareIcon, Phone, Trash2, User } from "lucide-react"
+import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
@@ -22,10 +25,32 @@ interface TransactionDetailViewProps {
 }
 
 export function TransactionDetailView({ transaction, isIn, currency = Currency.INR }: TransactionDetailViewProps) {
-    const { dateFormat, timeFormat, currency: configCurrency } = useUserConfig()
+    const { currency: configCurrency, dateFormat, timeFormat } = useUserConfig()
     const confirm = useConfirm()
     const router = useRouter()
     const [isEditOpen, setIsEditOpen] = useState(false)
+
+    const queryClient = useQueryClient()
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => deleteTransaction(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
+            queryClient.invalidateQueries({ queryKey: ["cashbook-transactions"] })
+            queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] })
+            queryClient.invalidateQueries({ queryKey: ["budget-insights"] })
+            if (transaction.fromAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", transaction.fromAccountId] })
+            if (transaction.toAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", transaction.toAccountId] })
+            if (transaction.partyId) {
+                queryClient.invalidateQueries({ queryKey: ["party-detail", transaction.partyId] })
+                queryClient.invalidateQueries({ queryKey: ["party-transactions", transaction.partyId] })
+            }
+            toast.success("Transaction deleted successfully")
+            router.back()
+        },
+        onError: () => {
+            toast.error("Failed to delete transaction")
+        }
+    })
 
     const onDelete = async () => {
         const ok = await confirm({
@@ -37,8 +62,7 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
 
         if (!ok) return
 
-        await deleteTransaction(transaction.id)
-        router.back()
+        deleteMutation.mutate(transaction.id)
     }
 
     return (
@@ -103,13 +127,13 @@ export function TransactionDetailView({ transaction, isIn, currency = Currency.I
                                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/40 border border-border/10">
                                         <CalendarDays className="h-3 w-3 text-primary/60" />
                                         <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60" suppressHydrationWarning>
-                                            {formatDate(transaction.date, dateFormat)}
+                                            <FormattedDate date={transaction.date} />
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/40 border border-border/10">
                                         <Clock className="h-3 w-3 text-primary/60" />
                                         <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60" suppressHydrationWarning>
-                                            {formatTime(transaction.date, timeFormat)}
+                                            <FormattedTime date={transaction.date} />
                                         </span>
                                     </div>
                                 </div>

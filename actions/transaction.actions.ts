@@ -505,3 +505,30 @@ export const getBudgetInsights = async function getBudgetInsights() {
     hasTransactions: transactions.length > 0
   };
 };
+
+export async function getTransactionDetail(transactionId: string) {
+  const session = await getUserSession();
+  if (!session?.user.activeBusinessId) {
+    throw new Error("Unauthorized");
+  }
+
+  const transaction = await prisma.transaction.findFirst({
+    where: {
+      id: transactionId,
+      businessId: session.user.activeBusinessId,
+    },
+    include: {
+      party: { select: { id: true, name: true, contactNo: true } },
+      toAccount: { select: { id: true, name: true, type: true, moneyType: true, categoryType: true } },
+      fromAccount: { select: { id: true, name: true, type: true, moneyType: true, categoryType: true } },
+      user: { select: { name: true } }
+    },
+  });
+
+  if (!transaction) return null;
+
+  return {
+    ...transaction,
+    amount: Number(transaction.amount)
+  };
+}

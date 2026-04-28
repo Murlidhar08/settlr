@@ -135,6 +135,9 @@ export const AddAccountModal = ({
                 })
             }
             queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
+            if (accountData) {
+                queryClient.invalidateQueries({ queryKey: ["financial-account", accountData.id] })
+            }
             setOpen(false)
             router.refresh()
         } catch (error) {

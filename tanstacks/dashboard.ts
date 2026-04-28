@@ -1,6 +1,5 @@
 "use client";
 
-import { getBusinessList } from "@/actions/business.actions";
 import { getDashboardSummary } from "@/actions/dashboard.actions";
 import { getBudgetInsights } from "@/actions/transaction.actions";
 import { useSession } from "@/lib/auth/auth-client";
@@ -22,12 +21,5 @@ export const useDashboardSummary = () => {
     return useQuery({
         queryKey: ["dashboard-summary", businessId],
         queryFn: () => getDashboardSummary(businessId),
-    });
-}
-
-export const useBusinessList = () => {
-    return useQuery({
-        queryKey: ["business-list"],
-        queryFn: () => getBusinessList(),
     });
 }

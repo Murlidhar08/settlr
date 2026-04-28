@@ -52,6 +52,7 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                             onClick: async () => {
                                 try {
                                     await setAccountAsDefault(account.id, 'GENERAL')
+                                    queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
                                     toast.success("Primary money account updated")
                                     router.refresh()
                                 } catch (err) {
@@ -68,6 +69,7 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                             onClick: async () => {
                                 try {
                                     await setAccountAsDefault(account.id, 'INCOME')
+                                    queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
                                     toast.success("Default income category set")
                                     router.refresh()
                                 } catch (err) {
@@ -84,6 +86,7 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                             onClick: async () => {
                                 try {
                                     await setAccountAsDefault(account.id, 'EXPENSE')
+                                    queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
                                     toast.success("Default expense category set")
                                     router.refresh()
                                 } catch (err) {

@@ -14,12 +14,13 @@ import { toast } from "sonner";
 import { FooterButtons } from "@/components/footer-buttons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { signOut, useSession } from "@/lib/auth/auth-client";
+import { signOut } from "@/lib/auth/auth-client";
 import { getInitials } from "@/utility/party";
+import { useCurrentUser } from "@/tanstacks/user";
 
 export default function ProfilePage() {
     const router = useRouter();
-    const { data: session, isPending } = useSession();
+    const { data: user, isLoading } = useCurrentUser();
 
     const handleLogout = async () => {
         try {
@@ -31,7 +32,7 @@ export default function ProfilePage() {
         }
     };
 
-    if (isPending) return <ProfileSkeleton />;
+    if (isLoading) return <ProfileSkeleton />;
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -54,7 +55,7 @@ export default function ProfilePage() {
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="mx-auto max-w-lg px-6 mt-8 space-y-8"
+                className="mx-auto max-lg px-6 mt-8 space-y-8"
             >
                 {/* Profile Card */}
                 <motion.div
@@ -66,19 +67,19 @@ export default function ProfilePage() {
                     <div className="relative group">
                         <Avatar className="h-28 w-28 ring-4 ring-background shadow-xl transition-transform duration-500 group-hover:scale-105">
                             <AvatarImage
-                                src={session?.user?.image ?? undefined}
-                                alt={session?.user?.name}
+                                src={user?.image ?? undefined}
+                                alt={user?.name ?? "User"}
                             />
                             <AvatarFallback className="bg-primary/10 text-primary text-3xl font-black">
-                                {getInitials(session?.user?.name)}
+                                {getInitials(user?.name)}
                             </AvatarFallback>
                         </Avatar>
                         <div className="absolute inset-0 rounded-full bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl" />
                     </div>
 
                     <div className="text-center space-y-1 relative z-10">
-                        <h1 className="text-3xl font-black tracking-tight">{session?.user?.name}</h1>
-                        <p className="text-muted-foreground font-medium opacity-70 italic">@{session?.user?.name?.toLowerCase().replace(/\s+/g, '')}</p>
+                        <h1 className="text-3xl font-black tracking-tight">{user?.name}</h1>
+                        <p className="text-muted-foreground font-medium opacity-70 italic">@{user?.name?.toLowerCase().replace(/\s+/g, '')}</p>
                     </div>
                 </motion.div>
 
@@ -87,17 +88,17 @@ export default function ProfilePage() {
                     <DetailRow
                         icon={User}
                         label="Full Name"
-                        value={session?.user?.name || "Not set"}
+                        value={user?.name || "Not set"}
                     />
                     <DetailRow
                         icon={Mail}
                         label="Email Address"
-                        value={session?.user?.email || "Not set"}
+                        value={user?.email || "Not set"}
                     />
                     <DetailRow
                         icon={Phone}
                         label="Phone Number"
-                        value={session?.user?.contactNo || "Not set"}
+                        value={user?.contactNo || "Not set"}
                     />
                 </motion.div>
 
@@ -150,10 +151,6 @@ function ProfileSkeleton() {
                     {[1, 2, 3].map((i) => (
                         <div key={i} className="h-20 w-full animate-pulse rounded-3xl bg-muted" />
                     ))}
-                </div>
-                <div className="space-y-4">
-                    <div className="h-16 w-full animate-pulse rounded-2xl bg-muted" />
-                    <div className="h-16 w-full animate-pulse rounded-2xl bg-muted" />
                 </div>
             </div>
         </div>

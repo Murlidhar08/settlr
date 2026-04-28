@@ -1,21 +1,16 @@
 "use client";
 
-// Packages
-import { AnimatePresence, motion } from "framer-motion";
-import { Eye, EyeOff, Mail } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-
 // Lib
-import { authClient, signIn, signInWithDiscord, signInWithGoogle } from "@/lib/auth/auth-client";
-import { envClient } from "@/lib/env.client";
-
-// Components
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { envClient } from "@/lib/env.client";
+import { AnimatePresence, motion } from "framer-motion";
+import { Eye, EyeOff, Mail, User, ShieldCheck } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { setupAdmin } from "@/actions/auth/setup";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -37,106 +32,61 @@ const itemVariants = {
   },
 };
 
-interface LoginFormProps {
-  providers: {
-    google: boolean;
-    discord: boolean;
-  };
-}
-
-export default function LoginForm({ providers }: LoginFormProps) {
-  const router = useRouter();
+export default function SetupPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [discordLoading, setDiscordLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [lastLogin, setLastLogin] = useState("");
 
-  // Redirect to dashboard
-  useEffect(() => {
-    // Check for error parameter
-    const searchParams = new URLSearchParams(window.location.search);
-    const errorParam = searchParams.get("error");
-    if (errorParam === "banned") {
-      const description = searchParams.get("error_description");
-      router.push(`/banned${description ? `?reason=${encodeURIComponent(description)}` : ""}` as any);
-      return;
-    }
-
-    authClient.getSession()
-      .then((session) => {
-        if (session.data) {
-          if (session.data.user.banned) router.push("/banned" as any);
-          else router.push("/dashboard" as any);
-        }
-      });
-
-    // Last Login Method
-    setLastLogin(authClient.getLastUsedLoginMethod() || "");
-  }, [router])
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const result = await signIn.email({ email, password });
-      if (result.error) {
-        setError(result.error.message || "Sign in failed");
-      } else {
-        // We need to get the session again or just check the user returned in result if available
-        // Better Auth signIn returns the user in data.user
-        if (result.data?.user?.banned) {
-          const reason = result.data.user.banReason;
-          router.push(`/banned${reason ? `?reason=${encodeURIComponent(reason)}` : ""}` as any);
-        }
-        else router.push("/dashboard" as any);
-      }
-    } catch (err) {
-      setError("An error occurred during sign in");
-      console.error(err)
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("password", password);
+
+      await setupAdmin(formData);
+      toast.success("Setup completed successfully! Please login with your new credentials.");
+    } catch (err: any) {
+      setError(err.message || "Setup failed");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogle = async () => {
-    setGoogleLoading(true);
-    try {
-      await signInWithGoogle();
-    } catch (err) {
-      console.error(err);
-      setGoogleLoading(false);
-    }
-  };
-
-  const handleDiscordLogin = async () => {
-    setDiscordLoading(true);
-    try {
-      await signInWithDiscord();
-    } catch (err) {
-      console.error(err);
-      setDiscordLoading(false);
-    }
-  }
-
-  const hasSocialLogin = providers.google || providers.discord;
-
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row select-none bg-background overflow-hidden">
-
-      {/* LEFT SIDE */}
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background select-none overflow-hidden">
+      {/* LEFT PANEL */}
       <motion.div
         initial="hidden"
         animate="visible"
         variants={containerVariants}
         className="flex flex-col justify-between w-full lg:w-1/2 px-6 sm:px-12 lg:px-20 py-8 relative z-10"
       >
-
         {/* LOGO + BRAND */}
         <motion.div
           variants={itemVariants as any}
@@ -148,7 +98,6 @@ export default function LoginForm({ providers }: LoginFormProps) {
             <Image
               src="/images/logo/light_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
-              loading="eager"
               width={48}
               height={48}
               className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
@@ -156,7 +105,6 @@ export default function LoginForm({ providers }: LoginFormProps) {
             <Image
               src="/images/logo/dark_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
-              loading="eager"
               width={48}
               height={48}
               className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"
@@ -167,24 +115,27 @@ export default function LoginForm({ providers }: LoginFormProps) {
               {envClient.NEXT_PUBLIC_APP_NAME}
             </h1>
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">
-              Finance
+              Initial Setup
             </p>
           </div>
         </motion.div>
 
-        {/* CENTER FORM AREA */}
+        {/* CENTER Form */}
         <div className="flex flex-col justify-center max-w-md mx-auto w-full py-12 lg:py-0">
-
-          <motion.div variants={itemVariants as any} className="mb-8">
+          <motion.div variants={itemVariants as any} className="mb-8 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-4">
+              <ShieldCheck className="w-4 h-4" />
+              Administrator Setup
+            </div>
             <h2 className="text-3xl font-bold tracking-tight mb-3">
-              Welcome Back
+              Configure Your Instance
             </h2>
             <p className="text-muted-foreground text-lg">
-              Sign in to manage your finances.
+              Create the first administrator account to start using {envClient.NEXT_PUBLIC_APP_NAME}.
             </p>
           </motion.div>
 
-          <motion.form variants={itemVariants as any} onSubmit={handleSubmit} className="space-y-6">
+          <motion.form variants={itemVariants as any} onSubmit={handleSubmit} className="space-y-5">
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div
@@ -200,11 +151,24 @@ export default function LoginForm({ providers }: LoginFormProps) {
             </AnimatePresence>
 
             <div className="space-y-4">
+              {/* Name */}
+              <div className="relative group">
+                <Input
+                  type="text"
+                  placeholder="Administrator Name"
+                  className="h-14 rounded-2xl pl-4 pr-12 transition-all duration-300 bg-muted/30 border-muted-foreground/10 focus:bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+                <User className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors w-5 h-5" />
+              </div>
+
               {/* Email */}
               <div className="relative group">
                 <Input
                   type="email"
-                  placeholder="Email Address"
+                  placeholder="Administrator Email"
                   className="h-14 rounded-2xl pl-4 pr-12 transition-all duration-300 bg-muted/30 border-muted-foreground/10 focus:bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -217,13 +181,12 @@ export default function LoginForm({ providers }: LoginFormProps) {
               <div className="relative group">
                 <Input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Password"
+                  placeholder="Master Password"
                   className="h-14 rounded-2xl pl-4 pr-12 transition-all duration-300 bg-muted/30 border-muted-foreground/10 focus:bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
-
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -232,96 +195,44 @@ export default function LoginForm({ providers }: LoginFormProps) {
                   {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                 </button>
               </div>
-            </div>
 
-            <div className="flex justify-end">
-              <Link
-                href="/forgot-password"
-                className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                Forgot Password?
-              </Link>
+              {/* Confirm Password */}
+              <div className="relative group">
+                <Input
+                  type={showConfirm ? "text" : "password"}
+                  placeholder="Confirm Master Password"
+                  className="h-14 rounded-2xl pl-4 pr-12 transition-all duration-300 bg-muted/30 border-muted-foreground/10 focus:bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors group-focus-within:text-primary"
+                >
+                  {showConfirm ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
             <Button
+              disabled={loading}
               type="submit"
-              disabled={loading || googleLoading || discordLoading}
               className="relative rounded-2xl h-14 w-full text-lg font-bold shadow-xl shadow-primary/10 hover:shadow-primary/25 transition-all duration-300 active:scale-[0.98]"
             >
               {loading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  Signing in...
+                  Setting up instance...
                 </div>
-              ) : "Sign In"}
-              {lastLogin === "email" && (
-                <Badge variant="secondary" className="absolute -top-3 -right-2 px-3 py-1 bg-background border-primary/20 text-primary shadow-sm">Last used</Badge>
-              )}
+              ) : "Finish Setup"}
             </Button>
           </motion.form>
-
-          {hasSocialLogin && (
-            <>
-              <motion.div variants={itemVariants as any} className="relative my-10">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-muted-foreground/10"></div>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-4 text-muted-foreground font-medium tracking-widest">
-                    Continue with
-                  </span>
-                </div>
-              </motion.div>
-
-              <motion.div variants={itemVariants as any} className={`grid ${providers.google && providers.discord ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
-                {providers.google && (
-                  <Button
-                    onClick={handleGoogle}
-                    variant="outline"
-                    disabled={googleLoading || loading || discordLoading}
-                    className="relative rounded-2xl h-14 px-6 flex items-center justify-center gap-3 hover:bg-muted/50 border-muted-foreground/10 transition-all duration-300 active:scale-[0.98] group/google"
-                  >
-                    {googleLoading ? (
-                      <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                    ) : (
-                      <Image src="/google.svg" alt="Google" width={22} height={22} className="group-hover/google:scale-110 transition-transform" />
-                    )}
-                    <span className="font-semibold">{googleLoading ? "Connecting..." : "Google"}</span>
-                    {lastLogin === "google" && !googleLoading && (
-                      <Badge variant="secondary" className="absolute -top-3 -right-2 px-3 py-1 bg-background border-primary/20 text-primary shadow-sm">Last used</Badge>
-                    )}
-                  </Button>
-                )}
-
-                {providers.discord && (
-                  <Button
-                    onClick={handleDiscordLogin}
-                    variant="outline"
-                    disabled={discordLoading || loading || googleLoading}
-                    className="relative rounded-2xl h-14 px-6 flex items-center justify-center gap-3 hover:bg-muted/50 border-muted-foreground/10 transition-all duration-300 active:scale-[0.98] group/discord"
-                  >
-                    {discordLoading ? (
-                      <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                    ) : (
-                      <Image src="/discord.svg" alt="Discord" width={22} height={22} className="group-hover/discord:scale-110 transition-transform" />
-                    )}
-                    <span className="font-semibold">{discordLoading ? "Connecting..." : "Discord"}</span>
-                    {lastLogin === "discord" && !discordLoading && (
-                      <Badge variant="secondary" className="absolute -top-3 -right-2 px-3 py-1 bg-background border-primary/20 text-primary shadow-sm">Last used</Badge>
-                    )}
-                  </Button>
-                )}
-              </motion.div>
-            </>
-          )}
         </div>
 
-        {/* SIGN UP */}
-        <motion.p variants={itemVariants as any} className="text-center text-muted-foreground mt-12">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-bold text-primary hover:text-primary/80 transition-colors">
-            Sign Up
-          </Link>
+        <motion.p variants={itemVariants as any} className="text-center text-muted-foreground mt-12 font-medium">
+          Self-hosted instance of {envClient.NEXT_PUBLIC_APP_NAME}
         </motion.p>
       </motion.div>
 
@@ -332,7 +243,6 @@ export default function LoginForm({ providers }: LoginFormProps) {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="hidden lg:flex w-1/2 p-12 items-center justify-center bg-linear-to-br from-primary via-primary/90 to-primary/80 relative overflow-hidden rounded-l-[4rem] shadow-2xl"
       >
-        {/* Animated Background Gradients */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
@@ -353,19 +263,19 @@ export default function LoginForm({ providers }: LoginFormProps) {
             <Image
               src="/images/logo/dark_logo.svg"
               alt={envClient.NEXT_PUBLIC_APP_NAME}
-              loading="eager"
               width={140}
               height={140}
               className="relative z-10 group-hover:scale-110 transition-transform duration-500 drop-shadow-2xl"
             />
           </motion.div>
+
           <motion.h2
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
             className="text-4xl font-bold mb-6 tracking-tight text-white"
           >
-            Secure. Reliable. Simple.
+            Complete the Setup
           </motion.h2>
           <motion.p
             initial={{ y: 20, opacity: 0 }}
@@ -373,11 +283,10 @@ export default function LoginForm({ providers }: LoginFormProps) {
             transition={{ delay: 0.6 }}
             className="text-white/90 leading-relaxed text-lg max-w-md mx-auto font-medium"
           >
-            {envClient.NEXT_PUBLIC_APP_NAME} ensures enterprise-grade identity protection while keeping your bookkeeping experience intuitive.
+            You are just one step away from having your own private financial management system.
           </motion.p>
         </div>
       </motion.div>
-
     </div>
   );
 }

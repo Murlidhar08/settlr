@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 // Lib
 import { getUserSession } from "@/lib/auth/auth";
+import { isSetupRequired } from "@/lib/setup";
 
 // Components
 import { AppHeader } from "@/components/app-header";
@@ -13,6 +14,11 @@ import { Sidebar } from "@/components/sidebar";
 import { getDefaultConfig, getUserConfig } from "@/lib/user-config";
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Check if setup is needed
+  if (await isSetupRequired()) {
+    redirect("/setup" as any);
+  }
+
   // User Config
   let userConfig = await getUserConfig()
   userConfig = userConfig ?? getDefaultConfig()
@@ -20,10 +26,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const session = await getUserSession();
 
   if (!session)
-    redirect("/login");
+    redirect("/login" as any);
 
   if (session.user.banned)
-    redirect("/banned");
+    redirect("/banned" as any);
 
   return (
     <UserConfigProvider config={userConfig}>

@@ -19,7 +19,8 @@ import { envClient } from "@/lib/env.client";
 import { getUserConfig } from "@/lib/user-config";
 import { cn } from "@/lib/utils";
 import { getInitials } from "@/utility/party";
-import { formatAmount, formatDate, formatTime } from "@/utility/transaction";
+import { formatAmount } from "@/utility/transaction";
+import { FormattedDate, FormattedTime } from "@/components/ui/date-time";
 import * as motion from "framer-motion/client";
 
 import { getPartyTransactionPerspective } from "@/lib/transaction-logic";
@@ -47,7 +48,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 }
 
 async function StatementContent({ partyId, filters }: { partyId: string, filters: any }) {
-  const { currency, dateFormat, timeFormat } = await getUserConfig();
+  const { currency } = await getUserConfig();
   const { party, transactions } = await getPartyStatement(partyId, filters);
 
   if (!party) return <div>Party not found</div>;
@@ -79,7 +80,7 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
 
   const balance = totalPaid - totalReceived;
 
-  const grouped = groupTransactions(transactions, dateFormat);
+  const grouped = groupTransactions(transactions);
 
   return (
     <div className="w-full bg-background pb-32">
@@ -141,14 +142,16 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 * groupIndex }}
                 >
-                  <h4 className="px-2 mb-3 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">{label}</h4>
+                  <h4 className="px-2 mb-3 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                    {label === "Today" || label === "Yesterday" ? label : <FormattedDate date={label} />}
+                  </h4>
                   <div className="space-y-3">
                     {items.map((tx: any, i: number) => (
                       <TransactionItem
                         key={tx.id}
                         transactionId={tx.id}
                         title={tx.description || ""}
-                        subtitle={formatTime(tx.date, timeFormat)}
+                        subtitle={<FormattedTime date={tx.date} />}
                         amount={tx.amount}
                         currency={currency}
                         accountId={pAccId}
@@ -242,14 +245,14 @@ function Metric({ label, value, positive }: { label: string; value: string; posi
   );
 }
 
-function groupTransactions(transactions: any[], dateFormat: string) {
+function groupTransactions(transactions: any[]) {
   const groups: Record<string, any[]> = {};
 
   transactions.forEach(tx => {
     let label = "";
     if (isToday(tx.date)) label = "Today";
     else if (isYesterday(tx.date)) label = "Yesterday";
-    else label = formatDate(tx.date, dateFormat);
+    else label = tx.date;
 
     if (!groups[label]) groups[label] = [];
     groups[label].push(tx);

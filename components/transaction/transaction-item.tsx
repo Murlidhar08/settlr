@@ -11,8 +11,8 @@ import Link from "next/link"
 
 interface TransactionProp {
   transactionId: string
-  title?: string
-  subtitle?: string
+  title?: React.ReactNode
+  subtitle?: React.ReactNode
   amount: number | string
   accountId?: string | null
   accountType?: string | null

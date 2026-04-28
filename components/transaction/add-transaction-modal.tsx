@@ -307,6 +307,8 @@ export const AddTransactionModal = ({
     onSettled: (data, err, vars) => {
       queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
       queryClient.invalidateQueries({ queryKey: ["cashbook-transactions"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] })
+      queryClient.invalidateQueries({ queryKey: ["budget-insights"] })
       if (vars.data.fromAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", vars.data.fromAccountId] })
       if (vars.data.toAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", vars.data.toAccountId] })
       if (vars.data.partyId) {
