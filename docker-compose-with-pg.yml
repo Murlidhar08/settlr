@@ -10,14 +10,16 @@ services:
       - TZ=Asia/Kolkata
     ports:
       - '5433:5432'
-    restart: unless-stopped
+    restart: always
+    networks:
+      - prisma-network
     volumes:
       - type: bind
         source: /DATA/AppData/postgresql/data
         target: /var/lib/postgresql/data
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U settlr -d settlr"]
+      test: [ "CMD-SHELL", "pg_isready -U settlr -d settlr" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -62,6 +64,7 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
-    command: >
-      sh -c "npx prisma migrate deploy && npx prisma generate && node server.js"
     restart: unless-stopped
+
+networks:
+  prisma-network:
