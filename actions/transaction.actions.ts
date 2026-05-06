@@ -154,7 +154,9 @@ export const getRecentTransactions = async function getRecentTransactions() {
   const transactions = await prisma.transaction.findMany({
     where: {
       businessId: businessId,
-      isDelete: false
+      isDelete: false,
+      fromAccount: { isActive: true },
+      toAccount: { isActive: true }
     },
     orderBy: {
       date: "desc",
@@ -470,7 +472,9 @@ export const getBudgetInsights = async function getBudgetInsights() {
     where: {
       businessId,
       date: { gte: startOfMonth },
-      isDelete: false
+      isDelete: false,
+      fromAccount: { isActive: true },
+      toAccount: { isActive: true }
     },
     include: {
       fromAccount: { select: { name: true, type: true } },
