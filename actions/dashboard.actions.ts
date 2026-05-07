@@ -17,7 +17,7 @@ export async function getDashboardSummary(businessId?: string | null) {
 
   // 1. Fetch all financial accounts for the business
   const accounts = await prisma.financialAccount.findMany({
-    where: { businessId },
+    where: { businessId, isActive: true },
     select: { id: true, type: true, partyId: true }
   });
 
@@ -26,7 +26,12 @@ export async function getDashboardSummary(businessId?: string | null) {
 
   // 2. Fetch all transactions (optimized for production later, using findMany for now to keep parity with existing logic)
   const transactions = await prisma.transaction.findMany({
-    where: { businessId, isDelete: false },
+    where: {
+      businessId,
+      isDelete: false,
+      fromAccount: { isActive: true },
+      toAccount: { isActive: true }
+    },
     select: {
       amount: true,
       fromAccountId: true,

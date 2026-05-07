@@ -18,7 +18,9 @@ export async function CashflowChart() {
     const transactions = await prisma.transaction.findMany({
         where: {
             businessId,
-            date: { gte: startDate }
+            date: { gte: startDate },
+            fromAccount: { isActive: true },
+            toAccount: { isActive: true }
         },
         select: {
             amount: true,

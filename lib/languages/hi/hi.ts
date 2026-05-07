@@ -23,6 +23,7 @@ export default {
         you_give: "आपको देना है",
         surplus: "दैनिक अधिशेष",
         deficit: "दैनिक घाटा",
+        total_balance: "कुल शेष",
         no_transactions: "अभी तक कोई लेनदेन नहीं",
     },
     accounts: {

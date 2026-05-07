@@ -13,7 +13,7 @@ export async function AccountsDistribution() {
 
     // 1. Fetch money accounts
     const accounts = await prisma.financialAccount.findMany({
-        where: { businessId, type: FinancialAccountType.MONEY },
+        where: { businessId, type: FinancialAccountType.MONEY, isActive: true },
         select: { id: true, name: true }
     });
 

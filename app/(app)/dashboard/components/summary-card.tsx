@@ -31,7 +31,7 @@ export default function SummaryCard({ currency, language }: SummaryStatsProps) {
 
         <div className="relative z-10 flex justify-between items-start">
           <div className="space-y-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Total Cash</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">{t("dashboard.total_balance", language)}</p>
             <p className="text-2xl font-black tracking-tighter sm:text-4xl leading-none">
               <CountUp value={liquidCash} currency={currency} isLoading={isPending} />
             </p>

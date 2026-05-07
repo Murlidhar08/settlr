@@ -23,6 +23,7 @@ export default {
         you_give: "You'll Give",
         surplus: "Daily Surplus",
         deficit: "Daily Deficit",
+        total_balance: "Total Balance",
         no_transactions: "No transactions yet",
     },
     accounts: {

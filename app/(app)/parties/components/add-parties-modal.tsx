@@ -53,9 +53,9 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
       const optimisticParty = {
         ...newParty,
         id: tempId,
+        amount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
-        // Mocking structure if necessary...
       }
 
       queryClient.setQueriesData({ queryKey: ["party-list", type] }, (old: any) => {
