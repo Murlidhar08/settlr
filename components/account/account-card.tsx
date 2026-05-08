@@ -20,7 +20,7 @@ import {
     TrendingUp,
     Wallet
 } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useUserConfig } from "../providers/user-config-provider"
 import { AddAccountModal } from "./add-account-modal"
 
@@ -82,12 +82,15 @@ export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
     // isDarkCard means the card has a fixed dark background (usually gradient) across both modes
     const isDarkCard = isMoneyOnline || isMoneyCash || isMoneyCheque;
 
+    const searchParams = useSearchParams()
+    const currentPeriod = searchParams.get("period") || "month"
+
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: index * 0.05 }}
-            onClick={() => router.push(`/accounts/${account.id}` as any)}
+            onClick={() => router.push(`/accounts/${account.id}?period=${currentPeriod}` as any)}
             className={cn(
                 "group relative overflow-hidden p-6 rounded-[2.5rem] border-2 shadow-sm transition-all duration-300 cursor-pointer",
                 "bg-linear-to-br",

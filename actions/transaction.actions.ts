@@ -341,7 +341,7 @@ export const getPartyStatement = async function getPartyStatement(partyId: strin
   };
 };
 
-export const getAccountStats = async function getAccountStats(accountId: string) {
+export const getAccountStats = async function getAccountStats(accountId: string, period: 'month' | 'year' | 'all' = 'all') {
   const session = await getUserSession();
   const businessId = session?.user.activeBusinessId || "";
 
@@ -353,7 +353,39 @@ export const getAccountStats = async function getAccountStats(accountId: string)
     throw new Error("Account not found");
   }
 
-  const [inResult, outResult] = await Promise.all([
+  const now = new Date();
+  let dateFilter = {};
+  if (period === 'month') {
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth(), 1) } };
+  } else if (period === 'year') {
+    dateFilter = { date: { gte: new Date(now.getFullYear(), 0, 1) } };
+  }
+
+  const [inResult, outResult, allInResult, allOutResult] = await Promise.all([
+    // Stats for the specific period
+    prisma.transaction.aggregate({
+      where: {
+        businessId,
+        toAccountId: accountId,
+        isDelete: false,
+        ...dateFilter
+      },
+      _sum: {
+        amount: true,
+      },
+    }),
+    prisma.transaction.aggregate({
+      where: {
+        businessId,
+        fromAccountId: accountId,
+        isDelete: false,
+        ...dateFilter
+      },
+      _sum: {
+        amount: true,
+      },
+    }),
+    // Always calculate total balance from all-time
     prisma.transaction.aggregate({
       where: {
         businessId,
@@ -378,31 +410,29 @@ export const getAccountStats = async function getAccountStats(accountId: string)
 
   const totalIn = Number(inResult._sum.amount || 0);
   const totalOut = Number(outResult._sum.amount || 0);
-
-  // Logic for perspective flipping if it's a PARTY account
-  // In Settlr, for a PARTY account:
-  // getPartyTransactionPerspective flips the raw perspective.
-  // raw IN (to party) => business perspective OUT
-  // raw OUT (from party) => business perspective IN
   
+  const allTimeIn = Number(allInResult._sum.amount || 0);
+  const allTimeOut = Number(allOutResult._sum.amount || 0);
+
   if (account.type === FinancialAccountType.PARTY) {
     return {
-      totalIn: totalOut, // Flipped
-      totalOut: totalIn, // Flipped
-      balance: totalOut - totalIn,
+      totalIn: totalOut, // Period In
+      totalOut: totalIn, // Period Out
+      balance: allTimeOut - allTimeIn, // All-time balance
     };
   }
 
   return {
     totalIn,
     totalOut,
-    balance: totalIn - totalOut,
+    balance: allTimeIn - allTimeOut,
   };
 };
 
 export const getAccountTransactions = async function getAccountTransactions(
   accountId: string,
-  pagination?: { limit?: number; page?: number }
+  pagination?: { limit?: number; page?: number },
+  period: 'month' | 'year' | 'all' = 'all'
 ) {
   const session = await getUserSession();
   const businessId = session?.user.activeBusinessId || "";
@@ -428,6 +458,13 @@ export const getAccountTransactions = async function getAccountTransactions(
           { toAccountId: accountId },
         ],
         isDelete: false,
+        ...(period !== 'all' ? {
+          date: {
+            gte: period === 'month' 
+              ? new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+              : new Date(new Date().getFullYear(), 0, 1)
+          }
+        } : {})
       },
       orderBy: { date: "desc" },
       take: limit,
@@ -446,6 +483,13 @@ export const getAccountTransactions = async function getAccountTransactions(
           { toAccountId: accountId },
         ],
         isDelete: false,
+        ...(period !== 'all' ? {
+          date: {
+            gte: period === 'month' 
+              ? new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+              : new Date(new Date().getFullYear(), 0, 1)
+          }
+        } : {})
       }
     })
   ]);

@@ -12,32 +12,49 @@ import { useFinancialAccounts } from "@/tanstacks/financial-account";
 import { Eye, EyeOff, Plus, Wallet } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 export function AccountsContent({
     language,
     currency,
-    initialShowInactive
+    initialShowInactive,
+    initialPeriod
 }: {
     language: string,
     currency: Currency,
-    initialShowInactive: boolean
+    initialShowInactive: boolean,
+    initialPeriod: 'month' | 'year' | 'all'
 }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [showInactive, setShowInactive] = useState(initialShowInactive);
+    const [period, setPeriod] = useState(initialPeriod);
+
+    const updateParams = (updates: Record<string, string | null>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        Object.entries(updates).forEach(([key, value]) => {
+            if (value === null) params.delete(key);
+            else params.set(key, value);
+        });
+        router.push(`${pathname}?${params.toString()}` as any, { scroll: false });
+    };
 
     const toggleInactive = () => {
         const nextValue = !showInactive;
         setShowInactive(nextValue);
+        updateParams({ inactive: nextValue ? "true" : null });
+    };
 
-        const params = new URLSearchParams(searchParams.toString());
-        if (nextValue) {
-            params.set("inactive", "true");
-        } else {
-            params.delete("inactive");
-        }
-        router.push(`${pathname}?${params.toString()}` as any, { scroll: false });
+    const handlePeriodChange = (val: 'month' | 'year' | 'all') => {
+        setPeriod(val);
+        updateParams({ period: val });
     };
 
     const { allAccounts, isLoading } = useFinancialAccounts(showInactive);
@@ -66,18 +83,32 @@ export function AccountsContent({
                         <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 ml-1 mb-1">{t("accounts.overview", language)}</h2>
                         <div className="flex items-center gap-4">
                             <p className="text-3xl font-black tracking-tight">{t("accounts.total", language, { count: accounts.length.toString() })}</p>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={toggleInactive}
-                                className={cn(
-                                    "rounded-full h-8 px-3 text-[10px] font-black uppercase tracking-widest",
-                                    showInactive ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                                )}
-                            >
-                                {showInactive ? <Eye className="size-3 mr-2" /> : <EyeOff className="size-3 mr-2" />}
-                                {showInactive ? "Viewing All" : "Hide Inactive"}
-                            </Button>
+                            
+                            <div className="flex items-center gap-2">
+                                <Select value={period} onValueChange={(val: any) => handlePeriodChange(val)}>
+                                    <SelectTrigger className="h-8 px-3 rounded-full bg-muted text-[10px] font-black uppercase tracking-widest border-none shadow-none focus:ring-0 w-[120px]">
+                                        <SelectValue placeholder="Period" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-muted/20 shadow-xl">
+                                        <SelectItem value="month" className="rounded-xl">Month</SelectItem>
+                                        <SelectItem value="year" className="rounded-xl">Year</SelectItem>
+                                        <SelectItem value="all" className="rounded-xl">All</SelectItem>
+                                    </SelectContent>
+                                </Select>
+
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={toggleInactive}
+                                    className={cn(
+                                        "rounded-full h-8 px-3 text-[10px] font-black uppercase tracking-widest",
+                                        showInactive ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                    )}
+                                >
+                                    {showInactive ? <Eye className="size-3 mr-2" /> : <EyeOff className="size-3 mr-2" />}
+                                    {showInactive ? "Viewing All" : "Hide Inactive"}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
