@@ -11,6 +11,7 @@ export default async function AccountsPage({ searchParams }: PageProps) {
     const params = await searchParams;
     const { language, currency } = await getUserConfig();
     const includeInactive = params.inactive === 'true';
+    const period = (params.period as 'month' | 'year' | 'all') || 'month';
 
     return (
         <div className="flex-1 w-full bg-background pb-34">
@@ -19,6 +20,7 @@ export default async function AccountsPage({ searchParams }: PageProps) {
                     language={language}
                     currency={currency}
                     initialShowInactive={includeInactive}
+                    initialPeriod={period}
                 />
             </Suspense>
         </div>

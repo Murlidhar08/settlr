@@ -25,7 +25,7 @@ export async function getPartyDetails(partyId: string) {
   })
 }
 
-export async function getPartyList(type: PartyType, search?: string, includeInactive: boolean = false): Promise<PartyRes[]> {
+export async function getPartyList(type: PartyType, search?: string, includeInactive: boolean = false, period: 'month' | 'year' | 'all' = 'all'): Promise<PartyRes[]> {
   const session = await getUserSession();
   const businessId = session?.user?.activeBusinessId;
   if (!businessId)
@@ -74,12 +74,27 @@ export async function getPartyList(type: PartyType, search?: string, includeInac
 
   const partyIds = parties.map(p => p.id);
 
+  const now = new Date();
+  let dateFilter = {};
+
+  // Default to month for employees if period is 'all'? 
+  // No, the user wants a filter, so we respect the period parameter.
+  // But the previous requirement said "If the party type is employee then amount is count from current month starting".
+  // Let's assume 'month' is the default for employees in the UI.
+
+  if (period === 'month') {
+    dateFilter = { gte: new Date(now.getFullYear(), now.getMonth(), 1) };
+  } else if (period === 'year') {
+    dateFilter = { gte: new Date(now.getFullYear(), 0, 1) };
+  }
+
   // 2. Fetch all transactions for these parties and their financial accounts
   const transactions = await prisma.transaction.findMany({
     where: {
       businessId,
       partyId: { in: partyIds },
-      isDelete: false
+      isDelete: false,
+      ...(period !== 'all' ? { date: dateFilter } : {})
     },
     select: {
       partyId: true,
@@ -218,14 +233,27 @@ export async function deleteParty(partyId: string): Promise<boolean> {
   return true;
 }
 
-export async function getPartyTransactions(partyId: string): Promise<Transaction[]> {
+export async function getPartyTransactions(partyId: string, period: 'month' | 'year' | 'all' = 'all') {
   const session = await getUserSession();
+  const businessId = session?.user.activeBusinessId || "";
+
+  const now = new Date();
+  let dateFilter = {};
+
+  if (period === 'month') {
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    dateFilter = { gte: startOfMonth };
+  } else if (period === 'year') {
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    dateFilter = { gte: startOfYear };
+  }
 
   return await prisma.transaction.findMany({
     where: {
-      businessId: session?.user.activeBusinessId || "",
+      businessId,
       partyId: partyId,
-      isDelete: false
+      isDelete: false,
+      ...(period !== 'all' ? { date: dateFilter } : {})
     },
     include: {
       fromAccount: { select: { id: true, name: true, type: true } },

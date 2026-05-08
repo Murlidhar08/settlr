@@ -34,6 +34,14 @@ import {
 import { useCallback, useRef, useTransition } from "react"
 import { toast } from "sonner"
 import BackAccountHeaderClient from "./back-account-header-client"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 import { useAccountStats, useAccountTransactions } from "@/tanstacks/financial-account"
 import { AccountDetailsSkeleton } from "./account-details-skeleton"
@@ -45,17 +53,23 @@ interface AccountDetailsViewProps {
 }
 
 export function AccountDetailsView({ accountId, currency, language }: AccountDetailsViewProps) {
+    const searchParams = useSearchParams()
+    const router = useRouter()
+    const pathname = usePathname()
+    const period = (searchParams.get("period") as 'month' | 'year' | 'all') || 'month'
+
+    const { data: statsData, isLoading: statsLoading } = useAccountStats(accountId, period)
+    const {
+        data: transData,
+        isLoading: transLoading,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage
+    } = useAccountTransactions(accountId, period)
+
     const { defAccId, defIncomeAccId, defExpenseAccId } = useUserConfig()
     const symbol = getCurrencySymbol(currency)
-    const { data: statsData, isLoading: statsLoading } = useAccountStats(accountId)
-    const { 
-        data: transData, 
-        isLoading: transLoading, 
-        fetchNextPage, 
-        hasNextPage, 
-        isFetchingNextPage 
-    } = useAccountTransactions(accountId)
-    
+
     const [isPending, startTransition] = useTransition()
     const observer = useRef<IntersectionObserver | null>(null)
 
@@ -138,6 +152,13 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                 toast.error(error.message || "Failed to update default account")
             }
         })
+    }
+
+    const handlePeriodChange = (val: string | null) => {
+        if (!val) return;
+        const params = new URLSearchParams(searchParams.toString())
+        params.set("period", val)
+        router.push(`${pathname}?${params.toString()}` as any, { scroll: false })
     }
 
     return (
@@ -265,6 +286,17 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                             <div className="flex items-center gap-4">
                                 <div className="h-1 w-12 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
                                 <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/70">Statement Ledger</h2>
+
+                                <Select value={period} onValueChange={handlePeriodChange}>
+                                    <SelectTrigger className="h-7 px-3 rounded-full bg-muted/50 text-[9px] font-black uppercase tracking-widest border-none shadow-none focus:ring-0 w-[110px]">
+                                        <SelectValue placeholder="Period" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-muted/20 shadow-xl">
+                                        <SelectItem value="month" className="rounded-xl">Month</SelectItem>
+                                        <SelectItem value="year" className="rounded-xl">Year</SelectItem>
+                                        <SelectItem value="all" className="rounded-xl">All</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="text-[10px] font-black uppercase tracking-widest opacity-40">
                                 {totalTransactions} Total Records

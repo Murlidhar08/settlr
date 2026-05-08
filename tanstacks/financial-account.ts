@@ -37,24 +37,24 @@ export const useFinancialAccountBalance = (accountId: string) => {
     }
 };
 
-export const useAccountStats = (accountId: string) => {
+export const useAccountStats = (accountId: string, period: 'month' | 'year' | 'all' = 'all') => {
     const { data: session } = useSession();
     const businessId = session?.user?.activeBusinessId;
 
     return useQuery({
-        queryKey: ["account-stats", accountId, businessId],
-        queryFn: () => getAccountStats(accountId),
+        queryKey: ["account-stats", accountId, period, businessId],
+        queryFn: () => getAccountStats(accountId, period),
         enabled: !!accountId,
     });
 };
 
-export const useAccountTransactions = (accountId: string) => {
+export const useAccountTransactions = (accountId: string, period: 'month' | 'year' | 'all' = 'all') => {
     const { data: session } = useSession();
     const businessId = session?.user?.activeBusinessId;
 
     return useInfiniteQuery({
-        queryKey: ["account-transactions", accountId, businessId],
-        queryFn: ({ pageParam = 1 }) => getAccountTransactions(accountId, { page: pageParam as number, limit: 20 }),
+        queryKey: ["account-transactions", accountId, period, businessId],
+        queryFn: ({ pageParam = 1 }) => getAccountTransactions(accountId, { page: pageParam as number, limit: 20 }, period),
         initialPageParam: 1,
         getNextPageParam: (lastPage, allPages) => {
             const loadedCount = allPages.length * 20;

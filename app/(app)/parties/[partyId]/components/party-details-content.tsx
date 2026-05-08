@@ -5,17 +5,25 @@ import { AddTransactionModal } from '@/components/transaction/add-transaction-mo
 import { TransactionList } from '@/components/transaction/transaction-list';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Currency, FinancialAccountType } from '@/lib/generated/prisma/enums';
+import { PartyType, Currency, FinancialAccountType } from '@/lib/generated/prisma/enums';
 import { calculateAccountStats } from '@/lib/transaction-logic';
 import { cn } from "@/lib/utils";
 import { usePartyDetails, usePartyTransactions } from '@/tanstacks/parties';
 import { TransactionDirection } from '@/types/transaction/TransactionDirection';
 import { getCurrencySymbol } from '@/utility/transaction';
 import { Plus, Search } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import BackHeaderClient from './back-header-client';
 import { BalanceCard } from './balance-card';
 import { PartyDetailsSkeleton } from './party-details-skeleton';
 import { QuickActions } from './quick-action';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface PartyDetailsContentProps {
     partyId: string;
@@ -24,7 +32,17 @@ interface PartyDetailsContentProps {
 
 export function PartyDetailsContent({ partyId, currency }: PartyDetailsContentProps) {
     const { data: party, isLoading: partyLoading } = usePartyDetails(partyId);
-    const { data: transactions, isLoading: transactionsLoading } = usePartyTransactions(partyId);
+    const partyType = party?.financialAccounts[0]?.partyType;
+    const [period, setPeriod] = useState<'month' | 'year' | 'all'>('all');
+    const [searchQuery, setSearchQuery] = useState("");
+
+    useEffect(() => {
+        if (partyType === PartyType.EMPLOYEE) {
+            setPeriod('month');
+        }
+    }, [partyType]);
+
+    const { data: transactions, isLoading: transactionsLoading } = usePartyTransactions(partyId, period);
 
     if (partyLoading || transactionsLoading) {
         return <PartyDetailsSkeleton />;
@@ -40,14 +58,21 @@ export function PartyDetailsContent({ partyId, currency }: PartyDetailsContentPr
     const totalReceived = stats.totalIn; // Money flows FROM the party (We Received)
     const totalPaid = stats.totalOut; // Money flows TO the party (We Paid)
 
-    const formattedTransactions = (transactions || []).map(tra => ({
-        ...tra,
-        amount: Number(tra.amount)
-    }));
+    const formattedTransactions = (transactions || [])
+        .filter(tra =>
+            tra.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            tra.amount.toString().includes(searchQuery) ||
+            tra.fromAccount?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            tra.toAccount?.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .map(tra => ({
+            ...tra,
+            amount: Number(tra.amount)
+        }));
 
     const partyDetails = {
         ...party,
-        type: party.financialAccounts[0]?.partyType,
+        type: partyType,
         transactions: formattedTransactions
     };
 
@@ -75,14 +100,30 @@ export function PartyDetailsContent({ partyId, currency }: PartyDetailsContentPr
                             <QuickActions partyId={partyId} contact={partyDetails?.contactNo} />
                         </div>
 
-                        {/* Search */}
+                        {/* Search and Filter */}
                         <section className="sticky top-16 z-10 bg-background px-4 py-2 lg:static lg:px-0">
-                            <div className="relative">
-                                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search transactions..."
-                                    className="h-11 rounded-full pl-11 lg:h-12 lg:text-base"
-                                />
+                            <div className="flex items-center gap-3">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search transactions..."
+                                        className="h-11 rounded-full pl-11 lg:h-12 lg:text-base"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                                {partyType === PartyType.EMPLOYEE && (
+                                    <Select value={period} onValueChange={(value: any) => setPeriod(value)}>
+                                        <SelectTrigger className="w-[140px] h-11 lg:h-12 rounded-full px-5 bg-muted/30 border-none shadow-none focus:ring-0">
+                                            <SelectValue placeholder="Period" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-2xl border-muted/20 shadow-xl">
+                                            <SelectItem value="month" className="rounded-xl">Current month</SelectItem>
+                                            <SelectItem value="year" className="rounded-xl">Year</SelectItem>
+                                            <SelectItem value="all" className="rounded-xl">All</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                )}
                             </div>
                         </section>
 
