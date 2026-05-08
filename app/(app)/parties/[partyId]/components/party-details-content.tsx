@@ -60,7 +60,7 @@ export function PartyDetailsContent({ partyId, currency }: PartyDetailsContentPr
 
     const formattedTransactions = (transactions || [])
         .filter(tra =>
-            tra.note?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            tra.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             tra.amount.toString().includes(searchQuery) ||
             tra.fromAccount?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             tra.toAccount?.name.toLowerCase().includes(searchQuery.toLowerCase())

@@ -154,7 +154,8 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
         })
     }
 
-    const handlePeriodChange = (val: string) => {
+    const handlePeriodChange = (val: string | null) => {
+        if (!val) return;
         const params = new URLSearchParams(searchParams.toString())
         params.set("period", val)
         router.push(`${pathname}?${params.toString()}` as any, { scroll: false })

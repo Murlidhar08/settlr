@@ -233,7 +233,7 @@ export async function deleteParty(partyId: string): Promise<boolean> {
   return true;
 }
 
-export async function getPartyTransactions(partyId: string, period: 'month' | 'year' | 'all' = 'all'): Promise<Transaction[]> {
+export async function getPartyTransactions(partyId: string, period: 'month' | 'year' | 'all' = 'all') {
   const session = await getUserSession();
   const businessId = session?.user.activeBusinessId || "";
 
