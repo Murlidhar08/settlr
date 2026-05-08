@@ -13,12 +13,13 @@ interface BalanceCardProps {
     search?: string;
     includeInactive?: boolean;
     currency: Currency;
+    period?: 'month' | 'year' | 'all';
 }
 
 import { motion } from "framer-motion";
 
-export default function BalanceCard({ partyType, search, includeInactive, currency }: BalanceCardProps) {
-    const { data: parties, isLoading } = useParties(partyType, search, includeInactive);
+export default function BalanceCard({ partyType, search, includeInactive, currency, period = 'all' }: BalanceCardProps) {
+    const { data: parties, isLoading } = useParties(partyType, search, includeInactive, period);
 
     if (isLoading || !parties) {
         return <div className="h-28 w-full animate-pulse rounded-2xl bg-muted/20 border border-muted/30" />;

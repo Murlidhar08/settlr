@@ -3,13 +3,13 @@ import { useSession } from "@/lib/auth/auth-client";
 import { PartyType } from "@/lib/generated/prisma/enums";
 import { useQuery } from "@tanstack/react-query";
 
-export const useParties = (type: PartyType, search?: string, includeInactive: boolean = false) => {
+export const useParties = (type: PartyType, search?: string, includeInactive: boolean = false, period: 'month' | 'year' | 'all' = 'all') => {
     const { data: session } = useSession();
     const businessId = session?.user?.activeBusinessId;
 
     return useQuery({
-        queryKey: ["party-list", type, search, includeInactive, businessId],
-        queryFn: () => getPartyList(type, search, includeInactive),
+        queryKey: ["party-list", type, search, includeInactive, period, businessId],
+        queryFn: () => getPartyList(type, search, includeInactive, period),
     });
 };
 
@@ -24,13 +24,13 @@ export const usePartyDetails = (partyId: string) => {
     });
 };
 
-export const usePartyTransactions = (partyId: string) => {
+export const usePartyTransactions = (partyId: string, period: 'month' | 'year' | 'all' = 'all') => {
     const { data: session } = useSession();
     const businessId = session?.user?.activeBusinessId;
-
+ 
     return useQuery({
-        queryKey: ["party-transactions", partyId, businessId],
-        queryFn: () => getPartyTransactions(partyId),
+        queryKey: ["party-transactions", partyId, period, businessId],
+        queryFn: () => getPartyTransactions(partyId, period),
         enabled: !!partyId,
     });
 };

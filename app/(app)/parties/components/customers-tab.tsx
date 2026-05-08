@@ -13,9 +13,10 @@ interface PartyListProp {
   partyType: PartyType;
   search?: string;
   includeInactive?: boolean;
+  period?: 'month' | 'year' | 'all';
 }
 
-export default async function CustomersTab({ partyType, search, includeInactive = false }: PartyListProp) {
+export default async function CustomersTab({ partyType, search, includeInactive = false, period = 'all' }: PartyListProp) {
   const { currency } = await getUserConfig();
 
   return (
@@ -26,6 +27,7 @@ export default async function CustomersTab({ partyType, search, includeInactive 
           search={search}
           includeInactive={includeInactive}
           currency={currency}
+          period={period}
         />
       </Suspense>
 
@@ -44,6 +46,7 @@ export default async function CustomersTab({ partyType, search, includeInactive 
           partyType={partyType}
           search={search}
           includeInactive={includeInactive}
+          period={period}
         />
       </Suspense>
 

@@ -10,6 +10,13 @@ import { motion } from "framer-motion"
 import { Eye, EyeOff, Search } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 import { useOptimisticTab } from "./parties-client-wrapper"
 
@@ -22,6 +29,7 @@ export function PartyFilters() {
     const currentTab = searchParams.get("tab") || "customers"
     const currentSearch = searchParams.get("search") || ""
     const showInactive = searchParams.get("inactive") === "true"
+    const currentPeriod = (searchParams.get("period") as 'month' | 'year' | 'all') || (currentTab === 'employees' ? 'month' : 'all')
 
     const { optimisticTab, setOptimisticTab } = useOptimisticTab()
     const displayTab = optimisticTab || currentTab
@@ -72,18 +80,31 @@ export function PartyFilters() {
                     </div>
                 </motion.div>
 
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => updateFilters({ inactive: showInactive ? null : "true" })}
-                    className={cn(
-                        "rounded-full h-10 px-4 text-[10px] font-black uppercase tracking-widest",
-                        showInactive ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    )}
-                >
-                    {showInactive ? <Eye className="size-3 mr-2" /> : <EyeOff className="size-3 mr-2" />}
-                    {showInactive ? "Viewing All" : "Hide Inactive"}
-                </Button>
+                <div className="flex items-center gap-3">
+                    <Select value={currentPeriod} onValueChange={(val) => updateFilters({ period: val })}>
+                        <SelectTrigger className="h-10 px-4 rounded-full bg-muted text-[10px] font-black uppercase tracking-widest border-none shadow-none focus:ring-0 w-[140px]">
+                            <SelectValue placeholder="Period" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl border-muted/20 shadow-xl">
+                            <SelectItem value="month" className="rounded-xl">Month</SelectItem>
+                            <SelectItem value="year" className="rounded-xl">Year</SelectItem>
+                            <SelectItem value="all" className="rounded-xl">All</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => updateFilters({ inactive: showInactive ? null : "true" })}
+                        className={cn(
+                            "rounded-full h-10 px-4 text-[10px] font-black uppercase tracking-widest",
+                            showInactive ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        )}
+                    >
+                        {showInactive ? <Eye className="size-3 mr-2" /> : <EyeOff className="size-3 mr-2" />}
+                        {showInactive ? "Viewing All" : "Hide Inactive"}
+                    </Button>
+                </div>
             </div>
 
             <Tabs

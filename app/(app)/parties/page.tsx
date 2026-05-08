@@ -24,6 +24,8 @@ export default async function Parties({ searchParams }: PageProps) {
         currentTab === "other" ? PartyType.OTHER :
           PartyType.CUSTOMER;
 
+  const currentPeriod = (params.period as 'month' | 'year' | 'all') || (partyType === PartyType.EMPLOYEE ? 'month' : 'all');
+
   const loaderProps = (
     <div className="space-y-4">
       <div className="h-28 w-full animate-pulse rounded-2xl bg-muted/50" />
@@ -52,6 +54,7 @@ export default async function Parties({ searchParams }: PageProps) {
                 partyType={partyType}
                 search={searchQuery}
                 includeInactive={includeInactive}
+                period={currentPeriod}
               />
             </Suspense>
           </PartiesTabContent>

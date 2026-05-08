@@ -9,10 +9,11 @@ interface PartyListProp {
   partyType: PartyType
   search?: string
   includeInactive?: boolean
+  period?: 'month' | 'year' | 'all'
 }
 
-const PartyList = ({ partyType, search = "", includeInactive = false }: PartyListProp) => {
-  const { data: partyLst, isLoading: loading } = useParties(partyType, search, includeInactive);
+const PartyList = ({ partyType, search = "", includeInactive = false, period = 'all' }: PartyListProp) => {
+  const { data: partyLst, isLoading: loading } = useParties(partyType, search, includeInactive, period);
 
   if (loading && !partyLst) {
     return (
