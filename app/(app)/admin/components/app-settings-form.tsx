@@ -49,8 +49,6 @@ export function AppSettingsForm({ initialData }: AppSettingsFormProps) {
     const form = useForm<AppConfigValues>({
         resolver: zodResolver(appConfigSchema) as any,
         defaultValues: {
-            appName: initialData.appName || "",
-            appDescription: initialData.appDescription || "",
             smtpHost: initialData.smtpHost || "",
             smtpPort: initialData.smtpPort || 587,
             smtpUser: initialData.smtpUser || "",
@@ -79,30 +77,6 @@ export function AppSettingsForm({ initialData }: AppSettingsFormProps) {
 
     return (
         <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-10">
-            {/* General & Branding Card */}
-            <ConfigCard
-                title="General & Branding"
-                description="Core application identity and global settings."
-                icon={<Layout className="w-5 h-5" />}
-            >
-                <div className="space-y-2">
-                    <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">App Name</Label>
-                    <Input
-                        {...form.register("appName")}
-                        className="h-12 rounded-2xl border-none bg-muted/40 shadow-inner focus-visible:ring-primary/20 transition-all font-bold"
-                        placeholder="e.g. Settlr"
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label className="text-xs font-black uppercase tracking-widest opacity-50 ml-1">Description</Label>
-                    <Textarea
-                        {...form.register("appDescription")}
-                        className="min-h-[100px] rounded-2xl border-none bg-muted/40 shadow-inner focus-visible:ring-primary/20 transition-all font-bold resize-none"
-                        placeholder="A brief description..."
-                    />
-                </div>
-            </ConfigCard>
-
             {/* Email Server Card */}
             <ConfigCard
                 title="Email Server (SMTP)"
