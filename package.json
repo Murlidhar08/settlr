@@ -8,8 +8,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --webpack",
-    "start": "next start",
-    "start2": "node server.js",
+    "start": "node server.js",
     "lint": "eslint",
     "postinstall": "prisma generate",
     "production-deploy": "npm run postinstall && prisma migrate deploy && npm run build",
