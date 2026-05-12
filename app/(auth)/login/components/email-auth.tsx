@@ -4,13 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/auth/auth-client";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-export default function EmailAuth({ lastLogin, loading, setLoading, setError, email, password }: { lastLogin: string, loading: boolean, setLoading: (loading: boolean) => void, setError: (error: string) => void, email: string, password: string }) {
+export default function EmailAuth({ lastLogin, loading, setLoading, email, password }: { lastLogin: string, loading: boolean, setLoading: (loading: boolean) => void, email: string, password: string }) {
     const router = useRouter();
 
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError("");
         setLoading(true);
 
         try {
@@ -20,11 +20,11 @@ export default function EmailAuth({ lastLogin, loading, setLoading, setError, em
                     router.push(`/banned?reason=${encodeURIComponent(result.error.message || "")}`);
                     return;
                 }
-                setError(result.error.message || "Sign in failed");
+                toast.error(result.error.message || "Sign in failed");
             }
             else router.push("/dashboard" as any);
         } catch (err) {
-            setError("An error occurred during sign in");
+            toast.error("An error occurred during sign in");
             console.error(err)
         } finally {
             setLoading(false);

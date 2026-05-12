@@ -69,16 +69,6 @@ function LoginFormContent({ providers }: LoginFormProps) {
     }
   }, [errorCode]);
 
-  // Clear error after 4 seconds
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => {
-        setError("");
-      }, 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [error]);
-
   // Redirect to dashboard
   useEffect(() => {
     authClient.getSession()
@@ -226,14 +216,12 @@ function LoginFormContent({ providers }: LoginFormProps) {
               email={email}
               password={password}
               setLoading={setLoading}
-              setError={setError}
             />
 
             <PasskeyAuth
               lastLogin={lastLogin}
               loading={loading}
               setLoading={setLoading}
-              setError={setError}
             />
           </motion.form>
 

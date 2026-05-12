@@ -6,25 +6,26 @@ import { authClient } from "@/lib/auth/auth-client";
 import { Fingerprint } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
-export default function PasskeyAuth({ lastLogin, loading, setLoading, setError }: { lastLogin: string, loading: boolean, setLoading: (loading: boolean) => void, setError: (error: string) => void }) {
+export default function PasskeyAuth({ lastLogin, loading, setLoading }: { lastLogin: string, loading: boolean, setLoading: (loading: boolean) => void }) {
     const router = useRouter();
     const [passkeyLoading, setPasskeyLoading] = useState(false);
 
     const handlePasskeySignIn = async () => {
-        setError("");
         setLoading(true);
         setPasskeyLoading(true);
 
         try {
             const { error } = await authClient.signIn.passkey();
             if (error) {
-                setError(error.message || "Passkey authentication failed");
+                toast.error(error.message || "Passkey authentication failed");
             } else {
                 router.push("/dashboard");
             }
         } catch (err) {
-            setError("An unexpected error occurred during passkey sign in");
+            toast.error("An unexpected error occurred during passkey sign in");
+            console.error(err);
         } finally {
             setLoading(false);
             setPasskeyLoading(false);
