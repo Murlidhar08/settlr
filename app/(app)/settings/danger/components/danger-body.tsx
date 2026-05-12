@@ -7,17 +7,25 @@ import { t } from '@/lib/languages/i18n'
 import { motion } from 'framer-motion'
 import { AlertTriangle, Info, Trash2 } from 'lucide-react'
 
-const itemVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: { opacity: 1, scale: 1 }
-};
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+}
 
 export function DangerModalBody() {
     const { language } = useUserConfig()
+
     return (
         <motion.div
-            variants={itemVariants}
-            className="space-y-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mx-auto max-w-lg p-6 mt-4 space-y-6"
         >
             <div className="p-8 rounded-[2.5rem] bg-card border border-rose-500/10 shadow-sm relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-rose-500/10 transition-colors" />

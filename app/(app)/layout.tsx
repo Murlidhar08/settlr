@@ -9,8 +9,8 @@ import { isSetupRequired } from "@/lib/setup";
 // Components
 import { ImpersonationIndicator } from "@/components/auth/impersonation-indicator";
 import { LayoutTransitions } from "@/components/layout-transitions";
+import DesktopNav from "@/components/navbar/desktop-nav";
 import { UserConfigProvider } from "@/components/providers/user-config-provider";
-import { Sidebar } from "@/components/sidebar";
 import { getDefaultConfig, getUserConfig } from "@/lib/user-config";
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -33,21 +33,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <UserConfigProvider config={userConfig}>
       <div className="h-screen bg-background text-foreground transition-colors duration-300 overflow-hidden">
         <div className="flex h-full">
-          {/* Fixed Sidebar */}
-          <Sidebar />
+          <DesktopNav />
 
           {/* Main Content */}
-          <div className="flex-1 flex flex-col min-w-0 h-full">
-            <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
-              <LayoutTransitions>
-                {children}
-              </LayoutTransitions>
-            </div>
+          <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto overflow-x-hidden">
+            <LayoutTransitions>
+              {children}
+            </LayoutTransitions>
           </div>
         </div>
+
+        {/* Only when admin is impersonating */}
         <ImpersonationIndicator />
       </div>
-    </UserConfigProvider>
+    </UserConfigProvider >
   );
 }
 

@@ -2,21 +2,17 @@
 
 import { getCredientialAccounts } from "@/actions/user-settings.actions";
 import { BackHeader } from "@/components/back-header";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useUserConfig } from "@/components/providers/user-config-provider";
-import { t } from "@/lib/languages/i18n";
+import { Skeleton } from "@/components/ui/skeleton";
 import { auth } from "@/lib/auth/auth";
-import { useSession } from "@/lib/auth/auth-client";
+import { t } from "@/lib/languages/i18n";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LinkAccountModalBody } from "./components/link-account-body";
 
 type Account = Awaited<ReturnType<typeof auth.api.listUserAccounts>>[number];
 
 export default function LinkAccountPage() {
-    const router = useRouter();
-    const { data: session, isPending } = useSession();
     const { language } = useUserConfig();
     const [currAccount, setCurrAccount] = useState<Account[]>([]);
     const [loading, setLoading] = useState(true);
@@ -28,22 +24,7 @@ export default function LinkAccountPage() {
         });
     }, []);
 
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.1
-            }
-        }
-    };
-
-    const itemVariants = {
-        hidden: { opacity: 0, y: 10 },
-        visible: { opacity: 1, y: 0 }
-    };
-
-    if (isPending || loading) {
+    if (loading) {
         return <LinkAccountSkeleton />;
     }
 
@@ -55,7 +36,15 @@ export default function LinkAccountPage() {
             />
 
             <motion.div
-                variants={containerVariants}
+                variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                        opacity: 1,
+                        transition: {
+                            staggerChildren: 0.1
+                        }
+                    }
+                }}
                 initial="hidden"
                 animate="visible"
                 className="mx-auto max-w-lg p-6 mt-4"

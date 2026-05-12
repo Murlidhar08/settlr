@@ -8,6 +8,7 @@ import { AdminSkeleton } from "./components/admin-skeleton";
 
 // Hooks
 import { AppHeader } from "@/components/app-header";
+import MobileNav from "@/components/navbar/mobile-nav";
 import { getUserSession } from "@/lib/auth/auth";
 import { t } from "@/lib/languages/i18n";
 
@@ -26,6 +27,8 @@ export default async function AdminPage() {
             <Suspense fallback={<AdminSkeleton />}>
                 <AdminContent />
             </Suspense>
+
+            <MobileNav />
         </>
     );
 }

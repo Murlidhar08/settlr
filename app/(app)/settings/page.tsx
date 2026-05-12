@@ -381,11 +381,14 @@ export default function SettingsPage() {
           <p className="text-[9px] font-medium italic">© {new Date().getFullYear()} {envClient.NEXT_PUBLIC_APP_NAME}. All rights reserved.</p>
         </motion.div>
       </motion.div>
+
+      <MobileNav />
     </div >
   );
 }
 
 import { FooterButtons } from "@/components/footer-buttons";
+import MobileNav from "@/components/navbar/mobile-nav";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function SettingsSkeleton() {
