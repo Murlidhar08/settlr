@@ -3,7 +3,7 @@ import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { admin as adminPlugin, customSession, lastLoginMethod, twoFactor } from "better-auth/plugins";
+import { admin as adminPlugin, customSession, lastLoginMethod, multiSession, twoFactor } from "better-auth/plugins";
 import { redirect } from "next/navigation";
 
 // Lib
@@ -252,6 +252,9 @@ export const auth = betterAuth({
           banReason: dbUser?.banReason ?? null,
         },
       }
+    }),
+    multiSession({
+      maximumSessions: 3,
     }),
   ],
   databaseHooks: {
