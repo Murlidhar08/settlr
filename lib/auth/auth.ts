@@ -13,7 +13,7 @@ import { prisma } from "../prisma/prisma";
 // Template
 import { headers } from "next/headers";
 import { envServer } from "../env.server";
-import { Currency, ThemeMode } from "../generated/prisma/enums";
+import { ThemeMode } from "../generated/prisma/enums";
 import { getDeleteAccountEmailHtml } from "../templates/email-delete-account";
 import { getPasswordResetSuccessEmailHtml } from "../templates/email-password-reseted";
 import { getResetPasswordEmailHtml } from "../templates/email-reset-password";
@@ -215,7 +215,6 @@ export const auth = betterAuth({
           // user preferences
           userSettings: {
             select: {
-              currency: true,
               dateFormat: true,
               timeFormat: true,
               language: true,
@@ -234,7 +233,6 @@ export const auth = betterAuth({
           impersonatedBy: dbSession?.impersonatedBy ?? null,
 
           userSettings: {
-            currency: settings?.currency ?? Currency.INR,
             dateFormat: settings?.dateFormat ?? "dd/MM/yyyy",
             timeFormat: settings?.timeFormat ?? "hh:mm a",
             language: settings?.language ?? "en",

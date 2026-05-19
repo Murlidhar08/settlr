@@ -1,7 +1,4 @@
 -- CreateEnum
-CREATE TYPE "Currency" AS ENUM ('INR', 'USD', 'EUR');
-
--- CreateEnum
 CREATE TYPE "ThemeMode" AS ENUM ('AUTO', 'LIGHT', 'DARK');
 
 -- CreateTable
@@ -101,7 +98,6 @@ CREATE TABLE "passkey" (
 -- CreateTable
 CREATE TABLE "userSettings" (
     "userId" TEXT NOT NULL,
-    "currency" "Currency" NOT NULL DEFAULT 'INR',
     "dateFormat" TEXT NOT NULL DEFAULT 'dd/MM/yyyy',
     "timeFormat" TEXT NOT NULL DEFAULT 'hh:mm a',
     "language" TEXT NOT NULL DEFAULT 'en',

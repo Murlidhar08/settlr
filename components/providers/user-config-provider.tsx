@@ -1,13 +1,12 @@
 "use client"
 
-import { Currency, ThemeMode } from "@/lib/generated/prisma/enums"
+import { ThemeMode } from "@/lib/generated/prisma/enums"
 import { setActiveLanguage } from "@/lib/languages/i18n"
-import { useTheme } from "next-themes"
 import { setGlobalUserConfig } from "@/utility/dateTimeFn"
+import { useTheme } from "next-themes"
 import { createContext, useContext, useEffect, useState } from "react"
 
 interface userSettings {
-  currency: Currency,
   dateFormat: string,
   timeFormat: string,
   language: string,

@@ -1,14 +1,9 @@
-import { Currency } from "@/lib/generated/prisma/enums";
 import { format } from "date-fns";
 
 export function formatAmount(amount?: number | null) {
     if (!amount) return "0";
 
     return Math.abs(amount).toLocaleString("en-IN");
-}
-
-export function formatCurrencyAmount(amount?: number | null, currency?: Currency): string {
-    return `${getCurrencySymbol(currency)} ${formatAmount(amount)}`;
 }
 
 export function getInitials(name?: string | null) {
@@ -22,17 +17,6 @@ export function getInitials(name?: string | null) {
 
     return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
-
-
-export const getCurrencySymbol = (currency: Currency = Currency.INR): string => {
-    switch (currency) {
-        case Currency.USD: return "$";
-        case Currency.EUR: return "€";
-        case Currency.INR:
-        default:
-            return "₹";
-    }
-};
 
 export const formatDate = (date: Date | string | number, dateFormat: string = "dd/MM/yyyy"): string => {
     try {

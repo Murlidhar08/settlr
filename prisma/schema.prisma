@@ -8,12 +8,6 @@ datasource db {
 }
 
 // Enums
-enum Currency {
-  INR
-  USD
-  EUR
-}
-
 enum ThemeMode {
   AUTO
   LIGHT
@@ -130,7 +124,6 @@ model Passkey {
 // Application settings tables
 model UserSettings {
   userId     String    @id
-  currency   Currency  @default(INR)
   dateFormat String    @default("dd/MM/yyyy")
   timeFormat String    @default("hh:mm a")
   language   String    @default("en")

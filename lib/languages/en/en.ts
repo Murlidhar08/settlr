@@ -26,7 +26,6 @@ export default {
     settings: {
         title: "Settings",
         general: "General Preferences",
-        currency: "Currency",
         date_format: "Date Format",
         time_format: "Time Format",
         language: "Language",
@@ -44,7 +43,6 @@ export default {
         light: "Light",
         dark: "Dark",
         msg: {
-            currency_updated: "Currency updated to {currency}",
             date_format_updated: "Date format updated",
             time_format_updated: "Time format updated",
             language_updated: "Language updated",
