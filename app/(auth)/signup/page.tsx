@@ -3,7 +3,7 @@
 // Lib
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { containerVariants, itemVariants } from "@/lib/animations";
+import { containerVariants, itemVariants, floatAnimate, floatTransition } from "@/lib/animations";
 import { authClient } from "@/lib/auth/auth-client";
 import { envClient } from "@/lib/env.client";
 import { AnimatePresence, motion } from "framer-motion";
@@ -78,18 +78,12 @@ export default function SignupPage() {
 
   return (
     <div className="h-screen w-full flex flex-col lg:flex-row select-none bg-background overflow-hidden relative">
-      {/* BACKGROUND DECORATION */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-40 dark:opacity-20 overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[10%] w-[30%] h-[30%] rounded-full bg-primary/10 blur-[100px] animate-pulse [animation-delay:2s]" />
-      </div>
-
       {/* LEFT SIDE: FORM */}
       <motion.div
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="flex flex-col justify-between w-full lg:w-1/2 px-6 sm:px-12 lg:px-16 xl:px-24 py-8 relative z-10 h-full overflow-y-auto scrollbar-none bg-background/50 backdrop-blur-sm border-r border-border/50"
+        className="flex flex-col justify-between w-full lg:w-1/2 px-6 sm:px-12 lg:px-6 py-8 relative z-10 h-full overflow-y-auto scrollbar-none bg-linear-to-b from-primary/[0.12] via-background to-background backdrop-blur-sm border-r border-border/50"
       >
         {/* LOGO + BRAND */}
         <motion.div
@@ -273,14 +267,8 @@ export default function SignupPage() {
 
         <div className="relative z-10 w-full max-w-2xl text-center text-white space-y-12">
           <motion.div
-            animate={{
-              y: [0, -10, 0],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+            animate={floatAnimate}
+            transition={floatTransition}
             className="w-32 h-32 bg-white/10 backdrop-blur-2xl rounded-[2.5rem] flex items-center justify-center border border-white/20 shadow-2xl mx-auto relative group"
           >
             <div className="absolute inset-0 bg-white/20 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
