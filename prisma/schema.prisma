@@ -27,26 +27,26 @@ enum UserStatus {
 
 // Better Auth tables
 model User {
-  id               String         @id
+  id               String        @id
   name             String
   email            String
-  emailVerified    Boolean        @default(false)
+  emailVerified    Boolean       @default(false)
   image            String?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  role             UserRole?
-  status           UserStatus     @default(pendingapproval)
-  banned           Boolean?       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  role             UserRole      @default(user)
+  status           UserStatus    @default(pendingapproval)
+  banned           Boolean?      @default(false)
   banReason        String?
   banExpires       DateTime?
-  twoFactorEnabled Boolean?       @default(false)
+  twoFactorEnabled Boolean?      @default(false)
   contactNo        String?
   address          String?
   sessions         Session[]
   accounts         Account[]
   twofactors       TwoFactor[]
   passkeys         Passkey[]
-  userSettings     UserSettings[]
+  userSettings     UserSettings?
 
   username        String?
   displayUsername String?
