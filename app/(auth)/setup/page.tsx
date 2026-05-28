@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { containerVariants, itemVariants, floatAnimate, floatTransition } from "@/lib/animations";
 import { envClient } from "@/lib/env.client";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, EyeOff, Mail, ShieldCheck, User } from "lucide-react";
+import { Eye, EyeOff, Mail, ShieldCheck, User, AtSign } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 export default function SetupPage() {
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -31,6 +32,16 @@ export default function SetupPage() {
     e.preventDefault();
     setError("");
 
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+      setError("Username can only contain letters, numbers, underscores, and hyphens");
+      return;
+    }
+
+    if (username.length < 3) {
+      setError("Username must be at least 3 characters long");
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -46,6 +57,7 @@ export default function SetupPage() {
     try {
       const formData = new FormData();
       formData.append("name", name);
+      formData.append("username", username);
       formData.append("email", email);
       formData.append("password", password);
 
@@ -147,6 +159,22 @@ export default function SetupPage() {
                     required
                   />
                   <User className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors w-5 h-5" />
+                </div>
+              </div>
+
+              {/* Username */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold ml-1 text-foreground/70">Username</label>
+                <div className="relative group">
+                  <Input
+                    type="text"
+                    placeholder="admin"
+                    className="h-13 rounded-2xl pl-4 pr-12 transition-all duration-300 bg-muted/40 border-border/50 focus:bg-background focus:ring-4 focus:ring-primary/10 focus:border-primary shadow-sm"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ""))}
+                    required
+                  />
+                  <AtSign className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors w-5 h-5" />
                 </div>
               </div>
 

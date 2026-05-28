@@ -18,6 +18,7 @@ export async function getCurrentUser() {
             contactNo: true,
             role: true,
             createdAt: true,
+            username: true,
         }
     });
 

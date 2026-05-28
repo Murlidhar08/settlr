@@ -3,7 +3,7 @@ import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { admin as adminPlugin, customSession, haveIBeenPwned, lastLoginMethod, multiSession, twoFactor } from "better-auth/plugins";
+import { admin as adminPlugin, customSession, haveIBeenPwned, lastLoginMethod, multiSession, twoFactor, username } from "better-auth/plugins";
 import { redirect } from "next/navigation";
 
 // Lib
@@ -259,7 +259,8 @@ export const auth = betterAuth({
     haveIBeenPwned({
       enabled: envServer.NODE_ENV === 'production',
       customPasswordCompromisedMessage: "This password has appeared in data breaches. Please choose a stronger, unique password."
-    })
+    }),
+    username()
   ],
   databaseHooks: {
     user: {

@@ -48,7 +48,11 @@ model User {
   passkeys         Passkey[]
   userSettings     UserSettings[]
 
+  username        String?
+  displayUsername String?
+
   @@unique([email])
+  @@unique([username])
   @@map("user")
 }
 

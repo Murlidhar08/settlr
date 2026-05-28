@@ -1,5 +1,5 @@
 import { passkeyClient } from "@better-auth/passkey/client";
-import { adminClient, customSessionClient, inferAdditionalFields, lastLoginMethodClient, multiSessionClient, twoFactorClient } from "better-auth/client/plugins";
+import { adminClient, customSessionClient, usernameClient, inferAdditionalFields, lastLoginMethodClient, multiSessionClient, twoFactorClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import { Auth } from "./auth";
 
@@ -24,6 +24,7 @@ export const authClient = createAuthClient({
     adminClient(),
     passkeyClient(),
     multiSessionClient(),
+    usernameClient()
   ],
 })
 

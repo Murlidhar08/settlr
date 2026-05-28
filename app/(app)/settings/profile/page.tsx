@@ -6,7 +6,8 @@ import {
     LogOut,
     Mail,
     Phone,
-    User
+    User,
+    AtSign
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -71,7 +72,7 @@ export default function ProfilePage() {
 
                     <div className="text-center space-y-1 relative z-10">
                         <h1 className="text-3xl font-black tracking-tight">{user?.name}</h1>
-                        <p className="text-muted-foreground font-medium opacity-70 italic">@{user?.name?.toLowerCase().replace(/\s+/g, '')}</p>
+                        <p className="text-muted-foreground font-medium opacity-70 italic">@{user?.username || user?.name?.toLowerCase().replace(/\s+/g, '')}</p>
                     </div>
                 </motion.div>
 
@@ -81,6 +82,11 @@ export default function ProfilePage() {
                         icon={User}
                         label={tran("profile.full_name")}
                         value={user?.name || tran("profile.not_set")}
+                    />
+                    <DetailRow
+                        icon={AtSign}
+                        label="Username"
+                        value={user?.username ? `@${user?.username}` : tran("profile.not_set")}
                     />
                     <DetailRow
                         icon={Mail}

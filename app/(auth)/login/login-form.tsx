@@ -2,7 +2,7 @@
 
 // Packages
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, EyeOff, Mail } from "lucide-react";
+import { Eye, EyeOff, Mail, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -31,7 +31,7 @@ interface LoginFormProps {
 
 function LoginFormContent({ providers }: LoginFormProps) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -70,7 +70,11 @@ function LoginFormContent({ providers }: LoginFormProps) {
     setLoading(true);
 
     try {
-      const result = await signIn.email({ email, password });
+      const isEmail = emailOrUsername.includes("@");
+      const result = isEmail
+        ? await signIn.email({ email: emailOrUsername, password })
+        : await signIn.username({ username: emailOrUsername, password });
+
       if (result.error) {
         if (result.error.code === "BANNED_USER") {
           router.push(`/banned?reason=${encodeURIComponent(result.error.message || "")}`);
@@ -154,21 +158,25 @@ function LoginFormContent({ providers }: LoginFormProps) {
             </AnimatePresence>
 
             <div className="space-y-4">
-              {/* Email */}
+              {/* Email or Username */}
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold ml-1 text-foreground/70">Email Address</label>
+                <label className="text-sm font-semibold ml-1 text-foreground/70">Email or Username</label>
                 <div className="relative group">
                   <Input
-                    type="email"
+                    type="text"
                     tabIndex={1}
-                    placeholder="name@company.com"
+                    placeholder="name@company.com or username"
                     className="h-13 rounded-2xl pl-4 pr-12 transition-all duration-300 bg-muted/40 border-border/50 focus:bg-background focus:ring-4 focus:ring-primary/10 focus:border-primary shadow-sm"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={emailOrUsername}
+                    onChange={(e) => setEmailOrUsername(e.target.value)}
                     required
                     autoFocus={true}
                   />
-                  <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors w-5 h-5" />
+                  {emailOrUsername.includes("@") ? (
+                    <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors w-5 h-5" />
+                  ) : (
+                    <User className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors w-5 h-5" />
+                  )}
                 </div>
               </div>
 

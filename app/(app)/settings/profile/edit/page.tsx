@@ -1,9 +1,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Camera, CheckCircle2, Edit3, Mail, Phone, User } from 'lucide-react'
+import { Camera, CheckCircle2, Edit3, Mail, Phone, User, AtSign, Loader2, Check, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, UseFormRegisterReturn } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -22,6 +22,7 @@ import { containerVariants, itemVariants } from '@/lib/animations'
 
 type ProfileFormValues = {
   name: string
+  username: string
   email: string
   contactNo?: string
 }
@@ -30,33 +31,86 @@ export default function EditProfilePage() {
   const router = useRouter()
   const { data: user, isLoading } = useCurrentUser()
 
-  const { register, handleSubmit, formState: { isSubmitting }, reset } = useForm<ProfileFormValues>({
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
+
+  const { register, handleSubmit, formState: { isSubmitting }, reset, watch, setValue } = useForm<ProfileFormValues>({
     defaultValues: {
       name: user?.name || '',
+      username: user?.username || '',
       email: user?.email || '',
       contactNo: user?.contactNo || '',
     },
   })
 
+  const watchedUsername = watch('username')
+
   useEffect(() => {
     if (user) {
       reset({
         name: user.name ?? '',
+        username: user.username ?? '',
         email: user.email ?? '',
         contactNo: user?.contactNo || '',
       })
     }
   }, [user, reset])
 
+  // Debounced check for username availability in edit profile
+  useEffect(() => {
+    if (!watchedUsername) {
+      setUsernameAvailable(null);
+      return;
+    }
+
+    if (user && watchedUsername === user.username) {
+      setUsernameAvailable(true);
+      return;
+    }
+
+    if (watchedUsername.length < 3) {
+      setUsernameAvailable(false);
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_-]+$/.test(watchedUsername)) {
+      setUsernameAvailable(false);
+      return;
+    }
+
+    const checkAvailability = async () => {
+      setCheckingUsername(true);
+      try {
+        const result = await authClient.isUsernameAvailable({ username: watchedUsername });
+        setUsernameAvailable(!!result.data?.available);
+      } catch (err) {
+        console.error("Error checking username availability:", err);
+        setUsernameAvailable(false);
+      } finally {
+        setCheckingUsername(false);
+      }
+    };
+
+    const delayDebounceFn = setTimeout(checkAvailability, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [watchedUsername, user]);
+
   if (isLoading) return <EditProfileSkeleton />;
 
   async function onSubmit(data: ProfileFormValues) {
     try {
+      if (user && data.username !== user.username && usernameAvailable === false) {
+        toast.error("Please choose a valid and available username");
+        return;
+      }
+
       const promises = []
 
       promises.push(
         authClient.updateUser({
           name: data.name,
+          username: data.username,
           contactNo: data.contactNo,
         })
       )
@@ -143,6 +197,45 @@ export default function EditProfilePage() {
             />
 
             <Field
+              label="Username"
+              icon={AtSign}
+              registration={register('username', { 
+                required: "Username is required",
+                onChange: (e) => {
+                  setValue('username', e.target.value.toLowerCase().replace(/\s+/g, ""));
+                }
+              })}
+              rightElement={
+                checkingUsername ? (
+                  <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                ) : usernameAvailable === true ? (
+                  <Check className="w-5 h-5 text-emerald-500" />
+                ) : usernameAvailable === false ? (
+                  <X className="w-5 h-5 text-destructive" />
+                ) : (
+                  <AtSign size={18} />
+                )
+              }
+            />
+            {watchedUsername && watchedUsername !== user?.username && (
+              <div className="text-xs ml-1 -mt-4 transition-all duration-200">
+                {checkingUsername && <span className="text-muted-foreground animate-pulse">Checking availability...</span>}
+                {!checkingUsername && usernameAvailable === true && (
+                  <span className="text-emerald-500 font-medium">Username is available!</span>
+                )}
+                {!checkingUsername && usernameAvailable === false && (
+                  <span className="text-destructive font-medium">
+                    {watchedUsername.length < 3 
+                      ? "Username must be at least 3 characters" 
+                      : !/^[a-zA-Z0-9_-]+$/.test(watchedUsername)
+                      ? "Only alphanumeric characters, underscores, and hyphens allowed"
+                      : "Username is already taken"}
+                  </span>
+                )}
+              </div>
+            )}
+
+            <Field
               label={tran("profile.phone_number")}
               icon={Phone}
               registration={register('contactNo')}
@@ -191,7 +284,7 @@ function EditProfileSkeleton() {
         <Skeleton className="h-4 w-32" />
       </div>
       <div className="mx-auto max-w-lg space-y-6 px-6">
-        {[1, 2, 3].map((i) => (
+        {[1, 2, 3, 4].map((i) => (
           <div key={i} className="space-y-2">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-14 w-full rounded-xl" />
@@ -209,6 +302,7 @@ function Field({
   type = "text",
   disabled = false,
   placeholder = "",
+  rightElement,
 }: {
   label: string
   icon: React.ElementType
@@ -216,6 +310,7 @@ function Field({
   type?: string
   disabled?: boolean
   placeholder?: string
+  rightElement?: React.ReactNode
 }) {
   return (
     <div className={`flex flex-col gap-2 ${disabled ? "opacity-60 grayscale-[0.5]" : ""}`}>
@@ -229,7 +324,7 @@ function Field({
           className="h-14 rounded-2xl pr-12 bg-muted/10 border-muted-foreground/10 focus:bg-background transition-all duration-300 font-bold"
         />
         <div className="absolute right-4 top-1/2 -translate-y-1/2 h-8 w-8 rounded-xl bg-transparent flex items-center justify-center text-muted-foreground transition-colors group-focus-within:text-primary">
-          <Icon size={18} />
+          {rightElement || <Icon size={18} />}
         </div>
       </div>
     </div>

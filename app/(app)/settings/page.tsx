@@ -133,7 +133,14 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex-1">
-            <p className="font-black text-xl tracking-tight">{session?.user?.name ?? "Unknown"}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-black text-xl tracking-tight">{session?.user?.name ?? "Unknown"}</p>
+              {session?.user?.username && (
+                <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                  @{session.user.username}
+                </span>
+              )}
+            </div>
             <p className="text-sm font-medium text-muted-foreground opacity-70">{session?.user?.email ?? "Unknown"}</p>
           </div>
           <div className="h-10 w-10 rounded-full bg-muted/50 flex items-center justify-center">

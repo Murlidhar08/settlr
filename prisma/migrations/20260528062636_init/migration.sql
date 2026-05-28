@@ -24,6 +24,8 @@ CREATE TABLE "user" (
     "twoFactorEnabled" BOOLEAN DEFAULT false,
     "contactNo" TEXT,
     "address" TEXT,
+    "username" TEXT,
+    "displayUsername" TEXT,
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );
@@ -132,6 +134,9 @@ CREATE TABLE "appConfig" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "user_username_key" ON "user"("username");
 
 -- CreateIndex
 CREATE INDEX "session_userId_idx" ON "session"("userId");
