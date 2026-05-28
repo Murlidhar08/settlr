@@ -231,7 +231,7 @@ export const auth = betterAuth({
         },
       })
 
-      const settings = dbUser?.userSettings[0];
+      const settings = dbUser?.userSettings;
       const dbSession = dbUser?.sessions[0];
 
       return {
