@@ -133,7 +133,7 @@ export function PasskeyTab() {
                 </div>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger>
-                        <FooterButtons>
+                        <FooterButtons bottomSpace={true}>
                             <Button
                                 size="sm"
                                 variant="default"
