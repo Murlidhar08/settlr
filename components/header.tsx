@@ -82,7 +82,7 @@ const Header = ({ title, isProfile }: HeaderProps) => {
       </div>
 
       <div className="flex-1 flex justify-center overflow-hidden">
-        <h1 className="text-lg font-bold tracking-tight sm:text-xl lg:text-2xl truncate px-2">
+        <h1 className="text-xl font-black tracking-normal sm:text-2xl lg:text-3xl bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent">
           {title}
         </h1>
       </div>
