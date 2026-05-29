@@ -1,4 +1,25 @@
 services:
+  postgres_db:
+    image: postgres:17.4
+    hostname: postgres_db
+    container_name: postgres_db
+    restart: always
+    env_file:
+      - .env.production
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - '${POSTGRES_EXTERNAL_PORT}:${POSTGRES_PORT}'
+    networks:
+      - prisma-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+
   app:
     build:
       context: .
@@ -8,7 +29,7 @@ services:
         - BETTER_AUTH_URL=${BETTER_AUTH_URL}
         - DATABASE_URL=${DATABASE_URL}
         - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
-    container_name: app-next
+    container_name: app
     env_file:
       - .env.production
     ports:
@@ -17,6 +38,8 @@ services:
       - prisma-network
     restart: unless-stopped
     depends_on:
+      postgres_db:
+        condition: service_healthy
       app-migrate:
         condition: service_completed_successfully
 
@@ -35,6 +58,9 @@ services:
       DATABASE_URL: ${DATABASE_URL}
     networks:
       - prisma-network
+    depends_on:
+      postgres_db:
+        condition: service_healthy
 
   app-migrate:
     image: node:24.15.0
@@ -42,6 +68,9 @@ services:
     working_dir: /app
     volumes:
       - .:/app
+    depends_on:
+      postgres_db:
+        condition: service_healthy
     env_file:
       - .env.production
     environment:
