@@ -12,20 +12,20 @@ import { useNavItems } from "./use-nav-items";
 const NavBar = () => {
     const [collapsed, setCollapsed] = useState(true);
     const pathname = usePathname();
-    const navItems = useNavItems()
+    const navItems = useNavItems();
 
     return (
         <>
             {/* ================= Desktop Sidebar ================= */}
             <aside
                 className={clsx(
-                    "hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border shadow-2xl",
+                    "group/sidebar hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border shadow-2xl",
                     "transition-[width] duration-500 cubic-bezier(0.4, 0, 0.2, 1)",
                     collapsed ? "w-16" : "w-64"
                 )}
             >
                 {/* Toggle Button - Floating on Right Edge */}
-                <div className="absolute top-18 -right-4 z-100">
+                <div className="absolute top-18 -right-4 z-100 opacity-0 pointer-events-none group-hover/sidebar:opacity-100 group-hover/sidebar:pointer-events-auto transition-all duration-300">
                     <button
                         onClick={() => setCollapsed(!collapsed)}
                         className="flex items-center justify-center h-8 w-8 rounded-full bg-sidebar border border-sidebar-border text-sidebar-foreground shadow-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-300 active:scale-90 cursor-pointer"

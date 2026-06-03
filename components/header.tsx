@@ -29,6 +29,26 @@ const Header = ({ title, isProfile }: HeaderProps) => {
       className="sticky top-0 z-30 h-14 sm:h-16 flex items-center justify-between bg-background/80 backdrop-blur-md text-foreground px-4 sm:px-6 border-b border-border shadow-sm"
     >
       <div className="w-1/4 sm:w-1/3 flex items-center gap-2">
+        <Link href="/" className="lg:hidden">
+          <div className="h-9 w-9 shrink-0 flex items-center justify-center relative rounded-xl bg-accent/50 border border-border/50">
+            <Image src="/images/logo/light_logo.png" alt="Logo" width={22} height={22} className="dark:hidden" />
+            <Image src="/images/logo/dark_logo.png" alt="Logo" width={22} height={22} className="hidden dark:block" />
+          </div>
+        </Link>
+      </div>
+
+      <div className="flex-1 flex justify-center overflow-hidden">
+        <h1 className="text-xl font-black tracking-normal sm:text-2xl lg:text-3xl bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent">
+          {title}
+        </h1>
+      </div>
+
+      <div className="w-1/4 sm:w-1/3 flex justify-end items-center gap-2">
+        {showProfile && (
+          <div className="hidden lg:block">
+            <ProfileAvatar />
+          </div>
+        )}
         <div className="lg:hidden">
           <Sheet>
             <SheetTrigger render={
@@ -36,7 +56,7 @@ const Header = ({ title, isProfile }: HeaderProps) => {
                 <Menu size={22} />
               </Button>
             } />
-            <SheetContent side="left" className="bg-sidebar border-r border-sidebar-border p-4 text-sidebar-foreground w-72">
+            <SheetContent side="right" className="bg-sidebar border-l border-sidebar-border p-4 text-sidebar-foreground w-full">
               <SheetHeader className="mb-6 px-2">
                 <SheetTitle className="flex items-center gap-3 text-sidebar-foreground text-left font-black tracking-tighter text-2xl">
                   <div className="h-10 w-10 shrink-0 flex items-center justify-center relative rounded-xl bg-sidebar-accent/10">
@@ -70,18 +90,6 @@ const Header = ({ title, isProfile }: HeaderProps) => {
             </SheetContent>
           </Sheet>
         </div>
-      </div>
-
-      <div className="flex-1 flex justify-center overflow-hidden">
-        <h1 className="text-xl font-black tracking-normal sm:text-2xl lg:text-3xl bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent">
-          {title}
-        </h1>
-      </div>
-
-      <div className="w-1/4 sm:w-1/3 flex justify-end">
-        {showProfile && (
-          <ProfileAvatar />
-        )}
       </div>
     </motion.header>
   )
