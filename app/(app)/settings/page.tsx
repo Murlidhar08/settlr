@@ -83,9 +83,10 @@ export default function SettingsPage() {
   };
 
   const localeItems: Record<string, string> = {
-    "en-US": "English (US)",
     "en-IN": "English (India)",
+    "en-US": "English (United States)",
     "de-DE": "German (Germany)",
+    "fr-FR": "French (France)"
   };
 
   const dateFormatItems = [

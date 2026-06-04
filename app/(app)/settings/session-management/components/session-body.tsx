@@ -1,6 +1,7 @@
 'use client'
 
 import { BetterAuthActionButton } from '@/components/auth/better-auth-action-button'
+import { itemVariants } from '@/lib/animations'
 import { authClient } from '@/lib/auth/auth-client'
 import { tran } from '@/lib/languages/i18n'
 import { cn } from '@/lib/utils'
@@ -15,11 +16,6 @@ interface SessionModalBodyProps {
     currentSessionToken?: string
     onUpdate?: () => void
 }
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: { opacity: 1, y: 0 }
-};
 
 export function SessionModalBody({
     sessions,

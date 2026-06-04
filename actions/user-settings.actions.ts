@@ -5,6 +5,7 @@ import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/prisma/prisma";
 import packageJson from "@/package.json";
 import { UserSettingsInput } from "@/types/user/UserSettingsInput";
+import { setGlobalUserConfig } from "@/utility/global-user-config";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
@@ -34,7 +35,8 @@ export async function upsertUserSettings(data: UserSettingsInput) {
     },
   });
 
-  revalidatePath("/", "layout");
+  setGlobalUserConfig(data);
+  revalidatePath("/");
   return result;
 }
 

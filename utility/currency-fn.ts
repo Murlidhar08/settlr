@@ -1,9 +1,12 @@
 import { getGlobalUserConfig } from "./global-user-config";
 
-export function formatAmount(amount?: number | null) {
+export function formatAmount(amount?: number | null, locale?: string) {
     if (!amount) return "0";
 
-    return Math.abs(amount).toLocaleString("en-IN");
+    if (locale) return Math.abs(amount).toLocaleString(locale);
+
+    const globalUserConfig = getGlobalUserConfig();
+    return Math.abs(amount).toLocaleString(globalUserConfig.locale);
 }
 
 /**
