@@ -1,13 +1,13 @@
 "use client";
 
 import { authClient } from "@/lib/auth/auth-client";
+import { tran } from "@/lib/languages/i18n";
 import { useDeviceSessions, useSetActiveSession } from "@/tanstacks/user";
 import { getInitials } from "@/utility/common-function";
 import { LogOut, User as UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { tran } from "@/lib/languages/i18n";
 
 export default function ProfileAvatar() {
     const { data: session } = authClient.useSession();

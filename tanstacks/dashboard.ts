@@ -1,10 +1,9 @@
 "use client";
 
-import { getFirstName } from "@/actions/dashboard.actions";
-import { useQuery } from "@tanstack/react-query";
-import { getDashboardSummary } from "@/actions/dashboard.actions";
+import { getDashboardSummary, getFirstName } from "@/actions/dashboard.actions";
 import { getBudgetInsights } from "@/actions/transaction.actions";
 import { useSession } from "@/lib/auth/auth-client";
+import { useQuery } from "@tanstack/react-query";
 
 export const useFirstName = () => {
     return useQuery({

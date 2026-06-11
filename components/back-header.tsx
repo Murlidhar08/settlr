@@ -8,10 +8,10 @@ import { useRouter } from "next/navigation"
 import { ReactNode } from "react"
 
 // Components
+import { tran } from "@/lib/languages/i18n"
 import { cn } from "@/lib/utils"
 import { Badge } from "./ui/badge"
 import { Button, buttonVariants } from "./ui/button"
-import { tran } from "@/lib/languages/i18n"
 import {
   DropdownMenu,
   DropdownMenuContent,
