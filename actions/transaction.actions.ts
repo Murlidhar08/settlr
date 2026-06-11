@@ -410,7 +410,7 @@ export const getAccountStats = async function getAccountStats(accountId: string,
 
   const totalIn = Number(inResult._sum.amount || 0);
   const totalOut = Number(outResult._sum.amount || 0);
-  
+
   const allTimeIn = Number(allInResult._sum.amount || 0);
   const allTimeOut = Number(allOutResult._sum.amount || 0);
 
@@ -460,7 +460,7 @@ export const getAccountTransactions = async function getAccountTransactions(
         isDelete: false,
         ...(period !== 'all' ? {
           date: {
-            gte: period === 'month' 
+            gte: period === 'month'
               ? new Date(new Date().getFullYear(), new Date().getMonth(), 1)
               : new Date(new Date().getFullYear(), 0, 1)
           }
@@ -485,7 +485,7 @@ export const getAccountTransactions = async function getAccountTransactions(
         isDelete: false,
         ...(period !== 'all' ? {
           date: {
-            gte: period === 'month' 
+            gte: period === 'month'
               ? new Date(new Date().getFullYear(), new Date().getMonth(), 1)
               : new Date(new Date().getFullYear(), 0, 1)
           }

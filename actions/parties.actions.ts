@@ -184,20 +184,43 @@ export async function updateParty(partyId: string, partyData: Partial<PartyInput
     return false;
   }
 
-  await prisma.party.update({
-    where: {
-      id: partyId,
-      businessId: session.user.activeBusinessId
-    },
-    data: {
-      name: partyData.name,
-      contactNo: partyData.contactNo,
-    },
-  });
+  const businessId = session.user.activeBusinessId;
 
-  revalidatePath("/parties");
-  revalidatePath(`/parties/${partyId}`);
-  return true;
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.party.update({
+        where: {
+          id: partyId,
+          businessId
+        },
+        data: {
+          name: partyData.name,
+          contactNo: partyData.contactNo,
+        },
+      });
+
+      if (partyData.type) {
+        await tx.financialAccount.updateMany({
+          where: {
+            partyId: partyId,
+            businessId,
+            type: FinancialAccountType.PARTY,
+            isDelete: false
+          },
+          data: {
+            partyType: partyData.type
+          }
+        });
+      }
+    });
+
+    revalidatePath("/parties");
+    revalidatePath(`/parties/${partyId}`);
+    return true;
+  } catch (error) {
+    console.error("Failed to update party:", error);
+    return false;
+  }
 }
 
 export async function deleteParty(partyId: string): Promise<boolean> {

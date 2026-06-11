@@ -1,5 +1,5 @@
-import { prisma } from "./prisma/prisma";
 import { envServer } from "./env.server";
+import { prisma } from "./prisma/prisma";
 
 export async function getAppConfig() {
   try {
@@ -12,8 +12,6 @@ export async function getAppConfig() {
       config = await prisma.appConfig.create({
         data: {
           id: "singleton",
-          appName: envServer.NEXT_PUBLIC_APP_NAME || "Settlr",
-          appDescription: envServer.NEXT_PUBLIC_APP_DESCRIPTION || "Settlr for managing personal finance",
           smtpHost: envServer.SMTP_HOST,
           smtpPort: parseInt(envServer.SMTP_PORT || "587"),
           smtpUser: envServer.SMTP_USER,
@@ -33,8 +31,6 @@ export async function getAppConfig() {
     console.error("Error fetching app config:", error);
     // Fallback to environment variables if DB fails
     return {
-      appName: envServer.NEXT_PUBLIC_APP_NAME || "Settlr",
-      appDescription: envServer.NEXT_PUBLIC_APP_DESCRIPTION || "Settlr for managing personal finance",
       smtpHost: envServer.SMTP_HOST || "",
       smtpPort: parseInt(envServer.SMTP_PORT || "587"),
       smtpUser: envServer.SMTP_USER || "",

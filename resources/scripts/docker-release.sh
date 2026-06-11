@@ -11,6 +11,7 @@ if [ -z "$1" ]; then
 fi
 
 VERSION=$1
+# Update docker username and Project Image
 IMAGE="chavda2772/settlr"
 
 echo "🚀 Building Docker image with tag $VERSION..."

@@ -1,7 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { BudgetAlertsSkeleton } from "./components/budget-alerts";
 import { SummaryCardSkeleton } from "./components/summary-card";
 import { TransactionListSkeletons } from "./components/transaction-item-skeleton";
-import { BudgetAlertsSkeleton } from "./components/budget-alerts";
 
 export default function DashboardLoading() {
   return (
@@ -22,8 +22,8 @@ export default function DashboardLoading() {
 
       {/* Visual Analytics Row Skeleton */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <Skeleton className="h-[450px] w-full rounded-[2.5rem] bg-muted/20 animate-pulse border-2 border-dashed border-muted/30" />
-        <Skeleton className="h-[450px] w-full rounded-[2.5rem] bg-muted/20 animate-pulse border-2 border-dashed border-muted/30" />
+        <Skeleton className="h-112.5 w-full rounded-[2.5rem] bg-muted/20 animate-pulse border-2 border-dashed border-muted/30" />
+        <Skeleton className="h-112.5 w-full rounded-[2.5rem] bg-muted/20 animate-pulse border-2 border-dashed border-muted/30" />
       </div>
 
       {/* Recent Activity Section Skeleton */}

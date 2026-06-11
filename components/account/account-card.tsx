@@ -4,9 +4,9 @@ import { FinancialAccount } from "@/lib/generated/prisma/client"
 import { CategoryType, Currency, FinancialAccountType, MoneyType } from "@/lib/generated/prisma/enums"
 import { cn } from "@/lib/utils"
 import { useFinancialAccountBalance } from "@/tanstacks/financial-account"
-import { formatAmount } from "@/utility/commonFunction"
 import { getCurrencySymbol } from "@/utility/transaction"
 import { motion } from "framer-motion"
+import { tran } from "@/lib/languages/i18n"
 import {
     ArrowDownLeft, ArrowDownToLine, ArrowUpFromLine, ArrowUpRight,
     Banknote,
@@ -23,6 +23,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation"
 import { useUserConfig } from "../providers/user-config-provider"
 import { AddAccountModal } from "./add-account-modal"
+import { formatAmount } from "@/utility/currency-fn"
 
 interface AccountCardProps {
     account: FinancialAccount
@@ -138,7 +139,7 @@ export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
                             </p>
                             <div className="flex items-center gap-1 opacity-60">
                                 <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-                                    {"Loading"}
+                                    {tran("common.loading")}
                                 </span>
                             </div>
                         </div>
@@ -156,7 +157,7 @@ export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
                             <div className="flex items-center gap-1 opacity-60">
                                 {balance >= 0 ? <ArrowDownLeft size={10} /> : <ArrowUpRight size={10} />}
                                 <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-                                    {balance >= 0 ? "Balance" : "Debt"}
+                                    {balance >= 0 ? tran("dashboard.balance") : tran("common.debt")}
                                 </span>
                             </div>
                         </div>
@@ -166,13 +167,13 @@ export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
                 <div className="flex items-end justify-between">
                     <div className="space-y-1 max-w-[70%]">
                         <div className="flex flex-wrap gap-2 mb-2">
-                            {isDefaultAcc && (
+                             {isDefaultAcc && (
                                 <div className={cn(
                                     "flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border",
                                     isDarkCard ? "bg-white/10 border-white/20 text-white" : "bg-primary/5 border-primary/10 text-primary"
                                 )}>
                                     <ShieldAlert size={8} strokeWidth={3} />
-                                    Primary
+                                    {tran("accounts.primary")}
                                 </div>
                             )}
                             {isDefaultIncome && (
@@ -181,7 +182,7 @@ export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
                                     isDarkCard ? "bg-white/10 border-white/20 text-white" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
                                 )}>
                                     <ArrowDownToLine size={8} strokeWidth={3} />
-                                    Def. Income
+                                    {tran("accounts.def_income")}
                                 </div>
                             )}
                             {isDefaultExpense && (
@@ -190,7 +191,7 @@ export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
                                     isDarkCard ? "bg-white/10 border-white/20 text-white" : "bg-rose-500/10 border-rose-500/20 text-rose-500"
                                 )}>
                                     <ArrowUpFromLine size={8} strokeWidth={3} />
-                                    Def. Expense
+                                    {tran("accounts.def_expense")}
                                 </div>
                             )}
                         </div>
@@ -199,7 +200,7 @@ export const AccountCard = ({ account, index, currency }: AccountCardProps) => {
                             "text-[10px] font-black uppercase tracking-[0.2em] truncate",
                             isDarkCard ? "opacity-60" : "text-muted-foreground/60"
                         )}>
-                            {account.moneyType || account.partyType || account.categoryType || account.type}
+                            {tran(`common.${(account.moneyType || account.partyType || account.categoryType || account.type || "").toLowerCase()}`)}
                         </p>
                     </div>
 

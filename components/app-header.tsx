@@ -1,55 +1,34 @@
 "use client";
-
-import { t } from "@/lib/languages/i18n";
-import { usePathname } from "next/navigation";
+import { tran } from "@/lib/languages/i18n";
 import { useEffect, useState } from "react";
 import { Header } from "./header";
-import { useUserConfig } from "./providers/user-config-provider";
 
-const ROUTE_TITLE_MAP: Record<string, string> = {
-    "/dashboard": "dashboard.title",
-    "/accounts": "accounts.title",
-    "/parties": "parties.title",
-    "/cashbook": "cashbook.title",
-    "/settings": "settings.title",
-    "/profile": "settings.title", // Or map to a specific profile key if exists
-    "/admin": "admin.title",
-};
-
-export function AppHeader({ initialSession }: { initialSession?: any }) {
-    const pathname = usePathname();
-    const { language } = useUserConfig();
+export function AppHeader({ title }: { title: string }) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    // Find the exact match or the parent match
-    const translationKey = ROUTE_TITLE_MAP[pathname];
-    const isTopLevelRoute = !!translationKey;
-
-    // Only show header (or its skeleton) if it's a designated top-level route
-    if (!isTopLevelRoute)
-        return null;
-
     if (!mounted) {
         return (
-            <header className="sticky top-0 z-40 flex items-center justify-between bg-background/80 dark:bg-background/60 backdrop-blur-xl px-6 py-4 border-b border-border/90">
+            <header className="sticky top-0 z-40 h-14 sm:h-16 flex items-center justify-between bg-background px-4 sm:px-6 border-b border-border shadow-sm">
                 <div className="flex items-center gap-4">
-                    {/* Logo area skeleton for mobile */}
-                    <div className="h-10 w-10 rounded-xl bg-muted animate-pulse lg:hidden" />
+                    {/* Logo skeleton for mobile */}
+                    <div className="h-9 w-9 rounded-xl bg-muted animate-pulse lg:hidden" />
                     {/* Title skeleton */}
-                    <div className="h-8 w-32 bg-muted rounded-lg animate-pulse lg:h-10 lg:w-48" />
+                    <div className="h-6 w-24 sm:h-7 sm:w-32 bg-muted rounded-lg animate-pulse" />
                 </div>
                 {/* Profile skeleton */}
-                <div className="h-11 w-11 rounded-full bg-muted animate-pulse" />
+                <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-muted animate-pulse" />
             </header>
         );
     }
 
     return (
-        <Header title={t(translationKey, language)} initialSession={initialSession} />
-    );
+        <>
+            <Header title={tran(title)} />
+        </>
+    )
 }
 

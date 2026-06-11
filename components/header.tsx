@@ -1,110 +1,100 @@
 "use client"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { authClient } from "@/lib/auth/auth-client"
 import { envClient } from "@/lib/env.client"
-import { getInitials } from "@/utility/party"
+import clsx from "clsx"
 import { motion } from "framer-motion"
+import { Menu } from "lucide-react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import ProfileAvatar from "./auth/profile-avatar"
+import { useNavItems } from "./navbar/use-nav-items"
+import { Button } from "./ui/button"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet"
 
 interface HeaderProps {
   title: string
   isProfile?: boolean
-  leftAction?: React.ReactNode
-  initialSession?: any
 }
 
-const Header = ({ title, isProfile, leftAction, initialSession }: HeaderProps) => {
-  const router = useRouter()
-  const [session, setSession] = useState<any>(initialSession)
-  
-  useEffect(() => {
-    if (initialSession) return
-
-    const loadSession = async () => {
-      const { data: sessionData } = await authClient.getSession()
-      setSession(sessionData?.session ? sessionData : null)
-    }
-    loadSession()
-  }, [initialSession])
-
-  const showProfile = isProfile ?? true
-
-  const handleRedirect = () => {
-    router.push("/profile")
-  }
+const Header = ({ title, isProfile }: HeaderProps) => {
+  const pathname = usePathname()
+  const navItems = useNavItems()
+  const showProfile = isProfile ?? true;
 
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="sticky top-0 z-40 flex items-center justify-between bg-background/80 dark:bg-background/60 backdrop-blur-xl px-6 py-4 border-b border-border/90 shadow-[0_4px_30px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.9)]"
+      className="sticky top-0 z-30 h-14 sm:h-16 flex items-center justify-between bg-background/80 backdrop-blur-md text-foreground px-4 sm:px-6 border-b border-border shadow-sm"
     >
-      <div className="flex items-center gap-4">
-        {leftAction ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center gap-4"
-          >
-            {leftAction}
-            <h1 className="text-xl font-black tracking-tight lg:text-3xl bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent">{title}</h1>
-          </motion.div>
-        ) : (
-          <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center lg:hidden group overflow-hidden relative" onClick={() => router.push("/")}>
-              <Image
-                src="/images/logo/light_logo.svg"
-                alt={envClient.NEXT_PUBLIC_APP_NAME}
-                loading="eager"
-                width={36}
-                height={36}
-                className="relative z-10 dark:hidden group-hover:rotate-12 transition-transform duration-500"
-              />
-              <Image
-                src="/images/logo/dark_logo.svg"
-                alt={envClient.NEXT_PUBLIC_APP_NAME}
-                loading="eager"
-                width={36}
-                height={36}
-                className="relative z-10 hidden dark:block group-hover:rotate-12 transition-transform duration-500"
-              />
-            </div>
-
-            <motion.div
-              layoutId="header-title"
-              transition={{ type: "spring", bounce: 0.3 }}
-            >
-              <h1 className="text-xl font-black -tracking-normal sm:text-2xl lg:text-3xl bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent">
-                {title}
-              </h1>
-            </motion.div>
+      <div className="w-1/4 sm:w-1/3 flex items-center gap-2">
+        <Link href="/" className="lg:hidden">
+          <div className="h-9 w-9 shrink-0 flex items-center justify-center relative rounded-xl bg-accent/10 border border-border/50">
+            <Image src="/images/logo/light_logo.png" alt="Logo" width={22} height={22} className="dark:hidden" />
+            <Image src="/images/logo/dark_logo.png" alt="Logo" width={22} height={22} className="hidden dark:block" />
           </div>
-        )}
+        </Link>
       </div>
 
-      {/* Profile Container */}
-      {showProfile && (
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="relative"
-        >
-          <Avatar
-            onClick={handleRedirect}
-            className="h-11 w-11 ring-2 ring-primary/20 ring-offset-4 ring-offset-background shadow-2xl cursor-pointer transition-all hover:ring-primary/40"
-          >
-            <AvatarImage src={session?.user?.image || ''} className="object-cover" />
-            <AvatarFallback className="bg-primary/5 text-primary text-xs font-black uppercase tracking-widest leading-none bg-linear-to-br from-primary/10 to-transparent">
-              {getInitials(session?.user?.name)}
-            </AvatarFallback>
-          </Avatar>
-        </motion.div>
-      )}
+      <div className="flex-1 flex justify-center overflow-hidden">
+        <h1 className="text-xl font-black tracking-normal sm:text-2xl lg:text-3xl bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent">
+          {title}
+        </h1>
+      </div>
+
+      <div className="w-1/4 sm:w-1/3 flex justify-end items-center gap-2">
+        {showProfile && (
+          <div className="hidden lg:block">
+            <ProfileAvatar />
+          </div>
+        )}
+        <div className="lg:hidden">
+          <Sheet>
+            <SheetTrigger render={
+              <Button variant="ghost" size="icon" className="hover:bg-accent rounded-xl h-9 w-9">
+                <Menu size={22} />
+              </Button>
+            } />
+            <SheetContent side="right"
+              className="w-full! h-full! sm:max-w-[70vw]! lg:max-w-[35vw]! border-l-0 sm:border-l p-2 px-6 flex flex-col overflow-hidden bg-background/90! backdrop-blur-md!">
+              <SheetHeader className="mb-6 px-2">
+                <SheetTitle className="flex items-center gap-3 text-sidebar-foreground text-left font-black tracking-tighter text-2xl">
+                  <div className="h-10 w-10 shrink-0 flex items-center justify-center relative rounded-xl bg-sidebar-accent/10">
+                    <Image src="/images/logo/light_logo.png" alt="Logo" width={28} height={28} className="dark:hidden" />
+                    <Image src="/images/logo/dark_logo.png" alt="Logo" width={28} height={28} className="hidden dark:block" />
+                  </div>
+                  {envClient.NEXT_PUBLIC_APP_NAME}
+                </SheetTitle>
+              </SheetHeader>
+
+              <nav className="space-y-1">
+                {navItems.map((item) => {
+                  const active = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href as any}
+                      className={clsx(
+                        "group flex items-center gap-4 rounded-xl px-4 py-3 font-semibold transition-all duration-200",
+                        active
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-lg shadow-indigo-500/10"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      <span>{item.icon}</span>
+                      <span className="text-sm tracking-wide">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
     </motion.header>
   )
 }
 
 export { Header }
+

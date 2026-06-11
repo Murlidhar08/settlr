@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { FooterButtons } from "@/components/footer-buttons";
 import { Button } from "@/components/ui/button";
 import { PartyType } from "@/lib/generated/prisma/enums";
+import { Language, t } from "@/lib/languages/i18n";
 import { getUserConfig } from "@/lib/user-config";
 import { AddPartiesModal } from "./add-parties-modal";
 import BalanceCard from "./balance-card";
@@ -17,7 +18,8 @@ interface PartyListProp {
 }
 
 export default async function CustomersTab({ partyType, search, includeInactive = false, period = 'all' }: PartyListProp) {
-  const { currency } = await getUserConfig();
+  const userConfig = await getUserConfig();
+  const lang = (userConfig?.language || "en") as Language;
 
   return (
     <main className="flex-1 w-full space-y-4">
@@ -26,13 +28,12 @@ export default async function CustomersTab({ partyType, search, includeInactive 
           partyType={partyType}
           search={search}
           includeInactive={includeInactive}
-          currency={currency}
           period={period}
         />
       </Suspense>
 
       <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-        Recently Active
+        {t("parties.recently_active", lang)}
       </p>
 
       <Suspense fallback={
@@ -55,10 +56,10 @@ export default async function CustomersTab({ partyType, search, includeInactive 
           <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
             <Plus className="size-6 sm:size-5" />
             <span className="hidden md:block">
-              {partyType === PartyType.CUSTOMER ? "Add Customer" :
-                partyType === PartyType.SUPPLIER ? "Add Supplier" :
-                  partyType === PartyType.EMPLOYEE ? "Add Employee" :
-                    "Add Other"}
+              {partyType === PartyType.CUSTOMER ? t("parties.add_new_customer", lang) :
+                partyType === PartyType.SUPPLIER ? t("parties.add_new_supplier", lang) :
+                  partyType === PartyType.EMPLOYEE ? t("parties.add_new_employee", lang) :
+                    t("parties.add_new_party", lang)}
             </span>
           </Button>
         </AddPartiesModal>

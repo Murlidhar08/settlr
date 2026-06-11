@@ -7,6 +7,8 @@ import * as motion from "framer-motion/client";
 import CustomersTab from "./components/customers-tab";
 import { PartiesClientProvider, PartiesTabContent } from "./components/parties-client-wrapper";
 import { PartyFilters } from "./components/party-filters";
+import { AppHeader } from "@/components/app-header";
+import { tran } from "@/lib/languages/i18n";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -38,28 +40,32 @@ export default async function Parties({ searchParams }: PageProps) {
   );
 
   return (
-    <div className="w-full bg-background mx-auto max-w-4xl mt-6 space-y-8 px-6 pb-34">
-      <PartiesClientProvider currentTab={currentTab}>
-        <PartyFilters />
+    <div className="w-full mx-auto pb-34">
+      <AppHeader title={"parties.title"} />
 
-        <motion.div
-          key={`${currentTab}-${searchQuery}`}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <PartiesTabContent currentTab={currentTab} fallback={loaderProps}>
-            <Suspense fallback={loaderProps}>
-              <CustomersTab
-                partyType={partyType}
-                search={searchQuery}
-                includeInactive={includeInactive}
-                period={currentPeriod}
-              />
-            </Suspense>
-          </PartiesTabContent>
-        </motion.div>
-      </PartiesClientProvider>
+      <div className="w-full mx-auto max-w-4xl mt-6 space-y-8 px-6">
+        <PartiesClientProvider currentTab={currentTab}>
+          <PartyFilters />
+
+          <motion.div
+            key={`${currentTab}-${searchQuery}`}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <PartiesTabContent currentTab={currentTab} fallback={loaderProps}>
+              <Suspense fallback={loaderProps}>
+                <CustomersTab
+                  partyType={partyType}
+                  search={searchQuery}
+                  includeInactive={includeInactive}
+                  period={currentPeriod}
+                />
+              </Suspense>
+            </PartiesTabContent>
+          </motion.div>
+        </PartiesClientProvider>
+      </div>
     </div>
   );
 }

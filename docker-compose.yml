@@ -1,39 +1,56 @@
 services:
   settlr:
-    container_name: settlr
-    image: settlr:latest
     build:
       context: .
-      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
+        - NEXT_PUBLIC_APP_DESCRIPTION=${NEXT_PUBLIC_APP_DESCRIPTION}
+        - BETTER_AUTH_URL=${BETTER_AUTH_URL}
+        - DATABASE_URL=${DATABASE_URL}
+        - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+    container_name: settlr
+    env_file:
+      - .env.production
     ports:
-      - '3000:3000'
-    environment:
-      # Application
-      - NODE_ENV=production
-      - NEXT_PUBLIC_APP_NAME=Settlr
-      - NEXT_PUBLIC_APP_DESCRIPTION=Settlr for managing personal finance
-
-      # Better Auth
-      - BETTER_AUTH_SECRET=dummy_secret_replace_me_with_32_chars_long
-      - BETTER_AUTH_URL=http://settlr.example.com
-      - BETTER_AUTH_TRUSTED_ORIGINS=http://settlr.example.com,http://*.settlr.example.com
-
-      # Database
-      - DATABASE_URL=postgresql://user:password@host:5432/database
-
-      # Email Service
-      - SMTP_HOST=mail.example.com
-      - SMTP_PORT=587
-      - SMTP_USER=user@example.com
-      - SMTP_PASS=password
-      - SMTP_SECURE=false
-      - FROM_EMAIL=settlr@example.com
-
-      # Google login
-      - GOOGLE_CLIENT_ID=
-      - GOOGLE_CLIENT_SECRET=
-
-      # Discord
-      - DISCORD_CLIENT_ID=
-      - DISCORD_CLIENT_SECRET=
+      - "3000:3000"
+    networks:
+      - prisma-network
     restart: unless-stopped
+    depends_on:
+      settlr-migrate:
+        condition: service_completed_successfully
+
+  prisma-studio:
+    image: node:24.15.0
+    container_name: prisma-studio
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: npx prisma studio --port 5555 --browser none
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env.production
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    networks:
+      - prisma-network
+
+  settlr-migrate:
+    image: node:24.15.0
+    container_name: settlr-migrate
+    working_dir: /app
+    volumes:
+      - .:/app
+    env_file:
+      - .env.production
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    networks:
+      - prisma-network
+    command: [ "npx", "prisma", "migrate", "deploy" ]
+    restart: "no"
+
+networks:
+  prisma-network:
+    name: prisma-network

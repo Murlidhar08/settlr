@@ -1,16 +1,15 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
 
 export function AccountDetailsSkeleton() {
     return (
         <div className="w-full bg-background relative pb-32">
             {/* Header Skeleton */}
             <div className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
-                 <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4">
+                <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4">
                     <Skeleton className="h-10 w-10 rounded-full" />
                     <Skeleton className="h-6 w-32" />
                     <Skeleton className="h-10 w-10 rounded-full" />
-                 </div>
+                </div>
             </div>
 
             <main className="relative z-10 mx-auto max-w-4xl px-4 py-8 space-y-12">

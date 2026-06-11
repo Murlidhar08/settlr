@@ -1,8 +1,8 @@
-// Lib
-import { auth } from "@/lib/auth/auth";
+import { getUserSession } from "@/lib/auth/auth";
 import { isSetupRequired } from "@/lib/setup";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
     // Check if setup is needed
@@ -11,14 +11,7 @@ export default async function Home() {
     }
 
     // Get session on the server
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    // Auth-based redirect
-    if (!session) {
-        redirect("/login" as any);
-    }
+    const session = await getUserSession();
 
     if (session.user.banned) {
         redirect("/banned" as any);

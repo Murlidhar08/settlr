@@ -12,8 +12,7 @@ import { Calendar as CalendarIcon, Loader2, Search, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
-import { useUserConfig } from "@/components/providers/user-config-provider";
-import { t } from "@/lib/languages/i18n";
+import { tran } from "@/lib/languages/i18n";
 import { DateRange } from "react-day-picker";
 
 export default function CashFilters({
@@ -23,7 +22,6 @@ export default function CashFilters({
     effectiveStartDate?: string;
     effectiveEndDate?: string;
 }) {
-    const { language } = useUserConfig();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -72,9 +70,9 @@ export default function CashFilters({
         const start = optDateRange.from;
         const end = optDateRange.to;
 
-        if (!start) return t("common.select_dates", language);
+        if (!start) return tran("common.select_dates");
         if (start === end) {
-            return start === format(new Date(), "yyyy-MM-dd") ? t("common.today", language) : format(new Date(start), "dd MMM");
+            return start === format(new Date(), "yyyy-MM-dd") ? tran("common.today") : format(new Date(start), "dd MMM");
         }
         return `${format(new Date(start), "dd MMM")} - ${format(new Date(end || start), "dd MMM")}`;
     };
@@ -105,7 +103,7 @@ export default function CashFilters({
                         isPending ? "text-primary animate-pulse" : "text-muted-foreground"
                     )} />
                     <Input
-                        placeholder={t("common.search_cashbook", language)}
+                        placeholder={tran("common.search_cashbook")}
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
                         className="h-10 sm:h-12 rounded-2xl pl-10 sm:pl-11 pr-10 sm:pr-11 bg-muted/30 border-2 border-transparent focus:border-primary/20 focus:bg-background transition-all shadow-sm font-medium text-xs sm:text-sm"
@@ -146,7 +144,11 @@ export default function CashFilters({
                             optCategory === item ? "px-4 sm:px-6 shadow-lg shadow-primary/20" : "px-3 sm:px-4 bg-muted/40 hover:bg-muted"
                         )}
                     >
-                        {item === "All" ? t("common.all", language) : item}
+                        {item === "All"
+                            ? tran("common.all")
+                            : item === MoneyType.CASH
+                                ? tran("cashbook.cash")
+                                : tran("cashbook.online")}
                     </Button>
                 ))}
 
@@ -185,7 +187,6 @@ export default function CashFilters({
                                     endDate: end,
                                 });
                             }}
-                            initialFocus
                         />
                     </PopoverContent>
                 </Popover>

@@ -24,7 +24,7 @@ export function getVerificationEmailHtml(
             <!-- Header -->
             <tr>
               <td style="padding:40px 40px 20px 40px; text-align:center;">
-                <img src="${appUrl}/images/logo/light_logo.svg" alt="${appName} Logo" style="height:48px; width:auto; display:inline-block; margin-bottom:16px;" />
+                <img src="${appUrl}/images/logo/light_logo.png" alt="${appName} Logo" style="height:48px; width:auto; display:inline-block; margin-bottom:16px;" />
                 <div style="font-size:24px; font-weight:700; color:${primaryColor}; letter-spacing:-0.5px;">
                   ${appName}
                 </div>

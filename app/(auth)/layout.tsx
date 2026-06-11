@@ -4,6 +4,8 @@ import { isSetupRequired } from "@/lib/setup";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
   const pathname = headersList.get('x-pathname') || "";
@@ -17,14 +19,15 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
   if (pathname === "/setup" && !await isSetupRequired()) {
     redirect("/login" as any);
   }
+
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="absolute top-4 right-4 z-50">
         <ThemeToggle />
       </div>
-      <div className="min-h-screen flex items-center justify-center">
+      <main className="w-full h-screen overflow-hidden">
         {children}
-      </div>
+      </main>
       <BuildVersion />
     </div>
   );

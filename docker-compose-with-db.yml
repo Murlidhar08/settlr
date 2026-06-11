@@ -1,0 +1,85 @@
+services:
+  postgres_db:
+    image: postgres:17.4
+    hostname: postgres_db
+    container_name: postgres_db
+    restart: always
+    env_file:
+      - .env.production
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - '${POSTGRES_EXTERNAL_PORT}:${POSTGRES_PORT}'
+    networks:
+      - prisma-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      args:
+        - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
+        - NEXT_PUBLIC_APP_DESCRIPTION=${NEXT_PUBLIC_APP_DESCRIPTION}
+        - BETTER_AUTH_URL=${BETTER_AUTH_URL}
+        - DATABASE_URL=${DATABASE_URL}
+        - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+    container_name: app
+    env_file:
+      - .env.production
+    ports:
+      - "3000:3000"
+    networks:
+      - prisma-network
+    restart: unless-stopped
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      app-migrate:
+        condition: service_completed_successfully
+
+  prisma-studio:
+    image: node:24.15.0
+    container_name: prisma-studio
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: npx prisma studio --port 5555 --browser none
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env.production
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    networks:
+      - prisma-network
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+
+  app-migrate:
+    image: node:24.15.0
+    container_name: app-migrate
+    working_dir: /app
+    volumes:
+      - .:/app
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    env_file:
+      - .env.production
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    networks:
+      - prisma-network
+    command: [ "npx", "prisma", "migrate", "deploy" ]
+    restart: "no"
+
+networks:
+  prisma-network:
+    name: prisma-network

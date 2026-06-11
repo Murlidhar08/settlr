@@ -5,18 +5,6 @@ import { AddTransactionModal } from '@/components/transaction/add-transaction-mo
 import { TransactionList } from '@/components/transaction/transaction-list';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PartyType, Currency, FinancialAccountType } from '@/lib/generated/prisma/enums';
-import { calculateAccountStats } from '@/lib/transaction-logic';
-import { cn } from "@/lib/utils";
-import { usePartyDetails, usePartyTransactions } from '@/tanstacks/parties';
-import { TransactionDirection } from '@/types/transaction/TransactionDirection';
-import { getCurrencySymbol } from '@/utility/transaction';
-import { Plus, Search } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import BackHeaderClient from './back-header-client';
-import { BalanceCard } from './balance-card';
-import { PartyDetailsSkeleton } from './party-details-skeleton';
-import { QuickActions } from './quick-action';
 import {
     Select,
     SelectContent,
@@ -24,6 +12,19 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Currency, FinancialAccountType, PartyType } from '@/lib/generated/prisma/enums';
+import { tran } from '@/lib/languages/i18n';
+import { calculateAccountStats } from '@/lib/transaction-logic';
+import { cn } from "@/lib/utils";
+import { usePartyDetails, usePartyTransactions } from '@/tanstacks/parties';
+import { TransactionDirection } from '@/types/transaction/TransactionDirection';
+import { getCurrencySymbol } from '@/utility/transaction';
+import { Plus, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import BackHeaderClient from './back-header-client';
+import { BalanceCard } from './balance-card';
+import { PartyDetailsSkeleton } from './party-details-skeleton';
+import { QuickActions } from './quick-action';
 
 interface PartyDetailsContentProps {
     partyId: string;
@@ -49,7 +50,7 @@ export function PartyDetailsContent({ partyId, currency }: PartyDetailsContentPr
     }
 
     if (!party) {
-        return <div className="p-8 text-center text-muted-foreground uppercase tracking-widest font-black">Party not found</div>;
+        return <div className="p-8 text-center text-muted-foreground uppercase tracking-widest font-black">{tran("parties.party_not_found")}</div>;
     }
 
     const partyAccountId = party.financialAccounts[0]?.id;
@@ -106,7 +107,7 @@ export function PartyDetailsContent({ partyId, currency }: PartyDetailsContentPr
                                 <div className="relative flex-1">
                                     <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
-                                        placeholder="Search transactions..."
+                                        placeholder={tran("parties.search_transactions")}
                                         className="h-11 rounded-full pl-11 lg:h-12 lg:text-base"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -114,13 +115,13 @@ export function PartyDetailsContent({ partyId, currency }: PartyDetailsContentPr
                                 </div>
                                 {partyType === PartyType.EMPLOYEE && (
                                     <Select value={period} onValueChange={(value: any) => setPeriod(value)}>
-                                        <SelectTrigger className="w-[140px] h-11 lg:h-12 rounded-full px-5 bg-muted/30 border-none shadow-none focus:ring-0">
+                                        <SelectTrigger className="w-35 h-11 lg:h-12 rounded-full px-5 bg-muted/30 border-none shadow-none focus:ring-0">
                                             <SelectValue placeholder="Period" />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-2xl border-muted/20 shadow-xl">
-                                            <SelectItem value="month" className="rounded-xl">Current month</SelectItem>
-                                            <SelectItem value="year" className="rounded-xl">Year</SelectItem>
-                                            <SelectItem value="all" className="rounded-xl">All</SelectItem>
+                                            <SelectItem value="month" className="rounded-xl">{tran("parties.current_month")}</SelectItem>
+                                            <SelectItem value="year" className="rounded-xl">{tran("parties.year")}</SelectItem>
+                                            <SelectItem value="all" className="rounded-xl">{tran("parties.all")}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 )}
@@ -143,7 +144,7 @@ export function PartyDetailsContent({ partyId, currency }: PartyDetailsContentPr
                 {party.isActive && (
                     <FooterButtons>
                         <AddTransactionModal
-                            title="New Entry"
+                            title={tran("accounts.new_entry")}
                             direction={TransactionDirection.OUT}
                             partyId={partyId}
                             accountId={partyAccountId}
@@ -152,7 +153,7 @@ export function PartyDetailsContent({ partyId, currency }: PartyDetailsContentPr
                             <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
                                 <Plus className="size-6 sm:size-5" />
                                 <span className="hidden md:block text-center font-black tracking-[0.2em] text-sm">
-                                    Add Entry
+                                    {tran("accounts.add_entry")}
                                 </span>
                             </Button>
                         </AddTransactionModal>

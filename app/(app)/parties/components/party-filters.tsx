@@ -1,15 +1,7 @@
 "use client"
 
-import { useUserConfig } from "@/components/providers/user-config-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { t } from "@/lib/languages/i18n"
-import { cn } from "@/lib/utils"
-import { motion } from "framer-motion"
-import { Eye, EyeOff, Search } from "lucide-react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
 import {
     Select,
     SelectContent,
@@ -17,11 +9,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { tran } from "@/lib/languages/i18n"
+import { cn } from "@/lib/utils"
+import { motion } from "framer-motion"
+import { Eye, EyeOff, Search } from "lucide-react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
 
+import { periodItems } from "@/types/common-enums"
 import { useOptimisticTab } from "./parties-client-wrapper"
 
 export function PartyFilters() {
-    const { language } = useUserConfig()
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -67,11 +66,13 @@ export function PartyFilters() {
                     className="relative w-full max-w-md"
                 >
                     <div className="flex flex-col gap-2">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-4">Search {currentTab}</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-4">
+                            {tran("parties.search_title", { type: tran("parties." + currentTab) })}
+                        </span>
                         <div className="relative group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 size-4 group-focus-within:text-primary transition-colors" />
                             <Input
-                                placeholder={t("common.search_parties", language)}
+                                placeholder={tran("common.search_parties")}
                                 value={searchValue}
                                 onChange={(e) => setSearchValue(e.target.value)}
                                 className="h-12 rounded-2xl pl-11 bg-muted/30 border-2 border-transparent focus:border-primary/20 focus:bg-background transition-all shadow-sm font-medium"
@@ -81,14 +82,14 @@ export function PartyFilters() {
                 </motion.div>
 
                 <div className="flex items-center gap-3">
-                    <Select value={currentPeriod} onValueChange={(val) => updateFilters({ period: val })}>
-                        <SelectTrigger className="h-10 px-4 rounded-full bg-muted text-[10px] font-black uppercase tracking-widest border-none shadow-none focus:ring-0 w-[140px]">
-                            <SelectValue placeholder="Period" />
+                    <Select items={periodItems} value={currentPeriod} onValueChange={(val) => updateFilters({ period: val })}>
+                        <SelectTrigger className="h-10 px-4 rounded-full bg-muted text-[10px] font-black uppercase tracking-widest border-none shadow-none focus:ring-0 w-35">
+                            <SelectValue placeholder={tran("common.period")} />
                         </SelectTrigger>
                         <SelectContent className="rounded-2xl border-muted/20 shadow-xl">
-                            <SelectItem value="month" className="rounded-xl">Month</SelectItem>
-                            <SelectItem value="year" className="rounded-xl">Year</SelectItem>
-                            <SelectItem value="all" className="rounded-xl">All</SelectItem>
+                            {periodItems.map((item) => (
+                                <SelectItem key={item.value} value={item.value} className="rounded-xl">{tran(item.label)}</SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
 
@@ -102,7 +103,7 @@ export function PartyFilters() {
                         )}
                     >
                         {showInactive ? <Eye className="size-3 mr-2" /> : <EyeOff className="size-3 mr-2" />}
-                        {showInactive ? "Viewing All" : "Hide Inactive"}
+                        {showInactive ? tran("common.viewing_all") : tran("common.hide_inactive")}
                     </Button>
                 </div>
             </div>
@@ -113,31 +114,31 @@ export function PartyFilters() {
                 className="w-full md:w-auto"
             >
                 <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Directory Type</span>
-                    <TabsList className="grid grid-cols-4 rounded-2xl bg-muted/40 p-1 w-full md:w-[480px] border border-border/50">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">{tran("parties.directory_type")}</span>
+                    <TabsList className="grid grid-cols-4 rounded-2xl bg-muted/40 p-1 w-full md:w-120 border border-border/50">
                         <TabsTrigger
                             value="customers"
                             className="rounded-xl font-bold uppercase tracking-widest text-[9px] data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all h-10"
                         >
-                            {t("parties.customers", language)}
+                            {tran("parties.customers")}
                         </TabsTrigger>
                         <TabsTrigger
                             value="suppliers"
                             className="rounded-xl font-bold uppercase tracking-widest text-[9px] data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all h-10"
                         >
-                            {t("parties.suppliers", language)}
+                            {tran("parties.suppliers")}
                         </TabsTrigger>
                         <TabsTrigger
                             value="employees"
                             className="rounded-xl font-bold uppercase tracking-widest text-[9px] data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all h-10"
                         >
-                            {t("parties.employees", language)}
+                            {tran("parties.employees")}
                         </TabsTrigger>
                         <TabsTrigger
                             value="other"
                             className="rounded-xl font-bold uppercase tracking-widest text-[9px] data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all h-10"
                         >
-                            {t("parties.other", language)}
+                            {tran("parties.other")}
                         </TabsTrigger>
                     </TabsList>
                 </div>

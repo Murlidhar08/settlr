@@ -101,14 +101,13 @@ export default function StatementFilters() {
                         </div>
                         <Calendar
                             mode="range"
-                            selected={currentStartDate ? { from: new Date(currentStartDate), to: currentEndDate ? new Date(currentEndDate) : undefined } : undefined}
+                            selected={(currentStartDate ? { from: new Date(currentStartDate), to: currentEndDate ? new Date(currentEndDate) : undefined } : undefined) as any}
                             onSelect={(range) => {
                                 updateFilters({
                                     startDate: range?.from ? format(range.from, "yyyy-MM-dd") : null,
                                     endDate: range?.to ? format(range.to, "yyyy-MM-dd") : null
                                 });
                             }}
-                            initialFocus
                         />
                     </PopoverContent>
                 </Popover>

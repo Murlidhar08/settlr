@@ -7,26 +7,26 @@ export function AdminSkeleton() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[...Array(4)].map((_, i) => (
                     <div key={i} className="h-28 rounded-2xl bg-muted/10 border border-border/50 p-5 space-y-3">
-                         <div className="flex justify-between items-start">
-                             <div className="space-y-2">
-                                 <Skeleton className="h-3 w-16" />
-                                 <Skeleton className="h-8 w-12" />
-                             </div>
-                             <Skeleton className="h-10 w-10 rounded-xl" />
-                         </div>
-                         <Skeleton className="h-3 w-20" />
+                        <div className="flex justify-between items-start">
+                            <div className="space-y-2">
+                                <Skeleton className="h-3 w-16" />
+                                <Skeleton className="h-8 w-12" />
+                            </div>
+                            <Skeleton className="h-10 w-10 rounded-xl" />
+                        </div>
+                        <Skeleton className="h-3 w-20" />
                     </div>
                 ))}
             </div>
 
             {/* Filter Bar Skeleton */}
             <div className="p-5 rounded-3xl bg-muted/5 border-2 border-primary/5 space-y-4">
-                 <Skeleton className="h-12 w-full rounded-2xl" />
-                 <div className="flex gap-3">
-                     <Skeleton className="h-11 w-32 rounded-2xl" />
-                     <Skeleton className="h-11 w-32 rounded-2xl" />
-                     <Skeleton className="h-11 w-32 rounded-2xl" />
-                 </div>
+                <Skeleton className="h-12 w-full rounded-2xl" />
+                <div className="flex gap-3">
+                    <Skeleton className="h-11 w-32 rounded-2xl" />
+                    <Skeleton className="h-11 w-32 rounded-2xl" />
+                    <Skeleton className="h-11 w-32 rounded-2xl" />
+                </div>
             </div>
 
             {/* Users List Skeleton */}

@@ -46,7 +46,7 @@ export function LoadingScreen() {
     if (!mounted) return null;
 
     const isDark = resolvedTheme === "dark";
-    const logoSrc = isDark ? "/images/logo/dark_logo.svg" : "/images/logo/light_logo.svg";
+    const logoSrc = isDark ? "/images/logo/dark_logo.png" : "/images/logo/light_logo.png";
 
     const getLogoAnimation = (): TargetAndTransition => {
         switch (variant) {
@@ -86,7 +86,7 @@ export function LoadingScreen() {
                         y: [0, 30, 0],
                     }}
                     transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[100px]"
+                    className="absolute top-[10%] left-[10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[100px]"
                 />
                 <motion.div
                     animate={{
@@ -95,7 +95,7 @@ export function LoadingScreen() {
                         y: [0, 50, 0],
                     }}
                     transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[100px]"
+                    className="absolute bottom-[10%] right-[10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[100px]"
                 />
             </div>
 
@@ -141,7 +141,7 @@ export function LoadingScreen() {
                             animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
                             exit={{ y: -20, opacity: 0, filter: "blur(10px)" }}
                             transition={{ duration: 0.6, ease: "circOut" }}
-                            className="text-center text-lg font-medium text-foreground tracking-tight bg-gradient-to-r from-foreground via-foreground/50 to-foreground bg-[length:200%_100%] animate-shimmer"
+                            className="text-center text-lg font-medium text-foreground tracking-tight bg-linear-to-r from-foreground via-foreground/50 to-foreground bg-size-[200%_100%] animate-shimmer"
                             style={{ WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
                         >
                             {message}
@@ -159,7 +159,7 @@ export function LoadingScreen() {
                             repeat: Infinity,
                             ease: "easeInOut",
                         }}
-                        className="absolute top-0 bottom-0 w-1/2 bg-gradient-to-r from-transparent via-primary to-transparent"
+                        className="absolute top-0 bottom-0 w-1/2 bg-linear-to-r from-transparent via-primary to-transparent"
                     />
                 </div>
 
