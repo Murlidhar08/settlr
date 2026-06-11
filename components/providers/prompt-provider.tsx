@@ -75,7 +75,7 @@ export function PromptProvider({ children }: { children: ReactNode }) {
             {children}
 
             <AlertDialog open={open} onOpenChange={setOpen}>
-                <AlertDialogContent className="max-w-[400px] border-none bg-background/80 backdrop-blur-2xl rounded-[3rem] p-0 overflow-hidden shadow-2xl">
+                <AlertDialogContent className="max-w-100 border-none bg-background/80 backdrop-blur-2xl rounded-[3rem] p-0 overflow-hidden shadow-2xl">
                     <form onSubmit={handleConfirm} className="relative p-8 pt-10 space-y-6">
                         {/* Decorative background element */}
                         <div className={cn(

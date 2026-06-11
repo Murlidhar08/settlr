@@ -3,12 +3,14 @@
 import { getListSessions } from "@/actions/user-settings.actions";
 import { BackHeader } from "@/components/back-header";
 import { Skeleton } from "@/components/ui/skeleton";
+import { containerVariants } from "@/lib/animations";
 import { useSession } from "@/lib/auth/auth-client";
 import { Session } from "@/lib/generated/prisma/client";
+import { tran } from "@/lib/languages/i18n";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { SessionModalBody } from "../components/session-body";
+import { SessionModalBody } from "./components/session-body";
 
 export default function SessionManagementPage() {
     const router = useRouter();
@@ -26,16 +28,6 @@ export default function SessionManagementPage() {
         fetchSessions();
     }, []);
 
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.1
-            }
-        }
-    };
-
     if (isPending || loading) {
         return <SessionSkeleton />;
     }
@@ -43,7 +35,7 @@ export default function SessionManagementPage() {
     return (
         <div className="min-h-screen bg-background pb-20">
             <BackHeader
-                title="Active Sessions"
+                title={tran("session.title")}
                 backUrl="/settings"
             />
 
@@ -63,10 +55,11 @@ export default function SessionManagementPage() {
     );
 }
 
+// @ts-ignore
 function SessionSkeleton() {
     return (
         <div className="min-h-screen bg-background">
-            <BackHeader title="Active Sessions" />
+            <BackHeader title={tran("session.title")} />
             <div className="mx-auto max-w-lg p-6 mt-6 space-y-8">
                 <div className="space-y-4">
                     <Skeleton className="h-5 w-40" />

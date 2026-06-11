@@ -1,4 +1,5 @@
 import { AccountsSkeleton } from "@/components/account/accounts-skeleton";
+import { AppHeader } from "@/components/app-header";
 import { getUserConfig } from "@/lib/user-config";
 import { Suspense } from "react";
 import { AccountsContent } from "./components/accounts-content";
@@ -9,15 +10,16 @@ interface PageProps {
 
 export default async function AccountsPage({ searchParams }: PageProps) {
     const params = await searchParams;
-    const { language, currency } = await getUserConfig();
+    const { currency } = await getUserConfig();
     const includeInactive = params.inactive === 'true';
     const period = (params.period as 'month' | 'year' | 'all') || 'month';
 
     return (
         <div className="flex-1 w-full bg-background pb-34">
+            <AppHeader title={"accounts.title"} />
+
             <Suspense fallback={<AccountsSkeleton />}>
                 <AccountsContent
-                    language={language}
                     currency={currency}
                     initialShowInactive={includeInactive}
                     initialPeriod={period}

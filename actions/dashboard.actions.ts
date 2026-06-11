@@ -1,9 +1,16 @@
 "use server";
 
+import { getUserSession } from "@/lib/auth/auth";
 import { FinancialAccountType } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/prisma/prisma";
 import { getTransactionPerspective } from "@/lib/transaction-logic";
 import { TransactionDirection } from "@/types/transaction/TransactionDirection";
+
+export async function getFirstName() {
+  const session = await getUserSession();
+
+  return session?.user.name.split(" ")[0];
+}
 
 export async function getDashboardSummary(businessId?: string | null) {
   if (!businessId) {

@@ -24,12 +24,14 @@ import { addTransaction } from "@/actions/transaction.actions"
 // Library
 import { CategoryType, FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { cn } from "@/lib/utils"
+import { tran } from "@/lib/languages/i18n"
 
 // Types
 import { getFinancialAccounts } from "@/actions/financial-account.actions"
 import { ModalMode } from "@/types/transaction/ModalMode"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 import { useUserConfig } from "../providers/user-config-provider"
+import { getCurrencySymbol } from "@/utility/transaction"
 
 interface TransactionProps {
   title: string
@@ -71,6 +73,7 @@ export const AddTransactionModal = ({
   const [dateOpen, setDateOpen] = useState(false)
   const [currentDirection, setCurrentDirection] = useState<TransactionDirection>(direction || TransactionDirection.OUT)
   const isOut = currentDirection === TransactionDirection.OUT;
+  const userConfig = useUserConfig()
 
   // TanStack Query for accounts
   const { data: allAccounts = EMPTY_ACCOUNTS, isLoading: loadingAccounts } = useQuery({
@@ -100,11 +103,11 @@ export const AddTransactionModal = ({
   const [mode, setMode] = useState<ModalMode>(ModalMode.CASHBOOK)
 
   const lastInitializedRef = useRef<string>("")
- 
+
   useEffect(() => {
     if (open && !loadingAccounts && allAccounts.length > 0) {
       const initializationKey = `${currentDirection}-${transactionData?.id}-${accountId}-${partyId}`
- 
+
       if (lastInitializedRef.current !== initializationKey) {
         if (transactionData) {
           setData((pre: any) => ({
@@ -114,7 +117,7 @@ export const AddTransactionModal = ({
             date: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "yyyy-MM-dd"),
             time: format(transactionData?.date ? new Date(transactionData.date) : new Date(), "HH:mm"),
           }))
- 
+
           const from = allAccounts.find(a => a.id === transactionData.fromAccountId)
           if (from?.type === FinancialAccountType.MONEY) {
             setMoneyAccountId(from.id)
@@ -127,15 +130,15 @@ export const AddTransactionModal = ({
           let inferredMode: ModalMode = ModalMode.CASHBOOK
           let initialMoneyAcc = ""
           let initialPartnerAcc = ""
- 
+
           const currentAcc = allAccounts.find(a => a.id === accountId)
           const partyAcc = partyId ? allAccounts.find(a => a.partyId === partyId) : null
- 
+
           if (partyId || (currentAcc && currentAcc.type === FinancialAccountType.PARTY)) {
             inferredMode = ModalMode.PARTY
             const partyAccount = partyAcc || currentAcc
             initialPartnerAcc = partyAccount?.id || ""
-            
+
             // USE DEFAULT MONEY ACCOUNT FOR PARTIES TOO
             initialMoneyAcc = defAccId || allAccounts.find(a => a.type === FinancialAccountType.MONEY)?.id || ""
           } else if (currentAcc && currentAcc.type === FinancialAccountType.MONEY) {
@@ -145,16 +148,16 @@ export const AddTransactionModal = ({
           } else {
             inferredMode = ModalMode.CASHBOOK
             const moneyAccs = allAccounts.filter(a => a.type === FinancialAccountType.MONEY)
-            
+
             // USE DEFAULT MONEY ACCOUNT
             initialMoneyAcc = defAccId || moneyAccs[0]?.id || ""
-            
+
             // USE DEFAULT CATEGORY ACCOUNTS
             const defaultCatAccId = isOut ? defExpenseAccId : defIncomeAccId;
             const targetCat = isOut ? CategoryType.EXPENSE : CategoryType.INCOME
             initialPartnerAcc = defaultCatAccId || allAccounts.find(a => a.type === FinancialAccountType.CATEGORY && a.categoryType === targetCat)?.id || ""
           }
- 
+
           setMode(inferredMode)
           setMoneyAccountId(initialMoneyAcc)
           setPartnerAccountId(initialPartnerAcc)
@@ -241,6 +244,7 @@ export const AddTransactionModal = ({
       }
       if (txData.fromAccountId) await queryClient.cancelQueries({ queryKey: ["financial-account", txData.fromAccountId] })
       if (txData.toAccountId) await queryClient.cancelQueries({ queryKey: ["financial-account", txData.toAccountId] })
+      if (txData.id) await queryClient.cancelQueries({ queryKey: ["transaction-detail", txData.id] })
 
       // 2. Snapshot the previous values
       const previousParties = queryClient.getQueriesData({ queryKey: ["party-transactions"] })
@@ -314,6 +318,11 @@ export const AddTransactionModal = ({
       if (vars.data.partyId) {
         queryClient.invalidateQueries({ queryKey: ["party-detail", vars.data.partyId] })
         queryClient.invalidateQueries({ queryKey: ["party-transactions", vars.data.partyId] })
+        queryClient.invalidateQueries({ queryKey: ["party-list"] })
+      }
+      const txId = vars.data.id || data?.id
+      if (txId) {
+        queryClient.invalidateQueries({ queryKey: ["transaction-detail", txId] })
       }
     }
   })
@@ -377,10 +386,10 @@ export const AddTransactionModal = ({
   })
 
   // Labels
-  const moneyLabel = isOut ? "Pay From Account" : "Receive In Account"
+  const moneyLabel = isOut ? tran("cashbook.pay_from_account") : tran("cashbook.receive_in_account")
   const partnerLabel = mode === ModalMode.ACCOUNT
-    ? (isOut ? "Transfer To" : "Transfer From")
-    : (isOut ? "Payment For (Category)" : "Source (Category)")
+    ? (isOut ? tran("cashbook.transfer_to") : tran("cashbook.transfer_from"))
+    : (isOut ? tran("cashbook.payment_for_category") : tran("cashbook.source_category"))
 
   const itemVariants = {
     hidden: { opacity: 0, y: 15 },
@@ -408,9 +417,9 @@ export const AddTransactionModal = ({
                   {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
                 </div>
                 <div>
-                  <SheetTitle className="text-xl font-black tracking-tight">{title || "New Entry"}</SheetTitle>
+                  <SheetTitle className="text-xl font-black tracking-tight">{title || tran("cashbook.new_entry")}</SheetTitle>
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                    {mode} ENTRY
+                    {tran(`common.${ModalMode[mode].toLowerCase()}`)} {tran("common.entry")}
                   </p>
                 </div>
               </div>
@@ -419,7 +428,7 @@ export const AddTransactionModal = ({
 
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {/* Money In/Out Toggle */}
-            <div className="bg-muted/50 p-1 mx-6 rounded-[20px] flex items-center shadow-inner border border-muted-foreground/5">
+            <div className="bg-muted/50 p-1 mx-6 rounded-4xl flex items-center shadow-inner border border-muted-foreground/5">
               <button
                 onClick={() => setCurrentDirection(TransactionDirection.IN)}
                 className={cn(
@@ -429,7 +438,7 @@ export const AddTransactionModal = ({
                     : "text-muted-foreground/40 hover:text-muted-foreground/60"
                 )}
               >
-                Money In
+                {tran("cashbook.money_in")}
               </button>
               <button
                 onClick={() => setCurrentDirection(TransactionDirection.OUT)}
@@ -440,7 +449,7 @@ export const AddTransactionModal = ({
                     : "text-muted-foreground/40 hover:text-muted-foreground/60"
                 )}
               >
-                Money Out
+                {tran("cashbook.money_out")}
               </button>
             </div>
 
@@ -460,12 +469,12 @@ export const AddTransactionModal = ({
             >
               {/* Amount Input */}
               <motion.div variants={itemVariants} className="text-center space-y-4">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">Amount</Label>
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">{tran("common.amount")}</Label>
                 <div className={cn(
                   "relative flex items-center justify-center transition-all duration-300",
                   isOut ? "text-rose-600" : "text-emerald-600"
                 )}>
-                  <span className="text-4xl font-black mr-2 opacity-50">₹</span>
+                  <span className="text-4xl font-black mr-2 opacity-50">{getCurrencySymbol(userConfig.currency)}</span>
                   <input
                     value={(() => {
                       if (!data.amount) return "";
@@ -498,7 +507,7 @@ export const AddTransactionModal = ({
                 {/* Date Selection */}
                 <motion.div variants={itemVariants} className="space-y-2">
                   <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
-                    <CalendarIcon size={12} /> Date
+                    <CalendarIcon size={12} /> {tran("common.date")}
                   </Label>
                   <Popover open={dateOpen} onOpenChange={setDateOpen}>
                     <PopoverTrigger
@@ -522,7 +531,6 @@ export const AddTransactionModal = ({
                             setDateOpen(false)
                           }
                         }}
-                        initialFocus
                       />
                     </PopoverContent>
                   </Popover>
@@ -531,7 +539,7 @@ export const AddTransactionModal = ({
                 {/* Time Selection */}
                 <motion.div variants={itemVariants} className="space-y-2">
                   <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
-                    <Clock size={12} /> Time
+                    <Clock size={12} /> {tran("common.time")}
                   </Label>
                   <input
                     type="time"
@@ -558,11 +566,11 @@ export const AddTransactionModal = ({
                         onValueChange={(val) => val && setMoneyAccountId(val)}
                       >
                         <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary transition-all text-foreground bg-background">
-                          <SelectValue placeholder="Choose Account">
+                          <SelectValue placeholder={tran("common.choose_account")}>
                             {allAccounts.find(a => a.id === moneyAccountId)?.name}
                           </SelectValue>
                         </SelectTrigger>
-                        <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
+                        <SelectContent className="rounded-2xl shadow-xl max-h-75">
                           {moneyAccounts.map(acc => (
                             <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
                               <div className="flex justify-between items-center w-full gap-4">
@@ -586,11 +594,11 @@ export const AddTransactionModal = ({
                         onValueChange={(val) => val && setPartnerAccountId(val)}
                       >
                         <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
-                          <SelectValue placeholder="Select Category or Account">
+                          <SelectValue placeholder={tran("common.select_category_or_account")}>
                             {allAccounts.find(a => a.id === partnerAccountId)?.name}
                           </SelectValue>
                         </SelectTrigger>
-                        <SelectContent className="rounded-2xl shadow-xl max-h-[300px]">
+                        <SelectContent className="rounded-2xl shadow-xl max-h-75">
                           {partnerOptions.map(acc => (
                             <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
                               <div className="flex flex-col">
@@ -611,13 +619,13 @@ export const AddTransactionModal = ({
               {/* Note */}
               <motion.div variants={itemVariants} className="space-y-2">
                 <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
-                  <Paperclip size={12} /> Description
+                  <Paperclip size={12} /> {tran("common.description")}
                 </Label>
                 <Textarea
-                  placeholder="What is this for?"
+                  placeholder={tran("common.what_is_this_for")}
                   value={data.description}
                   onChange={(e) => setData({ ...data, description: e.target.value })}
-                  className="min-h-[100px] rounded-2xl border-2 p-4 text-base font-medium transition-all focus:border-primary focus:ring-0"
+                  className="min-h-25 rounded-2xl border-2 p-4 text-base font-medium transition-all focus:border-primary focus:ring-0"
                 />
               </motion.div>
             </motion.div>
@@ -631,7 +639,7 @@ export const AddTransactionModal = ({
                 onClick={() => setOpen(false)}
                 className="h-12 flex-1 rounded-2xl text-base font-bold border-2"
               >
-                Discard
+                {tran("common.discard")}
               </Button>
               <Button
                 onClick={handleAddTransaction}
@@ -646,11 +654,11 @@ export const AddTransactionModal = ({
                 {transactionMutation.isPending ? (
                   <>
                     <Loader2 className="animate-spin" size={20} />
-                    Recording...
+                    {tran("cashbook.recording")}
                   </>
                 ) : (
                   <>
-                    {isOut ? "Confirm Pay" : "Confirm Receive"}
+                    {isOut ? tran("cashbook.confirm_pay") : tran("cashbook.confirm_receive")}
                     {isOut ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
                   </>
                 )}

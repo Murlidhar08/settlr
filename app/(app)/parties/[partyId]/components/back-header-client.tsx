@@ -1,6 +1,6 @@
 "use client"
 
-import { deleteParty, updateParty, togglePartyActive } from "@/actions/parties.actions"
+import { deleteParty, togglePartyActive } from "@/actions/parties.actions"
 import { BackHeader } from "@/components/back-header"
 import {
   AlertDialog,
@@ -12,30 +12,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
 import { useQueryClient } from "@tanstack/react-query"
-import { Building2, Pencil, ShieldAlert, Trash2 } from "lucide-react"
+import { Pencil, ShieldAlert, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
+import { AddPartiesModal } from "../../components/add-parties-modal"
 
 export default function BackHeaderClient({ party }: { party: any }) {
   const router = useRouter()
   const queryClient = useQueryClient();
   const [isDeleting, setIsDeleting] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [editData, setEditData] = useState({
-    name: party?.name || "",
-    contactNo: party?.contactNo || "",
-  })
 
   const handleDelete = async () => {
     const success = await deleteParty(party.id)
@@ -47,26 +35,6 @@ export default function BackHeaderClient({ party }: { party: any }) {
       router.push("/parties" as any)
     } else {
       toast.error("Failed to delete party")
-    }
-  }
-
-  const handleUpdate = async () => {
-    if (!editData.name.trim()) {
-      return toast.error("Name is required")
-    }
-    const success = await updateParty(party.id, {
-      name: editData.name,
-      contactNo: editData.contactNo || null
-    })
-
-    if (success) {
-      queryClient.invalidateQueries({ queryKey: ["party-list", party?.type] })
-      queryClient.invalidateQueries({ queryKey: ["party-detail", party.id] })
-      toast.success("Party updated successfully")
-      setIsEditing(false)
-      router.refresh()
-    } else {
-      toast.error("Failed to update party")
     }
   }
 
@@ -109,44 +77,12 @@ export default function BackHeaderClient({ party }: { party: any }) {
       />
 
       {/* Edit Sheet */}
-      <Sheet open={isEditing} onOpenChange={setIsEditing}>
-        <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0">
-          <SheetHeader className="border-b px-6 py-4">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" />
-              <SheetTitle>Edit Party</SheetTitle>
-            </div>
-          </SheetHeader>
-
-          <div className="flex-1 space-y-6 overflow-y-auto px-6 py-8">
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Party Name</Label>
-              <Input
-                value={editData.name}
-                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                className="h-12 text-lg font-bold rounded-xl"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Contact Number</Label>
-              <Input
-                value={editData.contactNo}
-                onChange={(e) => setEditData({ ...editData, contactNo: e.target.value })}
-                className="h-12 text-lg font-bold rounded-xl"
-                placeholder="Optional"
-              />
-            </div>
-          </div>
-
-          <div className="border-t p-6 pb-[env(safe-area-inset-bottom)]">
-            <div className="flex gap-3">
-              <Button variant="outline" className="flex-1 h-12 rounded-xl font-bold" onClick={() => setIsEditing(false)}>Cancel</Button>
-              <Button className="flex-1 h-12 rounded-xl font-bold" onClick={handleUpdate}>Save Changes</Button>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
+      <AddPartiesModal
+        type={party.type}
+        partyData={party}
+        openInternal={isEditing}
+        setOpenInternal={setIsEditing}
+      />
 
       {/* Delete Confirmation */}
       <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>

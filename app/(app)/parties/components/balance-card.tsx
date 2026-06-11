@@ -1,24 +1,20 @@
 "use client";
 
-import { ArrowDown, ArrowUp, ChevronRight } from "lucide-react";
-
-import { Currency } from "@/lib/generated/prisma/enums";
-import { formatAmount } from "@/utility/transaction";
-
 import { PartyType } from "@/lib/generated/prisma/enums";
+import { tran } from "@/lib/languages/i18n";
 import { useParties } from "@/tanstacks/parties";
+import { formatAmount } from "@/utility/transaction";
+import { motion } from "framer-motion";
+import { ArrowDown, ArrowUp, ChevronRight } from "lucide-react";
 
 interface BalanceCardProps {
     partyType: PartyType;
     search?: string;
     includeInactive?: boolean;
-    currency: Currency;
     period?: 'month' | 'year' | 'all';
 }
 
-import { motion } from "framer-motion";
-
-export default function BalanceCard({ partyType, search, includeInactive, currency, period = 'all' }: BalanceCardProps) {
+export default function BalanceCard({ partyType, search, includeInactive, period = 'all' }: BalanceCardProps) {
     const { data: parties, isLoading } = useParties(partyType, search, includeInactive, period);
 
     if (isLoading || !parties) {
@@ -32,17 +28,17 @@ export default function BalanceCard({ partyType, search, includeInactive, curren
     const isPay = totalAmount < 0;
     const isSettled = totalAmount === 0;
 
-    const label = isSettled ? "Settled"
+    const label = isSettled ? tran("parties.settled")
         : isCollect
-            ? "To Collect"
-            : "To Pay";
+            ? tran("parties.to_collect")
+            : tran("parties.to_pay");
 
     const ArrowIcon = isCollect ? ArrowDown : ArrowUp;
 
     return (
         <section>
             <p className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-                Total Balance
+                {tran("parties.total_balance")}
             </p>
 
             <motion.div
@@ -78,7 +74,7 @@ export default function BalanceCard({ partyType, search, includeInactive, curren
                                 ? "text-rose-700"
                                 : "text-muted-foreground"
                             }`}>
-                            {formatAmount(Math.abs(totalAmount), currency)}
+                            {formatAmount(Math.abs(totalAmount))}
                         </p>
                     </div>
                 </div>

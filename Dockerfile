@@ -26,23 +26,13 @@ COPY prisma ./prisma
 FROM base AS builder
 WORKDIR /app
 
-ENV NODE_ENV="production"
-ENV DATABASE_URL="postgresql://user:pass@localhost:5432/settlr"
+# Environment variables needed for build
 ENV NEXT_PUBLIC_APP_NAME="Settlr"
-ENV NEXT_PUBLIC_APP_DESCRIPTION="Settlr for managing personal finance"
-ENV BETTER_AUTH_SECRET="build-secret"
+ENV NEXT_PUBLIC_APP_DESCRIPTION="Next-gen personal finance and expense management platform"
 ENV BETTER_AUTH_URL="http://localhost:3000"
-ENV BETTER_AUTH_TRUSTED_ORIGINS="http://localhost:3000,http://*.localhost:3000"
-ENV SMTP_HOST="<mail.example.com>"
-ENV SMTP_PORT="587"
-ENV SMTP_USER="<USER@example.com>"
-ENV SMTP_PASS="<USER_PASSWORD>"
-ENV SMTP_SECURE="false"
-ENV FROM_EMAIL="<settlr@example.com>"
-ENV GOOGLE_CLIENT_ID="build-google-client-id"
-ENV GOOGLE_CLIENT_SECRET="build-google-client-secret"
-ENV DISCORD_CLIENT_ID="build-discord-client-id"
-ENV DISCORD_CLIENT_SECRET="build-discord-client-secret"
+ENV DATABASE_URL="postgresql://mock:mock@localhost:5432/mock"
+ENV BETTER_AUTH_SECRET="mock_secret_at_least_32_characters_long"
+ENV NODE_ENV=production
 
 COPY --from=prisma /app/node_modules ./node_modules
 COPY --from=prisma /app/prisma ./prisma

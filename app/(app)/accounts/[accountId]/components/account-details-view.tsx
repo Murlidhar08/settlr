@@ -6,10 +6,17 @@ import { useUserConfig } from "@/components/providers/user-config-provider"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
 import { TransactionList } from "@/components/transaction/transaction-list"
 import { Button } from "@/components/ui/button"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { CategoryType, Currency, FinancialAccountType, MoneyType, PartyType } from "@/lib/generated/prisma/enums"
+import { tran } from "@/lib/languages/i18n"
 import { cn } from "@/lib/utils"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
-import { formatAmount } from "@/utility/commonFunction"
 import { getCurrencySymbol } from "@/utility/transaction"
 import { motion } from "framer-motion"
 import {
@@ -31,28 +38,22 @@ import {
     User2, Users,
     Wallet
 } from "lucide-react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useRef, useTransition } from "react"
 import { toast } from "sonner"
 import BackAccountHeaderClient from "./back-account-header-client"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 
 import { useAccountStats, useAccountTransactions } from "@/tanstacks/financial-account"
+import { periodItems } from "@/types/common-enums"
+import { formatAmount } from "@/utility/currency-fn"
 import { AccountDetailsSkeleton } from "./account-details-skeleton"
 
 interface AccountDetailsViewProps {
     accountId: string
     currency: Currency
-    language: string
 }
 
-export function AccountDetailsView({ accountId, currency, language }: AccountDetailsViewProps) {
+export function AccountDetailsView({ accountId, currency }: AccountDetailsViewProps) {
     const searchParams = useSearchParams()
     const router = useRouter()
     const pathname = usePathname()
@@ -147,15 +148,15 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
         startTransition(async () => {
             try {
                 await setAccountAsDefault(accountId, type)
-                toast.success("Default account updated")
+                toast.success(tran("accounts.msg.default_updated"))
             } catch (error: any) {
-                toast.error(error.message || "Failed to update default account")
+                toast.error(error.message || tran("accounts.msg.default_update_failed"))
             }
         })
     }
 
-    const handlePeriodChange = (val: string | null) => {
-        if (!val) return;
+    const handlePeriodChange = (val: "month" | "year" | "all" | null) => {
+        if (!val) return
         const params = new URLSearchParams(searchParams.toString())
         params.set("period", val)
         router.push(`${pathname}?${params.toString()}` as any, { scroll: false })
@@ -191,7 +192,7 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                                             {isDefaultAcc ? (
                                                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/10 border-white/20 text-white">
                                                     <ShieldAlert size={8} strokeWidth={3} />
-                                                    Primary
+                                                    {tran("accounts.primary")}
                                                 </div>
                                             ) : account.type === FinancialAccountType.MONEY && (
                                                 <button
@@ -199,13 +200,13 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                                                     onClick={() => handleSetDefault('GENERAL')}
                                                     className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/5 border-white/10 text-white/50 hover:bg-white/20 hover:text-white transition-all"
                                                 >
-                                                    Set as Primary
+                                                    {tran("accounts.set_primary")}
                                                 </button>
                                             )}
                                             {isDefaultIncome ? (
                                                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/10 border-white/20 text-white">
                                                     <ArrowDownToLine size={8} strokeWidth={3} />
-                                                    Def. Income
+                                                    {tran("accounts.def_income")}
                                                 </div>
                                             ) : account.type === FinancialAccountType.CATEGORY && account.categoryType === CategoryType.INCOME && (
                                                 <button
@@ -213,13 +214,13 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                                                     onClick={() => handleSetDefault('INCOME')}
                                                     className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/5 border-white/10 text-white/50 hover:bg-white/20 hover:text-white transition-all"
                                                 >
-                                                    Set as Def. Income
+                                                    {tran("accounts.set_def_income")}
                                                 </button>
                                             )}
                                             {isDefaultExpense ? (
                                                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/10 border-white/20 text-white">
                                                     <ArrowUpFromLine size={8} strokeWidth={3} />
-                                                    Def. Expense
+                                                    {tran("accounts.def_expense")}
                                                 </div>
                                             ) : account.type === FinancialAccountType.CATEGORY && account.categoryType === CategoryType.EXPENSE && (
                                                 <button
@@ -227,7 +228,7 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                                                     onClick={() => handleSetDefault('EXPENSE')}
                                                     className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border bg-white/5 border-white/10 text-white/50 hover:bg-white/20 hover:text-white transition-all"
                                                 >
-                                                    Set as Def. Expense
+                                                    {tran("accounts.set_def_expense")}
                                                 </button>
                                             )}
                                         </div>
@@ -239,7 +240,7 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                                 </div>
 
                                 <div className="space-y-1">
-                                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] opacity-50">Current Standing</p>
+                                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] opacity-50">{tran("accounts.current_standing")}</p>
                                     <div className="flex items-baseline gap-2">
                                         <span className="text-3xl sm:text-5xl font-black tracking-tighter tabular-nums">
                                             {symbol}{formatAmount(stats.balance)}
@@ -258,14 +259,14 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                                 <div className="space-y-1.5 sm:space-y-2 rounded-2xl bg-white/5 border border-white/5 p-3 sm:p-4 backdrop-blur-sm">
                                     <div className="flex items-center gap-2 text-emerald-400">
                                         <ArrowDownLeft size={14} className="sm:size-4" />
-                                        <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Total In</span>
+                                        <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">{tran("accounts.total_in")}</span>
                                     </div>
                                     <p className="text-lg sm:text-xl font-black tabular-nums">{symbol}{formatAmount(stats.totalIn)}</p>
                                 </div>
                                 <div className="space-y-1.5 sm:space-y-2 rounded-2xl bg-white/5 border border-white/5 p-3 sm:p-4 backdrop-blur-sm">
                                     <div className="flex items-center gap-2 text-rose-400">
                                         <ArrowUpRight size={14} className="sm:size-4" />
-                                        <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Total Out</span>
+                                        <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">{tran("accounts.total_out")}</span>
                                     </div>
                                     <p className="text-lg sm:text-xl font-black tabular-nums">{symbol}{formatAmount(stats.totalOut)}</p>
                                 </div>
@@ -285,21 +286,21 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                         <div className={cn("flex items-center justify-between px-2", !account.isActive && "grayscale-50")}>
                             <div className="flex items-center gap-4">
                                 <div className="h-1 w-12 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
-                                <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/70">Statement Ledger</h2>
+                                <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/70">{tran("accounts.statement_ledger")}</h2>
 
-                                <Select value={period} onValueChange={handlePeriodChange}>
-                                    <SelectTrigger className="h-7 px-3 rounded-full bg-muted/50 text-[9px] font-black uppercase tracking-widest border-none shadow-none focus:ring-0 w-[110px]">
+                                <Select items={periodItems} value={period} onValueChange={handlePeriodChange}>
+                                    <SelectTrigger className="h-7 px-3 rounded-full bg-muted/50 text-[9px] font-black uppercase tracking-widest border-none shadow-none focus:ring-0 w-27.5">
                                         <SelectValue placeholder="Period" />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl border-muted/20 shadow-xl">
-                                        <SelectItem value="month" className="rounded-xl">Month</SelectItem>
-                                        <SelectItem value="year" className="rounded-xl">Year</SelectItem>
-                                        <SelectItem value="all" className="rounded-xl">All</SelectItem>
+                                        {periodItems.map((item) => (
+                                            <SelectItem key={item.value} value={item.value} className="rounded-xl">{tran(item.label)}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="text-[10px] font-black uppercase tracking-widest opacity-40">
-                                {totalTransactions} Total Records
+                                {totalTransactions} Records
                             </div>
                         </div>
 
@@ -323,11 +324,11 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                                 {isFetchingNextPage && (
                                     <div className="flex items-center gap-3 text-muted-foreground">
                                         <Loader2 className="size-5 animate-spin" />
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Loading more...</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">{tran("accounts.loading_more")}</span>
                                     </div>
                                 )}
                                 {!hasNextPage && transactions.length > 0 && (
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">End of records</p>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">{tran("accounts.end_of_records")}</p>
                                 )}
                             </div>
                         </motion.div>
@@ -338,7 +339,7 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                 {account.isActive && (
                     <FooterButtons>
                         <AddTransactionModal
-                            title="New Entry"
+                            title={tran("accounts.new_entry")}
                             accountId={account.id}
                             direction={TransactionDirection.OUT}
                             path={`/accounts/${account.id}`}
@@ -346,7 +347,7 @@ export function AccountDetailsView({ accountId, currency, language }: AccountDet
                             <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
                                 <Plus className="size-6 sm:size-5" />
                                 <span className="hidden md:block text-center font-black tracking-[0.2em] text-sm">
-                                    Add Entry
+                                    {tran("accounts.add_entry")}
                                 </span>
                             </Button>
                         </AddTransactionModal>

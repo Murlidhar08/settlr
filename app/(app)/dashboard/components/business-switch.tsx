@@ -3,12 +3,11 @@
 import {
   switchBusiness
 } from "@/actions/business.actions"
-import { useUserConfig } from "@/components/providers/user-config-provider"
 import { Button } from "@/components/ui/button"
 import LoadingText from "@/components/ui/loading-text"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { getSession, useSession } from "@/lib/auth/auth-client"
-import { t } from "@/lib/languages/i18n"
+import { tran } from "@/lib/languages/i18n"
 import { cn } from "@/lib/utils"
 import { useBusinessList } from "@/tanstacks/business"
 import { AnimatePresence, motion } from "framer-motion"
@@ -31,7 +30,6 @@ interface Business {
 
 export default function SwitchBusiness() {
   const router = useRouter();
-  const { language } = useUserConfig();
   const [popOpen, setPopOpen] = useState(false);
   const [isSwitching, setIsSwitching] = useState(false);
   const [switchingId, setSwitchingId] = useState<string | null>(null);
@@ -72,9 +70,9 @@ export default function SwitchBusiness() {
     <>
       <Popover open={popOpen} onOpenChange={setPopOpen}>
         <PopoverTrigger className="group flex min-w-0 items-center gap-2 outline-hidden">
-          <span className="text-muted-foreground hidden sm:inline">{t("business.label", language)} -</span>
+          <span className="text-muted-foreground hidden sm:inline">{tran("business.label")} -</span>
 
-          <span className="truncate text-xl font-semibold tracking-tight min-w-[100px]">
+          <span className="truncate text-xl font-semibold tracking-tight min-w-25">
             <LoadingText value={selectedBusiness?.name} />
           </span>
 
@@ -90,7 +88,7 @@ export default function SwitchBusiness() {
               className="space-y-1"
             >
               <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                {t("business.switch", language)}
+                {tran("business.switch")}
               </div>
               {/* Loading Text */}
               {isLoading && (
@@ -141,7 +139,7 @@ export default function SwitchBusiness() {
                 }}
               >
                 <Settings2 className="h-4 w-4" />
-                {t("business.manage", language)}
+                {tran("business.manage")}
               </Button>
             </motion.div>
           </AnimatePresence>

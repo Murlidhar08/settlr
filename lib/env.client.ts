@@ -1,8 +1,8 @@
 import zod from "zod";
 
 const envClientSchema = zod.object({
-  NEXT_PUBLIC_APP_NAME: zod.string(),
-  NEXT_PUBLIC_APP_DESCRIPTION: zod.string(),
+  NEXT_PUBLIC_APP_NAME: zod.string().nonempty(),
+  NEXT_PUBLIC_APP_DESCRIPTION: zod.string().nonempty(),
 })
 
 export const envClient = envClientSchema.parse({

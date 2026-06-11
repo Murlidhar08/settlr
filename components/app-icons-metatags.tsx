@@ -1,6 +1,8 @@
 export default function AppIconsMetaTags() {
     return (
         <>
+            <link rel="icon" type="image/png" sizes="16x16" href="images/app-icon/favicon-16.png" />
+            <link rel="icon" type="image/png" sizes="32x32" href="images/app-icon/favicon-32.png" />
             <link rel="icon" type="image/png" sizes="196x196" href="images/app-icon/favicon-196.png" />
             <link rel="apple-touch-icon" href="images/app-icon/apple-icon-180.png" />
             <link rel="apple-touch-startup-image" href="images/app-icon/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />

@@ -5,28 +5,27 @@ import { AccountsSkeleton } from "@/components/account/accounts-skeleton";
 import { AddAccountModal } from "@/components/account/add-account-modal";
 import { FooterButtons } from "@/components/footer-buttons";
 import { Button } from "@/components/ui/button";
-import { Currency, FinancialAccountType } from "@/lib/generated/prisma/enums";
-import { t } from "@/lib/languages/i18n";
-import { cn } from "@/lib/utils";
-import { useFinancialAccounts } from "@/tanstacks/financial-account";
-import { Eye, EyeOff, Plus, Wallet } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
+import { Currency, FinancialAccountType } from "@/lib/generated/prisma/enums";
+import { tran } from "@/lib/languages/i18n";
+import { cn } from "@/lib/utils";
+import { useFinancialAccounts } from "@/tanstacks/financial-account";
+import { periodItems } from "@/types/common-enums";
+import { Eye, EyeOff, Plus, Wallet } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 export function AccountsContent({
-    language,
     currency,
     initialShowInactive,
     initialPeriod
 }: {
-    language: string,
     currency: Currency,
     initialShowInactive: boolean,
     initialPeriod: 'month' | 'year' | 'all'
@@ -71,8 +70,8 @@ export function AccountsContent({
     };
 
     const sections = [
-        { type: FinancialAccountType.MONEY, title: t("accounts.money_title", language), subtitle: t("accounts.money_subtitle", language) },
-        { type: FinancialAccountType.CATEGORY, title: t("accounts.business_title", language), subtitle: t("accounts.business_subtitle", language) },
+        { type: FinancialAccountType.MONEY, title: tran("accounts.money_title"), subtitle: tran("accounts.money_subtitle") },
+        { type: FinancialAccountType.CATEGORY, title: tran("accounts.business_title"), subtitle: tran("accounts.business_subtitle") },
     ];
 
     return (
@@ -80,19 +79,19 @@ export function AccountsContent({
             <div className="mx-auto w-full max-w-4xl px-6 py-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                     <div className="flex flex-col">
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 ml-1 mb-1">{t("accounts.overview", language)}</h2>
+                        <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 ml-1 mb-1">{tran("accounts.overview")}</h2>
                         <div className="flex items-center gap-4">
-                            <p className="text-3xl font-black tracking-tight">{t("accounts.total", language, { count: accounts.length.toString() })}</p>
-                            
+                            <p className="text-3xl font-black tracking-tight">{tran("accounts.total", { count: accounts.length.toString() })}</p>
+
                             <div className="flex items-center gap-2">
-                                <Select value={period} onValueChange={(val: any) => handlePeriodChange(val)}>
-                                    <SelectTrigger className="h-8 px-3 rounded-full bg-muted text-[10px] font-black uppercase tracking-widest border-none shadow-none focus:ring-0 w-[120px]">
-                                        <SelectValue placeholder="Period" />
+                                <Select items={periodItems} value={period} onValueChange={(val: any) => handlePeriodChange(val)}>
+                                    <SelectTrigger className="h-8 px-3 rounded-full bg-muted text-[10px] font-black uppercase tracking-widest border-none shadow-none focus:ring-0 w-30">
+                                        <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl border-muted/20 shadow-xl">
-                                        <SelectItem value="month" className="rounded-xl">Month</SelectItem>
-                                        <SelectItem value="year" className="rounded-xl">Year</SelectItem>
-                                        <SelectItem value="all" className="rounded-xl">All</SelectItem>
+                                        {periodItems.map((item) => (
+                                            <SelectItem key={item.value} value={item.value} className="rounded-xl">{tran(item.label)}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
 
@@ -106,7 +105,7 @@ export function AccountsContent({
                                     )}
                                 >
                                     {showInactive ? <Eye className="size-3 mr-2" /> : <EyeOff className="size-3 mr-2" />}
-                                    {showInactive ? "Viewing All" : "Hide Inactive"}
+                                    {showInactive ? tran("common.viewing_all") : tran("common.hide_inactive")}
                                 </Button>
                             </div>
                         </div>
@@ -122,12 +121,12 @@ export function AccountsContent({
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-2xl font-black">{t("accounts.not_found", language)}</p>
-                            <p className="text-muted-foreground font-medium max-w-xs mx-auto">{t("accounts.description", language)}</p>
+                            <p className="text-2xl font-black">{tran("accounts.not_found")}</p>
+                            <p className="text-muted-foreground font-medium max-w-xs mx-auto">{tran("accounts.description")}</p>
                         </div>
                         <AddAccountModal>
                             <Button variant="outline" className="h-12 rounded-xl border-2 font-bold px-6">
-                                {t("accounts.get_started", language)}
+                                {tran("accounts.get_started")}
                             </Button>
                         </AddAccountModal>
                     </div>
@@ -163,7 +162,7 @@ export function AccountsContent({
                     <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
                         <Plus className="size-6 sm:size-5" />
                         <span className="hidden md:block text-center font-black tracking-[0.2em] text-sm">
-                            {t("accounts.new", language)}
+                            {tran("accounts.new")}
                         </span>
                     </Button>
                 </AddAccountModal>

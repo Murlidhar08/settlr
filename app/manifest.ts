@@ -1,5 +1,5 @@
-import type { MetadataRoute } from 'next'
 import { envClient } from '@/lib/env.client'
+import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -36,6 +36,7 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png"
       },
       {
+        purpose: "maskable",
         src: '/images/logo/maskable_icon_x192.png',
         sizes: '192x192',
         type: 'image/png',
@@ -47,16 +48,11 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png"
       },
       {
+        purpose: "maskable",
         src: '/images/logo/maskable_icon_x512.png',
         sizes: '512x512',
         type: 'image/png',
-      },
-      {
-        purpose: "maskable",
-        sizes: "1024x1024",
-        src: "/images/logo/maskable_icon.png",
-        type: "image/png"
       }
-    ],
+    ]
   }
 }

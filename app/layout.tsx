@@ -1,7 +1,6 @@
 // Packages
 import { Toaster } from "@/components/ui/sonner";
 import type { Metadata, Viewport } from "next";
-import { ThemeProvider } from "next-themes";
 import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
 
 // Style
@@ -12,9 +11,7 @@ import { envClient } from "@/lib/env.client";
 import { envServer } from "@/lib/env.server";
 
 import AppIconsMetaTags from "@/components/app-icons-metatags";
-import { ConfirmProvider } from "@/components/providers/confirm-provider";
-import { PromptProvider } from "@/components/providers/prompt-provider";
-import { QueryProvider } from "@/components/providers/query-provider";
+import { AppProviders } from "@/components/providers";
 import NextTopLoader from 'nextjs-toploader';
 
 
@@ -41,6 +38,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
+  metadataBase: new URL(envServer.BETTER_AUTH_URL),
   title: envClient.NEXT_PUBLIC_APP_NAME,
   description: envClient.NEXT_PUBLIC_APP_DESCRIPTION,
   manifest: "/manifest.json",
@@ -51,6 +49,8 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: "images/app-icon/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "images/app-icon/favicon-32.png", sizes: "32x32", type: "image/png" },
       { url: "images/logo/maskable_icon_x192.png", sizes: "192x192", type: "image/png" },
       { url: "images/logo/maskable_icon_x512.png", sizes: "512x512", type: "image/png" },
     ],
@@ -79,7 +79,6 @@ export const metadata: Metadata = {
   },
 };
 
-
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={nunitoSans.variable} suppressHydrationWarning>
@@ -87,39 +86,30 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <AppIconsMetaTags />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <NextTopLoader
-            color="oklch(0.541 0.281 293.009)"
-            initialPosition={0.08}
-            crawlSpeed={200}
-            height={3}
-            crawl={true}
-            showSpinner={false}
-            easing="ease"
-            speed={200}
-            shadow="0 0 10px oklch(0.541 0.281 293.009),0 0 5px oklch(0.541 0.281 293.009)"
-          />
-          <QueryProvider>
-            <ConfirmProvider>
-              <PromptProvider>
-                {children}
-              </PromptProvider>
 
-              {/* Toast Container */}
-              <Toaster
-                position="top-right"
-                expand={false}
-              />
-            </ConfirmProvider>
-          </QueryProvider>
-        </ThemeProvider>
+        <NextTopLoader
+          color="oklch(0.541 0.281 293.009)"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px oklch(0.541 0.281 293.009),0 0 5px oklch(0.541 0.281 293.009)"
+        />
+
+        <AppProviders>
+          {children}
+        </AppProviders>
+
+        {/* Toast Container */}
+        <Toaster
+          position="top-right"
+          expand={false}
+        />
       </body>
-    </html>
+    </html >
   );
 }
 

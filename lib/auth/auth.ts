@@ -1,8 +1,10 @@
 // Packages
+import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { admin as adminPlugin, customSession, lastLoginMethod, twoFactor } from "better-auth/plugins";
+import { admin as adminPlugin, customSession, haveIBeenPwned, lastLoginMethod, multiSession, twoFactor, username } from "better-auth/plugins";
+import { redirect } from "next/navigation";
 
 // Lib
 import { sendMail } from "../nodemailer";
@@ -11,7 +13,7 @@ import { prisma } from "../prisma/prisma";
 // Template
 import { headers } from "next/headers";
 import { envServer } from "../env.server";
-import { CategoryType, Currency, FinancialAccountType, MoneyType, ThemeMode } from "../generated/prisma/enums";
+import { CategoryType, Currency, FinancialAccountType, MoneyType, ThemeMode, UserStatus } from "../generated/prisma/enums";
 import { getDeleteAccountEmailHtml } from "../templates/email-delete-account";
 import { getPasswordResetSuccessEmailHtml } from "../templates/email-password-reseted";
 import { getResetPasswordEmailHtml } from "../templates/email-reset-password";
@@ -21,7 +23,7 @@ export const auth = betterAuth({
   appName: envServer.NEXT_PUBLIC_APP_NAME,
   baseURL: envServer.BETTER_AUTH_URL,
   secret: envServer.BETTER_AUTH_SECRET,
-  errorPage: "/login", // Redirect back to login, we will handle error there
+  errorPage: "/error",
   trustedOrigins: [
     envServer.BETTER_AUTH_URL,
     ...(envServer.BETTER_AUTH_TRUSTED_ORIGINS ? envServer.BETTER_AUTH_TRUSTED_ORIGINS.split(",") : []),
@@ -43,6 +45,10 @@ export const auth = betterAuth({
         required: false
       },
       activeBusinessId: {
+        type: "string",
+        required: false
+      },
+      status: {
         type: "string",
         required: false
       }
@@ -169,14 +175,24 @@ export const auth = betterAuth({
     }
   },
   socialProviders: {
-    google: {
-      clientId: envServer.GOOGLE_CLIENT_ID as string,
-      clientSecret: envServer.GOOGLE_CLIENT_SECRET as string,
-    },
-    discord: {
-      clientId: envServer.DISCORD_CLIENT_ID as string,
-      clientSecret: envServer.DISCORD_CLIENT_SECRET as string,
-    },
+    ...(envServer.GOOGLE_CLIENT_ID && envServer.GOOGLE_CLIENT_SECRET ? {
+      google: {
+        clientId: envServer.GOOGLE_CLIENT_ID as string,
+        clientSecret: envServer.GOOGLE_CLIENT_SECRET as string,
+      }
+    } : {}),
+    ...(envServer.DISCORD_CLIENT_ID && envServer.DISCORD_CLIENT_SECRET ? {
+      discord: {
+        clientId: envServer.DISCORD_CLIENT_ID as string,
+        clientSecret: envServer.DISCORD_CLIENT_SECRET as string,
+      }
+    } : {}),
+    ...(envServer.FACEBOOK_CLIENT_ID && envServer.FACEBOOK_CLIENT_SECRET ? {
+      facebook: {
+        clientId: envServer.FACEBOOK_CLIENT_ID as string,
+        clientSecret: envServer.FACEBOOK_CLIENT_SECRET as string,
+      }
+    } : {}),
   },
   session: {
     cookieCache: {
@@ -185,8 +201,9 @@ export const auth = betterAuth({
   },
   plugins: [
     adminPlugin(),
-    nextCookies(),
     twoFactor(),
+    lastLoginMethod(),
+    passkey(),
     customSession(async ({ user, session }) => {
       const dbUser = await prisma.user.findUnique({
         where: { id: user.id },
@@ -198,6 +215,7 @@ export const auth = betterAuth({
           role: true,
           banned: true,
           banReason: true,
+          status: true,
 
           // current session context
           sessions: {
@@ -213,6 +231,7 @@ export const auth = betterAuth({
           userSettings: {
             select: {
               currency: true,
+              locale: true,
               dateFormat: true,
               timeFormat: true,
               language: true,
@@ -222,7 +241,7 @@ export const auth = betterAuth({
         },
       })
 
-      const activeBusinessId = dbUser?.activeBusinessId ?? null
+      const activeBusinessId = dbUser?.activeBusinessId
       const settings = dbUser?.userSettings
       const dbSession = dbUser?.sessions[0];
 
@@ -258,6 +277,7 @@ export const auth = betterAuth({
 
           userSettings: {
             currency: settings?.currency ?? Currency.INR,
+            locale: settings?.locale ?? "en-IN",
             dateFormat: settings?.dateFormat ?? "dd/MM/yyyy",
             timeFormat: settings?.timeFormat ?? "hh:mm a",
             language: settings?.language ?? "en",
@@ -275,10 +295,19 @@ export const auth = betterAuth({
           twoFactorEnabled: dbUser?.twoFactorEnabled ?? false,
           banned: dbUser?.banned ?? false,
           banReason: dbUser?.banReason ?? null,
+          status: dbUser?.status ?? UserStatus.pendingapproval,
         },
       }
     }),
-    lastLoginMethod()
+    multiSession({
+      maximumSessions: 3,
+    }),
+    haveIBeenPwned({
+      enabled: envServer.NODE_ENV === 'production',
+      customPasswordCompromisedMessage: "This password has appeared in data breaches. Please choose a stronger, unique password."
+    }),
+    username(),
+    nextCookies()
   ],
   databaseHooks: {
     user: {
@@ -375,11 +404,14 @@ export const auth = betterAuth({
 });
 
 export type Auth = typeof auth;
-
-import { cache } from "react";
-
-export const getUserSession = cache(async () => {
-  return await auth.api.getSession({
+export const getUserSession = async () => {
+  const session = await auth.api.getSession({
     headers: await headers()
   });
-});
+
+  if (session == null) {
+    redirect("/login" as any);
+  }
+
+  return session;
+};

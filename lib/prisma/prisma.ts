@@ -1,6 +1,6 @@
-import { PrismaPg } from '@prisma/adapter-pg'
-import { PrismaClient } from '../generated/prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg';
 import { envServer } from "../env.server";
+import { PrismaClient } from '../generated/prisma/client';
 
 const prismaClientSingleton = () => {
   const connectionString = envServer.DATABASE_URL;
@@ -14,6 +14,6 @@ declare global {
 
 const prisma = globalThis.prisma ?? prismaClientSingleton()
 
-export { prisma }
+export { prisma };
 
 if (process.env.NODE_ENV !== 'production') globalThis.prisma = prisma

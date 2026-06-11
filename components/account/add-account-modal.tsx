@@ -9,6 +9,7 @@ import { FinancialAccount } from "@/lib/generated/prisma/client"
 import { CategoryType, FinancialAccountType, MoneyType, PartyType } from "@/lib/generated/prisma/enums"
 import { cn } from "@/lib/utils"
 import { AnimatePresence, motion, Variants } from "framer-motion"
+import { tran } from "@/lib/languages/i18n"
 import {
     Banknote,
     Briefcase,
@@ -28,6 +29,7 @@ import { useRouter } from "next/navigation"
 import { ReactNode, useEffect, useState } from "react"
 import { toast } from "sonner"
 import { useQueryClient } from "@tanstack/react-query"
+import { containerVariants, itemVariants } from "@/lib/animations"
 
 interface AddAccountModalProps {
     title?: string
@@ -41,7 +43,7 @@ const SUBTYPES_CONFIG: Partial<Record<FinancialAccountType, any>> = {
     [FinancialAccountType.MONEY]: {
         enum: MoneyType,
         field: "moneyType",
-        label: "Money Method",
+        label: "accounts.money_method",
         icons: {
             [MoneyType.CASH]: Banknote,
             [MoneyType.ONLINE]: Landmark,
@@ -51,7 +53,7 @@ const SUBTYPES_CONFIG: Partial<Record<FinancialAccountType, any>> = {
     [FinancialAccountType.CATEGORY]: {
         enum: CategoryType,
         field: "categoryType",
-        label: "Account Purpose",
+        label: "accounts.account_purpose",
         icons: {
             [CategoryType.INCOME]: TrendingUp,
             [CategoryType.EXPENSE]: TrendingDown,
@@ -120,7 +122,7 @@ export const AddAccountModal = ({
         if (!data.name.trim()) {
             return toast.error("Please enter account name")
         }
-        
+
         setIsPending(true)
         try {
             if (accountData) {
@@ -147,21 +149,6 @@ export const AddAccountModal = ({
         }
     }
 
-    const containerVariants: Variants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.05
-            }
-        }
-    }
-
-    const itemVariants: Variants = {
-        hidden: { opacity: 0, y: 15 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
-    }
-
     return (
         <>
             {children && (
@@ -182,10 +169,10 @@ export const AddAccountModal = ({
                             </div>
                             <div>
                                 <SheetTitle className="text-xl font-black tracking-tight">
-                                    {accountData ? "Edit Account" : "New Account"}
+                                    {accountData ? tran("accounts.edit_account") : tran("accounts.new")}
                                 </SheetTitle>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                                    {accountData ? "Modify existing account" : "Setup a new source or category"}
+                                    {accountData ? tran("accounts.modify_existing_account") : tran("accounts.setup_new_source_or_category")}
                                 </p>
                             </div>
                         </div>
@@ -200,7 +187,7 @@ export const AddAccountModal = ({
                         >
                             {/* Account Name */}
                             <motion.div variants={itemVariants} className="space-y-4">
-                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 ml-1">Account Name</Label>
+                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 ml-1">{tran("accounts.account_name")}</Label>
                                 <div className="relative group">
                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary">
                                         <Wallet size={20} />
@@ -208,7 +195,7 @@ export const AddAccountModal = ({
                                     <Input
                                         value={data.name}
                                         onChange={(e) => setData({ ...data, name: e.target.value })}
-                                        placeholder="e.g. HDFC Bank, My Cash, Marketing Expense"
+                                        placeholder={tran("accounts.account_name_placeholder")}
                                         className="h-16 pl-12 rounded-2xl border-2 text-lg font-bold transition-all focus:ring-0 focus:border-primary"
                                     />
                                 </div>
@@ -216,11 +203,11 @@ export const AddAccountModal = ({
 
                             {/* Main Type Selection */}
                             <motion.div variants={itemVariants} className="space-y-4">
-                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 ml-1">Account Category</Label>
+                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 ml-1">{tran("accounts.account_category")}</Label>
                                 <div className="grid grid-cols-2 gap-3">
                                     {[
-                                        { id: FinancialAccountType.MONEY, label: "Money", icon: Wallet },
-                                        { id: FinancialAccountType.CATEGORY, label: "Business", icon: Tag },
+                                        { id: FinancialAccountType.MONEY, label: tran("common.money"), icon: Wallet },
+                                        { id: FinancialAccountType.CATEGORY, label: tran("business.label"), icon: Tag },
                                     ].map((type) => (
                                         <button
                                             key={type.id}
@@ -263,7 +250,7 @@ export const AddAccountModal = ({
                                     className="space-y-4"
                                 >
                                     <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60 ml-1">
-                                        <Info size={12} /> {SUBTYPES_CONFIG[data.type]?.label}
+                                        <Info size={12} /> {tran(SUBTYPES_CONFIG[data.type]?.label)}
                                     </Label>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                         {SUBTYPES_CONFIG[data.type] && Object.entries(SUBTYPES_CONFIG[data.type]!.enum).map(([key, value]: [string, any]) => {
@@ -283,7 +270,7 @@ export const AddAccountModal = ({
                                                     )}
                                                 >
                                                     <Icon size={20} />
-                                                    <span className="text-[10px] font-black uppercase tracking-wider">{value}</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-wider">{tran(`common.${value.toLowerCase()}`)}</span>
                                                 </button>
                                             )
                                         })}
@@ -301,7 +288,7 @@ export const AddAccountModal = ({
                                 onClick={() => setOpen(false)}
                                 className="h-14 flex-1 rounded-2xl text-base font-bold border-2"
                             >
-                                Discard
+                                {tran("common.discard")}
                             </Button>
                             <Button
                                 onClick={handleSave}
@@ -311,11 +298,11 @@ export const AddAccountModal = ({
                                 {isPending ? (
                                     <>
                                         <Loader2 className="animate-spin" size={20} />
-                                        Just a sec...
+                                        {tran("common.just_a_sec")}
                                     </>
                                 ) : (
                                     <>
-                                        {accountData ? "Update Account" : "Create Account"}
+                                        {accountData ? tran("accounts.update_account") : tran("accounts.create_account")}
                                         <CheckCircle2 size={20} />
                                     </>
                                 )}

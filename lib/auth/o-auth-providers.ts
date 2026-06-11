@@ -1,7 +1,7 @@
-import { DiscordIcon, GoogleIcon } from "@/components/auth/o-auth-icons";
-import { ComponentProps, ElementType } from "react"
+import { DiscordIcon, FacebookIcon, GoogleIcon } from "@/components/auth/o-auth-icons";
+import { ComponentProps, ElementType } from "react";
 
-export const SUPPORTED_OAUTH_PROVIDERS = ["google", "discord"] as const
+export const SUPPORTED_OAUTH_PROVIDERS = ["google", "discord", "facebook"] as const
 export type SupportedOAuthProvider = (typeof SUPPORTED_OAUTH_PROVIDERS)[number]
 
 export const SUPPORTED_OAUTH_PROVIDER_DETAILS: Record<
@@ -10,4 +10,5 @@ export const SUPPORTED_OAUTH_PROVIDER_DETAILS: Record<
 > = {
   discord: { name: "Discord", Icon: DiscordIcon },
   google: { name: "Google", Icon: GoogleIcon },
+  facebook: { name: "Facebook", Icon: FacebookIcon },
 }

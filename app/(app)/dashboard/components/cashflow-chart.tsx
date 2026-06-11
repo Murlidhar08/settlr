@@ -62,5 +62,5 @@ export async function CashflowChart() {
         }
     })
 
-    return <CashflowChartClient data={chartData} currency={currency} language={language} />
+    return <CashflowChartClient data={chartData} />;
 }

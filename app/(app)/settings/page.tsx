@@ -10,7 +10,8 @@ import {
   Calendar,
   ChevronRight,
   Clock,
-  DollarSign,
+  Globe,
+  IndianRupee,
   KeyRoundIcon,
   Languages,
   Laptop,
@@ -19,10 +20,10 @@ import {
   LogOut,
   Moon,
   PaintbrushIcon,
+  Skull,
   Sun,
   Terminal,
-  Trash2Icon,
-  Skull
+  Trash2Icon
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -35,26 +36,28 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from "@/components/ui/select";
 import { signOut, useSession } from "@/lib/auth/auth-client";
 import { envClient } from "@/lib/env.client";
 import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
-import { t } from "@/lib/languages/i18n";
+import { tran } from "@/lib/languages/i18n";
 import { cn } from "@/lib/utils";
-import { getInitials } from "@/utility/party";
+import { getInitials } from "@/utility/common-function";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
+import { AppHeader } from "@/components/app-header";
 import { useAppVersion } from "@/tanstacks/settings";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { theme, setTheme, ...userConfig } = useUserConfig();
+  const { theme, setTheme, updateConfig, ...userConfig } = useUserConfig();
   const { data: session, isPending } = useSession();
   const { data: versionData } = useAppVersion();
 
-  const [currency, setCurrency] = useState<Currency>(userConfig.currency);
+  const [currency, setCurrency] = useState(userConfig.currency);
+  const [locale, setLocale] = useState(userConfig.locale);
   const [dateFormat, setDateFormat] = useState(userConfig.dateFormat);
   const [timeFormat, setTimeFormat] = useState(userConfig.timeFormat);
   const [language, setLanguage] = useState(userConfig.language);
@@ -74,39 +77,51 @@ export default function SettingsPage() {
   if (isPending)
     return <SettingsSkeleton />;
 
-  const currencyLabel: Record<Currency, string> = {
+  const currencyItems: Record<Currency, string> = {
     USD: "USD ($)",
     INR: "INR (₹)",
     EUR: "EUR (€)",
   };
 
+  const localeItems: Record<string, string> = {
+    "en-IN": "English (India)",
+    "en-US": "English (United States)",
+    "de-DE": "German (Germany)",
+    "fr-FR": "French (France)"
+  };
+
+  const dateFormatItems = [
+    { label: "DD/MM/YYYY", value: "dd/MM/yyyy" },
+    { label: "MM/DD/YYYY", value: "MM/dd/yyyy" },
+    { label: "YYYY-MM-DD", value: "yyyy-MM-dd" },
+    { label: "DD MMM, YYYY", value: "dd MMM, yyyy" },
+  ];
+
+  const timeFormatItems = [
+    { label: "12 Hour", value: "hh:mm a" },
+    { label: "24 Hour", value: "HH:mm" },
+  ];
+
+  const languageItems = [
+    { label: tran("languages.en"), value: "en" },
+    { label: tran("languages.hi"), value: "hi" },
+  ];
+
   const handleLogout = async () => {
     try {
       await signOut();
-      toast.success("Logged out successfully");
+      toast.success(tran("profile.msg.logged_out_successfully"));
       setTimeout(() => router.replace("/login"), 300);
     } catch (error) {
-      toast.error("Failed to logout");
+      toast.error(tran("profile.msg.failed_to_logout"));
     }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0 }
-  };
 
   return (
     <div className="min-h-screen bg-background pb-34">
+      <AppHeader title={tran("settings.title")} />
 
       <motion.div
         variants={containerVariants}
@@ -117,7 +132,7 @@ export default function SettingsPage() {
         {/* USER */}
         <motion.div
           variants={itemVariants}
-          onClick={() => { router.push("/profile") }}
+          onClick={() => { router.push("/settings/profile") }}
           whileHover={{ y: -2 }}
           whileTap={{ scale: 0.98 }}
           className="flex items-center gap-4 p-5 rounded-3xl bg-card border shadow-sm cursor-pointer transition-shadow hover:shadow-md"
@@ -136,7 +151,14 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex-1">
-            <p className="font-black text-xl tracking-tight">{session?.user?.name ?? "Unknown"}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-black text-xl tracking-tight">{session?.user?.name ?? "Unknown"}</p>
+              {session?.user?.username && (
+                <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                  @{session.user.username}
+                </span>
+              )}
+            </div>
             <p className="text-sm font-medium text-muted-foreground opacity-70">{session?.user?.email ?? "Unknown"}</p>
           </div>
           <div className="h-10 w-10 rounded-full bg-muted/50 flex items-center justify-center">
@@ -146,75 +168,138 @@ export default function SettingsPage() {
 
         {/* GENERAL */}
         <motion.div variants={itemVariants}>
-          <Section title={t("settings.general", language)}>
-            <Row icon={DollarSign} label={t("settings.currency", language)}>
+          <Section title={tran("settings.general")}>
+            {/* Currency */}
+            <Row icon={IndianRupee} label={tran("settings.currency")}>
               <Select
+                items={currencyItems}
                 value={currency}
                 onValueChange={(value) => {
                   if (!value) return
                   const v = value as Currency
                   setCurrency(v)
-                  upsertUserSettings({ currency: v })
-                  toast.success(`Currency updated to ${v}`)
+                  updateConfig({ currency: v })
+                  void upsertUserSettings({ currency: v })
+                  toast.success(tran("settings.msg.currency_updated"))
                 }}
               >
-                <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
+                <SelectTrigger className="w-35 h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl shadow-2xl">
                   {Object.values(Currency).map((currency) => (
                     <SelectItem key={currency} value={currency} className="rounded-lg font-medium">
-                      {currencyLabel[currency]}
+                      {currencyItems[currency]}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </Row>
 
-            <Row icon={Calendar} label={t("settings.date_format", language)}>
+            {/* Locale */}
+            <Row icon={Globe} label={tran("settings.locale")}>
               <Select
-                value={dateFormat}
+                items={localeItems}
+                value={locale}
                 onValueChange={(value) => {
                   if (!value) return
-                  setDateFormat(value)
-                  void upsertUserSettings({ dateFormat: value })
-                  toast.success(`Date format updated`)
+                  const v = value as string
+                  setLocale(v)
+                  updateConfig({ locale: v })
+                  void upsertUserSettings({ locale: v })
+                  toast.success(tran("settings.msg.locale_updated"))
                 }}
               >
-                <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
+                <SelectTrigger className="w-35 h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl shadow-2xl">
-                  <SelectItem value="dd/MM/yyyy" className="rounded-lg font-medium">DD/MM/YYYY</SelectItem>
-                  <SelectItem value="MM/dd/yyyy" className="rounded-lg font-medium">MM/DD/YYYY</SelectItem>
-                  <SelectItem value="yyyy-MM-dd" className="rounded-lg font-medium">YYYY-MM-DD</SelectItem>
-                  <SelectItem value="dd MMM, yyyy" className="rounded-lg font-medium">DD MMM, YYYY</SelectItem>
+                  {Object.entries(localeItems).map(([key, value]) => (
+                    <SelectItem key={key} value={key} className="rounded-lg font-medium">
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </Row>
 
-            <Row icon={Clock} label={t("settings.time_format", language)}>
+            <Row icon={Calendar} label={tran("settings.date_format")}>
               <Select
+                items={dateFormatItems}
+                value={dateFormat}
+                onValueChange={(value) => {
+                  if (!value) return
+                  setDateFormat(value)
+                  updateConfig({ dateFormat: value })
+                  void upsertUserSettings({ dateFormat: value })
+                  toast.success(tran("settings.msg.date_format_updated"))
+                }}
+              >
+                <SelectTrigger className="w-35 h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl shadow-2xl">
+                  {dateFormatItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value} className="rounded-lg font-medium">
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Row>
+
+            <Row icon={Clock} label={tran("settings.time_format")}>
+              <Select
+                items={timeFormatItems}
                 value={timeFormat}
                 onValueChange={(value) => {
                   if (!value) return
                   setTimeFormat(value)
+                  updateConfig({ timeFormat: value })
                   void upsertUserSettings({ timeFormat: value })
-                  toast.success(`Time format updated`)
+                  toast.success(tran("settings.msg.time_format_updated"))
                 }}
               >
-                <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
+                <SelectTrigger className="w-35 h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl shadow-2xl">
-                  <SelectItem value="hh:mm a" className="rounded-lg font-medium">12 Hour</SelectItem>
-                  <SelectItem value="HH:mm" className="rounded-lg font-medium">24 Hour</SelectItem>
+                  {timeFormatItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value} className="rounded-lg font-medium">
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Row>
+
+            <Row icon={Languages} label={tran("settings.language")}>
+              <Select
+                items={languageItems}
+                value={language}
+                onValueChange={(value) => {
+                  if (!value) return
+                  setLanguage(value)
+                  updateConfig({ language: value })
+                  void upsertUserSettings({ language: value })
+                  toast.success(tran("settings.msg.language_updated"))
+                }}
+              >
+                <SelectTrigger className="w-35 h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl shadow-2xl">
+                  {languageItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value} className="rounded-lg font-medium">
+                      {item.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </Row>
 
             {isDebug && (
-              <Row icon={Terminal} label={t("settings.developer_mode", language)}>
+              <Row icon={Terminal} label={tran("settings.developer_mode")}>
                 <Button
                   variant={isDevMode ? "default" : "outline"}
                   size="sm"
@@ -226,131 +311,99 @@ export default function SettingsPage() {
                     const newValue = !isDevMode;
                     setIsDevMode(newValue);
                     localStorage.setItem("dev_mode", String(newValue));
-                    toast.success(`Developer mode ${newValue ? "enabled" : "disabled"}`);
+                    toast.success(tran(newValue ? "settings.msg.dev_mode_enabled" : "settings.msg.dev_mode_disabled"));
                   }}
                 >
                   {isDevMode ? "ON" : "OFF"}
                 </Button>
               </Row>
             )}
-
-            {isDevMode && (
-              <Row icon={Languages} label={t("settings.language", language)}>
-                <Select
-                  value={language}
-                  onValueChange={(value) => {
-                    if (!value) return
-                    setLanguage(value)
-                    void upsertUserSettings({ language: value })
-                    toast.success(`Language updated`)
-                  }}
-                >
-                  <SelectTrigger className="w-[140px] h-10 rounded-xl border-2 font-bold focus:ring-primary/20">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-2xl shadow-2xl">
-                    <SelectItem value="en" className="rounded-lg font-medium">{t("languages.en", language)}</SelectItem>
-                    <SelectItem value="hi" className="rounded-lg font-medium">{t("languages.hi", language)}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Row>
-            )}
-          </Section>
-        </motion.div>
+          </Section >
+        </motion.div >
 
         {/* APPEARANCE */}
-        <motion.div variants={itemVariants}>
-          <Section title={t("settings.appearance", language)}>
-            <div className="flex items-center justify-between px-5 h-20 w-full group">
-              <div className="flex items-center justify-between h-full gap-4 flex-1">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center transition-transform group-hover:rotate-12">
-                    <PaintbrushIcon size={18} />
-                  </div>
-                  <p className="flex-1 font-bold text-base">Theme Mode</p>
-                </div>
-
-                <div className="flex gap-1 bg-muted/50 rounded-2xl p-1.5 border-2 border-transparent focus-within:border-primary/10">
-                  {[
-                    { id: ThemeMode.AUTO, icon: Laptop, label: "Auto" },
-                    { id: ThemeMode.LIGHT, icon: Sun, label: "Light" },
-                    { id: ThemeMode.DARK, icon: Moon, label: "Dark" },
-                  ].map((mode) => (
-                    <Button
-                      key={mode.id}
-                      variant={theme === mode.id ? "secondary" : "ghost"}
-                      size="sm"
-                      className={cn(
-                        "gap-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all px-4 h-9",
-                        theme === mode.id && "bg-background shadow-lg scale-100 text-primary",
-                        theme !== mode.id && "opacity-60 hover:opacity-100"
-                      )}
-                      onClick={async () => {
-                        setTheme(mode.id);
-                        await upsertUserSettings({ theme: mode.id });
-                      }}
-                    >
-                      <mode.icon size={15} />
-                      <span className="hidden sm:inline">{mode.label}</span>
-                    </Button>
-                  ))}
-                </div>
+        < motion.div variants={itemVariants} >
+          <Section title={tran("settings.appearance")}>
+            <Row icon={PaintbrushIcon} label={tran("settings.theme_mode")}>
+              <div className="flex gap-1 bg-muted/50 rounded-2xl p-1.5 border-2 border-transparent focus-within:border-primary/10">
+                {[
+                  { id: ThemeMode.AUTO, icon: Laptop, label: tran("settings.auto") },
+                  { id: ThemeMode.LIGHT, icon: Sun, label: tran("settings.light") },
+                  { id: ThemeMode.DARK, icon: Moon, label: tran("settings.dark") },
+                ].map((mode) => (
+                  <Button
+                    key={mode.id}
+                    variant={theme === mode.id ? "secondary" : "ghost"}
+                    size="sm"
+                    className={cn(
+                      "gap-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all px-4 h-9",
+                      theme === mode.id && "bg-background shadow-lg scale-100 text-primary",
+                      theme !== mode.id && "opacity-60 hover:opacity-100"
+                    )}
+                    onClick={async () => {
+                      setTheme(mode.id);
+                      updateConfig({ theme: mode.id });
+                      await upsertUserSettings({ theme: mode.id });
+                    }}
+                  >
+                    <mode.icon size={15} />
+                    <span className="hidden sm:inline">{mode.label}</span>
+                  </Button>
+                ))}
               </div>
-            </div>
+            </Row>
           </Section>
-        </motion.div>
+        </motion.div >
 
         {/* DATA MANAGEMENT */}
-        <motion.div variants={itemVariants}>
-          <Section title="Data Management">
-            <NavigationRow
+        < motion.div variants={itemVariants} >
+          <Section title={tran("settings.data_management")}>
+            <Row
               icon={Trash2Icon}
-              label="Recycle Bin"
-              onClick={() => router.push("/settings/recycle-bin" as any)}
+              label={tran("settings.recycle_bin")}
+              href="/settings/recycle-bin"
             />
           </Section>
-        </motion.div>
+        </motion.div >
 
         {/* SECURITY */}
-        <motion.div variants={itemVariants}>
-          <Section title="Security & Privacy">
-            <NavigationRow
+        < motion.div variants={itemVariants} >
+          <Section title={tran("settings.security_privacy")}>
+            <Row
               icon={Link2Icon}
-              label="Connected Accounts"
-              onClick={() => router.push("/settings/link-account" as any)}
+              label={tran("settings.connected_accounts")}
+              href="/settings/link-account"
             />
-            <NavigationRow
+            <Row
               icon={LockKeyhole}
-              label="Safety & Security"
-              onClick={() => router.push("/settings/security" as any)}
+              label={tran("settings.safety_security")}
+              href="/settings/security"
             />
-             <NavigationRow
+            <Row
               icon={KeyRoundIcon}
-              label="Active Sessions"
-              onClick={() => router.push("/settings/session-management" as any)}
+              label={tran("settings.active_sessions")}
+              href="/settings/session-management"
             />
-            <NavigationRow
+            <Row
               icon={Skull}
-              label="Danger Zone"
+              label={tran("settings.danger_zone")}
               labelClassName="text-rose-600"
               iconContainerClassName="bg-rose-100 text-rose-600"
-              onClick={() => router.push("/settings/danger" as any)}
+              href="/settings/danger"
             />
           </Section>
-        </motion.div>
+        </motion.div >
 
-        {/* LOGOUT */}
-        <motion.div variants={itemVariants} whileTap={{ scale: 0.98 }}>
-          <Button
-            onClick={handleLogout}
-            variant="destructive"
-            className="w-full h-14 rounded-2xl gap-3 font-black uppercase tracking-[0.2em] shadow-lg shadow-rose-200 dark:shadow-rose-950/20"
-          >
-            <LogOut size={20} />
-            {t("settings.logout", language)}
+        <FooterButtons>
+          <Button onClick={handleLogout} variant="destructive" className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-rose-500 hover:bg-rose-500/70 text-white shadow-lg shadow-rose-500/50 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
+            <LogOut className="size-5 md:size-6" />
+            <span className="hidden md:block text-center font-black tracking-[0.2em] text-sm">
+              {tran("settings.logout")}
+            </span>
           </Button>
-        </motion.div>
+        </FooterButtons>
 
+        {/* App Version */}
         <motion.div
           variants={itemVariants}
           className="text-center space-y-2 opacity-50 pt-4"
@@ -358,16 +411,19 @@ export default function SettingsPage() {
           <p className="text-[10px] font-black uppercase tracking-[0.3em]">Build Version {version}</p>
           <p className="text-[9px] font-medium italic">© {new Date().getFullYear()} {envClient.NEXT_PUBLIC_APP_NAME}. All rights reserved.</p>
         </motion.div>
-      </motion.div>
+      </motion.div >
     </div >
   );
 }
 
+import { FooterButtons } from "@/components/footer-buttons";
 import { Skeleton } from "@/components/ui/skeleton";
+import { containerVariants, itemVariants } from "@/lib/animations";
 
 function SettingsSkeleton() {
   return (
     <div className="min-h-screen bg-background">
+      <AppHeader title={"..."} />
       <div className="mx-auto max-w-4xl pb-32 mt-6 space-y-8 px-6 animate-pulse">
         {/* Profile Card Skeleton */}
         <div className="h-28 w-full rounded-[2rem] bg-muted/10 border border-border/50 p-6 flex items-center gap-4">
@@ -399,34 +455,6 @@ function SettingsSkeleton() {
   );
 }
 
-function NavigationRow({
-  icon: Icon,
-  label,
-  onClick,
-  labelClassName,
-  iconContainerClassName
-}: {
-  icon: any,
-  label: string,
-  onClick: () => void,
-  labelClassName?: string,
-  iconContainerClassName?: string
-}) {
-  return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
-      className="w-full flex items-center gap-4 px-4 h-16 text-left"
-    >
-      <div className={cn("h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center", iconContainerClassName)}>
-        <Icon size={16} />
-      </div>
-      <p className={cn("flex-1 font-semibold", labelClassName)}>{label}</p>
-      <ChevronRight className="text-muted-foreground" />
-    </motion.button>
-  );
-}
-
 
 /* ---------------- components ---------------- */
 
@@ -443,19 +471,23 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Row({ icon: Icon, label, children }: {
-  icon: React.ElementType; label: string; children: React.ReactNode
+function Row({ icon: Icon, label, labelClassName, iconContainerClassName, href, children }: {
+  icon: React.ElementType; label: string; labelClassName?: string; iconContainerClassName?: string; href?: string; children?: React.ReactNode
 }) {
+  const router = useRouter();
   return (
     <motion.div
       whileTap={{ scale: 0.98 }}
-      className="flex items-center gap-4 px-4 h-16"
+      className="flex items-center gap-4 px-4 h-16 group cursor-pointer rounded-xl hover:bg-primary/5"
+      onClick={() => { if (href) router.push(href as any) }}
     >
-      <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+      <div className={cn("h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all", iconContainerClassName)}>
         <Icon size={16} />
       </div>
-      <p className="flex-1 font-semibold">{label}</p>
-      {children}
+      <p className={cn("flex-1 font-semibold text-lg", labelClassName)}>{label}</p>
+      {
+        href ? <ChevronRight className="text-muted-foreground" /> : children ? children : null
+      }
     </motion.div>
   );
 }

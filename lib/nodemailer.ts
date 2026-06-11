@@ -1,6 +1,6 @@
-import { createTransport, SentMessageInfo } from "nodemailer"
-import { envServer } from "./env.server";
+import { createTransport, SentMessageInfo } from "nodemailer";
 import { getAppConfig } from "./app-config";
+import { envServer } from "./env.server";
 
 async function getSmtpTransporter() {
   const config = await getAppConfig();

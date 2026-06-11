@@ -19,6 +19,7 @@ import { ArrowDownToLine, ArrowUpFromLine, Pencil, ShieldAlert, Trash2 } from "l
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
+import { tran } from "@/lib/languages/i18n"
 
 export default function BackAccountHeaderClient({ account }: { account: FinancialAccount }) {
     const router = useRouter()
@@ -42,13 +43,13 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
         <>
             <BackHeader
                 title={account?.name}
-                description={account?.moneyType || account?.categoryType || account?.type}
+                description={tran(`common.${(account?.moneyType || account?.categoryType || account?.type || "").toLowerCase()}`)}
                 backUrl={'/accounts' as any}
                 menuItems={[
                     ...(account.type === 'MONEY' ? [
                         {
                             icon: <ShieldAlert size={18} />,
-                            label: "Set as Primary Account",
+                            label: "accounts.set_primary_account",
                             onClick: async () => {
                                 try {
                                     await setAccountAsDefault(account.id, 'GENERAL')
@@ -65,7 +66,7 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                     ...(account.type === 'CATEGORY' && account.categoryType === 'INCOME' ? [
                         {
                             icon: <ArrowDownToLine size={18} />,
-                            label: "Set as Default Income",
+                            label: "accounts.set_default_income",
                             onClick: async () => {
                                 try {
                                     await setAccountAsDefault(account.id, 'INCOME')
@@ -82,7 +83,7 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                     ...(account.type === 'CATEGORY' && account.categoryType === 'EXPENSE' ? [
                         {
                             icon: <ArrowUpFromLine size={18} />,
-                            label: "Set as Default Expense",
+                            label: "accounts.set_default_expense",
                             onClick: async () => {
                                 try {
                                     await setAccountAsDefault(account.id, 'EXPENSE')
@@ -99,38 +100,38 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                     ...(account.isSystem ? [
                         {
                             icon: <Pencil size={18} />,
-                            label: "Rename",
+                            label: "common.rename",
                             onClick: () => setIsEditing(true),
                             destructive: false
                         }
                     ] : [
                         {
-                             icon: <Pencil size={18} />,
-                             label: "Edit",
-                             onClick: () => setIsEditing(true),
-                             destructive: false
+                            icon: <Pencil size={18} />,
+                            label: "common.edit",
+                            onClick: () => setIsEditing(true),
+                            destructive: false
                         },
                         {
-                             icon: <ShieldAlert size={18} />,
-                             label: account.isActive ? "Deactivate" : "Activate",
-                             onClick: async () => {
-                                 try {
-                                     await toggleFinancialAccountActive(account.id, !account.isActive)
-                                     queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
-                                     queryClient.invalidateQueries({ queryKey: ["financial-account", account.id] })
-                                     toast.success(`Account ${account.isActive ? "deactivated" : "activated"} successfully`)
-                                     router.refresh()
-                                 } catch (error: any) {
-                                     toast.error(error.message || "Failed to toggle account status")
-                                 }
-                             },
-                             destructive: account.isActive
+                            icon: <ShieldAlert size={18} />,
+                            label: account.isActive ? "common.deactivate" : "common.activate",
+                            onClick: async () => {
+                                try {
+                                    await toggleFinancialAccountActive(account.id, !account.isActive)
+                                    queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
+                                    queryClient.invalidateQueries({ queryKey: ["financial-account", account.id] })
+                                    toast.success(`Account ${account.isActive ? "deactivated" : "activated"} successfully`)
+                                    router.refresh()
+                                } catch (error: any) {
+                                    toast.error(error.message || "Failed to toggle account status")
+                                }
+                            },
+                            destructive: account.isActive
                         },
                         {
-                             icon: <Trash2 size={18} />,
-                             label: "Delete",
-                             onClick: () => setIsDeleting(true),
-                             destructive: true
+                            icon: <Trash2 size={18} />,
+                            label: "common.delete",
+                            onClick: () => setIsDeleting(true),
+                            destructive: true
                         }
                     ])
                 ]}
@@ -154,19 +155,18 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
                         <div className="mx-auto w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center text-rose-600 mb-2">
                             <ShieldAlert size={32} />
                         </div>
-                        <AlertDialogTitle className="text-center text-2xl font-black">Dangerous Territory!</AlertDialogTitle>
+                        <AlertDialogTitle className="text-center text-2xl font-black">{tran("common.dangerous_territory")}</AlertDialogTitle>
                         <AlertDialogDescription className="text-center text-base">
-                            This will delete <span className="font-bold text-foreground">"{account?.name}"</span>.
-                            Accounts with transaction history cannot be deleted. This is irreversible.
+                            {tran("accounts.delete_account_confirm_desc", { name: account?.name || "" })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="gap-2 sm:gap-0 mt-2">
-                        <AlertDialogCancel className="h-12 rounded-2xl font-bold border-none bg-muted">No, Keep It</AlertDialogCancel>
+                        <AlertDialogCancel className="h-12 rounded-2xl font-bold border-none bg-muted">{tran("common.no_keep_it")}</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleDelete}
                             className="h-12 rounded-2xl font-bold bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-200"
                         >
-                            Yes, Delete Account
+                            {tran("accounts.yes_delete_account")}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
