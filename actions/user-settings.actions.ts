@@ -5,6 +5,7 @@ import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/prisma/prisma";
 import packageJson from "@/package.json";
 import { UserSettingsInput } from "@/types/user/UserSettingsInput";
+import { setGlobalUserConfig } from "@/utility/global-user-config";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
@@ -17,22 +18,25 @@ export async function upsertUserSettings(data: UserSettingsInput) {
     where: { userId },
     create: {
       userId: userId,
-      currency: data.currency ?? Currency.INR,
       dateFormat: data.dateFormat ?? "dd/MM/yyyy",
       timeFormat: data.timeFormat ?? "hh:mm a",
       language: data.language ?? "en",
       theme: data.theme ?? ThemeMode.AUTO,
+      currency: data.currency ?? Currency.INR,
+      locale: data.locale ?? "en-IN"
     },
     update: {
-      currency: data.currency,
       dateFormat: data.dateFormat,
       timeFormat: data.timeFormat,
       language: data.language,
       theme: data.theme,
+      currency: data.currency,
+      locale: data.locale
     },
   });
 
-  revalidatePath("/", "layout");
+  setGlobalUserConfig(data);
+  revalidatePath("/");
   return result;
 }
 
@@ -70,4 +74,13 @@ export async function getCredientialAccounts() {
 
 export async function getAppVersion() {
   return packageJson.version;
+}
+
+export async function getEnabledOAuthProviders() {
+  const { envServer } = await import("@/lib/env.server");
+  return {
+    google: !!(envServer.GOOGLE_CLIENT_ID && envServer.GOOGLE_CLIENT_SECRET),
+    discord: !!(envServer.DISCORD_CLIENT_ID && envServer.DISCORD_CLIENT_SECRET),
+    facebook: !!(envServer.FACEBOOK_CLIENT_ID && envServer.FACEBOOK_CLIENT_SECRET),
+  };
 }

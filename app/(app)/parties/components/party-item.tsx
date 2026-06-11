@@ -1,12 +1,11 @@
 "use client"
 
-import { useUserConfig } from "@/components/providers/user-config-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 
 import { cn } from "@/lib/utils";
-import { getInitials } from "@/utility/party";
+import { getInitials } from "@/utility/common-function";
 import { formatAmount } from "@/utility/transaction";
 
 const getRandomAvatarColor = () => {
@@ -32,8 +31,8 @@ const PartyItem = ({
   isActive = true,
 }: PartyItemProps) => {
   const router = useRouter()
-  const { currency } = useUserConfig();
   const avatarColor = useMemo(() => getRandomAvatarColor(), [])
+  const isTemp = id.toString().startsWith("temp-id");
 
   const isReceive = amount > 0
   const isSettled = amount === 0
@@ -43,10 +42,11 @@ const PartyItem = ({
   return (
     <>
       <div
-        onClick={() => router.push(`/parties/${id}`)}
+        onClick={() => !isTemp && router.push(`/parties/${id}`)}
         className={cn(
           "group relative flex items-center gap-4 rounded-[2rem] border-2 border-primary/10 bg-background p-4 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] dark:shadow-none dark:bg-muted/10 transition-all hover:border-primary/30 hover:bg-muted/5 hover:-translate-y-1 active:scale-[0.98] cursor-pointer",
-          !isActive && "grayscale-100"
+          !isActive && "grayscale-100",
+          isTemp && "grayscale-100 cursor-default"
         )}
       >
         <div className="relative">
@@ -89,7 +89,7 @@ const PartyItem = ({
                 : "text-rose-600 dark:text-rose-400"
               }`}
           >
-            {formatAmount(amount, currency)}
+            {formatAmount(amount)}
           </p>
 
           <span

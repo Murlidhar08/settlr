@@ -18,7 +18,7 @@ export const usePartyDetails = (partyId: string) => {
     const businessId = session?.user?.activeBusinessId;
 
     return useQuery({
-        queryKey: ["party-details", partyId, businessId],
+        queryKey: ["party-detail", partyId, businessId],
         queryFn: () => getPartyDetails(partyId),
         enabled: !!partyId,
     });

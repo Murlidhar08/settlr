@@ -12,7 +12,7 @@ export function ImpersonationIndicator() {
     if (session?.session.impersonatedBy == null) return null
 
     return (
-        <div className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-8 duration-500 w-[90%] sm:w-auto max-w-lg">
+        <div className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-100 animate-in slide-in-from-bottom-8 duration-500 w-[90%] sm:w-auto max-w-lg">
             <div className="flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-2 sm:py-3 rounded-2xl sm:rounded-[2.5rem] bg-amber-500/10 backdrop-blur-3xl border border-amber-500/20 shadow-2xl shadow-amber-500/10">
                 <div className="p-2 sm:p-3 bg-amber-500/20 rounded-xl sm:rounded-2xl shrink-0">
                     <ShieldAlert className="text-amber-600 size-4 sm:size-5" />

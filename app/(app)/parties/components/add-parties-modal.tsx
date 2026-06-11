@@ -4,33 +4,55 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { tran } from "@/lib/languages/i18n"
+import { useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
-import { Building2, Loader2 } from "lucide-react"
+import { Loader2, Users, Truck, Briefcase, CircleDot, CheckCircle2, Edit2, Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { ReactNode, useState } from "react"
+import { ReactNode, useEffect, useState } from "react"
 import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 
 /* ========================================================= */
 /* ACTIONS + TYPES */
 /* ========================================================= */
-import { addParties } from "@/actions/parties.actions"
+import { addParties, updateParty } from "@/actions/parties.actions"
 import { PartyType } from "@/lib/generated/prisma/enums"
 import { PartyInput } from "@/types/party/PartyRes"
 
 interface PartiesProps {
   title?: string
   type: PartyType
-  children: ReactNode
+  partyData?: {
+    id: string
+    name: string
+    contactNo?: string | null
+    type: PartyType
+  }
+  children?: ReactNode
+  openInternal?: boolean
+  setOpenInternal?: (open: boolean) => void
 }
 
 /* ========================================================= */
 /* COMPONENT */
 /* ========================================================= */
 
-const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
+const AddPartiesModal = ({
+  title,
+  type,
+  partyData,
+  children,
+  openInternal,
+  setOpenInternal,
+}: PartiesProps) => {
   const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const [openState, setOpenState] = useState(false)
+  const open = openInternal !== undefined ? openInternal : openState
+  const setOpen = (val: boolean) => {
+    if (setOpenInternal) setOpenInternal(val)
+    else setOpenState(val)
+  }
   const queryClient = useQueryClient()
 
   const [data, setData] = useState<PartyInput>({
@@ -39,73 +61,82 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
     contactNo: null,
   })
 
-  const partyMutation = useMutation({
-    mutationFn: (partyData: PartyInput) => addParties(partyData),
-    onMutate: async (newParty) => {
-      // 1. Cancel refetches
-      await queryClient.cancelQueries({ queryKey: ["party-list", type] })
+  const [isPending, setIsPending] = useState(false)
 
-      // 2. Snapshot
-      const previousParties = queryClient.getQueriesData({ queryKey: ["party-list", type] })
-
-      // 3. Optimistically update
-      const tempId = "temp-" + Date.now();
-      const optimisticParty = {
-        ...newParty,
-        id: tempId,
-        amount: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-
-      queryClient.setQueriesData({ queryKey: ["party-list", type] }, (old: any) => {
-        if (!old) return [optimisticParty];
-        return [...old, optimisticParty];
-      })
-
-      return { previousParties }
-    },
-    onError: (err, newParty, context: any) => {
-      if (context?.previousParties) {
-        context.previousParties.forEach(([key, value]: any) => queryClient.setQueryData(key, value))
-      }
-      toast.error("Failed to add party")
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["party-list", type] })
-      queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
-    }
-  })
-
-  const handleAddParty = async () => {
-    if (!data.name.trim()) {
-      return toast.error("Party name is required")
-    }
-
-    partyMutation.mutate(data, {
-      onSuccess: () => {
-        toast.success("Party added successfully")
-        queryClient.invalidateQueries({ queryKey: ["party-list", type] })
+  useEffect(() => {
+    if (open) {
+      if (partyData) {
         setData({
-          type,
+          name: partyData.name,
+          type: partyData.type || type,
+          contactNo: partyData.contactNo || null,
+        })
+      } else {
+        setData({
           name: "",
+          type: type,
           contactNo: null,
         })
-        setOpen(false)
-        router.refresh()
       }
-    })
+    }
+  }, [open, partyData, type])
+
+  const handleSave = async () => {
+    if (!data.name.trim()) {
+      return toast.error(tran("parties.msg.name_required"))
+    }
+
+    setIsPending(true)
+    try {
+      if (partyData) {
+        const success = await updateParty(partyData.id, data)
+        if (success) {
+          toast.success(tran("parties.msg.updated") || "Party updated successfully", {
+            icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+          })
+          queryClient.invalidateQueries({ queryKey: ["party-list"] })
+          queryClient.invalidateQueries({ queryKey: ["party-detail", partyData.id] })
+          setOpen(false)
+          router.refresh()
+        } else {
+          toast.error(tran("parties.msg.update_failed") || "Failed to update party")
+        }
+      } else {
+        const success = await addParties(data)
+        if (success) {
+          toast.success(tran("parties.msg.added"), {
+            icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+          })
+          queryClient.invalidateQueries({ queryKey: ["party-list"] })
+          setData({
+            type,
+            name: "",
+            contactNo: null,
+          })
+          setOpen(false)
+          router.refresh()
+        } else {
+          toast.error(tran("parties.msg.add_failed"))
+        }
+      }
+    } catch (error) {
+      toast.error("Failed to save party")
+    } finally {
+      setIsPending(false)
+    }
   }
 
   const resolvedTitle =
     title ??
-    (type === PartyType.CUSTOMER
-      ? "Add New Customer"
-      : type === PartyType.SUPPLIER
-        ? "Add New Supplier"
-        : type === PartyType.EMPLOYEE
-          ? "Add New Employee"
-          : "Add New Party")
+    (partyData
+      ? "Edit Party"
+      : (type === PartyType.CUSTOMER
+        ? tran("parties.add_new_customer")
+        : type === PartyType.SUPPLIER
+          ? tran("parties.add_new_supplier")
+          : type === PartyType.EMPLOYEE
+            ? tran("parties.add_new_employee")
+            : tran("parties.add_new_party")))
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -124,9 +155,11 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
 
   return (
     <>
-      <div onClick={() => setOpen(true)} className="inline-block cursor-pointer active:scale-95 transition-transform">
-        {children}
-      </div>
+      {children && (
+        <div onClick={() => setOpen(true)} className="inline-block cursor-pointer active:scale-95 transition-transform">
+          {children}
+        </div>
+      )}
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
@@ -137,11 +170,13 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
           <div className="px-6 py-6 border-b bg-muted/20 backdrop-blur-sm">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-2xl flex items-center justify-center bg-primary text-white shadow-lg shadow-primary/20 border border-primary/20">
-                <Building2 size={20} />
+                {partyData ? <Edit2 size={20} /> : <Plus size={20} />}
               </div>
               <div>
                 <h2 className="text-xl font-black tracking-tight leading-tight">{resolvedTitle}</h2>
-                <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground opacity-60">Directory Entry</p>
+                <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground opacity-60">
+                  {partyData ? "Modify Existing Party" : tran("parties.directory_entry")}
+                </p>
               </div>
             </div>
           </div>
@@ -154,37 +189,76 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
               animate="visible"
               className="px-6 py-8 space-y-8"
             >
+              {/* Full Name */}
               <motion.div variants={itemVariants} className="space-y-3">
                 <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 ml-1">
-                  Full Name / Business Title
+                  {tran("parties.full_name_business")}
                 </Label>
                 <Input
-                  placeholder="Ex. Reliance Industries Ltd"
+                  placeholder={tran("parties.reliance_placeholder")}
                   value={data.name}
                   onChange={(e) =>
-                    setData((pre) => ({ ...pre, name: e.target.value }))
+                    setData((pre: PartyInput) => ({ ...pre, name: e.target.value }))
                   }
                   className="h-14 rounded-2xl border-2 bg-transparent px-4 text-base font-bold shadow-sm outline-none focus:border-primary transition-all"
                   autoFocus
                 />
               </motion.div>
 
+              {/* Primary Contact */}
               <motion.div variants={itemVariants} className="space-y-3">
                 <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 ml-1">
-                  Primary Contact Number
+                  {tran("parties.primary_contact")}
                 </Label>
                 <Input
-                  placeholder="+91 00000 00000 (Optional)"
+                  placeholder={tran("parties.phone_placeholder")}
                   inputMode="numeric"
                   value={data.contactNo ?? ""}
                   onChange={(e) =>
-                    setData((pre) => ({
+                    setData((pre: PartyInput) => ({
                       ...pre,
                       contactNo: e.target.value || null,
                     }))
                   }
                   className="h-14 rounded-2xl border-2 bg-transparent px-4 text-base font-bold shadow-sm outline-none focus:border-primary transition-all"
                 />
+              </motion.div>
+
+              {/* Party Type Selection */}
+              <motion.div variants={itemVariants} className="space-y-4">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 ml-1">
+                  {tran("parties.directory_type") || "Directory Type"}
+                </Label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    { id: PartyType.CUSTOMER, label: tran("parties.customers"), icon: Users },
+                    { id: PartyType.SUPPLIER, label: tran("parties.suppliers"), icon: Truck },
+                    { id: PartyType.EMPLOYEE, label: tran("parties.employees"), icon: Briefcase },
+                    { id: PartyType.OTHER, label: tran("parties.other"), icon: CircleDot },
+                  ].map((pType) => (
+                    <button
+                      key={pType.id}
+                      type="button"
+                      disabled={!partyData} // Disabled and readonly when adding
+                      onClick={() => {
+                        setData({
+                          ...data,
+                          type: pType.id
+                        });
+                      }}
+                      className={cn(
+                        "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all active:scale-95 text-center",
+                        data.type === pType.id
+                          ? "bg-primary/5 border-primary text-primary shadow-sm font-black"
+                          : "bg-background border-muted hover:border-primary/30 text-muted-foreground",
+                        !partyData && "opacity-50 cursor-not-allowed"
+                      )}
+                    >
+                      <pType.icon size={20} />
+                      <span className="text-[10px] font-black uppercase tracking-wider">{pType.label}</span>
+                    </button>
+                  ))}
+                </div>
               </motion.div>
             </motion.div>
           </div>
@@ -197,32 +271,35 @@ const AddPartiesModal = ({ title, type, children }: PartiesProps) => {
                 className="h-14 flex-1 rounded-2xl text-base font-bold border-2"
                 onClick={() => setOpen(false)}
               >
-                Discard
+                {tran("parties.discard")}
               </Button>
 
               <Button
-                onClick={handleAddParty}
-                disabled={partyMutation.isPending}
+                onClick={handleSave}
+                disabled={isPending}
                 className="h-14 flex-[1.5] rounded-2xl bg-primary text-white shadow-xl shadow-primary/20 active:scale-[0.97] transition-all font-black uppercase tracking-widest text-base gap-2"
               >
-                {partyMutation.isPending ? (
+                {isPending ? (
                   <>
                     <Loader2 className="animate-spin" size={20} />
-                    Hang on...
+                    {tran("parties.hang_on")}
                   </>
                 ) : (
                   <>
-                    Create {type === PartyType.CUSTOMER ? "Customer" :
-                      type === PartyType.SUPPLIER ? "Supplier" :
-                        type === PartyType.EMPLOYEE ? "Employee" :
-                          "Party"}
+                    {partyData ? (
+                      "Save Changes"
+                    ) : (
+                      type === PartyType.CUSTOMER ? tran("parties.create_customer") :
+                        type === PartyType.SUPPLIER ? tran("parties.create_supplier") :
+                          type === PartyType.EMPLOYEE ? tran("parties.create_employee") :
+                            tran("parties.create_party")
+                    )}
                   </>
                 )}
               </Button>
             </div>
           </div>
         </SheetContent>
-
       </Sheet>
     </>
   )

@@ -1,5 +1,6 @@
-import { createAuthClient } from "better-auth/react"
-import { adminClient, customSessionClient, inferAdditionalFields, lastLoginMethodClient, twoFactorClient } from "better-auth/client/plugins"
+import { passkeyClient } from "@better-auth/passkey/client";
+import { adminClient, customSessionClient, inferAdditionalFields, lastLoginMethodClient, multiSessionClient, twoFactorClient, usernameClient } from "better-auth/client/plugins";
+import { createAuthClient } from "better-auth/react";
 import { Auth } from "./auth";
 
 /**
@@ -20,7 +21,10 @@ export const authClient = createAuthClient({
       },
     }),
     lastLoginMethodClient(),
-    adminClient()
+    adminClient(),
+    passkeyClient(),
+    multiSessionClient(),
+    usernameClient()
   ],
 })
 
@@ -32,7 +36,7 @@ export const { signIn, signUp, signOut, useSession, getSession, resetPassword } 
 /**
  * Social providers
  */
-type SocialProvider = "google" | "discord"
+type SocialProvider = "google" | "discord" | "facebook"
 
 export const signInWithSocial = async (provider: SocialProvider) => {
   return await authClient.signIn.social({
@@ -43,3 +47,4 @@ export const signInWithSocial = async (provider: SocialProvider) => {
 
 export const signInWithGoogle = async () => await signInWithSocial("google");
 export const signInWithDiscord = async () => await signInWithSocial("discord");
+export const signInWithFacebook = async () => await signInWithSocial("facebook");

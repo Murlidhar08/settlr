@@ -2,7 +2,7 @@ import zod from "zod";
 
 const envSchema = zod.object({
   // Application
-  NODE_ENV: zod.string().nonempty(),
+  NODE_ENV: zod.string().default("production"),
   NEXT_PUBLIC_APP_NAME: zod.string().nonempty(),
   NEXT_PUBLIC_APP_DESCRIPTION: zod.string().nonempty(),
 
@@ -28,7 +28,11 @@ const envSchema = zod.object({
 
   //  Discord
   DISCORD_CLIENT_ID: zod.string().optional(),
-  DISCORD_CLIENT_SECRET: zod.string().optional()
+  DISCORD_CLIENT_SECRET: zod.string().optional(),
+
+  //  Facebook
+  FACEBOOK_CLIENT_ID: zod.string().optional(),
+  FACEBOOK_CLIENT_SECRET: zod.string().optional(),
 })
 
 /**

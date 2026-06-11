@@ -7,44 +7,78 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id                String        @id
-  name              String
-  email             String        @unique
-  emailVerified     Boolean       @default(false)
-  image             String?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  contactNo         String?
-  address           String?
-  activeBusinessId  String?
-  twoFactorEnabled  Boolean?      @default(false)
-  banned            Boolean?      @default(false)
-  banReason         String?
-  banExpires        DateTime?
-  role              String?       @default("user")
-  accounts          Account[]
-  createdBusinesses Business[]
-  sessions          Session[]
-  transactions      Transaction[]
-  twofactors        TwoFactor[]
-  userSettings      UserSettings?
+// Enums
+enum ThemeMode {
+  AUTO
+  LIGHT
+  DARK
+}
 
+enum UserRole {
+  admin
+  user
+}
+
+enum UserStatus {
+  pendingapproval
+  approved
+  suspended
+}
+
+enum Currency {
+  INR
+  USD
+  EUR
+}
+
+// Better Auth tables
+model User {
+  id               String        @id
+  name             String
+  email            String
+  emailVerified    Boolean       @default(false)
+  image            String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  role             UserRole      @default(user)
+  status           UserStatus    @default(pendingapproval)
+  banned           Boolean?      @default(false)
+  banReason        String?
+  banExpires       DateTime?
+  twoFactorEnabled Boolean?      @default(false)
+  contactNo        String?
+  address          String?
+  sessions         Session[]
+  accounts         Account[]
+  twofactors       TwoFactor[]
+  passkeys         Passkey[]
+  userSettings     UserSettings?
+
+  username        String?
+  displayUsername String?
+
+  activeBusinessId  String?
+  createdBusinesses Business[]
+  transactions      Transaction[]
+
+  @@unique([email])
+  @@unique([username])
   @@map("user")
 }
 
 model Session {
   id             String   @id
   expiresAt      DateTime
-  token          String   @unique
+  token          String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   ipAddress      String?
   userAgent      String?
   userId         String
-  impersonatedBy String?
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy String?
 
+  @@unique([token])
   @@index([userId])
   @@map("session")
 }
@@ -54,6 +88,7 @@ model Account {
   accountId             String
   providerId            String
   userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -63,7 +98,6 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("account")
@@ -82,28 +116,65 @@ model Verification {
 }
 
 model TwoFactor {
-  id          String @id
+  id          String   @id
   secret      String
   backupCodes String
   userId      String
-  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verified    Boolean? @default(true)
 
   @@index([secret])
   @@index([userId])
   @@map("twoFactor")
 }
 
+model Passkey {
+  id           String    @id
+  name         String?
+  publicKey    String
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialID String
+  counter      Int
+  deviceType   String
+  backedUp     Boolean
+  transports   String?
+  createdAt    DateTime?
+  aaguid       String?
+
+  @@index([userId])
+  @@index([credentialID])
+  @@map("passkey")
+}
+
+// Application settings tables
 model UserSettings {
   userId     String    @id
   currency   Currency  @default(INR)
+  locale     String    @default("en-IN")
   dateFormat String    @default("dd/MM/yyyy")
   timeFormat String    @default("hh:mm a")
   language   String    @default("en")
   theme      ThemeMode @default(AUTO)
-  createdAt  DateTime  @default(now())
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("userSettings")
+}
+
+model AppConfig {
+  id                  String   @id @default("singleton")
+  smtpHost            String?
+  smtpPort            Int?     @default(587)
+  smtpUser            String?
+  smtpPass            String?
+  smtpSecure          Boolean? @default(false)
+  fromEmail           String?
+  googleClientId      String?
+  googleClientSecret  String?
+  discordClientId     String?
+  discordClientSecret String?
+
+  @@map("appConfig")
 }
 
 model Business {
@@ -199,18 +270,6 @@ model Transaction {
   @@map("transaction")
 }
 
-enum Currency {
-  INR
-  USD
-  EUR
-}
-
-enum ThemeMode {
-  AUTO
-  LIGHT
-  DARK
-}
-
 enum FinancialAccountType {
   MONEY
   PARTY
@@ -236,20 +295,4 @@ enum CategoryType {
   ASSET
   EQUITY
   ADJUSTMENT
-}
-
-model AppConfig {
-  id                  String   @id @default("singleton")
-  smtpHost            String?
-  smtpPort            Int?     @default(587)
-  smtpUser            String?
-  smtpPass            String?
-  smtpSecure          Boolean? @default(false)
-  fromEmail           String?
-  googleClientId      String?
-  googleClientSecret  String?
-  discordClientId     String?
-  discordClientSecret String?
-
-  @@map("appConfig")
 }

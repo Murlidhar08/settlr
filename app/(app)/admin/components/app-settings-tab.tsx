@@ -1,8 +1,8 @@
 "use client";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAppConfig } from "@/tanstacks/admin";
 import { AppSettingsForm } from "./app-settings-form";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export function AppSettingsTab() {
     const { data: config, isLoading } = useAppConfig();
@@ -10,7 +10,7 @@ export function AppSettingsTab() {
     if (isLoading) {
         return (
             <div className="space-y-6 animate-in fade-in duration-500">
-                <Skeleton className="h-[500px] w-full rounded-2xl" />
+                <Skeleton className="h-125 w-full rounded-2xl" />
             </div>
         );
     }

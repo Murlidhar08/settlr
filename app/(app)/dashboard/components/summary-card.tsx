@@ -1,19 +1,13 @@
 "use client";
 
 import { CountUp } from "@/components/ui/count-up";
-import { Currency } from "@/lib/generated/prisma/enums";
-import { t } from "@/lib/languages/i18n";
+import { tran } from "@/lib/languages/i18n";
 import { cn } from "@/lib/utils";
 import { useDashboardSummary } from "@/tanstacks/dashboard";
-import { StatusCard } from "./status-card";
 import { MoveDownLeft, MoveUpRight, PiggyBank } from "lucide-react";
+import { StatusCard } from "./status-card";
 
-interface SummaryStatsProps {
-  currency: Currency;
-  language: string;
-}
-
-export default function SummaryCard({ currency, language }: SummaryStatsProps) {
+export default function SummaryCard() {
   const { data, isPending } = useDashboardSummary();
 
   const liquidCash = data?.liquidCash || 0;
@@ -31,9 +25,9 @@ export default function SummaryCard({ currency, language }: SummaryStatsProps) {
 
         <div className="relative z-10 flex justify-between items-start">
           <div className="space-y-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">{t("dashboard.total_balance", language)}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">{tran("dashboard.total_balance")}</p>
             <p className="text-2xl font-black tracking-tighter sm:text-4xl leading-none">
-              <CountUp value={liquidCash} currency={currency} isLoading={isPending} />
+              <CountUp value={liquidCash} isLoading={isPending} />
             </p>
           </div>
           <div className="h-10 w-10 sm:h-14 sm:w-14 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
@@ -43,9 +37,9 @@ export default function SummaryCard({ currency, language }: SummaryStatsProps) {
 
         <div className="relative z-10 mt-6 flex items-center gap-3">
           <div className="px-3 py-1 rounded-full bg-white/10 border border-white/10 backdrop-blur-md">
-            <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest mr-2">Net Worth</span>
+            <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest mr-2">{tran("dashboard.net_worth")}</span>
             <span className="text-xs font-black text-white leading-none">
-              <CountUp value={netWorth} currency={currency} isLoading={isPending} />
+              <CountUp value={netWorth} isLoading={isPending} />
             </span>
           </div>
         </div>
@@ -56,9 +50,9 @@ export default function SummaryCard({ currency, language }: SummaryStatsProps) {
         <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-indigo-500/30 blur-3xl group-hover:bg-indigo-500/20 transition-all duration-700" />
         <div className="relative z-10 flex justify-between items-start">
           <div className="space-y-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">{t("dashboard.cash_flow", language)}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">{tran("dashboard.cash_flow")}</p>
             <p className="text-2xl font-black tracking-tighter sm:text-4xl text-white leading-none">
-              <CountUp value={todayNetCash} currency={currency} isLoading={isPending} />
+              <CountUp value={todayNetCash} isLoading={isPending} />
             </p>
           </div>
           <div className="h-10 w-10 sm:h-14 sm:w-14 rounded-2xl bg-white/5 flex items-center justify-center backdrop-blur-md border border-white/10 shadow-inner group-hover:scale-110 transition-all duration-500">
@@ -83,15 +77,15 @@ export default function SummaryCard({ currency, language }: SummaryStatsProps) {
           ) : (
             <MoveDownLeft className="h-3 w-3" />
           )}
-          {todayNetCash >= 0 ? t("dashboard.surplus", language) : t("dashboard.deficit", language)}
+          {todayNetCash >= 0 ? tran("dashboard.surplus") : tran("dashboard.deficit")}
         </div>
       </div>
 
       {/* Receivable */}
       <StatusCard
-        title={t("dashboard.receivables", language)}
-        amount={<CountUp value={Math.abs(receivable)} currency={currency} isLoading={isPending} />}
-        subtitle={t("dashboard.you_get", language)}
+        title={tran("dashboard.receivables")}
+        amount={<CountUp value={Math.abs(receivable)} isLoading={isPending} />}
+        subtitle={tran("dashboard.you_get")}
         icon={<MoveDownLeft />}
         positive
         delayClass="delay-200"
@@ -99,9 +93,9 @@ export default function SummaryCard({ currency, language }: SummaryStatsProps) {
 
       {/* Payable */}
       <StatusCard
-        title={t("dashboard.payables", language)}
-        amount={<CountUp value={Math.abs(payable)} currency={currency} isLoading={isPending} />}
-        subtitle={t("dashboard.you_give", language)}
+        title={tran("dashboard.payables")}
+        amount={<CountUp value={Math.abs(payable)} isLoading={isPending} />}
+        subtitle={tran("dashboard.you_give")}
         icon={<MoveUpRight />}
         positive={false}
         delayClass="delay-300"

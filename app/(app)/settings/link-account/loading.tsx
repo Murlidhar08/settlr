@@ -5,6 +5,7 @@ export default function LinkAccountLoading() {
     return (
         <div className="min-h-screen bg-background">
             <BackHeader title="Linked Accounts" />
+
             <div className="mx-auto max-w-lg p-6 mt-6 space-y-8 animate-in fade-in duration-500">
                 <div className="space-y-4">
                     <Skeleton className="h-5 w-32 rounded-full" />

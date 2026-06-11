@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { tran } from "@/lib/languages/i18n";
 import { cn } from "@/lib/utils";
 import clsx from "clsx";
 
@@ -30,10 +31,10 @@ export function BalanceCard({
   const isPay = netBalance < 0;
 
   const label = isReceive
-    ? "Net Balance to Receive"
+    ? tran("parties.new_balance_receive")
     : isPay
-      ? "Net Balance to Pay"
-      : "Settled";
+      ? tran("parties.new_balance_pay")
+      : tran("parties.settled");
 
   return (
     <Card className={cn(
@@ -80,7 +81,7 @@ export function BalanceCard({
           {/* Totals */}
           <div className="flex gap-12 pt-2">
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">You Pay</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">{tran("parties.you_pay")}</span>
               <span className="text-xl font-black text-rose-500 dark:text-rose-400 tracking-tight">
                 -{currency}
                 {formatAmount(totalPaid)}
@@ -88,7 +89,7 @@ export function BalanceCard({
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">You Receive</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">{tran("parties.you_receive")}</span>
               <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
                 +{currency}
                 {formatAmount(totalReceived)}

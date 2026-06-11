@@ -109,9 +109,9 @@ const TransactionItem = ({
 
               {(fromAccount || toAccount) && (
                 <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted/40 text-[9px] font-bold uppercase tracking-tighter text-muted-foreground/50 border border-muted-foreground/5">
-                  <span className="truncate max-w-[70px]">{fromAccount || '...'}</span>
+                  <span className="truncate max-w-17.5">{fromAccount || '...'}</span>
                   <ArrowRight size={8} className="opacity-40" />
-                  <span className="truncate max-w-[70px] text-foreground/40">{toAccount || '...'}</span>
+                  <span className="truncate max-w-17.5 text-foreground/40">{toAccount || '...'}</span>
                 </div>
               )}
             </div>
@@ -127,7 +127,7 @@ const TransactionItem = ({
                   ? "text-emerald-600 dark:text-emerald-400"
                   : "text-rose-600 dark:text-rose-400"
             )}>
-              {isNeutral ? "" : isIn ? "+" : "-"}{formatAmount(Number(amount), currency as any, false)}
+              {isNeutral ? "" : isIn ? "+" : "-"}{formatAmount(Number(amount), false)}
             </p>
           </div>
         </div>

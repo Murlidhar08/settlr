@@ -22,6 +22,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useSession } from "@/lib/auth/auth-client"
 import { Business } from "@/lib/generated/prisma/client"
+import { tran } from "@/lib/languages/i18n"
 import { cn } from "@/lib/utils"
 import { useBusinessList } from "@/tanstacks/business"
 import { AnimatePresence, motion } from "framer-motion"
@@ -50,9 +51,9 @@ export default function BusinessPage() {
         try {
             await switchBusiness(id)
             router.push("/dashboard")
-            toast.success("Active business switched")
+            toast.success(tran("business.msg.switched"))
         } catch (error) {
-            toast.error("Failed to switch business")
+            toast.error(tran("business.msg.switch_failed"))
         }
     }
 
@@ -64,9 +65,9 @@ export default function BusinessPage() {
             setNewName("")
             setIsAdding(false)
             await refetch()
-            toast.success("Business created successfully")
+            toast.success(tran("business.msg.created"))
         } catch (error: any) {
-            toast.error(error.message || "Failed to create business")
+            toast.error(error.message || tran("business.msg.create_failed"))
         } finally {
             setIsSubmitting(false)
         }
@@ -79,9 +80,9 @@ export default function BusinessPage() {
             await updateBusiness(id, editName)
             setEditingId(null)
             await refetch()
-            toast.success("Business updated successfully")
+            toast.success(tran("business.msg.updated"))
         } catch (error: any) {
-            toast.error(error.message || "Failed to update business")
+            toast.error(error.message || tran("business.msg.update_failed"))
         } finally {
             setIsSubmitting(false)
         }
@@ -94,9 +95,9 @@ export default function BusinessPage() {
             await deleteBusiness(deleteId)
             setDeleteId(null)
             await refetch()
-            toast.success("Business deleted successfully")
+            toast.success(tran("business.msg.deleted"))
         } catch (error: any) {
-            toast.error(error.message || "Failed to delete business")
+            toast.error(error.message || tran("business.msg.delete_failed"))
         } finally {
             setIsSubmitting(false)
         }
@@ -106,20 +107,20 @@ export default function BusinessPage() {
 
     return (
         <div className="w-full bg-background pb-34">
-            <BackHeader title="Manage Businesses" />
+            <BackHeader title={tran("business.manage_businesses")} />
 
             <div className="mx-auto max-w-2xl p-6 space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h3 className="text-xl font-bold">Your Businesses</h3>
-                        <p className="text-sm text-muted-foreground">Manage and organize your business entities</p>
+                        <h3 className="text-xl font-bold">{tran("business.your_businesses")}</h3>
+                        <p className="text-sm text-muted-foreground">{tran("business.manage_and_organize")}</p>
                     </div>
                     {!isAdding && (
                         <Button
                             onClick={() => setIsAdding(true)}
                             className="gap-2 rounded-full shadow-lg hover:shadow-xl transition-all"
                         >
-                            <Plus size={18} /> Add New
+                            <Plus size={18} /> {tran("business.add_new")}
                         </Button>
                     )}
                 </div>
@@ -135,18 +136,18 @@ export default function BusinessPage() {
                             <Card className="p-4 border-2 border-primary/20 bg-primary/5 shadow-sm">
                                 <div className="space-y-4">
                                     <h4 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                                        <Building2 size={14} /> NEW BUSINESS
+                                        <Building2 size={14} /> {tran("business.new_business")}
                                     </h4>
                                     <div className="flex gap-2">
                                         <Input
-                                            placeholder="Enter business name..."
+                                            placeholder={tran("business.enter_name")}
                                             value={newName}
                                             onChange={(e) => setNewName(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
                                             autoFocus
                                             className="h-12 text-lg font-medium rounded-xl"
                                         />
-                                        <Button onClick={handleAdd} className="h-12 px-6 rounded-xl font-bold">Create</Button>
+                                        <Button onClick={handleAdd} className="h-12 px-6 rounded-xl font-bold">{tran("business.create")}</Button>
                                         <Button variant="ghost" onClick={() => setIsAdding(false)} className="h-12 w-12 rounded-xl text-muted-foreground"><X size={20} /></Button>
                                     </div>
                                 </div>
@@ -161,7 +162,7 @@ export default function BusinessPage() {
                     ) : businesses.length === 0 ? (
                         <div className="py-20 text-center space-y-4">
                             <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center text-2xl">🏢</div>
-                            <p className="text-muted-foreground font-medium">No businesses found. Add one to get started.</p>
+                            <p className="text-muted-foreground font-medium">{tran("business.no_businesses")}</p>
                         </div>
                     ) : (
                         businesses.map((business, index) => (
@@ -205,11 +206,11 @@ export default function BusinessPage() {
                                                     <h4 className="text-xl font-bold tracking-tight">{business.name}</h4>
                                                     {activeId === business.id && (
                                                         <span className="flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-white shadow-sm">
-                                                            <Check size={10} /> Active
+                                                            <Check size={10} /> {tran("business.active")}
                                                         </span>
                                                     )}
                                                 </div>
-                                                <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">Business ID: #{business.id}</p>
+                                                <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">{tran("business.business_id")}: #{business.id}</p>
                                             </div>
                                         )}
                                     </div>
@@ -255,13 +256,13 @@ export default function BusinessPage() {
                         <div className="mx-auto w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center text-rose-600 mb-2">
                             <ShieldAlert size={32} />
                         </div>
-                        <AlertDialogTitle className="text-center text-2xl font-black">Hold on!</AlertDialogTitle>
+                        <AlertDialogTitle className="text-center text-2xl font-black">{tran("business.hold_on")}</AlertDialogTitle>
                         <AlertDialogDescription className="text-center text-base">
-                            This will permanently delete {businessToDelete ? <span className="font-bold text-foreground">"{businessToDelete.name}"</span> : "the business"} and all its associated data (Transactions, Parties, etc.). This action cannot be undone.
+                            {tran("business.delete_confirm", { name: businessToDelete ? businessToDelete.name : "" })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="gap-2 sm:gap-0">
-                        <AlertDialogCancel className="h-12 rounded-2xl font-bold border-none bg-muted">Cancel</AlertDialogCancel>
+                        <AlertDialogCancel className="h-12 rounded-2xl font-bold border-none bg-muted">{tran("common.cancel")}</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={(e) => {
                                 e.preventDefault();
@@ -271,7 +272,7 @@ export default function BusinessPage() {
                             className="h-12 rounded-2xl font-bold bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-200 gap-2"
                         >
                             {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : null}
-                            {isSubmitting ? "Deleting..." : "Yes, Delete Business"}
+                            {isSubmitting ? "Deleting..." : tran("business.yes_delete")}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

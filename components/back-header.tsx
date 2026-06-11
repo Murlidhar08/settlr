@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import { ReactNode } from "react"
 
 // Components
+import { tran } from "@/lib/languages/i18n"
 import { cn } from "@/lib/utils"
 import { Badge } from "./ui/badge"
 import { Button, buttonVariants } from "./ui/button"
@@ -64,7 +65,7 @@ const BackHeader = ({
           onClick={handleBack}
           size="icon"
           variant="secondary"
-          className="h-11 w-11 rounded-2xl bg-secondary/80 hover:bg-secondary border border-border/50 shadow-sm transition-all text-foreground"
+          className="h-8 w-8 rounded-lg bg-secondary/80 hover:bg-secondary border border-border/50 shadow-sm transition-all text-foreground"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -76,7 +77,7 @@ const BackHeader = ({
           layoutId="back-header-title"
           className="text-lg lg:text-2xl font-black tracking-tight truncate w-full text-center bg-linear-to-br from-foreground to-primary/80 bg-clip-text text-transparent"
         >
-          {title}
+          {title && tran(title)}
         </motion.h2>
 
         {description && (
@@ -88,7 +89,7 @@ const BackHeader = ({
               variant="secondary"
               className="h-5 rounded-full px-3 text-[9px] font-black uppercase tracking-[0.2em] bg-primary/10 text-primary border-primary/20"
             >
-              {description}
+              {description && tran(description)}
             </Badge>
           </motion.div>
         )}
@@ -98,20 +99,20 @@ const BackHeader = ({
       <div className="flex items-center">
         {menuItems.length > 0 ? (
           <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={cn(
-                  buttonVariants({ variant: "secondary", size: "icon" }),
-                  "h-11 w-11 rounded-2xl bg-secondary/80 hover:bg-secondary border border-border/50 shadow-sm transition-all text-foreground flex items-center justify-center outline-none"
-                )}
-              >
-                <EllipsisVertical className="h-5 w-5" />
-              </motion.button>
-            }
-          />
+            <DropdownMenuTrigger
+              render={
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={cn(
+                    buttonVariants({ variant: "secondary", size: "icon" }),
+                    "h-11 w-11 rounded-2xl bg-secondary/80 hover:bg-secondary border border-border/50 shadow-sm transition-all text-foreground flex items-center justify-center outline-none"
+                  )}
+                >
+                  <EllipsisVertical className="h-5 w-5" />
+                </motion.button>
+              }
+            />
 
             <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 mt-2 shadow-2xl border-border/50">
               {menuItems.map((item, index) => (
@@ -124,7 +125,7 @@ const BackHeader = ({
                   )}
                 >
                   {item.icon && <span className="mr-2 opacity-80 group-focus/dropdown-menu-item:opacity-100 transition-opacity">{item.icon}</span>}
-                  {item.label}
+                  {tran(item.label)}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -138,3 +139,4 @@ const BackHeader = ({
 }
 
 export { BackHeader }
+

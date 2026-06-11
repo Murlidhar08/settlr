@@ -15,12 +15,12 @@ import StatementSkeleton from "./components/statement-skeleton";
 // Lib
 import { getPartyStatement } from "@/actions/transaction.actions";
 import { FooterButtons } from "@/components/footer-buttons";
+import { FormattedDate, FormattedTime } from "@/components/ui/date-time";
 import { envClient } from "@/lib/env.client";
 import { getUserConfig } from "@/lib/user-config";
 import { cn } from "@/lib/utils";
-import { getInitials } from "@/utility/party";
+import { getInitials } from "@/utility/common-function";
 import { formatAmount } from "@/utility/transaction";
-import { FormattedDate, FormattedTime } from "@/components/ui/date-time";
 import * as motion from "framer-motion/client";
 
 import { getPartyTransactionPerspective } from "@/lib/transaction-logic";
@@ -177,11 +177,11 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
         <div className="mb-6 grid grid-cols-2 gap-4 h-24">
           <Metric
             label="You Pay"
-            value={formatAmount(totalPaid, currency, false)}
+            value={formatAmount(totalPaid, false)}
           />
           <Metric
             label="You Receive"
-            value={formatAmount(totalReceived, currency, false)}
+            value={formatAmount(totalReceived, false)}
             positive
           />
         </div>
@@ -195,7 +195,7 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
               "text-3xl font-black tracking-tighter tabular-nums",
               balance >= 0 ? "text-emerald-600" : "text-rose-600"
             )}>
-              {formatAmount(balance, currency, true)}
+              {formatAmount(balance, true)}
             </p>
           </div>
         </div>

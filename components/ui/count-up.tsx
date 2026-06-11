@@ -7,15 +7,14 @@ import { useEffect } from "react";
 
 interface CountUpProps {
   value: number;
-  currency: Currency;
   duration?: number;
   delay?: number;
   isLoading?: boolean;
 }
 
-export function CountUp({ value, currency, duration = 0.2, delay = 0, isLoading = false }: CountUpProps) {
+export function CountUp({ value, duration = 0.2, delay = 0, isLoading = false }: CountUpProps) {
   const count = useMotionValue(0);
-  const rounded = useTransform(count, (latest) => formatAmount(latest, currency));
+  const rounded = useTransform(count, (latest) => formatAmount(latest));
 
   useEffect(() => {
     if (isLoading) return;

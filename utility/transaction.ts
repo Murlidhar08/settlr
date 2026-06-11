@@ -1,13 +1,13 @@
 import { Currency } from "@/lib/generated/prisma/enums";
 import { format } from "date-fns";
+import { getGlobalUserConfig } from "./global-user-config";
 
 export const formatAmount = (
   amount: number,
-  currency: Currency = Currency.INR,
   showSign: boolean = false,
   direction?: 'IN' | 'OUT',
 ): string => {
-  const symbol = getCurrencySymbol(currency);
+  const symbol = getCurrencySymbol();
   const formattedAmount = Math.abs(amount).toLocaleString("en-IN");
 
   let sign = "";
@@ -20,8 +20,9 @@ export const formatAmount = (
   return `${sign}${symbol}${formattedAmount}`;
 };
 
-export const getCurrencySymbol = (currency: Currency = Currency.INR): string => {
-  switch (currency) {
+export const getCurrencySymbol = (currency?: Currency): string => {
+  const userCurrency = getGlobalUserConfig().currency;
+  switch (currency ?? userCurrency) {
     case Currency.USD: return "$";
     case Currency.EUR: return "€";
     case Currency.INR:
