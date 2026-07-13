@@ -5,8 +5,9 @@
 .agents
 .vscode
 resources
+!resources/scripts/docker-bootstrap.sh
 node_modules
 Dockerfile
-docker-compose.yml
+docker-compose*.yml
 npm-debug.log
 yarn-error.log

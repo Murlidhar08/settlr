@@ -60,7 +60,6 @@ export function AdminContent() {
                     },
                     {
                         id: "application-settings",
-                        hidden: true,
                         label: tran("admin.app_config.title"),
                         icon: <SettingsIcon size={20} />,
                         content: <AppSettingsTab />

@@ -1,4 +1,23 @@
 services:
+  postgres_db:
+    image: postgres:17.4
+    hostname: postgres_db
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: next_template
+      POSTGRES_USER: next_user
+      POSTGRES_PASSWORD: next_pass
+    networks:
+      - prisma-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U next_user -d next_template" ]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   settlr:
     build:
       context: .
@@ -6,8 +25,8 @@ services:
         - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
         - NEXT_PUBLIC_APP_DESCRIPTION=${NEXT_PUBLIC_APP_DESCRIPTION}
         - BETTER_AUTH_URL=${BETTER_AUTH_URL}
-        - DATABASE_URL=${DATABASE_URL}
         - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+        - DATABASE_URL=${DATABASE_URL}
     container_name: settlr
     env_file:
       - .env.production
@@ -16,12 +35,14 @@ services:
     networks:
       - prisma-network
     restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://next_user:next_pass@postgres_db:5432/next_template?schema=public"
     depends_on:
-      settlr-migrate:
-        condition: service_completed_successfully
+      postgres_db:
+        condition: service_healthy
 
   prisma-studio:
-    image: node:24.15.0
+    image: node:24-alpine
     container_name: prisma-studio
     working_dir: /app
     volumes:
@@ -29,28 +50,17 @@ services:
     command: npx prisma studio --port 5555 --browser none
     ports:
       - "5555:5555"
-    env_file:
-      - .env.production
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: "postgresql://next_user:next_pass@postgres_db:5432/next_template?schema=public"
     networks:
       - prisma-network
-
-  settlr-migrate:
-    image: node:24.15.0
-    container_name: settlr-migrate
-    working_dir: /app
-    volumes:
-      - .:/app
-    env_file:
-      - .env.production
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-    networks:
-      - prisma-network
-    command: [ "npx", "prisma", "migrate", "deploy" ]
-    restart: "no"
+    depends_on:
+      postgres_db:
+        condition: service_healthy
 
 networks:
   prisma-network:
     name: prisma-network
+
+volumes:
+  postgres_data:
