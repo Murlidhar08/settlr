@@ -10,17 +10,7 @@ RUN npm ci
 # Stage 2: Prisma & Build Base
 FROM node:24-alpine AS builder
 WORKDIR /app
-
-# Environment variables needed for build
-ENV NEXT_PUBLIC_APP_NAME="Settlr"
-ENV NEXT_PUBLIC_APP_DESCRIPTION="Settlr for managing personal finance"
-ENV BETTER_AUTH_URL="http://localhost:3000"
-ENV DATABASE_URL="postgresql://mock:mock@localhost:5432/mock"
-ENV BETTER_AUTH_SECRET="mock_secret_at_least_32_characters_long"
-ENV NODE_ENV=production
-
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/prisma ./prisma
 COPY . .
 
 # Build arguments for Next.js and environment verification
@@ -67,7 +57,7 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 
 # Set up the startup script with carriage return cleanup (handles Windows CRLF issue)
 COPY --from=builder /app/resources/scripts/docker-bootstrap.sh /usr/local/bin/bootstrap.sh
-RUN chmod +x /usr/local/bin/bootstrap.sh
+RUN sed -i 's/\r$//' /usr/local/bin/bootstrap.sh && chmod +x /usr/local/bin/bootstrap.sh
 
 EXPOSE 3000
 ENV PORT=3000

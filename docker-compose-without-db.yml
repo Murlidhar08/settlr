@@ -26,3 +26,23 @@ services:
     ports:
       - "3000:3000"
     restart: unless-stopped
+    networks:
+      - settlr-network
+
+  prisma-studio:
+    image: node:24-alpine
+    container_name: prisma-studio
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: npx prisma studio --port 5555 --browser none
+    ports:
+      - "5555:5555"
+    environment:
+      DATABASE_URL: "postgresql://next_user:next_pass@postgres_db:5432/next_template?schema=public"
+    networks:
+      - settlr-network
+
+networks:
+  settlr-network:
+    name: settlr-network
