@@ -1,6 +1,6 @@
 "use client";
 
-import { getDashboardSummary, getFirstName } from "@/actions/dashboard.actions";
+import { getAccountsDistribution, getDashboardSummary, getFirstName } from "@/actions/dashboard.actions";
 import { getBudgetInsights } from "@/actions/transaction.actions";
 import { useSession } from "@/lib/auth/auth-client";
 import { useQuery } from "@tanstack/react-query";
@@ -28,5 +28,14 @@ export const useDashboardSummary = () => {
     return useQuery({
         queryKey: ["dashboard-summary", businessId],
         queryFn: () => getDashboardSummary(businessId),
+    });
+}
+
+export const useAccountsDistribution = () => {
+    const { data: session } = useSession();
+    const businessId = session?.user?.activeBusinessId;
+    return useQuery({
+        queryKey: ["accounts-distribution", businessId],
+        queryFn: () => getAccountsDistribution(businessId),
     });
 }
