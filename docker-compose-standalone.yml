@@ -1,11 +1,11 @@
 services:
-  app:
-    image: chavda2772/property-hub:latest
-    container_name: app
+  settlr:
+    image: chavda2772/settlr:latest
+    container_name: settlr
     environment:
       # Application
-      NEXT_PUBLIC_APP_NAME: "AppName"
-      NEXT_PUBLIC_APP_DESCRIPTION: "This is the application description."
+      NEXT_PUBLIC_APP_NAME: "Settlr"
+      NEXT_PUBLIC_APP_DESCRIPTION: "Settlr for managing personal finance"
 
       # Better Auth
       BETTER_AUTH_SECRET: "lMD1eol2MrTxIZixGYyjwT0G0DQJ6oLJ"

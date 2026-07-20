@@ -13,7 +13,7 @@ WORKDIR /app
 
 # Environment variables needed for build
 ENV NEXT_PUBLIC_APP_NAME="Settlr"
-ENV NEXT_PUBLIC_APP_DESCRIPTION="Next-gen personal finance and expense management platform"
+ENV NEXT_PUBLIC_APP_DESCRIPTION="Settlr for managing personal finance"
 ENV BETTER_AUTH_URL="http://localhost:3000"
 ENV DATABASE_URL="postgresql://mock:mock@localhost:5432/mock"
 ENV BETTER_AUTH_SECRET="mock_secret_at_least_32_characters_long"

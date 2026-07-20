@@ -1,38 +1,28 @@
 services:
-  app:
-    build:
-      context: .
-      args:
-        - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
-        - NEXT_PUBLIC_APP_DESCRIPTION=${NEXT_PUBLIC_APP_DESCRIPTION}
-        - BETTER_AUTH_URL=${BETTER_AUTH_URL}
-        - DATABASE_URL=${DATABASE_URL}
-        - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
-    container_name: app-next
-    env_file:
-      - .env.production
+  settlr:
+    image: chavda2772/settlr:latest
+    container_name: settlr
+    environment:
+      # Application
+      NEXT_PUBLIC_APP_NAME: "Settlr"
+      NEXT_PUBLIC_APP_DESCRIPTION: "Settlr for managing personal finance"
+
+      # Better Auth
+      BETTER_AUTH_SECRET: "lMD1eol2MrTxIZixGYyjwT0G0DQJ6oLJ"
+      BETTER_AUTH_URL: "http://localhost:3000"
+      BETTER_AUTH_TRUSTED_ORIGINS: "https://example.com,https://*.example.com"
+
+      # DATABASE
+      DATABASE_URL: "postgresql://next_user:next_pass@postgres_db:5432/next_template?schema=public"
+
+      # Email Service
+      SMTP_HOST: "mail.example.com"
+      SMTP_PORT: 587
+      SMTP_USER: "user@example.com"
+      SMTP_PASS: "**PASSWORD**"
+      SMTP_SECURE: false
+      FROM_EMAIL: "user <user@example.com>"
+
     ports:
       - "3000:3000"
-    networks:
-      - prisma-network
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
     restart: unless-stopped
-
-  prisma-studio:
-    image: node:24-alpine
-    container_name: prisma-studio
-    working_dir: /app
-    volumes:
-      - .:/app
-    command: npx prisma studio --port 5555 --browser none
-    ports:
-      - "5555:5555"
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-    networks:
-      - prisma-network
-
-networks:
-  prisma-network:
-    name: prisma-network
