@@ -1,4 +1,5 @@
 import { AppHeader } from "@/components/app-header";
+import MobileNav from "@/components/tab/mobile-tab";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getUserSession } from "@/lib/auth/auth";
 import { tran } from "@/lib/languages/i18n";
@@ -76,6 +77,8 @@ export default async function Page() {
           </aside>
         </div>
       </div>
+
+      <MobileNav />
     </>
   );
 }

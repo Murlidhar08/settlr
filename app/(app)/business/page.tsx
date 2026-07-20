@@ -3,6 +3,7 @@
 import { addBusiness, updateBusiness } from "@/actions/business.actions"
 import { AppHeader } from "@/components/app-header"
 import { FooterButtons } from "@/components/footer-buttons"
+import MobileNav from "@/components/tab/mobile-tab"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -204,6 +205,8 @@ export default function BusinessPage() {
                     </span>
                 </Button>
             </FooterButtons>
+
+            <MobileNav />
 
             {/* Add Business Modal */}
             <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>

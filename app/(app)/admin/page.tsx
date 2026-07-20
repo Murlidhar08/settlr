@@ -7,7 +7,7 @@ import { AdminContent } from "./components/admin-content";
 import { AdminSkeleton } from "./components/admin-skeleton";
 
 // Hooks
-import { AppHeader } from "@/components/app-header";
+import { BackHeader } from "@/components/back-header";
 import { getUserSession } from "@/lib/auth/auth";
 import { UserRole } from "@/lib/generated/prisma/enums";
 import { tran } from "@/lib/languages/i18n";
@@ -22,7 +22,7 @@ export default async function AdminPage() {
 
     return (
         <>
-            <AppHeader title={"admin.title"} />
+            <BackHeader title={"admin.title"} />
             <Suspense fallback={<AdminSkeleton />}>
                 <AdminContent />
             </Suspense>

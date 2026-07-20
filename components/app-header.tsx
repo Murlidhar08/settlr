@@ -25,6 +25,6 @@ export function AppHeader({ title }: { title: string }) {
         );
     }
 
-    return (<Header title={tran(title)} />)
+    return <Header title={tran(title)} />
 }
 
