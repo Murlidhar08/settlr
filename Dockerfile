@@ -45,15 +45,13 @@ ENV NODE_ENV=production
 
 # Copy necessary files for runtime prisma generation
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/package-lock.json ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/lib/generated ./lib/generated
 COPY --from=builder /app/prisma.config.ts ./
-
-# Copy production node_modules (including prisma CLI and its dependencies like 'effect')
-COPY --from=prod-deps /app/node_modules ./node_modules
 
 # Set up the startup script with carriage return cleanup (handles Windows CRLF issue)
 COPY --from=builder /app/resources/scripts/docker-bootstrap.sh /usr/local/bin/bootstrap.sh
