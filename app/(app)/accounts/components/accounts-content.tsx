@@ -78,9 +78,9 @@ export function AccountsContent({
         <div className="w-full bg-background">
             <div className="mx-auto w-full max-w-4xl px-6 py-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                    <div className="flex flex-col">
+                    <div className="flex flex-1 flex-col">
                         <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 ml-1 mb-1">{tran("accounts.overview")}</h2>
-                        <div className="flex flex-col items-start sm:flex-row md:items-center gap-4">
+                        <div className="flex flex-1 flex-col items-start justify-between sm:flex-row md:items-center gap-4">
                             <p className="text-3xl font-black tracking-tight">
                                 {tran("accounts.total", { count: accounts.length.toString() })}
                             </p>
