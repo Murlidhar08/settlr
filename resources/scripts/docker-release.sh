@@ -48,7 +48,7 @@ docker tag $IMAGE:$VERSION $IMAGE:latest
 echo "📤 Pushing version tag..."
 docker push $IMAGE:$VERSION
 
-# echo "📤 Pushing latest tag..."
-# docker push $IMAGE:latest
+echo "📤 Pushing latest tag..."
+docker push $IMAGE:latest
 
 echo "✅ Docker image $IMAGE:$VERSION successfully pushed!"
