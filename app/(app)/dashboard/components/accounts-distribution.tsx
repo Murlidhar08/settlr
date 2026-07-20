@@ -1,12 +1,10 @@
 import { getUserSession } from "@/lib/auth/auth"
 import { FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { prisma } from "@/lib/prisma/prisma"
-import { getUserConfig } from "@/lib/user-config"
 import { AccountsDistributionClient } from "./accounts-distribution-client"
 
 export async function AccountsDistribution() {
     const session = await getUserSession()
-    const { currency, language } = await getUserConfig()
     const businessId = session?.user.activeBusinessId
 
     if (!businessId) return null
@@ -16,8 +14,6 @@ export async function AccountsDistribution() {
         where: { businessId, type: FinancialAccountType.MONEY, isActive: true },
         select: { id: true, name: true }
     });
-
-    if (accounts.length === 0) return null
 
     const accountIds = accounts.map(a => a.id)
 
@@ -51,7 +47,5 @@ export async function AccountsDistribution() {
         }
     }).filter(a => a.value > 0)
 
-    if (distributionData.length === 0) return null
-
-    return <AccountsDistributionClient data={distributionData} currency={currency} language={language} />
+    return <AccountsDistributionClient data={distributionData} />
 }

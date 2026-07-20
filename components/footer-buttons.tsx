@@ -10,7 +10,7 @@ interface FooterButtonsProp {
 
 const FooterButtons = ({ children, bottomSpace = false }: FooterButtonsProp) => {
   return (
-    <div className={`fixed right-5 ${bottomSpace ? "bottom-20" : "bottom-1"} md:bottom-5 lg:right-10 z-50`}>
+    <div className={`fixed right-5 ${bottomSpace ? "bottom-20" : "bottom-5"} md:bottom-5 lg:right-10 z-50`}>
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}

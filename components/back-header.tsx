@@ -125,7 +125,11 @@ const BackHeader = ({
                   )}
                 >
                   {item.icon && <span className="mr-2 opacity-80 group-focus/dropdown-menu-item:opacity-100 transition-opacity">{item.icon}</span>}
-                  {tran(item.label)}
+                  <span className={cn(
+                    item.destructive && "text-rose-600 focus:text-rose-600"
+                  )}>
+                    {tran(item.label)}
+                  </span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>

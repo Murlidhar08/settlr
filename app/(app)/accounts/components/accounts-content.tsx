@@ -80,8 +80,10 @@ export function AccountsContent({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                     <div className="flex flex-col">
                         <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 ml-1 mb-1">{tran("accounts.overview")}</h2>
-                        <div className="flex items-center gap-4">
-                            <p className="text-3xl font-black tracking-tight">{tran("accounts.total", { count: accounts.length.toString() })}</p>
+                        <div className="flex flex-col items-start sm:flex-row md:items-center gap-4">
+                            <p className="text-3xl font-black tracking-tight">
+                                {tran("accounts.total", { count: accounts.length.toString() })}
+                            </p>
 
                             <div className="flex items-center gap-2">
                                 <Select items={periodItems} value={period} onValueChange={(val: any) => handlePeriodChange(val)}>

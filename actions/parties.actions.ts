@@ -2,7 +2,6 @@
 
 // Package
 import { getUserSession } from "@/lib/auth/auth";
-import { Transaction } from "@/lib/generated/prisma/client";
 import { FinancialAccountType, PartyType } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/prisma/prisma";
 import { calculateAccountStats } from "@/lib/transaction-logic";
@@ -64,9 +63,7 @@ export async function getPartyList(type: PartyType, search?: string, includeInac
       profileUrl: true,
       isActive: true,
     },
-    orderBy: {
-      createdAt: "desc"
-    }
+    orderBy: { name: "asc" }
   });
 
   if (parties.length === 0)

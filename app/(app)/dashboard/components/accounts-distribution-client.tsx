@@ -1,6 +1,5 @@
 "use client"
 
-import { Currency } from "@/lib/generated/prisma/enums"
 import { tran } from "@/lib/languages/i18n"
 import { formatAmount } from "@/utility/transaction"
 import { motion } from "framer-motion"
@@ -20,8 +19,6 @@ interface DistributionData {
 
 interface AccountsDistributionClientProps {
     data: DistributionData[]
-    currency: Currency
-    language: string
 }
 
 const COLORS = [
@@ -32,8 +29,10 @@ const COLORS = [
     'oklch(0.488 0.243 264.376)', // blue
 ]
 
-export function AccountsDistributionClient({ data, currency, language }: AccountsDistributionClientProps) {
+export function AccountsDistributionClient({ data }: AccountsDistributionClientProps) {
     const total = useMemo(() => data.reduce((acc, curr) => acc + curr.value, 0), [data])
+    const isNoData = data.length === 0 || total === 0
+    const chartData = isNoData ? [{ name: tran("dashboard.no_transactions"), value: 1 }] : data
 
     return (
         <>
@@ -56,52 +55,63 @@ export function AccountsDistributionClient({ data, currency, language }: Account
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={data}
+                                    data={chartData}
                                     cx="50%"
                                     cy="50%"
                                     innerRadius={60}
                                     outerRadius={80}
-                                    paddingAngle={5}
+                                    paddingAngle={isNoData ? 0 : 5}
                                     dataKey="value"
                                     stroke="none"
                                 >
-                                    {data.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    {chartData.map((entry, index) => (
+                                        <Cell 
+                                            key={`cell-${index}`} 
+                                            fill={isNoData ? 'oklch(0.85 0 0)' : COLORS[index % COLORS.length]} 
+                                        />
                                     ))}
                                 </Pie>
-                                <Tooltip
-                                    content={({ active, payload }) => {
-                                        if (active && payload && payload.length) {
-                                            const entry = payload[0].payload as DistributionData
-                                            const percentage = ((entry.value / total) * 100).toFixed(1)
-                                            return (
-                                                <div className="rounded-xl border border-border/50 bg-background/90 p-3 shadow-xl backdrop-blur-md">
-                                                    <p className="text-xs font-black">{entry.name}</p>
-                                                    <p className="text-sm font-black text-primary">{formatAmount(entry.value)}</p>
-                                                    <p className="text-[10px] font-bold opacity-60">{percentage}% {tran("dashboard.of_total")}</p>
-                                                </div>
-                                            )
-                                        }
-                                        return null
-                                    }}
-                                />
+                                {!isNoData && (
+                                    <Tooltip
+                                        content={({ active, payload }) => {
+                                            if (active && payload && payload.length) {
+                                                const entry = payload[0].payload as DistributionData
+                                                const percentage = ((entry.value / total) * 100).toFixed(1)
+                                                return (
+                                                    <div className="rounded-xl border border-border/50 bg-background/90 p-3 shadow-xl backdrop-blur-md">
+                                                        <p className="text-xs font-black">{entry.name}</p>
+                                                        <p className="text-sm font-black text-primary">{formatAmount(entry.value)}</p>
+                                                        <p className="text-[10px] font-bold opacity-60">{percentage}% {tran("dashboard.of_total")}</p>
+                                                    </div>
+                                                )
+                                            }
+                                            return null
+                                        }}
+                                    />
+                                )}
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
 
                     <div className="w-full md:w-1/2 space-y-4">
-                        {data.map((item, index) => (
-                            <div key={item.name} className="flex items-center justify-between group">
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className="h-3 w-3 rounded-full transition-transform group-hover:scale-125"
-                                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                                    />
-                                    <span className="text-xs font-bold opacity-80">{item.name}</span>
-                                </div>
-                                <span className="text-xs font-black">{formatAmount(item.value)}</span>
+                        {isNoData ? (
+                            <div className="py-6 text-center text-muted-foreground/60 italic text-xs font-medium">
+                                {tran("dashboard.no_transactions")}
                             </div>
-                        ))}
+                        ) : (
+                            data.map((item, index) => (
+                                <div key={item.name} className="flex items-center justify-between group">
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="h-3 w-3 rounded-full transition-transform group-hover:scale-125"
+                                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                                        />
+                                        <span className="text-xs font-bold opacity-80">{item.name}</span>
+                                    </div>
+                                    <span className="text-xs font-black">{formatAmount(item.value)}</span>
+                                </div>
+                            ))
+                        )}
                         <div className="pt-4 mt-4 border-t border-border/40 flex justify-between">
                             <span className="text-[10px] font-black uppercase tracking-widest opacity-60">{tran("dashboard.total_balance")}</span>
                             <span className="text-sm font-black text-primary">{formatAmount(total)}</span>
