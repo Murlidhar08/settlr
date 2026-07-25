@@ -5,6 +5,7 @@ import { getUserSession } from "@/lib/auth/auth";
 import { tran } from "@/lib/languages/i18n";
 import { Suspense } from "react";
 import { AccountsDistribution } from "./components/accounts-distribution";
+import { AddTransactionButton } from "./components/add-transaction-button";
 import { BudgetAlerts, BudgetAlertsSkeleton } from "./components/budget-alerts";
 import SwitchBusiness from "./components/business-switch";
 import { CashflowChart } from "./components/cashflow-chart";
@@ -78,6 +79,7 @@ export default async function Page() {
         </div>
       </div>
 
+      <AddTransactionButton />
       <MobileNav />
     </>
   );

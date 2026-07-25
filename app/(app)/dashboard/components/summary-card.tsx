@@ -5,9 +5,11 @@ import { tran } from "@/lib/languages/i18n";
 import { cn } from "@/lib/utils";
 import { useDashboardSummary } from "@/tanstacks/dashboard";
 import { MoveDownLeft, MoveUpRight, PiggyBank } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { StatusCard } from "./status-card";
 
 export default function SummaryCard() {
+  const router = useRouter();
   const { data, isPending } = useDashboardSummary();
 
   const liquidCash = data?.liquidCash || 0;
@@ -19,7 +21,7 @@ export default function SummaryCard() {
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
       {/* Total Liquid Cash - Premium Card */}
-      <div className="relative overflow-hidden rounded-3xl sm:rounded-[2.5rem] bg-indigo-600 dark:bg-indigo-500/90 group p-5 sm:p-8 text-white shadow-2xl shadow-indigo-500/20 transition-all hover:-translate-y-1 hover:shadow-indigo-500/30 border border-white/10 backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div onClick={() => { router.push("/accounts") }} className="cursor-pointer relative overflow-hidden rounded-3xl sm:rounded-[2.5rem] bg-indigo-600 dark:bg-indigo-500/90 group p-5 sm:p-8 text-white shadow-2xl shadow-indigo-500/20 transition-all hover:-translate-y-1 hover:shadow-indigo-500/30 border border-white/10 backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-white/20 blur-3xl group-hover:bg-white/30 transition-all duration-700" />
         <div className="absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-indigo-400/20 blur-3xl transition-all duration-700" />
 
@@ -46,7 +48,7 @@ export default function SummaryCard() {
       </div>
 
       {/* Today's Cash Flow */}
-      <div className="relative overflow-hidden rounded-3xl sm:rounded-[2.5rem] bg-slate-900 group dark:bg-slate-950 p-5 sm:p-8 text-white shadow-2xl shadow-indigo-500/10 transition-all hover:-translate-y-1 hover:shadow-indigo-500/20 border border-white/5 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+      <div onClick={() => { router.push("/cashbook") }} className="cursor-pointer relative overflow-hidden rounded-3xl sm:rounded-[2.5rem] bg-slate-900 group dark:bg-slate-950 p-5 sm:p-8 text-white shadow-2xl shadow-indigo-500/10 transition-all hover:-translate-y-1 hover:shadow-indigo-500/20 border border-white/5 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
         <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-indigo-500/30 blur-3xl group-hover:bg-indigo-500/20 transition-all duration-700" />
         <div className="relative z-10 flex justify-between items-start">
           <div className="space-y-1">
@@ -89,6 +91,7 @@ export default function SummaryCard() {
         icon={<MoveDownLeft />}
         positive
         delayClass="delay-200"
+        redirectUrl="/parties?tab=customers"
       />
 
       {/* Payable */}
@@ -99,6 +102,7 @@ export default function SummaryCard() {
         icon={<MoveUpRight />}
         positive={false}
         delayClass="delay-300"
+        redirectUrl="/parties?tab=suppliers"
       />
     </section>
   );
