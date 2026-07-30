@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 
+import { tran } from "@/lib/languages/i18n";
 import { cn } from "@/lib/utils";
 import { getInitials } from "@/utility/common-function";
 import { formatAmount } from "@/utility/transaction";
@@ -34,10 +35,15 @@ const PartyItem = ({
   const avatarColor = useMemo(() => getRandomAvatarColor(), [])
   const isTemp = id.toString().startsWith("temp-id");
 
-  const isReceive = amount > 0
+  const isToReceive = amount < 0
+  const isToPay = amount > 0
   const isSettled = amount === 0
 
-  const status = isSettled ? "Settled" : isReceive ? "To Receive" : "To Pay"
+  const status = isSettled
+    ? tran("parties.settled")
+    : isToReceive
+      ? tran("parties.to_receive")
+      : tran("parties.to_pay");
 
   return (
     <>
@@ -84,18 +90,18 @@ const PartyItem = ({
           <p
             className={`font-black text-xl tracking-tighter tabular-nums ${isSettled
               ? "text-muted-foreground/40"
-              : isReceive
+              : isToReceive
                 ? "text-emerald-600 dark:text-emerald-400"
                 : "text-rose-600 dark:text-rose-400"
               }`}
           >
-            {formatAmount(amount)}
+            {formatAmount(Math.abs(amount))}
           </p>
 
           <span
             className={`inline-flex items-center rounded-xl px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] transition-colors ${isSettled
               ? "bg-muted text-muted-foreground/60"
-              : isReceive
+              : isToReceive
                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                 : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
               }`}
