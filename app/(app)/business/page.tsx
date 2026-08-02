@@ -1,7 +1,7 @@
 "use client"
 
 import { addBusiness, updateBusiness } from "@/actions/business.actions"
-import { AppHeader } from "@/components/app-header"
+import { BackHeader } from "@/components/back-header"
 import { FooterButtons } from "@/components/footer-buttons"
 import MobileNav from "@/components/tab/mobile-tab"
 import { Button } from "@/components/ui/button"
@@ -65,7 +65,7 @@ export default function BusinessPage() {
 
     return (
         <div className="flex-1 w-full bg-background pb-34">
-            <AppHeader title={"business.manage_businesses"} />
+            <BackHeader title={"business.manage_businesses"} />
 
             <div className="mx-auto w-full max-w-4xl px-6 py-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -194,7 +194,7 @@ export default function BusinessPage() {
                 )}
             </div>
 
-            <FooterButtons>
+            <FooterButtons bottomSpace={true}>
                 <Button
                     className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2"
                     onClick={() => setIsAddOpen(true)}

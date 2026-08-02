@@ -439,7 +439,7 @@ export default {
         create_employee: "Create Employee",
         create_party: "Create Party",
         total_balance: "Total Balance",
-        to_collect: "To Collect",
+        to_receive: "To Receive",
         to_pay: "To Pay",
         settled: "Settled",
         no_contact: "No contact info",
