@@ -1,11 +1,5 @@
 "use client"
 
-import {
-    deleteBusiness,
-    getBusinessDetailsWithStats,
-    switchBusiness,
-    updateBusiness
-} from "@/actions/business.actions"
 import { BackHeader } from "@/components/back-header"
 import { useConfirm } from "@/components/providers/confirm-provider"
 import { Button } from "@/components/ui/button"
@@ -16,7 +10,7 @@ import { containerVariants, itemVariants } from "@/lib/animations"
 import { useSession } from "@/lib/auth/auth-client"
 import { tran } from "@/lib/languages/i18n"
 import { cn } from "@/lib/utils"
-import { useQuery } from "@tanstack/react-query"
+import { useBusinessDetails, useDeleteBusiness, useSwitchBusiness, useUpdateBusiness } from "@/tanstacks/business"
 import { motion } from "framer-motion"
 import {
     Briefcase,
@@ -48,15 +42,16 @@ export default function BusinessDetailPage() {
     const businessId = params.businessId as string
     const activeId = session?.user?.activeBusinessId || null
 
-    const { data, isLoading, refetch } = useQuery({
-        queryKey: ["business-details", businessId],
-        queryFn: () => getBusinessDetailsWithStats(businessId),
-        enabled: !!businessId
-    })
+    const { data, isLoading } = useBusinessDetails(businessId)
+
+    const updateBusinessMutation = useUpdateBusiness()
+    const deleteBusinessMutation = useDeleteBusiness()
+    const switchBusinessMutation = useSwitchBusiness()
+
+    const isSubmitting = updateBusinessMutation.isPending || deleteBusinessMutation.isPending || switchBusinessMutation.isPending
 
     const [isEditing, setIsEditing] = useState(false)
     const [editName, setEditName] = useState("")
-    const [isSubmitting, setIsSubmitting] = useState(false)
 
     if (isLoading) {
         return (
@@ -88,37 +83,33 @@ export default function BusinessDetailPage() {
 
     const handleSwitchActive = async () => {
         if (isCurrentlyActive || isSubmitting) return
-        setIsSubmitting(true)
-        try {
-            await switchBusiness(business.id)
-            await refetchSession()
-            toast.success(tran("business.msg.switched"))
-            router.push("/dashboard")
-        } catch (error) {
-            toast.error(tran("business.msg.switch_failed"))
-        } finally {
-            setIsSubmitting(false)
-        }
+        switchBusinessMutation.mutate({ businessId: business.id }, {
+            onSuccess: async () => {
+                await refetchSession()
+                toast.success(tran("business.msg.switched"))
+                router.push("/dashboard")
+            },
+            onError: () => {
+                toast.error(tran("business.msg.switch_failed"))
+            }
+        })
     }
 
     const handleUpdateName = async () => {
         if (!editName.trim() || isSubmitting) return
-        setIsSubmitting(true)
-        try {
-            await updateBusiness(business.id, editName)
-            setIsEditing(false)
-            await refetch()
-            toast.success(tran("business.msg.updated"))
-        } catch (error: any) {
-            toast.error(error.message || tran("business.msg.update_failed"))
-        } finally {
-            setIsSubmitting(false)
-        }
+        updateBusinessMutation.mutate({ id: business.id, name: editName }, {
+            onSuccess: () => {
+                setIsEditing(false)
+                toast.success(tran("business.msg.updated"))
+            },
+            onError: (error: any) => {
+                toast.error(error.message || tran("business.msg.update_failed"))
+            }
+        })
     }
 
     const handleDelete = async () => {
         if (isSubmitting) return
-        setIsSubmitting(true)
 
         const res = await confirm({
             title: tran("business.hold_on"),
@@ -127,18 +118,17 @@ export default function BusinessDetailPage() {
             cancelText: tran("common.cancel"),
             destructive: true
         })
-        if (!res) {
-            setIsSubmitting(false)
-            return
-        }
-        try {
-            await deleteBusiness(business.id)
-            toast.success(tran("business.msg.deleted"))
-            router.push("/business")
-        } catch (error: any) {
-            toast.error(error.message || tran("business.msg.delete_failed"))
-            setIsSubmitting(false)
-        }
+        if (!res) return
+
+        deleteBusinessMutation.mutate(business.id, {
+            onSuccess: () => {
+                toast.success(tran("business.msg.deleted"))
+                router.push("/business")
+            },
+            onError: (error: any) => {
+                toast.error(error.message || tran("business.msg.delete_failed"))
+            }
+        })
     }
 
     return (

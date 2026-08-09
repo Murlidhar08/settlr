@@ -11,9 +11,10 @@ import { sendMail } from "../nodemailer";
 import { prisma } from "../prisma/prisma";
 
 // Template
+import { createDefaultAccountsForBusiness } from "@/actions/business.actions";
 import { headers } from "next/headers";
 import { envServer } from "../env.server";
-import { CategoryType, Currency, FinancialAccountType, MoneyType, ThemeMode, UserStatus } from "../generated/prisma/enums";
+import { Currency, ThemeMode, UserStatus } from "../generated/prisma/enums";
 import { getDeleteAccountEmailHtml } from "../templates/email-delete-account";
 import { getPasswordResetSuccessEmailHtml } from "../templates/email-password-reseted";
 import { getResetPasswordEmailHtml } from "../templates/email-reset-password";
@@ -82,7 +83,7 @@ export const auth = betterAuth({
           throw error
         }
       }
-    },
+    }
   },
   emailAndPassword: {
     enabled: true,
@@ -196,7 +197,7 @@ export const auth = betterAuth({
   },
   session: {
     cookieCache: {
-      enabled: false,
+      enabled: false
     }
   },
   plugins: [
@@ -331,65 +332,7 @@ export const auth = betterAuth({
           });
 
           // Create default accounts for this business
-          const cashAcc = await prisma.financialAccount.create({
-            data: {
-              name: "Cash",
-              type: FinancialAccountType.MONEY,
-              moneyType: MoneyType.CASH,
-              isSystem: true,
-              businessId: defaultBusiness.id,
-            }
-          });
-
-          await prisma.financialAccount.create({
-            data: {
-              name: "Owner Withdrawal",
-              type: FinancialAccountType.CATEGORY,
-              categoryType: CategoryType.EQUITY,
-              isSystem: true,
-              businessId: defaultBusiness.id,
-            }
-          });
-
-          await prisma.financialAccount.create({
-            data: {
-              name: "Owner Investment",
-              type: FinancialAccountType.CATEGORY,
-              categoryType: CategoryType.EQUITY,
-              isSystem: true,
-              businessId: defaultBusiness.id,
-            }
-          });
-
-          const expenseAcc = await prisma.financialAccount.create({
-            data: {
-              name: "Expense",
-              type: FinancialAccountType.CATEGORY,
-              categoryType: CategoryType.EXPENSE,
-              isSystem: true,
-              businessId: defaultBusiness.id,
-            }
-          });
-
-          const salesAcc = await prisma.financialAccount.create({
-            data: {
-              name: "Sales",
-              type: FinancialAccountType.CATEGORY,
-              categoryType: CategoryType.INCOME,
-              isSystem: true,
-              businessId: defaultBusiness.id,
-            }
-          });
-
-          // Update business with default account IDs
-          await prisma.business.update({
-            where: { id: defaultBusiness.id },
-            data: {
-              defAccId: cashAcc.id,
-              defIncomeAccId: salesAcc.id,
-              defExpenseAccId: expenseAcc.id,
-            }
-          });
+          await createDefaultAccountsForBusiness(defaultBusiness.id);
 
           // Set activeBusinessId for the new user
           await prisma.user.update({
@@ -397,8 +340,8 @@ export const auth = betterAuth({
             data: { activeBusinessId: defaultBusiness.id }
           });
           console.log(`Default setup completed for new user: ${user.email}`);
-        },
-      },
+        }
+      }
     }
   }
 });

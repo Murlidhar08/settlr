@@ -1,6 +1,5 @@
 "use client"
 
-import { addBusiness, updateBusiness } from "@/actions/business.actions"
 import { BackHeader } from "@/components/back-header"
 import { FooterButtons } from "@/components/footer-buttons"
 import MobileNav from "@/components/tab/mobile-tab"
@@ -11,7 +10,7 @@ import { useSession } from "@/lib/auth/auth-client"
 import { Business } from "@/lib/generated/prisma/client"
 import { tran } from "@/lib/languages/i18n"
 import { cn } from "@/lib/utils"
-import { useBusinessList } from "@/tanstacks/business"
+import { useAddBusiness, useBusinessList, useUpdateBusiness } from "@/tanstacks/business"
 import { AnimatePresence, motion } from "framer-motion"
 import { Building2, Check, ChevronRight, Loader2, Pencil, Plus, X } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -23,44 +22,43 @@ export default function BusinessPage() {
     const { data: session } = useSession()
     const activeId = session?.user?.activeBusinessId || null
 
-    const { data, isLoading, refetch } = useBusinessList()
+    const { data, isLoading } = useBusinessList()
     const businesses = data ?? [] as Business[]
+
+    const addBusinessMutation = useAddBusiness()
+    const updateBusinessMutation = useUpdateBusiness()
+    const isSubmitting = addBusinessMutation.isPending || updateBusinessMutation.isPending
 
     const [editingId, setEditingId] = useState<string | null>(null)
     const [editName, setEditName] = useState("")
     const [isAddOpen, setIsAddOpen] = useState(false)
     const [newName, setNewName] = useState("")
-    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const handleAdd = async () => {
         if (!newName.trim() || isSubmitting) return
-        setIsSubmitting(true)
-        try {
-            await addBusiness(newName)
-            setNewName("")
-            setIsAddOpen(false)
-            await refetch()
-            toast.success(tran("business.msg.created"))
-        } catch (error: any) {
-            toast.error(error.message || tran("business.msg.create_failed"))
-        } finally {
-            setIsSubmitting(false)
-        }
+        addBusinessMutation.mutate(newName, {
+            onSuccess: () => {
+                setNewName("")
+                setIsAddOpen(false)
+                toast.success(tran("business.msg.created"))
+            },
+            onError: (error: any) => {
+                toast.error(error.message || tran("business.msg.create_failed"))
+            }
+        })
     }
 
     const handleUpdate = async (id: string) => {
         if (!editName.trim() || isSubmitting) return
-        setIsSubmitting(true)
-        try {
-            await updateBusiness(id, editName)
-            setEditingId(null)
-            await refetch()
-            toast.success(tran("business.msg.updated"))
-        } catch (error: any) {
-            toast.error(error.message || tran("business.msg.update_failed"))
-        } finally {
-            setIsSubmitting(false)
-        }
+        updateBusinessMutation.mutate({ id, name: editName }, {
+            onSuccess: () => {
+                setEditingId(null)
+                toast.success(tran("business.msg.updated"))
+            },
+            onError: (error: any) => {
+                toast.error(error.message || tran("business.msg.update_failed"))
+            }
+        })
     }
 
     return (

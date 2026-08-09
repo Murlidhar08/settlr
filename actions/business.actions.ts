@@ -2,6 +2,7 @@
 
 // Package
 import { getUserSession } from "@/lib/auth/auth";
+import { CategoryType, FinancialAccountType, MoneyType } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -23,7 +24,11 @@ export async function addBusiness(name: string) {
     }
   });
 
-  revalidatePath("/dashboard")
+  // Automatically create default financial accounts (Cash, Owner Withdrawal, Owner Investment, Expense, Sales)
+  await createDefaultAccountsForBusiness(newBusiness.id);
+
+  revalidatePath("/dashboard");
+  revalidatePath("/business");
   return newBusiness;
 }
 
@@ -321,4 +326,59 @@ export async function getBusinessDetailsWithStats(businessId: string) {
       netWorth
     }
   };
+}
+
+// Helper function
+export async function createDefaultAccountsForBusiness(businessId: string) {
+  const cashAcc = await prisma.financialAccount.create({
+    data: {
+      name: "Cash",
+      type: FinancialAccountType.MONEY,
+      moneyType: MoneyType.CASH,
+      isSystem: true,
+      businessId,
+    }
+  });
+
+  const incomeAcc = await prisma.financialAccount.create({
+    data: {
+      name: "Income",
+      type: FinancialAccountType.CATEGORY,
+      categoryType: CategoryType.INCOME,
+      isSystem: true,
+      businessId,
+    }
+  });
+
+  const expenseAcc = await prisma.financialAccount.create({
+    data: {
+      name: "Expense",
+      type: FinancialAccountType.CATEGORY,
+      categoryType: CategoryType.EXPENSE,
+      isSystem: true,
+      businessId,
+    }
+  });
+
+  await prisma.financialAccount.create({
+    data: {
+      name: "Adjustment",
+      type: FinancialAccountType.CATEGORY,
+      categoryType: CategoryType.ADJUSTMENT,
+      isSystem: true,
+      businessId,
+    }
+  });
+
+  // Update business with default account IDs
+  await prisma.business.update({
+    where: { id: businessId },
+    data: {
+      defAccId: cashAcc.id,
+      defIncomeAccId: incomeAcc.id,
+      defExpenseAccId: expenseAcc.id,
+    }
+  });
+
+  return { cashAcc, expenseAcc, incomeAcc };
 }

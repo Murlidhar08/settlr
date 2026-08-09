@@ -105,7 +105,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
         {/* Toast Container */}
         <Toaster
-          position="top-right"
+          position="top-center"
           expand={false}
         />
       </body>
