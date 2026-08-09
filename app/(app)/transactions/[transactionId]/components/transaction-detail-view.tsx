@@ -3,10 +3,9 @@
 import { deleteTransaction } from "@/actions/transaction.actions"
 import { BackHeader } from "@/components/back-header"
 import { useConfirm } from "@/components/providers/confirm-provider"
-import { FormattedDate, FormattedTime } from "@/components/ui/date-time"
 import { useUserConfig } from "@/components/providers/user-config-provider"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
-import { Currency } from "@/lib/generated/prisma/enums"
+import { FormattedDate, FormattedTime } from "@/components/ui/date-time"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 import { formatAmount, formatDate, formatTime } from "@/utility/transaction"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -14,10 +13,10 @@ import { motion } from "framer-motion"
 import { ArrowDownLeft, ArrowRight, ArrowUpRight, CalendarDays, Check, Clock, Hash, History, Pencil, PenSquareIcon, Phone, Trash2, User } from "lucide-react"
 import { toast } from "sonner"
 
+import { tran } from "@/lib/languages/i18n"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { tran } from "@/lib/languages/i18n"
 
 interface TransactionDetailViewProps {
     transaction: any
@@ -25,7 +24,7 @@ interface TransactionDetailViewProps {
 }
 
 export function TransactionDetailView({ transaction, isIn }: TransactionDetailViewProps) {
-    const { currency: configCurrency, dateFormat, timeFormat } = useUserConfig()
+    const { dateFormat, timeFormat } = useUserConfig()
     const confirm = useConfirm()
     const router = useRouter()
     const [isEditOpen, setIsEditOpen] = useState(false)
@@ -196,15 +195,28 @@ export function TransactionDetailView({ transaction, isIn }: TransactionDetailVi
                             </div>
 
                             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/10 p-4 sm:p-5 rounded-3xl border border-border/10 relative">
-                                <AccountNode account={transaction.fromAccount} label={tran("transactions.origin")} isSource={true} side={isIn ? "left" : "right"} />
+                                {/* From Account*/}
+                                <AccountNode
+                                    account={transaction.fromAccount}
+                                    label={tran("transactions.origin")}
+                                    isSource={true}
+                                    side={isIn ? "left" : "right"}
+                                />
 
+                                {/* Arrow */}
                                 <div className="relative shrink-0">
                                     <div className="h-10 w-10 rounded-xl bg-background border-2 border-border/60 flex items-center justify-center shadow-lg relative z-10 rotate-45">
                                         <ArrowRight className="h-5 w-5 text-primary -rotate-45" />
                                     </div>
                                 </div>
 
-                                <AccountNode account={transaction.toAccount} label={tran("transactions.destination")} isSource={false} side={isIn ? "right" : "left"} />
+                                {/* To Account */}
+                                <AccountNode
+                                    account={transaction.toAccount}
+                                    label={tran("transactions.destination")}
+                                    isSource={false}
+                                    side={isIn ? "right" : "left"}
+                                />
                             </div>
                         </motion.section>
 
@@ -336,7 +348,7 @@ function AccountNode({ account, label, isSource, side }: { account: any, label: 
                     : "bg-primary/5 border-primary/20"
             )}>
                 <div className="flex flex-col items-center gap-1 overflow-hidden">
-                    <span className="font-black text-[13px] tracking-tighter text-foreground truncate w-full px-1">{account.name}</span>
+                    <span className="font-black text-[13px] tracking-tighter text-foreground truncate w-full px-1">{account?.party?.name || account?.name}</span>
                     <div className="px-1.5 py-0.5 rounded-full bg-muted/40 border border-border/10">
                         <span className="text-[7.5px] font-black uppercase tracking-widest text-muted-foreground/60 block truncate max-w-20">
                             {account.categoryType || account.moneyType || account.type}
