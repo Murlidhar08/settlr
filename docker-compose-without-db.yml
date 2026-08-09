@@ -23,26 +23,24 @@ services:
       SMTP_SECURE: false
       FROM_EMAIL: "user <user@example.com>"
 
+      # Google login
+      GOOGLE_CLIENT_ID:
+      GOOGLE_CLIENT_SECRET:
+
+      # Discord
+      DISCORD_CLIENT_ID:
+      DISCORD_CLIENT_SECRET:
+
+      # Facebook
+      FACEBOOK_CLIENT_ID:
+      FACEBOOK_CLIENT_SECRET:
+
     ports:
-      - "3000:3000"
+      - "6854:3000"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     restart: unless-stopped
-    networks:
-      - settlr-network
-
-  prisma-studio:
-    image: node:24-alpine
-    container_name: prisma-studio
-    working_dir: /app
-    volumes:
-      - .:/app
-    command: npx prisma studio --port 5555 --browser none
-    ports:
-      - "5555:5555"
-    environment:
-      DATABASE_URL: "postgresql://next_user:next_pass@postgres_db:5432/next_template?schema=public"
-    networks:
-      - settlr-network
-
-networks:
-  settlr-network:
-    name: settlr-network
