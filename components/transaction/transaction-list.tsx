@@ -1,8 +1,8 @@
 "use client";
 
 import { useUserConfig } from "@/components/providers/user-config-provider";
-import { FormattedDate, FormattedTime } from "@/components/ui/date-time";
 import { TransactionItem } from "@/components/transaction/transaction-item";
+import { FormattedDate, FormattedTime } from "@/components/ui/date-time";
 import { TransactionRes } from "@/types/transaction/TransactionData";
 import { isToday, isYesterday } from "date-fns";
 import { motion } from "framer-motion";
@@ -84,7 +84,6 @@ const TransactionList = ({ transactions, accountId, accountType }: transactionLi
                     title={transaction.description || ""}
                     subtitle={<FormattedTime date={transaction.date} />}
                     amount={transaction.amount}
-                    currency={currency}
                     accountId={accountId}
                     accountType={accountType}
                     fromAccountId={transaction.fromAccountId}
@@ -104,3 +103,4 @@ const TransactionList = ({ transactions, accountId, accountType }: transactionLi
 }
 
 export { TransactionList };
+

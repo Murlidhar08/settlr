@@ -23,7 +23,6 @@ interface TransactionProp {
   fromAccountType?: string
   toAccountType?: string
   partyName?: string
-  currency?: string
 }
 
 const TransactionItem = ({
@@ -39,8 +38,7 @@ const TransactionItem = ({
   toAccount,
   fromAccountType,
   toAccountType,
-  partyName,
-  currency
+  partyName
 }: TransactionProp) => {
   // Determine direction based on context
   const direction = accountId
@@ -109,9 +107,9 @@ const TransactionItem = ({
 
               {(fromAccount || toAccount) && (
                 <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted/40 text-[9px] font-bold uppercase tracking-tighter text-muted-foreground/50 border border-muted-foreground/5">
-                  <span className="truncate max-w-17.5">{fromAccount || '...'}</span>
+                  <span className="truncate max-w-20">{fromAccount || '...'}</span>
                   <ArrowRight size={8} className="opacity-40" />
-                  <span className="truncate max-w-17.5 text-foreground/40">{toAccount || '...'}</span>
+                  <span className="truncate max-w-20 text-foreground/40">{toAccount || '...'}</span>
                 </div>
               )}
             </div>
@@ -137,3 +135,4 @@ const TransactionItem = ({
 }
 
 export { TransactionItem }
+

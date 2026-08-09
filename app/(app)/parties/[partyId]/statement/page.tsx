@@ -153,7 +153,6 @@ async function StatementContent({ partyId, filters }: { partyId: string, filters
                         title={tx.description || ""}
                         subtitle={<FormattedTime date={tx.date} />}
                         amount={tx.amount}
-                        currency={currency}
                         accountId={pAccId}
                         accountType={"PARTY"}
                         fromAccountId={tx.fromAccountId}

@@ -1,6 +1,7 @@
 import { getRecentTransactions } from "@/actions/transaction.actions";
+import { TransactionItem } from "@/components/transaction/transaction-item";
+import { FormattedDate } from "@/components/ui/date-time";
 import { tran } from "@/lib/languages/i18n";
-import { DashboardTransactionItem } from "./transaction-item";
 
 export default async function RecentTransaction() {
   const recentTransactions = await getRecentTransactions();
@@ -15,16 +16,19 @@ export default async function RecentTransaction() {
 
       {recentTransactions.map((tx) => {
         return (
-          <DashboardTransactionItem
+          <TransactionItem
             key={tx.id}
             transactionId={tx.id}
             title={tx.description || ""}
-            date={tx.date}
+            subtitle={<FormattedDate date={tx.date} />}
             amount={Number(tx.amount)}
             fromAccountId={tx.fromAccountId}
             toAccountId={tx.toAccountId}
+            fromAccount={tx.fromAccount?.name}
+            toAccount={tx.toAccount?.name}
             fromAccountType={tx.fromAccount?.type}
             toAccountType={tx.toAccount?.type}
+            partyName={tx.party?.name}
           />
         );
       })}
