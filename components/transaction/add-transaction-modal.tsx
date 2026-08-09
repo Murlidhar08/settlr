@@ -23,15 +23,16 @@ import { addTransaction } from "@/actions/transaction.actions"
 
 // Library
 import { CategoryType, FinancialAccountType } from "@/lib/generated/prisma/enums"
-import { cn } from "@/lib/utils"
 import { tran } from "@/lib/languages/i18n"
+import { cn } from "@/lib/utils"
 
 // Types
 import { getFinancialAccounts } from "@/actions/financial-account.actions"
+import { itemVariants } from "@/lib/animations"
 import { ModalMode } from "@/types/transaction/ModalMode"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
-import { useUserConfig } from "../providers/user-config-provider"
 import { getCurrencySymbol } from "@/utility/transaction"
+import { useUserConfig } from "../providers/user-config-provider"
 
 interface TransactionProps {
   title: string
@@ -313,6 +314,7 @@ export const AddTransactionModal = ({
       queryClient.invalidateQueries({ queryKey: ["cashbook-transactions"] })
       queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] })
       queryClient.invalidateQueries({ queryKey: ["budget-insights"] })
+      queryClient.invalidateQueries({ queryKey: ["accounts-distribution"] })
       if (vars.data.fromAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", vars.data.fromAccountId] })
       if (vars.data.toAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", vars.data.toAccountId] })
       if (vars.data.partyId) {
@@ -390,11 +392,6 @@ export const AddTransactionModal = ({
   const partnerLabel = mode === ModalMode.ACCOUNT
     ? (isOut ? tran("cashbook.transfer_to") : tran("cashbook.transfer_from"))
     : (isOut ? tran("cashbook.payment_for_category") : tran("cashbook.source_category"))
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } }
-  }
 
   return (
     <>

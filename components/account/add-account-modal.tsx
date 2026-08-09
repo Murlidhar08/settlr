@@ -1,6 +1,6 @@
 "use client"
 
-import { addFinancialAccount, updateFinancialAccount } from "@/actions/financial-account.actions"
+import { useAddFinancialAccount, useUpdateFinancialAccount } from "@/tanstacks/financial-account"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -115,37 +115,44 @@ export const AddAccountModal = ({
         }
     }, [open, accountData])
 
-    const [isPending, setIsPending] = useState(false)
-    const queryClient = useQueryClient()
+    const addAccountMutation = useAddFinancialAccount()
+    const updateAccountMutation = useUpdateFinancialAccount()
+    const isPending = addAccountMutation.isPending || updateAccountMutation.isPending
 
     const handleSave = async () => {
         if (!data.name.trim()) {
             return toast.error("Please enter account name")
         }
 
-        setIsPending(true)
-        try {
-            if (accountData) {
-                await updateFinancialAccount(accountData.id, data)
-                toast.success("Account updated successfully", {
-                    icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                })
-            } else {
-                await addFinancialAccount(data)
-                toast.success("Account created successfully", {
-                    icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                })
-            }
-            queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
-            if (accountData) {
-                queryClient.invalidateQueries({ queryKey: ["financial-account", accountData.id] })
-            }
-            setOpen(false)
-            router.refresh()
-        } catch (error) {
-            toast.error("Failed to save account")
-        } finally {
-            setIsPending(false)
+        if (accountData) {
+            updateAccountMutation.mutate(
+                { id: accountData.id, data },
+                {
+                    onSuccess: () => {
+                        toast.success("Account updated successfully", {
+                            icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        })
+                        setOpen(false)
+                        router.refresh()
+                    },
+                    onError: () => {
+                        toast.error("Failed to save account")
+                    }
+                }
+            )
+        } else {
+            addAccountMutation.mutate(data, {
+                onSuccess: () => {
+                    toast.success("Account created successfully", {
+                        icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    })
+                    setOpen(false)
+                    router.refresh()
+                },
+                onError: () => {
+                    toast.error("Failed to save account")
+                }
+            })
         }
     }
 

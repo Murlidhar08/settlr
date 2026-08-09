@@ -1,6 +1,6 @@
-import { getFinancialAccountBalance, getFinancialAccounts } from "@/actions/financial-account.actions";
+import { addFinancialAccount, getFinancialAccountBalance, getFinancialAccounts, updateFinancialAccount } from "@/actions/financial-account.actions";
 import { getAccountStats, getAccountTransactions } from "@/actions/transaction.actions";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/lib/auth/auth-client";
 
 export const useFinancialAccounts = (showInactive: boolean) => {
@@ -61,5 +61,30 @@ export const useAccountTransactions = (accountId: string, period: 'month' | 'yea
             return loadedCount < lastPage.totalTransactions ? allPages.length + 1 : undefined;
         },
         enabled: !!accountId,
+    });
+};
+
+export const useAddFinancialAccount = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (data: Parameters<typeof addFinancialAccount>[0]) => addFinancialAccount(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["financial-accounts"] });
+            queryClient.invalidateQueries({ queryKey: ["accounts-distribution"] });
+        },
+    });
+};
+
+export const useUpdateFinancialAccount = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, data }: { id: string; data: Parameters<typeof updateFinancialAccount>[1] }) => updateFinancialAccount(id, data),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["financial-accounts"] });
+            queryClient.invalidateQueries({ queryKey: ["financial-account", variables.id] });
+            queryClient.invalidateQueries({ queryKey: ["accounts-distribution"] });
+        },
     });
 };

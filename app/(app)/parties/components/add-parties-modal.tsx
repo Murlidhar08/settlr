@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils"
 /* ========================================================= */
 /* ACTIONS + TYPES */
 /* ========================================================= */
-import { addParties, updateParty } from "@/actions/parties.actions"
+import { useAddParty, useUpdateParty } from "@/tanstacks/parties"
 import { PartyType } from "@/lib/generated/prisma/enums"
 import { PartyInput } from "@/types/party/PartyRes"
 
@@ -53,15 +53,16 @@ const AddPartiesModal = ({
     if (setOpenInternal) setOpenInternal(val)
     else setOpenState(val)
   }
-  const queryClient = useQueryClient()
+
+  const addPartyMutation = useAddParty()
+  const updatePartyMutation = useUpdateParty()
+  const isPending = addPartyMutation.isPending || updatePartyMutation.isPending
 
   const [data, setData] = useState<PartyInput>({
     type,
     name: "",
     contactNo: null,
   })
-
-  const [isPending, setIsPending] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -86,43 +87,48 @@ const AddPartiesModal = ({
       return toast.error(tran("parties.msg.name_required"))
     }
 
-    setIsPending(true)
-    try {
-      if (partyData) {
-        const success = await updateParty(partyData.id, data)
-        if (success) {
-          toast.success(tran("parties.msg.updated") || "Party updated successfully", {
-            icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-          })
-          queryClient.invalidateQueries({ queryKey: ["party-list"] })
-          queryClient.invalidateQueries({ queryKey: ["party-detail", partyData.id] })
-          setOpen(false)
-          router.refresh()
-        } else {
-          toast.error(tran("parties.msg.update_failed") || "Failed to update party")
+    if (partyData) {
+      updatePartyMutation.mutate(
+        { partyId: partyData.id, data },
+        {
+          onSuccess: (success) => {
+            if (success) {
+              toast.success(tran("parties.msg.updated") || "Party updated successfully", {
+                icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              })
+              setOpen(false)
+              router.refresh()
+            } else {
+              toast.error(tran("parties.msg.update_failed") || "Failed to update party")
+            }
+          },
+          onError: () => {
+            toast.error("Failed to save party")
+          }
         }
-      } else {
-        const success = await addParties(data)
-        if (success) {
-          toast.success(tran("parties.msg.added"), {
-            icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-          })
-          queryClient.invalidateQueries({ queryKey: ["party-list"] })
-          setData({
-            type,
-            name: "",
-            contactNo: null,
-          })
-          setOpen(false)
-          router.refresh()
-        } else {
-          toast.error(tran("parties.msg.add_failed"))
+      )
+    } else {
+      addPartyMutation.mutate(data, {
+        onSuccess: (success) => {
+          if (success) {
+            toast.success(tran("parties.msg.added"), {
+              icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            })
+            setData({
+              type,
+              name: "",
+              contactNo: null,
+            })
+            setOpen(false)
+            router.refresh()
+          } else {
+            toast.error(tran("parties.msg.add_failed"))
+          }
+        },
+        onError: () => {
+          toast.error("Failed to save party")
         }
-      }
-    } catch (error) {
-      toast.error("Failed to save party")
-    } finally {
-      setIsPending(false)
+      })
     }
   }
 
