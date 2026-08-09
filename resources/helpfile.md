@@ -3,8 +3,8 @@
 `docker compose --file docker-compose-with-db.yml --env-file .env.production up --build -d`
 
 # Docker Release
-`./resources/scripts/docker-release.sh <version>`
-`ex: ./resources/scripts/docker-release.sh 0.0.2`
+`sh ./resources/scripts/docker-release.sh <version> <env_file>`
+`Example: sh ./resources/scripts/docker-release.sh 0.0.2 .env.production`
 
 # Add upstream repo
 `git remote add upstream https://github.com/Murlidhar08/next-auth-template.git`

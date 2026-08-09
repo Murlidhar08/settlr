@@ -1,57 +1,15 @@
-import { getUserSession } from "@/lib/auth/auth"
-import { FinancialAccountType } from "@/lib/generated/prisma/enums"
-import { prisma } from "@/lib/prisma/prisma"
-import { getUserConfig } from "@/lib/user-config"
+"use client"
+
+import { useAccountsDistribution } from "@/tanstacks/dashboard"
 import { AccountsDistributionClient } from "./accounts-distribution-client"
+import { Skeleton } from "@/components/ui/skeleton"
 
-export async function AccountsDistribution() {
-    const session = await getUserSession()
-    const { currency, language } = await getUserConfig()
-    const businessId = session?.user.activeBusinessId
+export function AccountsDistribution() {
+    const { data: distributionData, isPending } = useAccountsDistribution()
 
-    if (!businessId) return null
+    if (isPending) {
+        return <Skeleton className="h-112.5 w-full rounded-[2.5rem] bg-muted/40 animate-pulse border-2 border-dashed border-muted" />
+    }
 
-    // 1. Fetch money accounts
-    const accounts = await prisma.financialAccount.findMany({
-        where: { businessId, type: FinancialAccountType.MONEY, isActive: true },
-        select: { id: true, name: true }
-    });
-
-    if (accounts.length === 0) return null
-
-    const accountIds = accounts.map(a => a.id)
-
-    // 2. Fetch all transactions for these accounts to calculate balances
-    const transactions = await prisma.transaction.findMany({
-        where: {
-            businessId,
-            OR: [
-                { fromAccountId: { in: accountIds } },
-                { toAccountId: { in: accountIds } }
-            ]
-        },
-        select: {
-            amount: true,
-            fromAccountId: true,
-            toAccountId: true
-        }
-    })
-
-    const distributionData = accounts.map(acc => {
-        let balance = 0
-        transactions.forEach(tx => {
-            const amount = Number(tx.amount)
-            if (tx.toAccountId === acc.id) balance += amount
-            if (tx.fromAccountId === acc.id) balance -= amount
-        })
-
-        return {
-            name: acc.name,
-            value: Math.max(0, balance) // Only show positive balances in the pie
-        }
-    }).filter(a => a.value > 0)
-
-    if (distributionData.length === 0) return null
-
-    return <AccountsDistributionClient data={distributionData} currency={currency} language={language} />
+    return <AccountsDistributionClient data={distributionData || []} />
 }

@@ -567,8 +567,8 @@ export async function getTransactionDetail(transactionId: string) {
     },
     include: {
       party: { select: { id: true, name: true, contactNo: true } },
-      toAccount: { select: { id: true, name: true, type: true, moneyType: true, categoryType: true } },
-      fromAccount: { select: { id: true, name: true, type: true, moneyType: true, categoryType: true } },
+      toAccount: { select: { id: true, name: true, type: true, moneyType: true, categoryType: true, party: { select: { id: true, name: true } } } },
+      fromAccount: { select: { id: true, name: true, type: true, moneyType: true, categoryType: true, party: { select: { id: true, name: true } } } },
       user: { select: { name: true } }
     },
   });

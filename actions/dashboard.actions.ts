@@ -22,22 +22,20 @@ export async function getDashboardSummary(businessId?: string | null) {
   const endOfDay = new Date();
   endOfDay.setHours(23, 59, 59, 999);
 
-  // 1. Fetch all financial accounts for the business
+  // 1. Fetch all active, non-deleted financial accounts for the business
   const accounts = await prisma.financialAccount.findMany({
-    where: { businessId, isActive: true },
+    where: { businessId, isActive: true, isDelete: false },
     select: { id: true, type: true, partyId: true }
   });
 
   const moneyAccIds = new Set(accounts.filter(a => a.type === FinancialAccountType.MONEY).map(a => a.id));
   const partyAccs = accounts.filter(a => a.type === FinancialAccountType.PARTY);
 
-  // 2. Fetch all transactions (optimized for production later, using findMany for now to keep parity with existing logic)
+  // 2. Fetch all non-deleted transactions for the business to calculate accurate balances
   const transactions = await prisma.transaction.findMany({
     where: {
       businessId,
-      isDelete: false,
-      fromAccount: { isActive: true },
-      toAccount: { isActive: true }
+      isDelete: false
     },
     select: {
       amount: true,
@@ -109,3 +107,56 @@ export async function getDashboardSummary(businessId?: string | null) {
     netWorth,
   };
 }
+
+
+export async function getAccountsDistribution(businessId?: string | null) {
+  if (!businessId) {
+    return [];
+  }
+
+  // 1. Fetch money accounts
+  const accounts = await prisma.financialAccount.findMany({
+    where: { businessId, type: FinancialAccountType.MONEY, isActive: true },
+    select: { id: true, name: true }
+  });
+
+  if (accounts.length === 0) {
+    return [];
+  }
+
+  const accountIds = accounts.map(a => a.id);
+
+  // 2. Fetch all transactions for these accounts where isDelete is false
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      businessId,
+      isDelete: false,
+      OR: [
+        { fromAccountId: { in: accountIds } },
+        { toAccountId: { in: accountIds } }
+      ]
+    },
+    select: {
+      amount: true,
+      fromAccountId: true,
+      toAccountId: true
+    }
+  });
+
+  const distributionData = accounts.map(acc => {
+    let balance = 0;
+    transactions.forEach(tx => {
+      const amount = Number(tx.amount);
+      if (tx.toAccountId === acc.id) balance += amount;
+      if (tx.fromAccountId === acc.id) balance -= amount;
+    });
+
+    return {
+      name: acc.name,
+      value: Math.max(0, balance) // Only show positive balances in the pie
+    };
+  }).filter(a => a.value > 0);
+
+  return distributionData;
+}
+

@@ -3,12 +3,12 @@ import { PartyType } from "@/lib/generated/prisma/enums";
 import { Suspense } from "react";
 
 // Components
+import { AppHeader } from "@/components/app-header";
+import MobileNav from "@/components/tab/mobile-tab";
 import * as motion from "framer-motion/client";
 import CustomersTab from "./components/customers-tab";
 import { PartiesClientProvider, PartiesTabContent } from "./components/parties-client-wrapper";
 import { PartyFilters } from "./components/party-filters";
-import { AppHeader } from "@/components/app-header";
-import { tran } from "@/lib/languages/i18n";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -66,6 +66,8 @@ export default async function Parties({ searchParams }: PageProps) {
           </motion.div>
         </PartiesClientProvider>
       </div>
+
+      <MobileNav />
     </div>
   );
 }

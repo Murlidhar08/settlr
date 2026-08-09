@@ -1,9 +1,11 @@
 import { AppHeader } from "@/components/app-header";
+import MobileNav from "@/components/tab/mobile-tab";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getUserSession } from "@/lib/auth/auth";
 import { tran } from "@/lib/languages/i18n";
 import { Suspense } from "react";
 import { AccountsDistribution } from "./components/accounts-distribution";
+import { AddTransactionButton } from "./components/add-transaction-button";
 import { BudgetAlerts, BudgetAlertsSkeleton } from "./components/budget-alerts";
 import SwitchBusiness from "./components/business-switch";
 import { CashflowChart } from "./components/cashflow-chart";
@@ -76,6 +78,9 @@ export default async function Page() {
           </aside>
         </div>
       </div>
+
+      <AddTransactionButton />
+      <MobileNav />
     </>
   );
 }

@@ -1,21 +1,19 @@
 "use client"
 
-import { FinancialAccountType } from "@/lib/generated/prisma/enums"
-import { getTransactionPerspective } from "@/lib/transaction-logic"
-import { useUserConfig } from "@/components/providers/user-config-provider"
-import { TransactionDirection } from "@/types/transaction/TransactionDirection"
-import { notFound, useParams } from "next/navigation"
-import { TransactionDetailView } from "./components/transaction-detail-view"
-import { useTransactionDetail } from "@/tanstacks/cashbook"
-import { Skeleton } from "@/components/ui/skeleton"
 import { BackHeader } from "@/components/back-header"
-import { use } from "react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { FinancialAccountType } from "@/lib/generated/prisma/enums"
 import { tran } from "@/lib/languages/i18n"
+import { getTransactionPerspective } from "@/lib/transaction-logic"
+import { useTransactionDetail } from "@/tanstacks/cashbook"
+import { TransactionDirection } from "@/types/transaction/TransactionDirection"
+import { notFound } from "next/navigation"
+import { use } from "react"
+import { TransactionDetailView } from "./components/transaction-detail-view"
 
 export default function TransactionDetailPage({ params: paramsPromise }: { params: Promise<{ transactionId: string }> }) {
   const params = use(paramsPromise);
   const transactionId = params.transactionId;
-  const { currency } = useUserConfig()
 
   const { data: transaction, isLoading, isError } = useTransactionDetail(transactionId)
 

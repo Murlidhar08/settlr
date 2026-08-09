@@ -151,3 +151,174 @@ export async function getBusinessList() {
     where: { ownerId: session?.user.id, isDelete: false }
   });
 }
+
+export async function getBusinessDetailsWithStats(businessId: string) {
+  const session = await getUserSession();
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  // 1. Get business and verify ownership
+  const business = await prisma.business.findFirst({
+    where: {
+      id: businessId,
+      ownerId: session.user.id,
+      isDelete: false
+    }
+  });
+
+  if (!business) {
+    throw new Error("Business not found");
+  }
+
+  // 2. Count parties by type
+  const customerCount = await prisma.party.count({
+    where: {
+      businessId,
+      isDelete: false,
+      financialAccounts: {
+        some: {
+          partyType: "CUSTOMER",
+          isDelete: false
+        }
+      }
+    }
+  });
+
+  const supplierCount = await prisma.party.count({
+    where: {
+      businessId,
+      isDelete: false,
+      financialAccounts: {
+        some: {
+          partyType: "SUPPLIER",
+          isDelete: false
+        }
+      }
+    }
+  });
+
+  const employeeCount = await prisma.party.count({
+    where: {
+      businessId,
+      isDelete: false,
+      financialAccounts: {
+        some: {
+          partyType: "EMPLOYEE",
+          isDelete: false
+        }
+      }
+    }
+  });
+
+  const otherCount = await prisma.party.count({
+    where: {
+      businessId,
+      isDelete: false,
+      financialAccounts: {
+        some: {
+          partyType: "OTHER",
+          isDelete: false
+        }
+      }
+    }
+  });
+
+  // 3. Count total active transactions
+  const transactionCount = await prisma.transaction.count({
+    where: {
+      businessId,
+      isDelete: false
+    }
+  });
+
+  // 4. Fetch financial accounts
+  const financialAccounts = await prisma.financialAccount.findMany({
+    where: {
+      businessId,
+      isDelete: false,
+    },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      moneyType: true,
+      partyType: true,
+      categoryType: true,
+      isActive: true,
+    }
+  });
+
+  // 5. Fetch all transactions to calculate balances
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      businessId,
+      isDelete: false
+    },
+    select: {
+      amount: true,
+      fromAccountId: true,
+      toAccountId: true,
+      partyId: true
+    }
+  });
+
+  // Calculate balances for each financial account
+  const accountBalances = financialAccounts.map(account => {
+    let totalIn = 0;
+    let totalOut = 0;
+
+    for (const tx of transactions) {
+      if (tx.toAccountId === account.id) {
+        totalIn += Number(tx.amount);
+      }
+      if (tx.fromAccountId === account.id) {
+        totalOut += Number(tx.amount);
+      }
+    }
+
+    return {
+      ...account,
+      balance: totalIn - totalOut
+    };
+  });
+
+  // Calculate overall stats
+  let liquidCash = 0;
+  let receivable = 0;
+  let payable = 0;
+
+  accountBalances.forEach(acc => {
+    if (acc.type === "MONEY" && acc.isActive) {
+      liquidCash += acc.balance;
+    } else if (acc.type === "PARTY" && acc.isActive) {
+      if (acc.balance > 0) {
+        receivable += acc.balance;
+      } else if (acc.balance < 0) {
+        payable += Math.abs(acc.balance);
+      }
+    }
+  });
+
+  const netWorth = liquidCash + receivable - payable;
+
+  return {
+    business,
+    counts: {
+      customer: customerCount,
+      supplier: supplierCount,
+      employee: employeeCount,
+      other: otherCount,
+      party: customerCount + supplierCount + employeeCount + otherCount,
+      transaction: transactionCount,
+      accounts: financialAccounts.length
+    },
+    accounts: accountBalances,
+    stats: {
+      liquidCash,
+      receivable,
+      payable,
+      netWorth
+    }
+  };
+}

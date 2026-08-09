@@ -1,5 +1,6 @@
 import { AccountsSkeleton } from "@/components/account/accounts-skeleton";
 import { AppHeader } from "@/components/app-header";
+import MobileNav from "@/components/tab/mobile-tab";
 import { getUserConfig } from "@/lib/user-config";
 import { Suspense } from "react";
 import { AccountsContent } from "./components/accounts-content";
@@ -25,6 +26,8 @@ export default async function AccountsPage({ searchParams }: PageProps) {
                     initialPeriod={period}
                 />
             </Suspense>
+
+            <MobileNav />
         </div>
     );
 }

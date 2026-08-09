@@ -1,10 +1,32 @@
 "use client";
 
+import { upsertUserSettings } from "@/actions/user-settings.actions";
+import { AppHeader } from "@/components/app-header";
+import { FooterButtons } from "@/components/footer-buttons";
+import { useUserConfig } from "@/components/providers/user-config-provider";
+import MobileNav from "@/components/tab/mobile-tab";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { containerVariants, itemVariants } from "@/lib/animations";
+import { signOut, useSession } from "@/lib/auth/auth-client";
+import { envClient } from "@/lib/env.client";
+import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
+import { tran } from "@/lib/languages/i18n";
+import { cn } from "@/lib/utils";
+import { useAppVersion } from "@/tanstacks/settings";
+import { getInitials } from "@/utility/common-function";
 import { motion } from "framer-motion";
 import {
   Calendar,
@@ -25,30 +47,9 @@ import {
   Terminal,
   Trash2Icon
 } from "lucide-react";
-import { useEffect, useState } from "react";
-
-
-import { upsertUserSettings } from "@/actions/user-settings.actions";
-import { useUserConfig } from "@/components/providers/user-config-provider";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
-import { signOut, useSession } from "@/lib/auth/auth-client";
-import { envClient } from "@/lib/env.client";
-import { Currency, ThemeMode } from "@/lib/generated/prisma/enums";
-import { tran } from "@/lib/languages/i18n";
-import { cn } from "@/lib/utils";
-import { getInitials } from "@/utility/common-function";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-import { AppHeader } from "@/components/app-header";
-import { useAppVersion } from "@/tanstacks/settings";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -394,15 +395,6 @@ export default function SettingsPage() {
           </Section>
         </motion.div >
 
-        <FooterButtons>
-          <Button onClick={handleLogout} variant="destructive" className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-rose-500 hover:bg-rose-500/70 text-white shadow-lg shadow-rose-500/50 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
-            <LogOut className="size-5 md:size-6" />
-            <span className="hidden md:block text-center font-black tracking-[0.2em] text-sm">
-              {tran("settings.logout")}
-            </span>
-          </Button>
-        </FooterButtons>
-
         {/* App Version */}
         <motion.div
           variants={itemVariants}
@@ -412,13 +404,20 @@ export default function SettingsPage() {
           <p className="text-[9px] font-medium italic">© {new Date().getFullYear()} {envClient.NEXT_PUBLIC_APP_NAME}. All rights reserved.</p>
         </motion.div>
       </motion.div >
+
+      <FooterButtons bottomSpace={true}>
+        <Button onClick={handleLogout} variant="destructive" className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-rose-500 hover:bg-rose-500/70 text-white shadow-lg shadow-rose-500/50 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
+          <LogOut className="size-5 md:size-6" />
+          <span className="hidden md:block text-center font-black tracking-[0.2em] text-sm">
+            {tran("settings.logout")}
+          </span>
+        </Button>
+      </FooterButtons>
+
+      <MobileNav />
     </div >
   );
 }
-
-import { FooterButtons } from "@/components/footer-buttons";
-import { Skeleton } from "@/components/ui/skeleton";
-import { containerVariants, itemVariants } from "@/lib/animations";
 
 function SettingsSkeleton() {
   return (

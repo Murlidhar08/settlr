@@ -37,26 +37,58 @@ fi
 read -s -p "Password: " PGPASSWORD
 echo "" # New line after hidden password input
 
-# Export password so psql doesn't prompt again
+# Export password so psql/pg_restore doesn't prompt again
 export PGPASSWORD
+
+# Ensure PostgreSQL binaries are in PATH
+if command -v psql >/dev/null 2>&1; then
+  PSQL_DIR=$(dirname "$(command -v psql)")
+  PATH="$PSQL_DIR:$PATH"
+elif command -v pg_restore >/dev/null 2>&1; then
+  PG_DIR=$(dirname "$(command -v pg_restore)")
+  PATH="$PG_DIR:$PATH"
+else
+  for pg_dir in "/c/Program Files/PostgreSQL/"*"/bin" "/c/Program Files (x86)/PostgreSQL/"*"/bin"; do
+    if [ -d "$pg_dir" ]; then
+      PATH="$pg_dir:$PATH"
+    fi
+  done
+fi
 
 echo "------------------------------------"
 echo "Restoring '$SQL_FILE' to database '$PGDB' on $PGHOST:$PGPORT..."
 
-# Check if file is gzipped
-if [[ "$SQL_FILE" == *.gz ]]; then
-  gunzip -c "$SQL_FILE" | psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDB"
+# Restore based on format
+if pg_restore -l "$SQL_FILE" >/dev/null 2>&1; then
+  echo "Detected PostgreSQL custom-format dump. Restoring using pg_restore..."
+  pg_restore -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDB" --clean --if-exists --no-owner --no-privileges "$SQL_FILE"
 else
-  psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDB" -f "$SQL_FILE"
+  case "$SQL_FILE" in
+    *.gz)
+      if gunzip -c "$SQL_FILE" | pg_restore -l >/dev/null 2>&1; then
+        echo "Detected compressed PostgreSQL custom-format dump. Restoring using pg_restore..."
+        gunzip -c "$SQL_FILE" | pg_restore -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDB" --clean --if-exists --no-owner --no-privileges
+      else
+        echo "Detected compressed plain-text SQL. Restoring using psql..."
+        gunzip -c "$SQL_FILE" | psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDB"
+      fi
+      ;;
+    *)
+      echo "Detected plain-text SQL dump. Restoring using psql..."
+      psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDB" -f "$SQL_FILE"
+      ;;
+  esac
 fi
 
 # Capture exit status
-if [ $? -eq 0 ]; then
+STATUS=$?
+
+# Clear password from environment
+unset PGPASSWORD
+
+if [ $STATUS -eq 0 ]; then
   echo "✅ Restore completed successfully!"
 else
   echo "❌ Restore failed!"
   exit 1
 fi
-
-# Clear password from environment
-unset PGPASSWORD

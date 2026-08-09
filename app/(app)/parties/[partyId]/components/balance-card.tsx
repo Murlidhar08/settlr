@@ -27,14 +27,15 @@ export function BalanceCard({
 }: BalanceCardProps) {
   const netBalance = totalReceived - totalPaid;
 
-  const isReceive = netBalance > 0;
-  const isPay = netBalance < 0;
+  const isToReceive = netBalance < 0;
+  const isToPay = netBalance > 0;
+  const isSettled = netBalance === 0;
 
-  const label = isReceive
-    ? tran("parties.new_balance_receive")
-    : isPay
-      ? tran("parties.new_balance_pay")
-      : tran("parties.settled");
+  const label = isSettled
+    ? tran("parties.settled")
+    : isToReceive
+      ? tran("parties.to_receive")
+      : tran("parties.to_pay");
 
   return (
     <Card className={cn(
@@ -46,9 +47,9 @@ export function BalanceCard({
       <div
         className={clsx(
           "absolute inset-y-0 left-0 w-2",
-          isReceive
+          isToReceive
             ? "bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-            : isPay
+            : isToPay
               ? "bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.3)]"
               : "bg-muted"
         )}
@@ -64,14 +65,13 @@ export function BalanceCard({
           <h1
             className={clsx(
               "text-5xl font-black lg:text-6xl tracking-tighter",
-              isReceive
+              isToReceive
                 ? "text-emerald-600 dark:text-emerald-400"
-                : isPay
+                : isToPay
                   ? "text-rose-600 dark:text-rose-400"
                   : "text-muted-foreground/60"
             )}
           >
-            {isReceive ? "+" : isPay ? "-" : ""}
             {currency}
             {formatAmount(Math.abs(netBalance))}
           </h1>
@@ -81,17 +81,21 @@ export function BalanceCard({
           {/* Totals */}
           <div className="flex gap-12 pt-2">
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">{tran("parties.you_pay")}</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                {tran("parties.you_pay")}
+              </span>
               <span className="text-xl font-black text-rose-500 dark:text-rose-400 tracking-tight">
-                -{currency}
+                {currency}
                 {formatAmount(totalPaid)}
               </span>
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">{tran("parties.you_receive")}</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                {tran("parties.you_receive")}
+              </span>
               <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
-                +{currency}
+                {currency}
                 {formatAmount(totalReceived)}
               </span>
             </div>

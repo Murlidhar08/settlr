@@ -78,10 +78,12 @@ export function AccountsContent({
         <div className="w-full bg-background">
             <div className="mx-auto w-full max-w-4xl px-6 py-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                    <div className="flex flex-col">
+                    <div className="flex flex-1 flex-col">
                         <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 ml-1 mb-1">{tran("accounts.overview")}</h2>
-                        <div className="flex items-center gap-4">
-                            <p className="text-3xl font-black tracking-tight">{tran("accounts.total", { count: accounts.length.toString() })}</p>
+                        <div className="flex flex-1 flex-col items-start justify-between sm:flex-row md:items-center gap-4">
+                            <p className="text-3xl font-black tracking-tight">
+                                {tran("accounts.total", { count: accounts.length.toString() })}
+                            </p>
 
                             <div className="flex items-center gap-2">
                                 <Select items={periodItems} value={period} onValueChange={(val: any) => handlePeriodChange(val)}>
@@ -157,7 +159,7 @@ export function AccountsContent({
                 )}
             </div>
 
-            <FooterButtons>
+            <FooterButtons bottomSpace={true}>
                 <AddAccountModal>
                     <Button className="h-14 w-14 md:w-auto md:px-12 rounded-full md:gap-3 font-semibold uppercase bg-primary text-white shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 p-0 md:py-2">
                         <Plus className="size-6 sm:size-5" />

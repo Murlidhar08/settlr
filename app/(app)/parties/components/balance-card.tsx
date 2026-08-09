@@ -24,16 +24,17 @@ export default function BalanceCard({ partyType, search, includeInactive, period
     const totalAmountRaw = parties.reduce((sum, party) => sum + party.amount, 0);
     const totalAmount = Number(totalAmountRaw.toFixed(3));
 
-    const isCollect = totalAmount > 0;
-    const isPay = totalAmount < 0;
+    const isToPay = totalAmount > 0;
+    const isToReceive = totalAmount < 0;
     const isSettled = totalAmount === 0;
 
-    const label = isSettled ? tran("parties.settled")
-        : isCollect
-            ? tran("parties.to_collect")
+    const label = isSettled
+        ? tran("parties.settled")
+        : isToReceive
+            ? tran("parties.to_receive")
             : tran("parties.to_pay");
 
-    const ArrowIcon = isCollect ? ArrowDown : ArrowUp;
+    const ArrowIcon = isToReceive ? ArrowDown : ArrowUp;
 
     return (
         <section>
@@ -46,17 +47,17 @@ export default function BalanceCard({ partyType, search, includeInactive, period
                 animate={{ opacity: 1, scale: 1 }}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className={`group flex items-center justify-between rounded-3xl border-2 p-6 transition-all duration-500 shadow-sm ${isCollect
+                className={`group flex items-center justify-between rounded-3xl border-2 p-6 transition-all duration-500 shadow-sm ${isToReceive
                     ? "bg-emerald-50/50 border-emerald-100 shadow-emerald-100/20"
-                    : isPay
+                    : isToPay
                         ? "bg-rose-50/50 border-rose-100 shadow-rose-100/20"
                         : "bg-muted/30 border-muted"
                     }`}
             >
                 <div className="flex items-center gap-4">
-                    <div className={`rounded-2xl p-3 transition-transform duration-500 group-hover:rotate-12 ${isCollect
+                    <div className={`rounded-2xl p-3 transition-transform duration-500 group-hover:rotate-12 ${isToReceive
                         ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
-                        : isPay
+                        : isToPay
                             ? "bg-rose-500 text-white shadow-lg shadow-rose-500/30"
                             : "bg-muted text-muted-foreground"
                         }`}>
@@ -68,10 +69,10 @@ export default function BalanceCard({ partyType, search, includeInactive, period
                             {label}
                         </p>
 
-                        <p className={`text-3xl font-black tabular-nums transition-colors duration-500 ${isCollect
-                            ? "text-emerald-700"
-                            : isPay
-                                ? "text-rose-700"
+                        <p className={`text-3xl font-black tabular-nums transition-colors duration-500 ${isToReceive
+                            ? "text-emerald-700 dark:text-emerald-400"
+                            : isToPay
+                                ? "text-rose-700 dark:text-rose-400"
                                 : "text-muted-foreground"
                             }`}>
                             {formatAmount(Math.abs(totalAmount))}
@@ -79,7 +80,7 @@ export default function BalanceCard({ partyType, search, includeInactive, period
                     </div>
                 </div>
 
-                <div className={`p-2 rounded-xl transition-colors ${isCollect ? "bg-emerald-100/50 text-emerald-600" : isPay ? "bg-rose-100/50 text-rose-600" : "bg-muted/50 text-muted-foreground"
+                <div className={`p-2 rounded-xl transition-colors ${isToReceive ? "bg-emerald-100/50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400" : isToPay ? "bg-rose-100/50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400" : "bg-muted/50 text-muted-foreground"
                     }`}>
                     <ChevronRight className="size-5" />
                 </div>

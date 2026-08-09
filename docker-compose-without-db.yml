@@ -1,0 +1,46 @@
+services:
+  settlr:
+    image: chavda2772/settlr:latest
+    container_name: settlr
+    environment:
+      # Application
+      NEXT_PUBLIC_APP_NAME: "Settlr"
+      NEXT_PUBLIC_APP_DESCRIPTION: "Settlr for managing personal finance"
+
+      # Better Auth
+      BETTER_AUTH_SECRET: "lMD1eol2MrTxIZixGYyjwT0G0DQJ6oLJ"
+      BETTER_AUTH_URL: "http://localhost:3000"
+      BETTER_AUTH_TRUSTED_ORIGINS: "https://example.com,https://*.example.com"
+
+      # DATABASE
+      DATABASE_URL: "postgresql://next_user:next_pass@postgres_db:5432/next_template?schema=public"
+
+      # Email Service
+      SMTP_HOST: "mail.example.com"
+      SMTP_PORT: 587
+      SMTP_USER: "user@example.com"
+      SMTP_PASS: "**PASSWORD**"
+      SMTP_SECURE: false
+      FROM_EMAIL: "user <user@example.com>"
+
+      # Google login
+      GOOGLE_CLIENT_ID:
+      GOOGLE_CLIENT_SECRET:
+
+      # Discord
+      DISCORD_CLIENT_ID:
+      DISCORD_CLIENT_SECRET:
+
+      # Facebook
+      FACEBOOK_CLIENT_ID:
+      FACEBOOK_CLIENT_SECRET:
+
+    ports:
+      - "6854:3000"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped

@@ -25,7 +25,6 @@ export default function MobileNav({ navItems: propNavItems, onChange }: MobileNa
     }, []);
 
     const navItems = propNavItems && propNavItems.length > 0 ? propNavItems : defaultNavItems;
-
     if (!mounted) return null;
 
     return (

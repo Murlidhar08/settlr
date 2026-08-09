@@ -1,5 +1,6 @@
 import { AppHeader } from "@/components/app-header";
 import { FooterButtons } from "@/components/footer-buttons";
+import MobileNav from "@/components/tab/mobile-tab";
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal";
 import { Button } from "@/components/ui/button";
 import { Language, t } from "@/lib/languages/i18n";
@@ -51,7 +52,7 @@ export default async function CashbookPage({ searchParams }: CashbookPageProps) 
         </Suspense>
       </div>
 
-      <FooterButtons>
+      <FooterButtons bottomSpace={true}>
         <AddTransactionModal
           title={t("cashbook.new_entry", lang)}
           direction={TransactionDirection.OUT}
@@ -65,6 +66,8 @@ export default async function CashbookPage({ searchParams }: CashbookPageProps) 
           </Button>
         </AddTransactionModal>
       </FooterButtons>
+
+      <MobileNav />
     </div>
   );
 }
