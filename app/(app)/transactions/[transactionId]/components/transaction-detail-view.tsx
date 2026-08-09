@@ -15,6 +15,7 @@ import { toast } from "sonner"
 
 import { tran } from "@/lib/languages/i18n"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
@@ -338,29 +339,49 @@ function Divider() {
 }
 
 function AccountNode({ account, label, isSource, side }: { account: any, label: string, isSource: boolean, side: 'left' | 'right' }) {
+    const targetHref = account?.party?.id
+        ? `/parties/${account.party.id}`
+        : account?.partyId
+            ? `/parties/${account.partyId}`
+            : account?.id
+                ? `/accounts/${account.id}`
+                : null
+
+    const nodeContent = (
+        <div className={cn(
+            "relative p-3 rounded-2xl w-full flex items-center justify-center shadow-md border-2 transition-all group hover:scale-[1.02] hover:shadow-lg",
+            isSource
+                ? "bg-background border-border/60 hover:border-primary/40"
+                : "bg-primary/5 border-primary/20 hover:border-primary/50"
+        )}>
+            <div className="flex flex-col items-center gap-1 overflow-hidden">
+                <span className="font-black text-[13px] tracking-tighter text-foreground group-hover:text-primary transition-colors truncate w-full px-1">
+                    {account?.party?.name || account?.name}
+                </span>
+                <div className="px-1.5 py-0.5 rounded-full bg-muted/40 border border-border/10">
+                    <span className="text-[7.5px] font-black uppercase tracking-widest text-muted-foreground/60 block truncate max-w-20">
+                        {account.categoryType || account.moneyType || account.type}
+                    </span>
+                </div>
+            </div>
+
+            <div className={cn(
+                "absolute top-1/2 -translate-y-1/2 h-6 w-0.5 rounded-full",
+                side === 'left' ? "-left-px bg-primary/20" : "-right-px bg-primary/20"
+            )} />
+        </div>
+    )
+
     return (
         <div className="flex flex-col items-center text-center space-y-2 flex-1 px-2 max-w-45">
             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/30 leading-none">{label}</span>
-            <div className={cn(
-                "relative p-3 rounded-2xl w-full flex items-center justify-center shadow-md border-2 transition-all",
-                isSource
-                    ? "bg-background border-border/60"
-                    : "bg-primary/5 border-primary/20"
-            )}>
-                <div className="flex flex-col items-center gap-1 overflow-hidden">
-                    <span className="font-black text-[13px] tracking-tighter text-foreground truncate w-full px-1">{account?.party?.name || account?.name}</span>
-                    <div className="px-1.5 py-0.5 rounded-full bg-muted/40 border border-border/10">
-                        <span className="text-[7.5px] font-black uppercase tracking-widest text-muted-foreground/60 block truncate max-w-20">
-                            {account.categoryType || account.moneyType || account.type}
-                        </span>
-                    </div>
-                </div>
-
-                <div className={cn(
-                    "absolute top-1/2 -translate-y-1/2 h-6 w-0.5 rounded-full",
-                    side === 'left' ? "-left-px bg-primary/20" : "-right-px bg-primary/20"
-                )} />
-            </div>
+            {targetHref ? (
+                <Link href={targetHref as any} className="w-full">
+                    {nodeContent}
+                </Link>
+            ) : (
+                nodeContent
+            )}
         </div>
     )
 }
