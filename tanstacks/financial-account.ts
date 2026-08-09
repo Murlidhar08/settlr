@@ -71,6 +71,7 @@ export const useAddFinancialAccount = () => {
         mutationFn: (data: Parameters<typeof addFinancialAccount>[0]) => addFinancialAccount(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["financial-accounts"] });
+            queryClient.invalidateQueries({ queryKey: ["accounts-distribution"] });
         },
     });
 };
@@ -83,6 +84,7 @@ export const useUpdateFinancialAccount = () => {
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["financial-accounts"] });
             queryClient.invalidateQueries({ queryKey: ["financial-account", variables.id] });
+            queryClient.invalidateQueries({ queryKey: ["accounts-distribution"] });
         },
     });
 };

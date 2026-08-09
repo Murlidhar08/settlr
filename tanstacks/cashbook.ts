@@ -35,6 +35,7 @@ export const useAddTransaction = () => {
             queryClient.invalidateQueries({ queryKey: ["cashbook-transactions"] });
             queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
             queryClient.invalidateQueries({ queryKey: ["budget-insights"] });
+            queryClient.invalidateQueries({ queryKey: ["accounts-distribution"] });
             if (variables.data.partyId) {
                 queryClient.invalidateQueries({ queryKey: ["party-detail", variables.data.partyId] });
                 queryClient.invalidateQueries({ queryKey: ["party-transactions", variables.data.partyId] });
@@ -56,6 +57,7 @@ export const useDeleteTransaction = () => {
             queryClient.invalidateQueries({ queryKey: ["cashbook-transactions"] });
             queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
             queryClient.invalidateQueries({ queryKey: ["budget-insights"] });
+            queryClient.invalidateQueries({ queryKey: ["accounts-distribution"] });
             queryClient.invalidateQueries({ queryKey: ["party-transactions"] });
             queryClient.invalidateQueries({ queryKey: ["account-transactions"] });
         },
