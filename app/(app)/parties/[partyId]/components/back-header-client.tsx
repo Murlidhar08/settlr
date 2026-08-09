@@ -1,6 +1,7 @@
 "use client"
 
-import { deleteParty, togglePartyActive } from "@/actions/parties.actions"
+import { togglePartyActive } from "@/actions/parties.actions"
+import { useDeleteParty } from "@/tanstacks/parties"
 import { BackHeader } from "@/components/back-header"
 import {
   AlertDialog,
@@ -21,21 +22,25 @@ import { AddPartiesModal } from "../../components/add-parties-modal"
 
 export default function BackHeaderClient({ party }: { party: any }) {
   const router = useRouter()
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
+  const deletePartyMutation = useDeleteParty()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
 
   const handleDelete = async () => {
-    const success = await deleteParty(party.id)
-    if (success) {
-      queryClient.invalidateQueries({ queryKey: ["party-list", party?.type] })
-      queryClient.removeQueries({ queryKey: ["party-detail", party.id] })
-      queryClient.removeQueries({ queryKey: ["party-transactions", party.id] })
-      toast.success("Party and all transactions deleted")
-      router.push("/parties" as any)
-    } else {
-      toast.error("Failed to delete party")
-    }
+    deletePartyMutation.mutate(party.id, {
+      onSuccess: (success) => {
+        if (success) {
+          toast.success("Party and all transactions deleted")
+          router.push("/parties" as any)
+        } else {
+          toast.error("Failed to delete party")
+        }
+      },
+      onError: () => {
+        toast.error("Failed to delete party")
+      }
+    })
   }
 
   return (

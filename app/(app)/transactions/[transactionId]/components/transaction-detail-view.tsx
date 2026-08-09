@@ -1,14 +1,13 @@
 "use client"
 
-import { deleteTransaction } from "@/actions/transaction.actions"
 import { BackHeader } from "@/components/back-header"
 import { useConfirm } from "@/components/providers/confirm-provider"
 import { useUserConfig } from "@/components/providers/user-config-provider"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
 import { FormattedDate, FormattedTime } from "@/components/ui/date-time"
+import { useDeleteTransaction } from "@/tanstacks/cashbook"
 import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 import { formatAmount, formatDate, formatTime } from "@/utility/transaction"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import { ArrowDownLeft, ArrowRight, ArrowUpRight, CalendarDays, Check, Clock, Hash, History, Pencil, PenSquareIcon, Phone, Trash2, User } from "lucide-react"
 import { toast } from "sonner"
@@ -30,40 +29,31 @@ export function TransactionDetailView({ transaction, isIn }: TransactionDetailVi
     const router = useRouter()
     const [isEditOpen, setIsEditOpen] = useState(false)
 
-    const queryClient = useQueryClient()
-    const deleteMutation = useMutation({
-        mutationFn: (id: string) => deleteTransaction(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["financial-accounts"] })
-            queryClient.invalidateQueries({ queryKey: ["cashbook-transactions"] })
-            queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] })
-            queryClient.invalidateQueries({ queryKey: ["budget-insights"] })
-            if (transaction.fromAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", transaction.fromAccountId] })
-            if (transaction.toAccountId) queryClient.invalidateQueries({ queryKey: ["financial-account", transaction.toAccountId] })
-            if (transaction.partyId) {
-                queryClient.invalidateQueries({ queryKey: ["party-detail", transaction.partyId] })
-                queryClient.invalidateQueries({ queryKey: ["party-transactions", transaction.partyId] })
-                queryClient.invalidateQueries({ queryKey: ["party-list"] })
-            }
-            toast.success(tran("transactions.msg.deleted"))
-            router.back()
-        },
-        onError: () => {
-            toast.error(tran("transactions.msg.delete_failed"))
-        }
-    })
+    const deleteTransactionMutation = useDeleteTransaction()
 
     const onDelete = async () => {
-        const ok = await confirm({
+        const confirmed = await confirm({
             title: tran("transactions.delete_title"),
             description: tran("transactions.delete_desc"),
             confirmText: tran("transactions.yes_delete"),
-            destructive: true,
+            cancelText: tran("common.cancel"),
+            destructive: true
         })
 
-        if (!ok) return
-
-        deleteMutation.mutate(transaction.id)
+        if (confirmed) {
+            deleteTransactionMutation.mutate(
+                { id: transaction.id },
+                {
+                    onSuccess: () => {
+                        toast.success(tran("transactions.msg.deleted"))
+                        router.back()
+                    },
+                    onError: () => {
+                        toast.error(tran("transactions.msg.delete_failed"))
+                    }
+                }
+            )
+        }
     }
 
     return (
