@@ -1,37 +1,20 @@
 "use client";
 
-import { getCredientialAccounts, getEnabledOAuthProviders } from "@/actions/user-settings.actions";
 import { BackHeader } from "@/components/back-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { containerVariants, itemVariants } from "@/lib/animations";
-import { auth } from "@/lib/auth/auth";
 import { SUPPORTED_OAUTH_PROVIDERS } from '@/lib/auth/o-auth-providers';
 import { tran } from "@/lib/languages/i18n";
+import { useEnabledOAuthProviders, useListUserAccounts } from "@/tanstacks/settings";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
 import AccountCard from "./components/account-card";
 
-type Account = Awaited<ReturnType<typeof auth.api.listUserAccounts>>[number]
-
 export default function LinkAccountPage() {
-    const [currAccount, setCurrAccount] = useState<Account[]>([]);
-    const [enabledProviders, setEnabledProviders] = useState<{ google: boolean; discord: boolean; facebook: boolean }>({
-        google: false,
-        discord: false,
-        facebook: false,
-    });
-    const [loading, setLoading] = useState(true);
+    const { data: accountsList = [], isLoading: isAccountsLoading } = useListUserAccounts();
+    const { data: enabledProviders = { google: false, discord: false, facebook: false }, isLoading: isProvidersLoading } = useEnabledOAuthProviders();
 
-    useEffect(() => {
-        Promise.all([
-            getCredientialAccounts(),
-            getEnabledOAuthProviders()
-        ]).then(([accounts, providers]) => {
-            setCurrAccount(accounts as Account[]);
-            setEnabledProviders(providers);
-            setLoading(false);
-        });
-    }, []);
+    const currAccount = accountsList.filter((a: any) => a.providerId !== "credential");
+    const loading = isAccountsLoading || isProvidersLoading;
 
     if (loading) {
         return <LinkAccountSkeleton />;

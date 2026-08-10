@@ -1,3 +1,4 @@
+import { Currency } from "@/lib/generated/prisma/enums";
 import { getGlobalUserConfig } from "./global-user-config";
 
 export function formatAmount(amount?: number | null, locale?: string) {
@@ -70,3 +71,19 @@ export const formatUserNumber = (
         return String(value);
     }
 };
+
+
+export const getCurrencySymbol = (currency?: Currency) => {
+    const config = getGlobalUserConfig();
+
+    switch (currency || config.currency) {
+        case Currency.USD:
+            return "$";
+        case Currency.INR:
+            return "₹";
+        case Currency.EUR:
+            return "€";
+        default:
+            return "₹";
+    }
+}

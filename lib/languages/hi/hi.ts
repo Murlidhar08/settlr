@@ -269,6 +269,7 @@ export default {
                 error_failed_action: "कार्रवाई करने में विफल",
             }
         },
+
         app_config: {
             title: "एप्लिकेशन सेटिंग्स",
 
@@ -303,6 +304,10 @@ export default {
                 invalid_email_format: "अमान्य ईमेल प्रारूप। 'email@example.com' या 'नाम <email@example.com>' का उपयोग करें",
             },
         },
+
+        storage_mng: {
+            title: "स्टोरेज मैनेजर"
+        }
     },
 
     // Dashboard Page

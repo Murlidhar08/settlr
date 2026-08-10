@@ -525,4 +525,7 @@ export default {
             delete_failed: "Failed to delete transaction",
         }
     },
+    storage_mng: {
+        title: "Storage Manager",
+    }
 }

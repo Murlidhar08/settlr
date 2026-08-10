@@ -289,14 +289,14 @@ export const auth = betterAuth({
 
         user: {
           ...user,
+          status: dbUser?.status ?? UserStatus.pendingapproval,
           role: dbUser?.role,
           activeBusinessId: activeBusinessId,
           contactNo: dbUser?.contactNo,
           address: dbUser?.address,
           twoFactorEnabled: dbUser?.twoFactorEnabled ?? false,
           banned: dbUser?.banned ?? false,
-          banReason: dbUser?.banReason ?? null,
-          status: dbUser?.status ?? UserStatus.pendingapproval,
+          banReason: dbUser?.banReason ?? null
         },
       }
     }),

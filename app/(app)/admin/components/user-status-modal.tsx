@@ -1,11 +1,11 @@
 "use client";
 
-import { updateUserStatus } from "@/actions/admin.actions";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserStatus } from "@/lib/generated/prisma/enums";
+import { useUpdateUserStatus } from "@/tanstacks/admin";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -24,6 +24,7 @@ const statusItems = [
 export function UserStatusModal({ user, onClose, onSuccess }: UserStatusModalProps) {
     const [newStatus, setNewStatus] = useState<UserStatus>(UserStatus.pendingapproval);
     const [loading, setLoading] = useState<boolean>(false);
+    const updateStatusMutation = useUpdateUserStatus();
 
     useEffect(() => {
         if (user?.status) {
@@ -38,7 +39,7 @@ export function UserStatusModal({ user, onClose, onSuccess }: UserStatusModalPro
 
         setLoading(true);
         try {
-            const res = await updateUserStatus(user.id, newStatus);
+            const res = await updateStatusMutation.mutateAsync({ userId: user.id, status: newStatus });
             if (res?.error) {
                 toast.error(res.error || "Failed to update user status");
                 return;

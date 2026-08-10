@@ -6,5 +6,6 @@ export interface UserSettingsInput {
   language?: string
   theme?: ThemeMode
   currency?: Currency
+  currencySymbol?: string
   locale?: string;   // e.g., "en-US", "en-IN", "de-DE"
 }

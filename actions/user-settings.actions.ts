@@ -42,7 +42,6 @@ export async function upsertUserSettings(data: UserSettingsInput) {
 
 export async function getUserSettings() {
   const session = await getUserSession();
-
   if (!session?.user?.id) return null;
 
   return prisma.userSettings.findUnique({
@@ -63,13 +62,8 @@ export async function getListSessions() {
 export async function getCredientialAccounts() {
   const accounts = await auth.api.listUserAccounts({
     headers: await headers(),
-  })
-
-  const nonCredentialAccounts = accounts.filter(
-    a => a.providerId !== "credential"
-  )
-
-  return nonCredentialAccounts;
+  });
+  return accounts.filter(a => a.providerId !== "credential");
 }
 
 export async function getAppVersion() {

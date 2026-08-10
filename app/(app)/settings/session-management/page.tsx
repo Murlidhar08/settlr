@@ -1,34 +1,19 @@
 "use client";
 
-import { getListSessions } from "@/actions/user-settings.actions";
 import { BackHeader } from "@/components/back-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { containerVariants } from "@/lib/animations";
 import { useSession } from "@/lib/auth/auth-client";
-import { Session } from "@/lib/generated/prisma/client";
 import { tran } from "@/lib/languages/i18n";
+import { useListSessions } from "@/tanstacks/settings";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { SessionModalBody } from "./components/session-body";
 
 export default function SessionManagementPage() {
-    const router = useRouter();
-    const { data: session, isPending } = useSession();
-    const [sessionsList, setSessionsList] = useState<Session[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { data: session, isPending: isSessionPending } = useSession();
+    const { data: sessionsList = [], isLoading: isListLoading, refetch } = useListSessions();
 
-    const fetchSessions = async () => {
-        const res = await getListSessions();
-        if (res) setSessionsList(res as Session[]);
-        setLoading(false);
-    };
-
-    useEffect(() => {
-        fetchSessions();
-    }, []);
-
-    if (isPending || loading) {
+    if (isSessionPending || isListLoading) {
         return <SessionSkeleton />;
     }
 
@@ -48,7 +33,7 @@ export default function SessionManagementPage() {
                 <SessionModalBody
                     sessions={sessionsList as any}
                     currentSessionToken={session?.session.token}
-                    onUpdate={fetchSessions}
+                    onUpdate={refetch}
                 />
             </motion.div>
         </div>

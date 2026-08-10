@@ -1,6 +1,5 @@
 "use client";
 
-import { upsertUserSettings } from "@/actions/user-settings.actions";
 import { AppHeader } from "@/components/app-header";
 import { FooterButtons } from "@/components/footer-buttons";
 import { useUserConfig } from "@/components/providers/user-config-provider";
@@ -47,8 +46,12 @@ import {
   Terminal,
   Trash2Icon
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+
+
+import { getFileUrl } from "@/lib/utils";
+import { useUpsertUserSettings } from "@/tanstacks/settings";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
@@ -63,6 +66,7 @@ export default function SettingsPage() {
   const [timeFormat, setTimeFormat] = useState(userConfig.timeFormat);
   const [language, setLanguage] = useState(userConfig.language);
   const [isDevMode, setIsDevMode] = useState(false);
+  const upsertSettingsMutation = useUpsertUserSettings();
 
   const searchParams = useSearchParams();
   const isDebug = searchParams.get("debug") === "true";
@@ -77,36 +81,6 @@ export default function SettingsPage() {
 
   if (isPending)
     return <SettingsSkeleton />;
-
-  const currencyItems: Record<Currency, string> = {
-    USD: "USD ($)",
-    INR: "INR (₹)",
-    EUR: "EUR (€)",
-  };
-
-  const localeItems: Record<string, string> = {
-    "en-IN": "English (India)",
-    "en-US": "English (United States)",
-    "de-DE": "German (Germany)",
-    "fr-FR": "French (France)"
-  };
-
-  const dateFormatItems = [
-    { label: "DD/MM/YYYY", value: "dd/MM/yyyy" },
-    { label: "MM/DD/YYYY", value: "MM/dd/yyyy" },
-    { label: "YYYY-MM-DD", value: "yyyy-MM-dd" },
-    { label: "DD MMM, YYYY", value: "dd MMM, yyyy" },
-  ];
-
-  const timeFormatItems = [
-    { label: "12 Hour", value: "hh:mm a" },
-    { label: "24 Hour", value: "HH:mm" },
-  ];
-
-  const languageItems = [
-    { label: tran("languages.en"), value: "en" },
-    { label: tran("languages.hi"), value: "hi" },
-  ];
 
   const handleLogout = async () => {
     try {
@@ -141,7 +115,7 @@ export default function SettingsPage() {
           <div className="relative group">
             <Avatar className="h-16 w-16 ring-4 ring-background transition-transform duration-500 group-hover:scale-110">
               <AvatarImage
-                src={session?.user?.image ?? undefined}
+                src={getFileUrl(session?.user?.image)}
                 alt={session?.user?.name ?? "User avatar"}
               />
               <AvatarFallback className="bg-primary/10 text-primary font-black text-xl">
@@ -180,7 +154,7 @@ export default function SettingsPage() {
                   const v = value as Currency
                   setCurrency(v)
                   updateConfig({ currency: v })
-                  void upsertUserSettings({ currency: v })
+                  void upsertSettingsMutation.mutateAsync({ currency: v })
                   toast.success(tran("settings.msg.currency_updated"))
                 }}
               >
@@ -207,7 +181,7 @@ export default function SettingsPage() {
                   const v = value as string
                   setLocale(v)
                   updateConfig({ locale: v })
-                  void upsertUserSettings({ locale: v })
+                  void upsertSettingsMutation.mutateAsync({ locale: v })
                   toast.success(tran("settings.msg.locale_updated"))
                 }}
               >
@@ -232,7 +206,7 @@ export default function SettingsPage() {
                   if (!value) return
                   setDateFormat(value)
                   updateConfig({ dateFormat: value })
-                  void upsertUserSettings({ dateFormat: value })
+                  void upsertSettingsMutation.mutateAsync({ dateFormat: value })
                   toast.success(tran("settings.msg.date_format_updated"))
                 }}
               >
@@ -257,7 +231,7 @@ export default function SettingsPage() {
                   if (!value) return
                   setTimeFormat(value)
                   updateConfig({ timeFormat: value })
-                  void upsertUserSettings({ timeFormat: value })
+                  void upsertSettingsMutation.mutateAsync({ timeFormat: value })
                   toast.success(tran("settings.msg.time_format_updated"))
                 }}
               >
@@ -282,7 +256,7 @@ export default function SettingsPage() {
                   if (!value) return
                   setLanguage(value)
                   updateConfig({ language: value })
-                  void upsertUserSettings({ language: value })
+                  void upsertSettingsMutation.mutateAsync({ language: value })
                   toast.success(tran("settings.msg.language_updated"))
                 }}
               >
@@ -326,7 +300,7 @@ export default function SettingsPage() {
         < motion.div variants={itemVariants} >
           <Section title={tran("settings.appearance")}>
             <Row icon={PaintbrushIcon} label={tran("settings.theme_mode")}>
-              <div className="flex gap-1 bg-muted/50 rounded-2xl p-1.5 border-2 border-transparent focus-within:border-primary/10">
+              <div className="flex gap-1 bg-muted/50 rounded-2xl p-1.5 border-2 focus-within:border-primary/10">
                 {[
                   { id: ThemeMode.AUTO, icon: Laptop, label: tran("settings.auto") },
                   { id: ThemeMode.LIGHT, icon: Sun, label: tran("settings.light") },
@@ -344,7 +318,7 @@ export default function SettingsPage() {
                     onClick={async () => {
                       setTheme(mode.id);
                       updateConfig({ theme: mode.id });
-                      await upsertUserSettings({ theme: mode.id });
+                      await upsertSettingsMutation.mutateAsync({ theme: mode.id });
                     }}
                   >
                     <mode.icon size={15} />
@@ -419,6 +393,8 @@ export default function SettingsPage() {
   );
 }
 
+import { currencyItems, dateFormatItems, languageItems, localeItems, timeFormatItems } from "@/lib/constants/common";
+
 function SettingsSkeleton() {
   return (
     <div className="min-h-screen bg-background">
@@ -453,7 +429,6 @@ function SettingsSkeleton() {
     </div>
   );
 }
-
 
 /* ---------------- components ---------------- */
 

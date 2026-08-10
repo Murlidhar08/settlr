@@ -2,6 +2,7 @@
 
 import { authClient } from "@/lib/auth/auth-client";
 import { tran } from "@/lib/languages/i18n";
+import { getFileUrl } from "@/lib/utils";
 import { useDeviceSessions, useSetActiveSession } from "@/tanstacks/user";
 import { getInitials } from "@/utility/common-function";
 import { LogOut, User as UserIcon } from "lucide-react";
@@ -41,7 +42,7 @@ export default function ProfileAvatar() {
             <DropdownMenuTrigger
                 render={
                     <Avatar className="h-8 w-8 sm:h-9 sm:w-9 ring-2 ring-primary/20 ring-offset-2 ring-offset-background shadow-lg cursor-pointer transition-all hover:ring-primary/50">
-                        <AvatarImage src={session?.user?.image || ''} className="object-cover" />
+                        <AvatarImage src={getFileUrl(session?.user?.image) || ''} className="object-cover" />
                         <AvatarFallback className="bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold font-mono">
                             {getInitials(session?.user?.name)}
                         </AvatarFallback>
@@ -66,7 +67,7 @@ export default function ProfileAvatar() {
                     <UserIcon className="h-4 w-4 mr-2" />
                     <span>{tran("profile.manage_profile")}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive py-2">
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer focus:text-destructive py-2">
                     <LogOut className="h-4 w-4 mr-2" />
                     <span>{tran("profile.logout")}</span>
                 </DropdownMenuItem>

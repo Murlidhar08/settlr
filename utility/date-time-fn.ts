@@ -1,5 +1,15 @@
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { getGlobalUserConfig } from "./global-user-config";
+
+export const formatDateDifferenceToNow = (date: Date | string | number): string => {
+    try {
+        const d = new Date(date);
+        if (isNaN(d.getTime())) return String(date);
+        return formatDistanceToNow(d, { addSuffix: true });
+    } catch (error) {
+        return String(date);
+    }
+};
 
 /**
  * Formats a date according to the user's preferred date format.
