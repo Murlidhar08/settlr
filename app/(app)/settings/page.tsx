@@ -82,14 +82,8 @@ export default function SettingsPage() {
   if (isPending)
     return <SettingsSkeleton />;
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      toast.success(tran("profile.msg.logged_out_successfully"));
-      setTimeout(() => router.replace("/login"), 300);
-    } catch (error) {
-      toast.error(tran("profile.msg.failed_to_logout"));
-    }
+  const handleLogout = () => {
+    router.push("/logout");
   };
 
 

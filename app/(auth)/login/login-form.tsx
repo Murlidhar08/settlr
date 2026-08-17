@@ -49,8 +49,14 @@ function LoginFormContent({ providers }: LoginFormProps) {
     }
   }, [errorCode]);
 
-  // Redirect to dashboard
+  // Redirect to dashboard (skip if adding an account)
   useEffect(() => {
+    const isAddAccount = searchParams.get("add_account") === "1";
+    if (isAddAccount) {
+      setLastLogin(authClient.getLastUsedLoginMethod() || "");
+      return;
+    }
+
     authClient.getSession()
       .then((session) => {
         if (session.data) {
@@ -62,7 +68,7 @@ function LoginFormContent({ providers }: LoginFormProps) {
 
     // Last Login Method
     setLastLogin(authClient.getLastUsedLoginMethod() || "");
-  }, [router])
+  }, [router, searchParams])
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();

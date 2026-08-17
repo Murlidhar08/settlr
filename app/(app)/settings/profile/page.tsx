@@ -30,14 +30,8 @@ export default function ProfilePage() {
     const { data: user, isLoading } = useCurrentUser();
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-    const handleLogout = async () => {
-        try {
-            await signOut();
-            toast.success(tran("profile.msg.logged_out_successfully"));
-            window.location.href = "/login";
-        } catch (error) {
-            toast.error(tran("profile.msg.failed_to_logout"));
-        }
+    const handleLogout = () => {
+        router.push("/logout");
     };
 
     if (isLoading) return <ProfileSkeleton />;

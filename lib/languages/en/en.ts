@@ -183,6 +183,8 @@ export default {
         email_address: "Email Address",
         phone_number: "Phone Number",
         not_set: "Not set",
+        manage_profile: "Manage Profile",
+        switch_account: "Switch Account",
         logout: "Logout",
         msg: {
             logged_out_successfully: "Logged out successfully",
