@@ -185,6 +185,7 @@ export default {
         not_set: "Not set",
         manage_profile: "Manage Profile",
         switch_account: "Switch Account",
+        add_account: "Add Account",
         logout: "Logout",
         msg: {
             logged_out_successfully: "Logged out successfully",

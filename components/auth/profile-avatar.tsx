@@ -1,11 +1,12 @@
 "use client";
 
 import { authClient } from "@/lib/auth/auth-client";
+import { UserRole } from "@/lib/generated/prisma/enums";
 import { tran } from "@/lib/languages/i18n";
-import { getFileUrl } from "@/lib/utils";
+import { cn, getFileUrl } from "@/lib/utils";
 import { useDeviceSessions, useSetActiveSession } from "@/tanstacks/user";
 import { getInitials } from "@/utility/common-function";
-import { LogOut, User as UserIcon, UserPlus } from "lucide-react";
+import { LogOut, User as UserIcon, UserPlus, UserRoundCog } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import {
@@ -24,6 +25,7 @@ import {
 export default function ProfileAvatar() {
     const { data: session } = authClient.useSession();
     const { data: deviceSessions } = useDeviceSessions();
+    const isAdmin = session?.user?.role === UserRole.admin;
     const { mutate: setActive } = useSetActiveSession();
     const router = useRouter();
 
@@ -51,12 +53,28 @@ export default function ProfileAvatar() {
         <DropdownMenu>
             <DropdownMenuTrigger
                 render={
-                    <Avatar className="h-8 w-8 sm:h-9 sm:w-9 ring-2 ring-primary/20 ring-offset-2 ring-offset-background shadow-lg cursor-pointer transition-all hover:ring-primary/50">
-                        <AvatarImage src={getFileUrl(session?.user?.image) || ''} className="object-cover" />
-                        <AvatarFallback className="bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold font-mono">
-                            {getInitials(session?.user?.name)}
-                        </AvatarFallback>
-                    </Avatar>
+                    <div
+                        className={cn(
+                            "rounded-full transition-all cursor-pointer inline-block",
+                            isAdmin
+                                ? "p-[3.5px] bg-[conic-gradient(from_315deg,#EA4335_0deg_90deg,#4285F4_90deg_180deg,#34A853_180deg_270deg,#FBBC05_270deg_360deg)] shadow-lg"
+                                : "p-0"
+                        )}
+                    >
+                        <div className={cn("rounded-full", isAdmin ? "p-0.5 bg-background" : "")}>
+                            <Avatar
+                                className={cn(
+                                    "h-8 w-8 sm:h-9 sm:w-9 transition-all",
+                                    !isAdmin && "ring-2 ring-primary/20 ring-offset-2 ring-offset-background shadow-lg hover:ring-primary/50"
+                                )}
+                            >
+                                <AvatarImage src={getFileUrl(session?.user?.image) || ''} className="object-cover" />
+                                <AvatarFallback className="bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold font-mono">
+                                    {getInitials(session?.user?.name)}
+                                </AvatarFallback>
+                            </Avatar>
+                        </div>
+                    </div>
                 }
             />
 
@@ -109,7 +127,7 @@ export default function ProfileAvatar() {
                                 className="cursor-pointer flex items-center gap-2 py-2 px-2.5 rounded-lg bg-muted/60 hover:bg-muted text-foreground font-medium text-xs transition-colors"
                             >
                                 <UserPlus className="h-4 w-4 text-muted-foreground" />
-                                <span>Add account</span>
+                                <span>{tran("profile.add_account")}</span>
                             </DropdownMenuItem>
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
@@ -120,6 +138,14 @@ export default function ProfileAvatar() {
                     <UserIcon className="h-4 w-4 mr-2" />
                     <span>{tran("profile.manage_profile")}</span>
                 </DropdownMenuItem>
+
+                {isAdmin ? (
+                    <DropdownMenuItem onClick={() => router.push("/admin")} className="cursor-pointer py-2">
+                        <UserRoundCog className="h-4 w-4 mr-2" />
+                        <span>{tran("nav.admin")}</span>
+                    </DropdownMenuItem>
+                ) : null}
+
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer focus:text-destructive py-2">
                     <LogOut className="h-4 w-4 mr-2" />
                     <span>{tran("profile.logout")}</span>

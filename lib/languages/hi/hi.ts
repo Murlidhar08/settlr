@@ -185,6 +185,7 @@ export default {
         not_set: "सेट नहीं है",
         manage_profile: "प्रोफ़ाइल प्रबंधित करें",
         switch_account: "खाता बदलें",
+        add_account: "खाता जोड़ें",
         logout: "लॉग आउट",
         msg: {
             logged_out_successfully: "सफलतापूर्वक लॉग आउट किया गया",
