@@ -178,7 +178,6 @@ export default {
     },
     profile: {
         title: "Profile",
-        manage_profile: "Manage Profile",
         full_name: "Full Name",
         email_address: "Email Address",
         phone_number: "Phone Number",

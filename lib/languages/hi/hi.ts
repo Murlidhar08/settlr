@@ -178,7 +178,6 @@ export default {
     },
     profile: {
         title: "प्रोफ़ाइल",
-        manage_profile: "प्रोफ़ाइल प्रबंधित करें",
         full_name: "पूरा नाम",
         email_address: "ईमेल पता",
         phone_number: "फ़ोन नंबर",
