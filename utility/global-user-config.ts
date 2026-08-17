@@ -1,10 +1,12 @@
 import { Currency } from "@/lib/generated/prisma/enums";
 import { UserSettingsInput } from "@/types/user/UserSettingsInput";
+import { getCurrencySymbol } from "./currency-fn";
 
 let globalUserConfig: UserSettingsInput = {
     dateFormat: "dd/MM/yyyy",
     timeFormat: "hh:mm a",
     currency: Currency.INR,
+    currencySymbol: "₹",
     locale: "en-IN"
 };
 
@@ -18,8 +20,10 @@ export function setGlobalUserConfig(config: Partial<UserSettingsInput>) {
     if (config.timeFormat)
         globalUserConfig.timeFormat = config.timeFormat;
 
-    if (config.currency)
+    if (config.currency) {
         globalUserConfig.currency = config.currency;
+        globalUserConfig.currencySymbol = getCurrencySymbol(config.currency);
+    }
 
     if (config.locale)
         globalUserConfig.locale = config.locale;

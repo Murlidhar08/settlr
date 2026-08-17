@@ -30,8 +30,7 @@ export function ImpersonationIndicator() {
                         action={async () =>
                             await authClient.admin.stopImpersonating(undefined, {
                                 onSuccess: () => {
-                                    router.push("/admin")
-                                    refetch()
+                                    window.location.replace("/admin");
                                 },
                             })
                         }

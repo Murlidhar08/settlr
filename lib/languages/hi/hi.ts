@@ -183,6 +183,9 @@ export default {
         email_address: "ईमेल पता",
         phone_number: "फ़ोन नंबर",
         not_set: "सेट नहीं है",
+        manage_profile: "प्रोफ़ाइल प्रबंधित करें",
+        switch_account: "खाता बदलें",
+        add_account: "खाता जोड़ें",
         logout: "लॉग आउट",
         msg: {
             logged_out_successfully: "सफलतापूर्वक लॉग आउट किया गया",
@@ -269,6 +272,7 @@ export default {
                 error_failed_action: "कार्रवाई करने में विफल",
             }
         },
+
         app_config: {
             title: "एप्लिकेशन सेटिंग्स",
 
@@ -303,6 +307,10 @@ export default {
                 invalid_email_format: "अमान्य ईमेल प्रारूप। 'email@example.com' या 'नाम <email@example.com>' का उपयोग करें",
             },
         },
+
+        storage_mng: {
+            title: "स्टोरेज मैनेजर"
+        }
     },
 
     // Dashboard Page

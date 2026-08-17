@@ -17,13 +17,18 @@ async function getSmtpTransporter() {
 }
 
 // Optional: test SMTP config
-export async function verifySMTP() {
+export async function verifySMTP(): Promise<{
+  success: boolean;
+  error: string | undefined;
+}> {
   try {
     const transporter = await getSmtpTransporter();
     await transporter.verify();
     console.log("SMTP server ready to send emails");
-  } catch (err) {
+    return { success: true, error: undefined };
+  } catch (err: any) {
     console.error("SMTP verification failed", err);
+    return { success: false, error: err.message };
   }
 }
 

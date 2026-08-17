@@ -1,10 +1,10 @@
 "use client";
 
-import { updateAppConfig } from "@/actions/admin/app-config";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useUpdateAppConfig } from "@/tanstacks/admin";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
 import { Fingerprint, Globe, Mail, PenLine } from "lucide-react";
@@ -34,7 +34,6 @@ type AppConfigValues = z.infer<typeof appConfigSchema>;
 
 import { FooterButtons } from "@/components/footer-buttons";
 import { tran } from "@/lib/languages/i18n";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface AppSettingsFormProps {
     initialData: any;
@@ -42,7 +41,7 @@ interface AppSettingsFormProps {
 
 export function AppSettingsForm({ initialData }: AppSettingsFormProps) {
     const [loading, setLoading] = useState(false);
-    const queryClient = useQueryClient();
+    const updateAppConfigMutation = useUpdateAppConfig();
 
     const appConfigSchema = z.object({
         smtpHost: z.string().optional().nullable(),
@@ -78,8 +77,7 @@ export function AppSettingsForm({ initialData }: AppSettingsFormProps) {
     const onSubmit = async (data: AppConfigValues) => {
         setLoading(true);
         try {
-            await updateAppConfig(data as any);
-            queryClient.invalidateQueries({ queryKey: ["admin-app-config"] });
+            await updateAppConfigMutation.mutateAsync(data as any);
             toast.success(tran("admin.app_config.msg.settings_updated_success"));
         } catch (error: any) {
             toast.error(error.message || tran("admin.app_config.msg.settings_update_failed"));
@@ -158,6 +156,7 @@ export function AppSettingsForm({ initialData }: AppSettingsFormProps) {
                 title={tran("admin.app_config.email_auth")}
                 description={tran("admin.app_config.email_auth_desc")}
                 icon={<Fingerprint className="w-5 h-5" />}
+                hidden={true}
             >
                 <div className="space-y-6">
                     {/* Google */}
@@ -224,12 +223,14 @@ export function AppSettingsForm({ initialData }: AppSettingsFormProps) {
     );
 }
 
-function ConfigCard({ title, description, icon, children }: {
+function ConfigCard({ title, description, icon, children, hidden = false }: {
     title: string;
     description: string;
     icon: React.ReactNode;
     children: React.ReactNode;
+    hidden?: boolean;
 }) {
+    if (hidden) return null;
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -11,6 +11,7 @@ import { envClient } from "@/lib/env.client";
 import { envServer } from "@/lib/env.server";
 
 import AppIconsMetaTags from "@/components/app-icons-metatags";
+import { ImpersonationIndicator } from "@/components/auth/impersonation-indicator";
 import { AppProviders } from "@/components/providers";
 import NextTopLoader from 'nextjs-toploader';
 
@@ -108,6 +109,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           position="top-center"
           expand={false}
         />
+
+        {/* Only when admin is impersonating */}
+        <ImpersonationIndicator />
       </body>
     </html >
   );

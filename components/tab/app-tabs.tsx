@@ -77,7 +77,7 @@ export default function AppTabs({ tabs, defaultTab, className = "w-full" }: AppT
     return (
         <Tabs value={activeTab} onValueChange={handleTabChange} className={cn("w-full", className)}>
             {/* Nav Desktop Container */}
-            <div className="mb-8 hidden lg:block">
+            <div className="mb-4 hidden lg:block">
                 <TabsList
                     ref={tabsListRef}
                     onMouseDown={handleMouseDown}

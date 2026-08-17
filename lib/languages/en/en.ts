@@ -183,6 +183,9 @@ export default {
         email_address: "Email Address",
         phone_number: "Phone Number",
         not_set: "Not set",
+        manage_profile: "Manage Profile",
+        switch_account: "Switch Account",
+        add_account: "Add Account",
         logout: "Logout",
         msg: {
             logged_out_successfully: "Logged out successfully",
@@ -525,4 +528,7 @@ export default {
             delete_failed: "Failed to delete transaction",
         }
     },
+    storage_mng: {
+        title: "Storage Manager",
+    }
 }

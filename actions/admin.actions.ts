@@ -1,5 +1,6 @@
 "use server";
 
+import { deleteUser } from "@/actions/user.actions";
 import { getAppConfig } from "@/lib/app-config";
 import { auth, getUserSession } from "@/lib/auth/auth";
 import { UserRole, UserStatus } from "@/lib/generated/prisma/enums";
@@ -8,14 +9,16 @@ import { headers } from "next/headers";
 
 export async function getAdminAppConfig() {
     const session = await getUserSession();
-    if (session?.user.role !== UserRole.admin) throw new Error("Unauthorized");
+    if (session?.user.role !== UserRole.admin)
+        throw new Error("Unauthorized");
 
     return await getAppConfig();
 }
 
 export async function getAdminUsers() {
     const session = await getUserSession();
-    if (session?.user.role !== UserRole.admin) throw new Error("Unauthorized");
+    if (session?.user.role !== UserRole.admin)
+        throw new Error("Unauthorized");
 
     const usersList = await auth.api.listUsers({
         headers: await headers(),
@@ -45,16 +48,11 @@ export async function getAdminUsers() {
 
 export async function comprehensiveDeleteUser(userId: string) {
     const session = await getUserSession();
-    if (session?.user.role !== UserRole.admin) throw new Error("Unauthorized");
+    if (session?.user.role !== UserRole.admin)
+        throw new Error("Unauthorized");
 
     try {
-        await prisma.$transaction(async (tx) => {
-            // 1. Delete the user (this cascades to Session, Account, TwoFactor, UserSettings)
-            await tx.user.delete({
-                where: { id: userId }
-            });
-        });
-
+        await deleteUser(userId);
         return { success: true };
     } catch (error: any) {
         console.error("Failed to delete user comprehensively:", error);

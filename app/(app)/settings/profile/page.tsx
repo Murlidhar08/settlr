@@ -10,30 +10,28 @@ import {
     User
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { BackHeader } from "@/components/back-header";
+import { DocumentPreview } from "@/components/document-preview";
 import { FooterButtons } from "@/components/footer-buttons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { containerVariants, itemVariants } from "@/lib/animations";
 import { signOut } from "@/lib/auth/auth-client";
 import { tran } from "@/lib/languages/i18n";
+import { cn, getFileUrl } from "@/lib/utils";
 import { useCurrentUser } from "@/tanstacks/user";
 import { getInitials } from "@/utility/common-function";
 
 export default function ProfilePage() {
     const router = useRouter();
     const { data: user, isLoading } = useCurrentUser();
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-    const handleLogout = async () => {
-        try {
-            await signOut();
-            toast.success(tran("profile.msg.logged_out_successfully"));
-            window.location.href = "/login";
-        } catch (error) {
-            toast.error(tran("profile.msg.failed_to_logout"));
-        }
+    const handleLogout = () => {
+        router.push("/logout");
     };
 
     if (isLoading) return <ProfileSkeleton />;
@@ -57,10 +55,16 @@ export default function ProfilePage() {
                 >
                     <div className="absolute top-0 left-0 w-full h-24 bg-linear-to-br from-primary/10 to-transparent" />
 
-                    <div className="relative group">
+                    <div 
+                        className={cn(
+                            "relative group",
+                            user?.image && "cursor-pointer"
+                        )}
+                        onClick={() => user?.image && setIsPreviewOpen(true)}
+                    >
                         <Avatar className="h-28 w-28 ring-4 ring-background shadow-xl transition-transform duration-500 group-hover:scale-105">
                             <AvatarImage
-                                src={user?.image ?? undefined}
+                                src={getFileUrl(user?.image)}
                                 alt={user?.name ?? "User"}
                             />
                             <AvatarFallback className="bg-primary/10 text-primary text-3xl font-black">
@@ -122,6 +126,16 @@ export default function ProfilePage() {
                     </Button>
                 </FooterButtons>
             </motion.div>
+
+            {/* Document Preview for Profile Picture */}
+            {user?.image && (
+                <DocumentPreview
+                    isOpen={isPreviewOpen}
+                    onClose={() => setIsPreviewOpen(false)}
+                    url={getFileUrl(user.image)}
+                    fileName={`${user.name}-profile-picture`}
+                />
+            )}
         </div>
     );
 }

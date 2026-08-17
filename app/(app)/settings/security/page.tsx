@@ -1,32 +1,25 @@
 "use client";
 
-import { getListUserAccounts } from "@/actions/user-settings.actions";
 import { BackHeader } from "@/components/back-header";
 import AppTabs from "@/components/tab/app-tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { containerVariants } from "@/lib/animations";
 import { useSession } from "@/lib/auth/auth-client";
 import { tran } from "@/lib/languages/i18n";
+import { useListUserAccounts } from "@/tanstacks/settings";
 import { motion } from "framer-motion";
 import { Key, Lock, ShieldCheck } from "lucide-react";
-import { useEffect, useState } from "react";
 import { PasskeyTab } from "./components/passkey-tab";
 import { SecureTab } from "./components/secure-tab";
 import { TwoFactorTab } from "./components/two-factor-tab";
 
 export default function SecurityPage() {
-    const { data: session, isPending } = useSession();
-    const [hasPasswordAccount, setHasPasswordAccount] = useState<boolean | null>(null);
+    const { data: session, isPending: isSessionPending } = useSession();
+    const { data: accounts = [], isLoading: isAccountsLoading } = useListUserAccounts();
 
-    useEffect(() => {
-        getListUserAccounts()
-            .then(accounts => {
-                const hasPassAcc = accounts.some(a => a.providerId === "credential")
-                setHasPasswordAccount(hasPassAcc);
-            })
-    }, [])
+    const hasPasswordAccount = accounts.some((a: any) => a.providerId === "credential");
 
-    if (isPending || hasPasswordAccount === null) {
+    if (isSessionPending || isAccountsLoading) {
         return <SecuritySkeleton />;
     }
 

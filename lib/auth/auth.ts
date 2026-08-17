@@ -180,6 +180,7 @@ export const auth = betterAuth({
       google: {
         clientId: envServer.GOOGLE_CLIENT_ID as string,
         clientSecret: envServer.GOOGLE_CLIENT_SECRET as string,
+        prompt: "select_account",
       }
     } : {}),
     ...(envServer.DISCORD_CLIENT_ID && envServer.DISCORD_CLIENT_SECRET ? {
@@ -289,19 +290,19 @@ export const auth = betterAuth({
 
         user: {
           ...user,
+          status: dbUser?.status ?? UserStatus.pendingapproval,
           role: dbUser?.role,
           activeBusinessId: activeBusinessId,
           contactNo: dbUser?.contactNo,
           address: dbUser?.address,
           twoFactorEnabled: dbUser?.twoFactorEnabled ?? false,
           banned: dbUser?.banned ?? false,
-          banReason: dbUser?.banReason ?? null,
-          status: dbUser?.status ?? UserStatus.pendingapproval,
+          banReason: dbUser?.banReason ?? null
         },
       }
     }),
     multiSession({
-      maximumSessions: 3,
+      maximumSessions: 5,
     }),
     haveIBeenPwned({
       enabled: envServer.NODE_ENV === 'production',

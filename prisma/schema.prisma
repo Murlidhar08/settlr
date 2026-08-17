@@ -23,6 +23,7 @@ enum UserStatus {
   pendingapproval
   approved
   suspended
+  banned
 }
 
 enum Currency {
@@ -31,28 +32,41 @@ enum Currency {
   EUR
 }
 
+enum UserDocumentType {
+  aadhar_card
+  pan_card
+  election_card
+  other
+}
+
 // Better Auth tables
 model User {
-  id               String        @id
+  id               String     @id @default(cuid())
   name             String
   email            String
-  emailVerified    Boolean       @default(false)
+  emailVerified    Boolean    @default(false)
   image            String?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  role             UserRole      @default(user)
-  status           UserStatus    @default(pendingapproval)
-  banned           Boolean?      @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  role             UserRole   @default(user)
+  status           UserStatus @default(pendingapproval)
+  banned           Boolean?   @default(false)
   banReason        String?
   banExpires       DateTime?
-  twoFactorEnabled Boolean?      @default(false)
-  contactNo        String?
-  address          String?
-  sessions         Session[]
-  accounts         Account[]
-  twofactors       TwoFactor[]
-  passkeys         Passkey[]
-  userSettings     UserSettings?
+  twoFactorEnabled Boolean?   @default(false)
+
+  // Custom fields from userinfo
+  contactNo   String?
+  occupation  String?
+  address     String? @db.Text
+  description String? @db.Text
+
+  sessions      Session[]
+  accounts      Account[]
+  twofactors    TwoFactor[]
+  passkeys      Passkey[]
+  userSettings  UserSettings?
+  userDocuments UserDocument[]
 
   username        String?
   displayUsername String?
@@ -175,6 +189,22 @@ model AppConfig {
   discordClientSecret String?
 
   @@map("appConfig")
+}
+
+model UserDocument {
+  id                   String           @id @default(cuid())
+  userId               String
+  user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName             String
+  extension            String
+  documentRelativePath String
+  documentType         UserDocumentType
+  createdBy            String
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  @@index([userId])
+  @@map("userDocument")
 }
 
 model Business {

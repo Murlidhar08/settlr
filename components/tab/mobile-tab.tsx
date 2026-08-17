@@ -60,9 +60,10 @@ interface MobileNavItemProps {
     active: boolean;
     href?: string;
     onChange?: (value: string) => void;
+    badgeCount?: number;
 }
 
-function MobileNavItem({ icon, label, active, href, onChange }: MobileNavItemProps) {
+function MobileNavItem({ icon, label, active, href, onChange, badgeCount }: MobileNavItemProps) {
     const isHash = href?.startsWith("#");
 
     const handleClick = (e: React.MouseEvent) => {
@@ -85,7 +86,7 @@ function MobileNavItem({ icon, label, active, href, onChange }: MobileNavItemPro
                 "relative z-10 flex items-center justify-center transition-all duration-300",
                 active ? "text-primary scale-110" : "text-muted-foreground hover:text-foreground active:scale-90"
             )}>
-                <div className="flex items-center justify-center [&>svg]:size-5">
+                <div className="flex items-center justify-center [&>svg]:size-5 relative">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={active ? "active" : "inactive"}
@@ -97,6 +98,11 @@ function MobileNavItem({ icon, label, active, href, onChange }: MobileNavItemPro
                             {icon}
                         </motion.div>
                     </AnimatePresence>
+                    {!!badgeCount && (
+                        <div className="absolute -top-2 -right-3 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-white shadow-lg shadow-primary/20 ring-2 ring-white dark:ring-slate-900 animate-in zoom-in duration-300">
+                            {badgeCount > 99 ? '99+' : badgeCount}
+                        </div>
+                    )}
                 </div>
             </div>
 
