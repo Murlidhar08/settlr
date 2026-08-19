@@ -142,7 +142,7 @@ export default function ProfileAvatar() {
                 {isAdmin ? (
                     <DropdownMenuItem onClick={() => router.push("/admin")} className="cursor-pointer py-2">
                         <UserRoundCog className="h-4 w-4 mr-2" />
-                        <span>{tran("nav.admin")}</span>
+                        <span>{tran("admin.title")}</span>
                     </DropdownMenuItem>
                 ) : null}
 
