@@ -20,6 +20,7 @@ import {
 } from "./ui/dropdown-menu"
 
 interface HeaderMenuItem {
+  id?: string
   label: string
   icon?: ReactNode
   onClick: () => void
@@ -101,23 +102,21 @@ const BackHeader = ({
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <button
                   className={cn(
                     buttonVariants({ variant: "secondary", size: "icon" }),
-                    "h-11 w-11 rounded-2xl bg-secondary/80 hover:bg-secondary border border-border/50 shadow-sm transition-all text-foreground flex items-center justify-center outline-none"
+                    "h-8 w-8 rounded-lg bg-secondary/80 hover:bg-secondary border border-border/50 shadow-sm transition-all text-foreground flex items-center justify-center outline-none"
                   )}
                 >
                   <EllipsisVertical className="h-5 w-5" />
-                </motion.button>
+                </button>
               }
             />
 
             <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 mt-2 shadow-2xl border-border/50">
               {menuItems.map((item, index) => (
                 <DropdownMenuItem
-                  key={index}
+                  key={item.id || index}
                   onClick={item.onClick}
                   className={cn(
                     "rounded-xl px-4 py-3 text-sm font-bold transition-all focus:scale-[0.98] active:scale-95 cursor-pointer",

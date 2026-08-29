@@ -53,7 +53,7 @@ export function UserProfileHeader({ user, isEditing = false }: UserProfileHeader
         );
     }
 
-    const canEdit = currentUser && (currentUser.id === user.id || currentUser.role === "admin");
+    const canEdit = currentUser && (currentUser.id === user?.id || currentUser.role === "admin");
 
     const handleAvatarClick = () => {
         if (!canEdit || isUploading) return;
@@ -150,6 +150,16 @@ export function UserProfileHeader({ user, isEditing = false }: UserProfileHeader
                         >
                             <Camera size={14} />
                         </div>
+                    )}
+
+                    {canEdit && (
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            accept="image/*"
+                            className="hidden"
+                        />
                     )}
 
                     <input

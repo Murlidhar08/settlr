@@ -43,7 +43,7 @@ export default async function UserDetailsPage({ params }: { params: Promise<{ us
         <>
             <UserHeader userId={userId} />
 
-            <div className="min-h-full w-full bg-background p-4 sm:p-8 lg:p-12 max-w-7xl mx-auto">
+            <div className="min-h-full w-full bg-background p-4 sm:p-8 lg:p-12 space-y-10 max-w-7xl mx-auto">
                 {/* Header Section */}
                 <UserProfileHeader user={user} />
 

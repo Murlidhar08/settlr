@@ -5,6 +5,7 @@ const envSchema = zod.object({
   NODE_ENV: zod.string().default("production"),
   NEXT_PUBLIC_APP_NAME: zod.string().nonempty(),
   NEXT_PUBLIC_APP_DESCRIPTION: zod.string().nonempty(),
+  ADVANCE_PASS_CHECK: zod.string().optional(),
 
   //  Database
   DATABASE_URL: zod.string().nonempty(),

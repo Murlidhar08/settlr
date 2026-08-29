@@ -91,7 +91,12 @@ export const auth = betterAuth({
     // Send password reset mail
     sendResetPassword: async ({ user, url }) => {
       try {
-        const emailHtml = getResetPasswordEmailHtml(user.email, url)
+        const emailHtml = getResetPasswordEmailHtml(user.email, url);
+
+        // In development, also log the URL for easy testing
+        if (envServer.NODE_ENV === "development") {
+          console.log("verification URL (dev only):", url)
+        }
 
         const { data, error } = await sendMail({
           sendTo: user.email,
@@ -305,7 +310,7 @@ export const auth = betterAuth({
       maximumSessions: 5,
     }),
     haveIBeenPwned({
-      enabled: envServer.NODE_ENV === 'production',
+      enabled: envServer.ADVANCE_PASS_CHECK?.toLowerCase() == "true",
       customPasswordCompromisedMessage: "This password has appeared in data breaches. Please choose a stronger, unique password."
     }),
     username(),
