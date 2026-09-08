@@ -61,19 +61,44 @@ export function AccountDetailsView({ accountId, currency }: AccountDetailsViewPr
     const searchParams = useSearchParams()
     const router = useRouter()
     const pathname = usePathname()
-    const period = (searchParams.get("period") as 'month' | 'year' | 'all') || 'month'
 
-    const [searchQuery, setSearchQuery] = useState("")
-    const [debouncedSearch, setDebouncedSearch] = useState("")
-    const [sortBy, setSortBy] = useState<"date" | "title" | "price">("date")
-    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+    const period = (searchParams.get("period") as 'month' | 'year' | 'all') || 'month'
+    const paramSortBy = searchParams.get("sortBy") as "date" | "title" | "price" | null
+    const paramSortOrder = searchParams.get("sortOrder") as "asc" | "desc" | null
+    const paramSearch = searchParams.get("search") || ""
+
+    const sortBy: "date" | "title" | "price" = (paramSortBy && ["date", "title", "price"].includes(paramSortBy)) ? paramSortBy : "date"
+    const sortOrder: "asc" | "desc" = (paramSortOrder && ["asc", "desc"].includes(paramSortOrder)) ? paramSortOrder : "desc"
+
+    const [searchQuery, setSearchQuery] = useState(paramSearch)
+    const [debouncedSearch, setDebouncedSearch] = useState(paramSearch)
+
+    const updateParams = useCallback((updates: Record<string, string | null>) => {
+        const params = new URLSearchParams(searchParams.toString())
+        Object.entries(updates).forEach(([key, value]) => {
+            if (value === null || value === "") {
+                params.delete(key)
+            } else {
+                params.set(key, value)
+            }
+        })
+        router.push(`${pathname}?${params.toString()}` as any, { scroll: false })
+    }, [searchParams, pathname, router])
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(searchQuery)
+            if (searchQuery.trim() !== (searchParams.get("search") || "")) {
+                updateParams({ search: searchQuery.trim() || null })
+            }
         }, 300)
         return () => clearTimeout(timer)
-    }, [searchQuery])
+    }, [searchQuery, searchParams, updateParams])
+
+    useEffect(() => {
+        setSearchQuery(paramSearch)
+        setDebouncedSearch(paramSearch)
+    }, [paramSearch])
 
     const { data: statsData, isLoading: statsLoading } = useAccountStats(accountId, period)
     const {
@@ -179,9 +204,16 @@ export function AccountDetailsView({ accountId, currency }: AccountDetailsViewPr
 
     const handlePeriodChange = (val: "month" | "year" | "all" | null) => {
         if (!val) return
-        const params = new URLSearchParams(searchParams.toString())
-        params.set("period", val)
-        router.push(`${pathname}?${params.toString()}` as any, { scroll: false })
+        updateParams({ period: val === "month" ? null : val })
+    }
+
+    const handleSortChange = (val: "date" | "title" | "price") => {
+        updateParams({ sortBy: val === "date" ? null : val })
+    }
+
+    const handleSortOrderToggle = () => {
+        const nextOrder = sortOrder === "asc" ? "desc" : "asc"
+        updateParams({ sortOrder: nextOrder === "desc" ? null : nextOrder })
     }
 
     return (
@@ -352,7 +384,7 @@ export function AccountDetailsView({ accountId, currency }: AccountDetailsViewPr
                                     value={sortBy}
                                     onValueChange={(val: any) => {
                                         if (!val) return
-                                        setSortBy(val)
+                                        handleSortChange(val)
                                     }}
                                 >
                                     <SelectTrigger className="h-9 px-3 rounded-xl bg-muted/40 hover:bg-muted/60 border-0 shadow-none focus:ring-0 text-[10px] font-bold uppercase tracking-wider shrink-0 gap-1.5 min-w-[120px]">
@@ -376,7 +408,7 @@ export function AccountDetailsView({ accountId, currency }: AccountDetailsViewPr
                                     type="button"
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
+                                    onClick={handleSortOrderToggle}
                                     className="h-9 w-9 rounded-xl bg-muted/40 hover:bg-muted/60 text-foreground transition-all shrink-0"
                                     title={sortOrder === "asc" ? "Sort Ascending" : "Sort Descending"}
                                 >
