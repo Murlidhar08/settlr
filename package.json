@@ -1,6 +1,6 @@
 {
   "name": "settlr",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "private": true,
   "engines": {
     "node": ">=22"
@@ -75,11 +75,11 @@
     "typescript": "^7.0.2"
   },
   "allowScripts": {
-    "@prisma/engines@7.9.1": true,
     "esbuild@0.28.1": true,
-    "prisma@7.9.1": true,
     "sharp@0.34.5": true,
     "unrs-resolver@1.12.2": true,
-    "core-js@3.49.0": true
+    "core-js@3.49.0": true,
+    "prisma@7.10.0": true,
+    "@prisma/engines@7.10.0": true
   }
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import { useUserConfig } from "@/components/providers/user-config-provider";
 import { TransactionItem } from "@/components/transaction/transaction-item";
-import { FormattedDate, FormattedTime } from "@/components/ui/date-time";
+import { FormattedTime } from "@/components/ui/date-time";
 import { TransactionRes } from "@/types/transaction/TransactionData";
+import { formatUserDate } from "@/utility/date-time-fn";
 import { isToday, isYesterday } from "date-fns";
 import { motion } from "framer-motion";
 import { Wallet2 } from "lucide-react";
@@ -31,8 +31,6 @@ function TransactionGroup({ label, children }: { label: React.ReactNode; childre
 }
 
 const TransactionList = ({ transactions, accountId, accountType }: transactionListProp) => {
-  const { currency } = useUserConfig();
-
   function groupTransactionsByDate(transactions: TransactionRes[]) {
     const groups: Record<string, TransactionRes[]> = {};
 
@@ -44,7 +42,7 @@ const TransactionList = ({ transactions, accountId, accountType }: transactionLi
       } else if (isYesterday(tx.date)) {
         label = "YESTERDAY";
       } else {
-        label = tx.date as any; // We use the date as the key, but we'll format it in the Group label
+        label = formatUserDate(tx.date); // We use the date as the key, but we'll format it in the Group label
       }
 
       if (!groups[label]) {
@@ -75,7 +73,10 @@ const TransactionList = ({ transactions, accountId, accountType }: transactionLi
       {transactions &&
         Object.entries(groupTransactionsByDate(transactions))
           .map(([label, groupTxs]) => (
-            <TransactionGroup key={label} label={label === "TODAY" || label === "YESTERDAY" ? label : <FormattedDate date={label} />}>
+            <TransactionGroup
+              key={label}
+              label={label}
+            >
               <div className="space-y-2 mt-1">
                 {groupTxs.map((transaction) => (
                   <TransactionItem
