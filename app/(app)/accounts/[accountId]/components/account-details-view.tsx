@@ -6,6 +6,7 @@ import { useUserConfig } from "@/components/providers/user-config-provider"
 import { AddTransactionModal } from "@/components/transaction/add-transaction-modal"
 import { TransactionList } from "@/components/transaction/transaction-list"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
     Select,
     SelectContent,
@@ -20,7 +21,9 @@ import { TransactionDirection } from "@/types/transaction/TransactionDirection"
 import { getCurrencySymbol } from "@/utility/transaction"
 import { motion } from "framer-motion"
 import {
+    ArrowDown,
     ArrowDownLeft, ArrowDownToLine,
+    ArrowUp,
     ArrowUpFromLine,
     ArrowUpRight,
     Banknote,
@@ -29,17 +32,18 @@ import {
     Landmark,
     Loader2,
     Plus,
-    Scale, Settings2,
+    Scale, Search, Settings2,
     ShieldAlert,
     Tag,
     TrendingDown,
     TrendingUp,
     Truck,
     User2, Users,
-    Wallet
+    Wallet,
+    X
 } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useCallback, useRef, useTransition } from "react"
+import { useCallback, useEffect, useRef, useState, useTransition } from "react"
 import { toast } from "sonner"
 import BackAccountHeaderClient from "./back-account-header-client"
 
@@ -59,6 +63,18 @@ export function AccountDetailsView({ accountId, currency }: AccountDetailsViewPr
     const pathname = usePathname()
     const period = (searchParams.get("period") as 'month' | 'year' | 'all') || 'month'
 
+    const [searchQuery, setSearchQuery] = useState("")
+    const [debouncedSearch, setDebouncedSearch] = useState("")
+    const [sortBy, setSortBy] = useState<"date" | "title" | "price">("date")
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery)
+        }, 300)
+        return () => clearTimeout(timer)
+    }, [searchQuery])
+
     const { data: statsData, isLoading: statsLoading } = useAccountStats(accountId, period)
     const {
         data: transData,
@@ -66,7 +82,7 @@ export function AccountDetailsView({ accountId, currency }: AccountDetailsViewPr
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage
-    } = useAccountTransactions(accountId, period)
+    } = useAccountTransactions(accountId, period, debouncedSearch, sortBy, sortOrder)
 
     const { defAccId, defIncomeAccId, defExpenseAccId } = useUserConfig()
     const symbol = getCurrencySymbol(currency)
@@ -95,9 +111,15 @@ export function AccountDetailsView({ accountId, currency }: AccountDetailsViewPr
     const transactions = transData.pages.flatMap(page => page.transactions)
     const account = transData.pages[0]?.account
     const stats = statsData
-    const totalTransactions = transData.pages[0]?.totalTransactions
+    const totalTransactions = transData.pages[0]?.totalTransactions ?? 0
 
     if (!account) return null
+
+    const sortOptions = [
+        { value: "date", label: tran("common.group_by_date") },
+        { value: "title", label: tran("common.title") },
+        { value: "price", label: tran("common.price") },
+    ]
 
     const isDefaultAcc = defAccId === accountId
     const isDefaultIncome = defIncomeAccId === accountId
@@ -281,29 +303,107 @@ export function AccountDetailsView({ accountId, currency }: AccountDetailsViewPr
                         )}
                     </motion.div>
 
-                    {/* Transaction List */}
-                    <div className="space-y-8">
-                        <div className={cn("flex items-center justify-between px-2", !account.isActive && "grayscale-50")}>
-                            <div className="flex items-center gap-4">
-                                <div className="h-1 w-12 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
-                                <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/70">{tran("accounts.statement_ledger")}</h2>
+                    {/* Transaction List Section */}
+                    <div className="space-y-4">
+                        {/* Compact Single-Line Toolbar */}
+                        <div className={cn("flex flex-wrap sm:flex-nowrap items-center gap-2 px-1", !account.isActive && "grayscale-50")}>
+                            {/* Search Input */}
+                            <div className="relative flex-1 min-w-[160px]">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/70 pointer-events-none" />
+                                <Input
+                                    placeholder={tran("common.search_account_transactions")}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="h-9 rounded-xl pl-9 pr-8 bg-muted/40 border-0 focus-visible:ring-1 focus-visible:ring-primary/40 focus:bg-background transition-all shadow-none text-xs font-medium placeholder:text-muted-foreground/50"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchQuery("")}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground p-0.5 hover:bg-muted rounded-full transition-colors"
+                                    >
+                                        <X size={12} />
+                                    </button>
+                                )}
+                            </div>
 
-                                <Select items={periodItems} value={period} onValueChange={handlePeriodChange}>
-                                    <SelectTrigger className="h-7 px-3 rounded-full bg-muted/50 text-[9px] font-black uppercase tracking-widest border-none shadow-none focus:ring-0 w-27.5">
-                                        <SelectValue placeholder="Period" />
+                            {/* Period Filter */}
+                            <Select items={periodItems} value={period} onValueChange={handlePeriodChange}>
+                                <SelectTrigger className="h-9 px-3 rounded-xl bg-muted/40 hover:bg-muted/60 border-0 shadow-none focus:ring-0 text-[10px] font-bold uppercase tracking-wider shrink-0 gap-1.5 min-w-[90px]">
+                                    <SelectValue placeholder="Period" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-2xl border-muted/20 shadow-xl">
+                                    {periodItems.map((item) => (
+                                        <SelectItem
+                                            key={item.value}
+                                            value={item.value}
+                                            className="rounded-xl text-xs font-medium"
+                                        >
+                                            {tran(item.label)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            {/* Sort Controls */}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                                <Select
+                                    items={sortOptions}
+                                    value={sortBy}
+                                    onValueChange={(val: any) => {
+                                        if (!val) return
+                                        setSortBy(val)
+                                    }}
+                                >
+                                    <SelectTrigger className="h-9 px-3 rounded-xl bg-muted/40 hover:bg-muted/60 border-0 shadow-none focus:ring-0 text-[10px] font-bold uppercase tracking-wider shrink-0 gap-1.5 min-w-[120px]">
+                                        <span className="text-[9px] opacity-50 font-normal mr-0.5">{tran("common.sort_by")}:</span>
+                                        <SelectValue placeholder={tran("common.sort_by")} />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl border-muted/20 shadow-xl">
-                                        {periodItems.map((item) => (
-                                            <SelectItem key={item.value} value={item.value} className="rounded-xl">{tran(item.label)}</SelectItem>
+                                        {sortOptions.map((item) => (
+                                            <SelectItem
+                                                key={item.value}
+                                                value={item.value}
+                                                className="rounded-xl text-xs font-semibold cursor-pointer"
+                                            >
+                                                {item.label}
+                                            </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
-                            </div>
-                            <div className="text-[10px] font-black uppercase tracking-widest opacity-40">
-                                {totalTransactions} Records
+
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
+                                    className="h-9 w-9 rounded-xl bg-muted/40 hover:bg-muted/60 text-foreground transition-all shrink-0"
+                                    title={sortOrder === "asc" ? "Sort Ascending" : "Sort Descending"}
+                                >
+                                    {sortOrder === "asc" ? (
+                                        <ArrowUp className="size-3.5 text-purple-600 dark:text-purple-400 stroke-[2.5]" />
+                                    ) : (
+                                        <ArrowDown className="size-3.5 text-purple-600 dark:text-purple-400 stroke-[2.5]" />
+                                    )}
+                                </Button>
                             </div>
                         </div>
 
+                        {/* Statement Subtitle / Records Count Bar */}
+                        <div className={cn("flex items-center justify-between px-2 pt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60", !account.isActive && "grayscale-50")}>
+                            <div className="flex items-center gap-2">
+                                <div className="h-1 w-6 bg-primary rounded-full shadow-[0_0_8px_rgba(var(--primary),0.4)]" />
+                                <span>Statements</span>
+                                {searchQuery && (
+                                    <span className="text-[9px] lowercase font-normal opacity-70">matching &ldquo;{searchQuery}&rdquo;</span>
+                                )}
+                            </div>
+                            <div>
+                                <span className="text-primary font-black">{totalTransactions}</span> {totalTransactions === 1 ? 'Record' : 'Records'}
+                            </div>
+                        </div>
+
+                        {/* Transaction List */}
                         <motion.div
                             className={cn(!account.isActive && "grayscale-50")}
                             initial={{ opacity: 0 }}
@@ -314,6 +414,7 @@ export function AccountDetailsView({ accountId, currency }: AccountDetailsViewPr
                                 transactions={transactions as any}
                                 accountId={account.id}
                                 accountType={account.type}
+                                groupByDate={sortBy === "date"}
                             />
 
                             {/* Infinite Scroll Trigger */}

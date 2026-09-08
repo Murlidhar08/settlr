@@ -13,6 +13,7 @@ interface transactionListProp {
   partyId?: string | null
   accountId?: string | null
   accountType?: string | null
+  groupByDate?: boolean
 }
 
 function TransactionGroup({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
@@ -30,7 +31,7 @@ function TransactionGroup({ label, children }: { label: React.ReactNode; childre
   )
 }
 
-const TransactionList = ({ transactions, accountId, accountType }: transactionListProp) => {
+const TransactionList = ({ transactions, accountId, accountType, groupByDate = true }: transactionListProp) => {
   function groupTransactionsByDate(transactions: TransactionRes[]) {
     const groups: Record<string, TransactionRes[]> = {};
 
@@ -70,35 +71,59 @@ const TransactionList = ({ transactions, accountId, accountType }: transactionLi
       )}
 
       {/* List Of All Transactions */}
-      {transactions &&
-        Object.entries(groupTransactionsByDate(transactions))
-          .map(([label, groupTxs]) => (
-            <TransactionGroup
-              key={label}
-              label={label}
-            >
-              <div className="space-y-2 mt-1">
-                {groupTxs.map((transaction) => (
-                  <TransactionItem
-                    key={transaction.id}
-                    transactionId={transaction.id}
-                    title={transaction.description || ""}
-                    subtitle={<FormattedTime date={transaction.date} />}
-                    amount={transaction.amount}
-                    accountId={accountId}
-                    accountType={accountType}
-                    fromAccountId={transaction.fromAccountId}
-                    toAccountId={transaction.toAccountId}
-                    fromAccount={transaction.fromAccount?.name}
-                    toAccount={transaction.toAccount?.name}
-                    fromAccountType={transaction.fromAccount?.type}
-                    toAccountType={transaction.toAccount?.type}
-                    partyName={transaction.party?.name}
-                  />
-                ))}
-              </div>
-            </TransactionGroup>
-          ))}
+      {transactions && transactions.length > 0 && (
+        groupByDate ? (
+          Object.entries(groupTransactionsByDate(transactions))
+            .map(([label, groupTxs]) => (
+              <TransactionGroup
+                key={label}
+                label={label}
+              >
+                <div className="space-y-2 mt-1">
+                  {groupTxs.map((transaction) => (
+                    <TransactionItem
+                      key={transaction.id}
+                      transactionId={transaction.id}
+                      title={transaction.description || ""}
+                      subtitle={<FormattedTime date={transaction.date} />}
+                      amount={transaction.amount}
+                      accountId={accountId}
+                      accountType={accountType}
+                      fromAccountId={transaction.fromAccountId}
+                      toAccountId={transaction.toAccountId}
+                      fromAccount={transaction.fromAccount?.name}
+                      toAccount={transaction.toAccount?.name}
+                      fromAccountType={transaction.fromAccount?.type}
+                      toAccountType={transaction.toAccount?.type}
+                      partyName={transaction.party?.name}
+                    />
+                  ))}
+                </div>
+              </TransactionGroup>
+            ))
+        ) : (
+          <div className="space-y-2 mt-1">
+            {transactions.map((transaction) => (
+              <TransactionItem
+                key={transaction.id}
+                transactionId={transaction.id}
+                title={transaction.description || ""}
+                subtitle={<FormattedTime date={transaction.date} />}
+                amount={transaction.amount}
+                accountId={accountId}
+                accountType={accountType}
+                fromAccountId={transaction.fromAccountId}
+                toAccountId={transaction.toAccountId}
+                fromAccount={transaction.fromAccount?.name}
+                toAccount={transaction.toAccount?.name}
+                fromAccountType={transaction.fromAccount?.type}
+                toAccountType={transaction.toAccount?.type}
+                partyName={transaction.party?.name}
+              />
+            ))}
+          </div>
+        )
+      )}
     </motion.div>
   )
 }

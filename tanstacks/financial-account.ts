@@ -48,13 +48,26 @@ export const useAccountStats = (accountId: string, period: 'month' | 'year' | 'a
     });
 };
 
-export const useAccountTransactions = (accountId: string, period: 'month' | 'year' | 'all' = 'all') => {
+export const useAccountTransactions = (
+    accountId: string,
+    period: 'month' | 'year' | 'all' = 'all',
+    search: string = '',
+    sortBy: 'date' | 'title' | 'price' = 'date',
+    sortOrder: 'asc' | 'desc' = 'desc'
+) => {
     const { data: session } = useSession();
     const businessId = session?.user?.activeBusinessId;
 
     return useInfiniteQuery({
-        queryKey: ["account-transactions", accountId, period, businessId],
-        queryFn: ({ pageParam = 1 }) => getAccountTransactions(accountId, { page: pageParam as number, limit: 20 }, period),
+        queryKey: ["account-transactions", accountId, period, search, sortBy, sortOrder, businessId],
+        queryFn: ({ pageParam = 1 }) => getAccountTransactions(
+            accountId,
+            { page: pageParam as number, limit: 20 },
+            period,
+            search,
+            sortBy,
+            sortOrder
+        ),
         initialPageParam: 1,
         getNextPageParam: (lastPage, allPages) => {
             const loadedCount = allPages.length * 20;
