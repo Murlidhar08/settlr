@@ -43,6 +43,9 @@ export async function addTransaction(transactionData: any, pathToRevalidate?: st
 
   // 3. CATEGORY TO CATEGORY RESTRICTION
   if (fromAccount.type === FinancialAccountType.CATEGORY && toAccount.type === FinancialAccountType.CATEGORY) {
+    if (fromAccount.categoryType === CategoryType.ADJUSTMENT && toAccount.categoryType === CategoryType.ADJUSTMENT) {
+      throw new Error("Direct transfers between two adjustment accounts are not allowed.");
+    }
     if (fromAccount.categoryType !== CategoryType.ADJUSTMENT && toAccount.categoryType !== CategoryType.ADJUSTMENT) {
       throw new Error("Direct Category to Category transfers are only allowed for Adjustments.");
     }
