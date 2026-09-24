@@ -1,7 +1,6 @@
 "use client"
 
 import { togglePartyActive } from "@/actions/parties.actions"
-import { useDeleteParty } from "@/tanstacks/parties"
 import { BackHeader } from "@/components/back-header"
 import {
   AlertDialog,
@@ -13,6 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useDeleteParty } from "@/tanstacks/parties"
 import { useQueryClient } from "@tanstack/react-query"
 import { Pencil, ShieldAlert, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -32,7 +32,7 @@ export default function BackHeaderClient({ party }: { party: any }) {
       onSuccess: (success) => {
         if (success) {
           toast.success("Party and all transactions deleted")
-          router.push("/parties" as any)
+          router.back()
         } else {
           toast.error("Failed to delete party")
         }

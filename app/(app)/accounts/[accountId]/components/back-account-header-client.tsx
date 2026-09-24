@@ -14,12 +14,12 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { FinancialAccount } from "@/lib/generated/prisma/client"
+import { tran } from "@/lib/languages/i18n"
 import { useQueryClient } from "@tanstack/react-query"
 import { ArrowDownToLine, ArrowUpFromLine, Pencil, ShieldAlert, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
-import { tran } from "@/lib/languages/i18n"
 
 export default function BackAccountHeaderClient({ account }: { account: FinancialAccount }) {
     const router = useRouter()
@@ -43,7 +43,6 @@ export default function BackAccountHeaderClient({ account }: { account: Financia
         <>
             <BackHeader
                 title={account?.name}
-                description={tran(`common.${(account?.moneyType || account?.categoryType || account?.type || "").toLowerCase()}`)}
                 backUrl={'/accounts' as any}
                 menuItems={[
                     ...(account.type === 'MONEY' ? [

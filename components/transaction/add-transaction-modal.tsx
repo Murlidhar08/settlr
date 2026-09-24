@@ -146,17 +146,26 @@ export const AddTransactionModal = ({
             inferredMode = ModalMode.ACCOUNT
             initialMoneyAcc = currentAcc.id
             initialPartnerAcc = allAccounts.find(a => a.id !== currentAcc.id && a.partyId === null)?.id || ""
+          } else if (currentAcc && currentAcc.type === FinancialAccountType.CATEGORY && currentAcc.categoryType === CategoryType.ADJUSTMENT) {
+            inferredMode = ModalMode.ACCOUNT
+            initialMoneyAcc = currentAcc.id
+            initialPartnerAcc = allAccounts.find(a => a.id !== currentAcc.id && a.partyId === null && !(a.type === FinancialAccountType.CATEGORY && a.categoryType === CategoryType.ADJUSTMENT))?.id || ""
+          } else if (currentAcc && currentAcc.type === FinancialAccountType.CATEGORY) {
+            inferredMode = ModalMode.ACCOUNT
+            initialMoneyAcc = defAccId || allAccounts.find(a => a.type === FinancialAccountType.MONEY)?.id || ""
+            initialPartnerAcc = currentAcc.id
           } else {
             inferredMode = ModalMode.CASHBOOK
-            const moneyAccs = allAccounts.filter(a => a.type === FinancialAccountType.MONEY)
+            const moneyAccs = allAccounts.filter(a => a.type === FinancialAccountType.MONEY || (a.type === FinancialAccountType.CATEGORY && a.categoryType === CategoryType.ADJUSTMENT))
 
             // USE DEFAULT MONEY ACCOUNT
             initialMoneyAcc = defAccId || moneyAccs[0]?.id || ""
 
             // USE DEFAULT CATEGORY ACCOUNTS
+            const isInitMoneyAdj = allAccounts.find(a => a.id === initialMoneyAcc)?.categoryType === CategoryType.ADJUSTMENT
             const defaultCatAccId = isOut ? defExpenseAccId : defIncomeAccId;
             const targetCat = isOut ? CategoryType.EXPENSE : CategoryType.INCOME
-            initialPartnerAcc = defaultCatAccId || allAccounts.find(a => a.type === FinancialAccountType.CATEGORY && a.categoryType === targetCat)?.id || ""
+            initialPartnerAcc = (!isInitMoneyAdj && defaultCatAccId) || allAccounts.find(a => a.type === FinancialAccountType.CATEGORY && a.categoryType === targetCat)?.id || ""
           }
 
           setMode(inferredMode)
@@ -338,6 +347,21 @@ export const AddTransactionModal = ({
       return toast.error("Please select both accounts")
     }
 
+    if (data.fromAccountId === data.toAccountId) {
+      return toast.error("Source and destination accounts cannot be the same")
+    }
+
+    const fromAcc = allAccounts.find(a => a.id === data.fromAccountId)
+    const toAcc = allAccounts.find(a => a.id === data.toAccountId)
+    if (
+      fromAcc?.type === FinancialAccountType.CATEGORY &&
+      fromAcc?.categoryType === CategoryType.ADJUSTMENT &&
+      toAcc?.type === FinancialAccountType.CATEGORY &&
+      toAcc?.categoryType === CategoryType.ADJUSTMENT
+    ) {
+      return toast.error("Cannot transfer between two adjustment accounts")
+    }
+
     const combinedDateTime = new Date(`${data.date}T${data.time}:00`)
     if (isNaN(combinedDateTime.getTime())) {
       return toast.error("Please enter a valid date and time")
@@ -368,24 +392,76 @@ export const AddTransactionModal = ({
     router.refresh()
   }
 
+  const isAdjustmentAccount = (acc?: any) => {
+    return acc?.type === FinancialAccountType.CATEGORY && acc?.categoryType === CategoryType.ADJUSTMENT
+  }
+
+  const selectedPartnerAcc = allAccounts.find(a => a.id === partnerAccountId)
+  const isPartnerAdjustment = isAdjustmentAccount(selectedPartnerAcc)
+
+  const selectedMoneyAcc = allAccounts.find(a => a.id === moneyAccountId)
+  const isMoneyAdjustment = isAdjustmentAccount(selectedMoneyAcc)
+
   // Filtering Logic
-  const moneyAccounts = allAccounts.filter(a => a.type === FinancialAccountType.MONEY)
+  const moneyAccounts = allAccounts.filter(a => {
+    if (a.id === partnerAccountId) return false
+
+    if (a.type === FinancialAccountType.MONEY) return true
+
+    if (isAdjustmentAccount(a)) {
+      return !isPartnerAdjustment
+    }
+
+    return false
+  })
+
   const partnerOptions = allAccounts.filter(acc => {
     if (mode === ModalMode.PARTY)
       return false // Partner is fixed
 
+    if (acc.id === moneyAccountId) return false
+
     if (mode === ModalMode.ACCOUNT) {
       // Show list of accounts where partyId is null, except current
-      return acc.partyId === null && acc.id !== (isOut ? moneyAccountId : accountId)
+      if (acc.partyId !== null) return false
+      if (isMoneyAdjustment && isAdjustmentAccount(acc)) return false
+      return true
     }
 
     if (mode === ModalMode.CASHBOOK) {
       const targetCat = isOut ? CategoryType.EXPENSE : CategoryType.INCOME
-      return acc.type === FinancialAccountType.CATEGORY && acc.categoryType === targetCat
+      if (acc.type !== FinancialAccountType.CATEGORY) return false
+
+      if (acc.categoryType === targetCat) return true
+
+      if (isAdjustmentAccount(acc)) {
+        return !isMoneyAdjustment
+      }
+
+      return false
     }
 
     return true
   })
+
+  const handleMoneyAccountChange = (val: string) => {
+    setMoneyAccountId(val)
+    const newMoneyAcc = allAccounts.find(a => a.id === val)
+    if (isAdjustmentAccount(newMoneyAcc) && isPartnerAdjustment) {
+      const targetCat = isOut ? CategoryType.EXPENSE : CategoryType.INCOME
+      const fallbackPartner = allAccounts.find(a => a.type === FinancialAccountType.CATEGORY && a.categoryType === targetCat && a.id !== val)
+      setPartnerAccountId(fallbackPartner?.id || "")
+    }
+  }
+
+  const handlePartnerAccountChange = (val: string) => {
+    setPartnerAccountId(val)
+    const newPartnerAcc = allAccounts.find(a => a.id === val)
+    if (isAdjustmentAccount(newPartnerAcc) && isMoneyAdjustment) {
+      const fallbackMoney = defAccId || allAccounts.find(a => a.type === FinancialAccountType.MONEY && a.id !== val)?.id || ""
+      setMoneyAccountId(fallbackMoney)
+    }
+  }
 
   // Labels
   const moneyLabel = isOut ? tran("cashbook.pay_from_account") : tran("cashbook.receive_in_account")
@@ -560,7 +636,7 @@ export const AddTransactionModal = ({
                       </Label>
                       <Select
                         value={moneyAccountId}
-                        onValueChange={(val) => val && setMoneyAccountId(val)}
+                        onValueChange={(val) => val && handleMoneyAccountChange(val)}
                       >
                         <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary transition-all text-foreground bg-background">
                           <SelectValue placeholder={tran("common.choose_account")}>
@@ -570,8 +646,11 @@ export const AddTransactionModal = ({
                         <SelectContent className="rounded-2xl shadow-xl max-h-75">
                           {moneyAccounts.map(acc => (
                             <SelectItem key={acc.id} value={acc.id} className="py-2 px-4 focus:bg-primary/90 rounded-xl cursor-pointer">
-                              <div className="flex justify-between items-center w-full gap-4">
-                                <span>{acc.name}</span>
+                              <div className="flex flex-col">
+                                <span className="font-bold text-sm">{acc.name}</span>
+                                <span className="text-[10px] text-muted-foreground/90 italic">
+                                  {acc.moneyType || acc.categoryType || acc.type}
+                                </span>
                               </div>
                             </SelectItem>
                           ))}
@@ -588,7 +667,7 @@ export const AddTransactionModal = ({
                       </Label>
                       <Select
                         value={partnerAccountId}
-                        onValueChange={(val) => val && setPartnerAccountId(val)}
+                        onValueChange={(val) => val && handlePartnerAccountChange(val)}
                       >
                         <SelectTrigger className="h-14 w-full rounded-2xl border-2 px-4 text-base font-bold shadow-sm hover:border-primary/50 transition-all text-foreground bg-background">
                           <SelectValue placeholder={tran("common.select_category_or_account")}>

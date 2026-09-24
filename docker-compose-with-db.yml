@@ -6,6 +6,7 @@ services:
       # Application
       NEXT_PUBLIC_APP_NAME: "Settlr"
       NEXT_PUBLIC_APP_DESCRIPTION: "Settlr for managing personal finance"
+      ADVANCE_PASS_CHECK: "true"
 
       # Better Auth
       BETTER_AUTH_SECRET: "lMD1eol2MrTxIZixGYyjwT0G0DQJ6oLJ"
@@ -13,21 +14,21 @@ services:
       BETTER_AUTH_TRUSTED_ORIGINS: "https://example.com,https://*.example.com"
 
       # DATABASE
-      DATABASE_URL: "postgresql://next_user:next_pass@postgres_db:5432/next_template?schema=public"
-
-      # Email Service
-      SMTP_HOST: "mail.example.com"
-      SMTP_PORT: 587
-      SMTP_USER: "user@example.com"
-      SMTP_PASS: "**PASSWORD**"
-      SMTP_SECURE: false
-      FROM_EMAIL: "user <user@example.com>"
+      DATABASE_URL: "postgresql://settlr_admin:Settlr@123@postgres_db:5432/settlr?schema=public"
 
     ports:
       - "3000:3000"
     networks:
       - prisma-network
-    restart: unless-stopped
+    restart: always
+    volumes:
+      - uploads:/app/uploads
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     depends_on:
       postgres_db:
         condition: service_healthy
@@ -35,37 +36,40 @@ services:
   postgres_db:
     image: postgres:17.4
     hostname: postgres_db
-    container_name: postgres_db
+    container_name: settlr_postgres_db
     restart: always
     environment:
-      POSTGRES_DB: next_template
-      POSTGRES_USER: next_user
-      POSTGRES_PASSWORD: next_pass
+      POSTGRES_DB: settlr
+      POSTGRES_USER: settlr_admin
+      POSTGRES_PASSWORD: Settlr@123
     networks:
       - prisma-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U next_user -d next_template" ]
+      test: [ "CMD-SHELL", "pg_isready -U settlr_admin -d settlr" ]
       interval: 5s
       timeout: 2s
       retries: 20
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
 
   prisma-studio:
-    image: node:24-alpine
-    container_name: prisma-studio
-    working_dir: /app
-    command: npx prisma studio --port 5555 --browser none
-    volumes:
-      - .:/app
+    image: chavda2772/prisma-studio:latest
+    container_name: settlr_prisma_studio
+    restart: always
     ports:
       - "5555:5555"
     environment:
-      DATABASE_URL: "postgresql://next_user:next_pass@postgres_db:5432/next_template?schema=public"
+      DATABASE_URL: "postgresql://settlr_admin:Settlr@123@postgres_db:5432/settlr?schema=public"
+      STUDIO_PORT: 5555
+      STUDIO_HOST: "0.0.0.0"
+      STUDIO_BROWSER: "none"
+      AUTO_INTROSPECT: ${AUTO_INTROSPECT:-true}
     networks:
       - prisma-network
     depends_on:
       postgres_db:
+        condition: service_healthy
+      settlr:
         condition: service_healthy
 
 networks:
@@ -73,4 +77,5 @@ networks:
     name: prisma-network
 
 volumes:
-  postgres_data:
+  db:
+  uploads:

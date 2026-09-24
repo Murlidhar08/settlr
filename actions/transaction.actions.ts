@@ -43,6 +43,9 @@ export async function addTransaction(transactionData: any, pathToRevalidate?: st
 
   // 3. CATEGORY TO CATEGORY RESTRICTION
   if (fromAccount.type === FinancialAccountType.CATEGORY && toAccount.type === FinancialAccountType.CATEGORY) {
+    if (fromAccount.categoryType === CategoryType.ADJUSTMENT && toAccount.categoryType === CategoryType.ADJUSTMENT) {
+      throw new Error("Direct transfers between two adjustment accounts are not allowed.");
+    }
     if (fromAccount.categoryType !== CategoryType.ADJUSTMENT && toAccount.categoryType !== CategoryType.ADJUSTMENT) {
       throw new Error("Direct Category to Category transfers are only allowed for Adjustments.");
     }
@@ -432,7 +435,10 @@ export const getAccountStats = async function getAccountStats(accountId: string,
 export const getAccountTransactions = async function getAccountTransactions(
   accountId: string,
   pagination?: { limit?: number; page?: number },
-  period: 'month' | 'year' | 'all' = 'all'
+  period: 'month' | 'year' | 'all' = 'all',
+  search?: string,
+  sortBy: 'date' | 'title' | 'price' = 'date',
+  sortOrder: 'asc' | 'desc' = 'desc'
 ) {
   const session = await getUserSession();
   const businessId = session?.user.activeBusinessId || "";
@@ -449,24 +455,63 @@ export const getAccountTransactions = async function getAccountTransactions(
   const page = pagination?.page || 1;
   const skip = (page - 1) * limit;
 
+  const where: Prisma.TransactionWhereInput = {
+    businessId,
+    OR: [
+      { fromAccountId: accountId },
+      { toAccountId: accountId },
+    ],
+    isDelete: false,
+    ...(period !== 'all' ? {
+      date: {
+        gte: period === 'month'
+          ? new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+          : new Date(new Date().getFullYear(), 0, 1)
+      }
+    } : {})
+  };
+
+  const trimmedSearch = search?.trim();
+  if (trimmedSearch) {
+    const searchConditions: Prisma.TransactionWhereInput[] = [
+      { description: { contains: trimmedSearch, mode: 'insensitive' } },
+      { party: { name: { contains: trimmedSearch, mode: 'insensitive' } } },
+      { fromAccount: { name: { contains: trimmedSearch, mode: 'insensitive' } } },
+      { toAccount: { name: { contains: trimmedSearch, mode: 'insensitive' } } },
+    ];
+
+    if (!isNaN(Number(trimmedSearch))) {
+      searchConditions.push({
+        amount: { equals: new Prisma.Decimal(trimmedSearch) }
+      });
+    }
+
+    where.AND = [
+      {
+        OR: searchConditions
+      }
+    ];
+  }
+
+  let orderBy: Prisma.TransactionOrderByWithRelationInput | Prisma.TransactionOrderByWithRelationInput[];
+  if (sortBy === 'price') {
+    orderBy = [
+      { amount: sortOrder },
+      { date: 'desc' }
+    ];
+  } else if (sortBy === 'title') {
+    orderBy = [
+      { description: sortOrder },
+      { date: 'desc' }
+    ];
+  } else {
+    orderBy = { date: sortOrder };
+  }
+
   const [transactions, totalTransactions] = await Promise.all([
     prisma.transaction.findMany({
-      where: {
-        businessId,
-        OR: [
-          { fromAccountId: accountId },
-          { toAccountId: accountId },
-        ],
-        isDelete: false,
-        ...(period !== 'all' ? {
-          date: {
-            gte: period === 'month'
-              ? new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-              : new Date(new Date().getFullYear(), 0, 1)
-          }
-        } : {})
-      },
-      orderBy: { date: "desc" },
+      where,
+      orderBy,
       take: limit,
       skip: skip,
       include: {
@@ -476,21 +521,7 @@ export const getAccountTransactions = async function getAccountTransactions(
       }
     }),
     prisma.transaction.count({
-      where: {
-        businessId,
-        OR: [
-          { fromAccountId: accountId },
-          { toAccountId: accountId },
-        ],
-        isDelete: false,
-        ...(period !== 'all' ? {
-          date: {
-            gte: period === 'month'
-              ? new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-              : new Date(new Date().getFullYear(), 0, 1)
-          }
-        } : {})
-      }
+      where
     })
   ]);
 

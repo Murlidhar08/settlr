@@ -17,6 +17,11 @@ const withPWAConfig = withPWA({
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: "standalone",
+  outputFileTracingExcludes: {
+    '*': [
+      './uploads/**/*',
+    ],
+  },
   compress: true,
   typedRoutes: true,
   experimental: {

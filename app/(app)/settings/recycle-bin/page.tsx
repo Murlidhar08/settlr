@@ -1,7 +1,8 @@
 "use client";
 
-import { getDeletedItems, restoreItem, permanentlyDeleteItem, emptyRecycleBin, DeletedItem } from "@/actions/recycle-bin.actions";
+import { DeletedItem, emptyRecycleBin, getDeletedItems, permanentlyDeleteItem, restoreItem } from "@/actions/recycle-bin.actions";
 import { useConfirm } from "@/components/providers/confirm-provider";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -10,28 +11,25 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { AnimatePresence, motion } from "framer-motion";
 import {
     ArrowLeft,
+    Building2,
+    Calendar,
     Filter,
-    MoreHorizontal,
+    History,
+    Receipt,
     RefreshCcw,
     Search,
     Trash2,
-    History,
-    Building2,
-    Wallet,
     Users,
-    Receipt,
-    Calendar,
-    ArrowUpRight
+    Wallet
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
-import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 
 import {
     Tooltip,
@@ -173,19 +171,21 @@ export default function RecycleBinPage() {
                         </div>
                         {items.length > 0 && (
                             <Tooltip>
-                                <TooltipTrigger>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="rounded-2xl gap-2 font-black text-[10px] uppercase tracking-widest text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-                                        onClick={handleEmptyBin}
-                                        disabled={loading}
-                                    >
-                                        <Trash2 size={14} />
-                                        Empty Bin
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent className="rounded-xl font-bold text-[10px] uppercase tracking-widest bg-rose-600 border-none text-white">
+                                <TooltipTrigger
+                                    render={
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="rounded-2xl gap-2 font-black text-[10px] uppercase tracking-widest text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                                            onClick={handleEmptyBin}
+                                            disabled={loading}
+                                        >
+                                            <Trash2 size={14} />
+                                            Empty Bin
+                                        </Button>
+                                    }
+                                />
+                                <TooltipContent className="rounded-xl font-bold text-[10px] uppercase tracking-widest border-none text-white">
                                     Delete all items permanently
                                 </TooltipContent>
                             </Tooltip>
@@ -225,17 +225,19 @@ export default function RecycleBinPage() {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                             <Tooltip>
-                                <TooltipTrigger>
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-11 w-11 rounded-2xl border-2 border-primary/5 shadow-sm active:scale-95 transition-all"
-                                        onClick={loadItems}
-                                        disabled={loading}
-                                    >
-                                        <RefreshCcw size={16} className={cn(loading && "animate-spin text-primary")} />
-                                    </Button>
-                                </TooltipTrigger>
+                                <TooltipTrigger
+                                    render={
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-11 w-11 rounded-2xl border-2 border-primary/5 shadow-sm active:scale-95 transition-all"
+                                            onClick={loadItems}
+                                            disabled={loading}
+                                        >
+                                            <RefreshCcw size={16} className={cn(loading && "animate-spin text-primary")} />
+                                        </Button>
+                                    }
+                                />
                                 <TooltipContent className="rounded-xl font-bold text-[10px] uppercase tracking-widest">
                                     Refresh List
                                 </TooltipContent>
@@ -318,34 +320,38 @@ export default function RecycleBinPage() {
 
                                                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                             <Tooltip>
-                                                                <TooltipTrigger>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-10 w-10 rounded-full text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 active:scale-95 transition-all"
-                                                                        onClick={() => handleRestore(item)}
-                                                                        disabled={actionLoading === item.id}
-                                                                    >
-                                                                        <RefreshCcw size={18} strokeWidth={2.5} />
-                                                                    </Button>
-                                                                </TooltipTrigger>
+                                                                <TooltipTrigger
+                                                                    render={
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-10 w-10 rounded-full text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 active:scale-95 transition-all"
+                                                                            onClick={() => handleRestore(item)}
+                                                                            disabled={actionLoading === item.id}
+                                                                        >
+                                                                            <RefreshCcw size={18} strokeWidth={2.5} />
+                                                                        </Button>
+                                                                    }
+                                                                />
                                                                 <TooltipContent className="rounded-xl font-bold text-[10px] uppercase tracking-widest bg-emerald-600 border-none text-white shadow-xl">
                                                                     Restore Item
                                                                 </TooltipContent>
                                                             </Tooltip>
 
                                                             <Tooltip>
-                                                                <TooltipTrigger>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-10 w-10 rounded-full text-rose-600 hover:bg-rose-50 hover:text-rose-700 active:scale-95 transition-all"
-                                                                        onClick={() => handlePermanentDelete(item)}
-                                                                        disabled={actionLoading === item.id}
-                                                                    >
-                                                                        <Trash2 size={18} strokeWidth={2.5} />
-                                                                    </Button>
-                                                                </TooltipTrigger>
+                                                                <TooltipTrigger
+                                                                    render={
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-10 w-10 rounded-full text-rose-600 hover:bg-rose-50 hover:text-rose-700 active:scale-95 transition-all"
+                                                                            onClick={() => handlePermanentDelete(item)}
+                                                                            disabled={actionLoading === item.id}
+                                                                        >
+                                                                            <Trash2 size={18} strokeWidth={2.5} />
+                                                                        </Button>
+                                                                    }
+                                                                />
                                                                 <TooltipContent className="rounded-xl font-bold text-[10px] uppercase tracking-widest bg-rose-600 border-none text-white shadow-xl">
                                                                     Delete Forever
                                                                 </TooltipContent>

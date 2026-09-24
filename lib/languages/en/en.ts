@@ -45,6 +45,11 @@ export default {
         activate: "Activate",
         dangerous_territory: "Dangerous Territory!",
         no_keep_it: "No, Keep It",
+        sort_by: "Sort By",
+        group_by_date: "Group by date",
+        title: "Title",
+        price: "Price",
+        search_account_transactions: "Search title or amount...",
     },
     auth: {
         msg: {

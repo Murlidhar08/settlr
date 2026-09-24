@@ -1,9 +1,9 @@
 "use client";
 
-import { useUserConfig } from "@/components/providers/user-config-provider";
 import { TransactionItem } from "@/components/transaction/transaction-item";
-import { FormattedDate, FormattedTime } from "@/components/ui/date-time";
+import { FormattedTime } from "@/components/ui/date-time";
 import { TransactionRes } from "@/types/transaction/TransactionData";
+import { formatUserDate } from "@/utility/date-time-fn";
 import { isToday, isYesterday } from "date-fns";
 import { motion } from "framer-motion";
 import { Wallet2 } from "lucide-react";
@@ -13,6 +13,7 @@ interface transactionListProp {
   partyId?: string | null
   accountId?: string | null
   accountType?: string | null
+  groupByDate?: boolean
 }
 
 function TransactionGroup({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
@@ -30,9 +31,7 @@ function TransactionGroup({ label, children }: { label: React.ReactNode; childre
   )
 }
 
-const TransactionList = ({ transactions, accountId, accountType }: transactionListProp) => {
-  const { currency } = useUserConfig();
-
+const TransactionList = ({ transactions, accountId, accountType, groupByDate = true }: transactionListProp) => {
   function groupTransactionsByDate(transactions: TransactionRes[]) {
     const groups: Record<string, TransactionRes[]> = {};
 
@@ -44,7 +43,7 @@ const TransactionList = ({ transactions, accountId, accountType }: transactionLi
       } else if (isYesterday(tx.date)) {
         label = "YESTERDAY";
       } else {
-        label = tx.date as any; // We use the date as the key, but we'll format it in the Group label
+        label = formatUserDate(tx.date); // We use the date as the key, but we'll format it in the Group label
       }
 
       if (!groups[label]) {
@@ -72,32 +71,59 @@ const TransactionList = ({ transactions, accountId, accountType }: transactionLi
       )}
 
       {/* List Of All Transactions */}
-      {transactions &&
-        Object.entries(groupTransactionsByDate(transactions))
-          .map(([label, groupTxs]) => (
-            <TransactionGroup key={label} label={label === "TODAY" || label === "YESTERDAY" ? label : <FormattedDate date={label} />}>
-              <div className="space-y-2 mt-1">
-                {groupTxs.map((transaction) => (
-                  <TransactionItem
-                    key={transaction.id}
-                    transactionId={transaction.id}
-                    title={transaction.description || ""}
-                    subtitle={<FormattedTime date={transaction.date} />}
-                    amount={transaction.amount}
-                    accountId={accountId}
-                    accountType={accountType}
-                    fromAccountId={transaction.fromAccountId}
-                    toAccountId={transaction.toAccountId}
-                    fromAccount={transaction.fromAccount?.name}
-                    toAccount={transaction.toAccount?.name}
-                    fromAccountType={transaction.fromAccount?.type}
-                    toAccountType={transaction.toAccount?.type}
-                    partyName={transaction.party?.name}
-                  />
-                ))}
-              </div>
-            </TransactionGroup>
-          ))}
+      {transactions && transactions.length > 0 && (
+        groupByDate ? (
+          Object.entries(groupTransactionsByDate(transactions))
+            .map(([label, groupTxs]) => (
+              <TransactionGroup
+                key={label}
+                label={label}
+              >
+                <div className="space-y-2 mt-1">
+                  {groupTxs.map((transaction) => (
+                    <TransactionItem
+                      key={transaction.id}
+                      transactionId={transaction.id}
+                      title={transaction.description || ""}
+                      subtitle={<FormattedTime date={transaction.date} />}
+                      amount={transaction.amount}
+                      accountId={accountId}
+                      accountType={accountType}
+                      fromAccountId={transaction.fromAccountId}
+                      toAccountId={transaction.toAccountId}
+                      fromAccount={transaction.fromAccount?.name}
+                      toAccount={transaction.toAccount?.name}
+                      fromAccountType={transaction.fromAccount?.type}
+                      toAccountType={transaction.toAccount?.type}
+                      partyName={transaction.party?.name}
+                    />
+                  ))}
+                </div>
+              </TransactionGroup>
+            ))
+        ) : (
+          <div className="space-y-2 mt-1">
+            {transactions.map((transaction) => (
+              <TransactionItem
+                key={transaction.id}
+                transactionId={transaction.id}
+                title={transaction.description || ""}
+                subtitle={<FormattedTime date={transaction.date} />}
+                amount={transaction.amount}
+                accountId={accountId}
+                accountType={accountType}
+                fromAccountId={transaction.fromAccountId}
+                toAccountId={transaction.toAccountId}
+                fromAccount={transaction.fromAccount?.name}
+                toAccount={transaction.toAccount?.name}
+                fromAccountType={transaction.fromAccount?.type}
+                toAccountType={transaction.toAccount?.type}
+                partyName={transaction.party?.name}
+              />
+            ))}
+          </div>
+        )
+      )}
     </motion.div>
   )
 }

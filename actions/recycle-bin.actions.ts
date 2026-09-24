@@ -81,7 +81,7 @@ export async function getDeletedItems() {
 
 export async function restoreItem(id: string, type: DeletedItem["type"]) {
     const session = await getUserSession();
-    if (!session) throw new Error("Unauthorized");
+    if (!session || !session.user.id) throw new Error("Unauthorized");
 
     const businessId = session.user.activeBusinessId;
 
@@ -129,33 +129,87 @@ export async function restoreItem(id: string, type: DeletedItem["type"]) {
     revalidatePath("/dashboard");
     revalidatePath("/accounts");
     revalidatePath("/parties");
+    revalidatePath("/business");
     return { success: true };
 }
 
 export async function permanentlyDeleteItem(id: string, type: DeletedItem["type"]) {
     const session = await getUserSession();
-    if (!session) throw new Error("Unauthorized");
+    if (!session || !session.user.id) throw new Error("Unauthorized");
 
     const businessId = session.user.activeBusinessId;
 
     switch (type) {
-        case "Business":
-            await prisma.business.delete({
+        case "Business": {
+            const business = await prisma.business.findFirst({
                 where: { id, ownerId: session.user.id }
             });
+            if (!business) throw new Error("Business not found");
+
+            await prisma.$transaction([
+                prisma.transaction.deleteMany({
+                    where: { businessId: id }
+                }),
+                prisma.financialAccount.deleteMany({
+                    where: { businessId: id }
+                }),
+                prisma.party.deleteMany({
+                    where: { businessId: id }
+                }),
+                prisma.business.delete({
+                    where: { id, ownerId: session.user.id }
+                })
+            ]);
+
+            if (session.user.activeBusinessId === id) {
+                const nextBusiness = await prisma.business.findFirst({
+                    where: { ownerId: session.user.id, isDelete: false }
+                });
+                await prisma.user.update({
+                    where: { id: session.user.id },
+                    data: { activeBusinessId: nextBusiness?.id || null }
+                });
+            }
             break;
-        case "FinancialAccount":
-            if (!businessId) throw new Error("No active business");
-            await prisma.financialAccount.delete({
-                where: { id, businessId }
-            });
-            break;
-        case "Party":
+        }
+        case "FinancialAccount": {
             if (!businessId) throw new Error("No active business");
             await prisma.$transaction([
-                // First delete all related data
                 prisma.transaction.deleteMany({
-                    where: { partyId: id, businessId }
+                    where: {
+                        businessId,
+                        OR: [
+                            { fromAccountId: id },
+                            { toAccountId: id }
+                        ]
+                    }
+                }),
+                prisma.financialAccount.delete({
+                    where: { id, businessId }
+                })
+            ]);
+            break;
+        }
+        case "Party": {
+            if (!businessId) throw new Error("No active business");
+            const partyAccounts = await prisma.financialAccount.findMany({
+                where: { partyId: id, businessId },
+                select: { id: true }
+            });
+            const partyAccountIds = partyAccounts.map(a => a.id);
+
+            await prisma.$transaction([
+                prisma.transaction.deleteMany({
+                    where: {
+                        businessId,
+                        OR: [
+                            { partyId: id },
+                            ...(partyAccountIds.length > 0 ? [
+                                { fromAccountId: { in: partyAccountIds } },
+                                { toAccountId: { in: partyAccountIds } }
+                            ] : [])
+                        ]
+                    }
                 }),
                 prisma.financialAccount.deleteMany({
                     where: { partyId: id, businessId }
@@ -165,39 +219,133 @@ export async function permanentlyDeleteItem(id: string, type: DeletedItem["type"
                 })
             ]);
             break;
-        case "Transaction":
+        }
+        case "Transaction": {
             if (!businessId) throw new Error("No active business");
             await prisma.transaction.delete({
                 where: { id, businessId }
             });
             break;
+        }
     }
 
     revalidatePath("/(app)/settings/recycle-bin");
+    revalidatePath("/dashboard");
+    revalidatePath("/accounts");
+    revalidatePath("/parties");
+    revalidatePath("/business");
     return { success: true };
 }
 
 export async function emptyRecycleBin() {
     const session = await getUserSession();
-    if (!session) throw new Error("Unauthorized");
+    if (!session || !session.user.id) throw new Error("Unauthorized");
 
     const businessId = session.user.activeBusinessId;
 
-    await prisma.$transaction([
-        prisma.transaction.deleteMany({
-            where: { businessId: businessId || undefined, isDelete: true }
-        }),
-        prisma.party.deleteMany({
-            where: { businessId: businessId || undefined, isDelete: true }
-        }),
-        prisma.financialAccount.deleteMany({
-            where: { businessId: businessId || undefined, isDelete: true }
-        }),
-        prisma.business.deleteMany({
-            where: { ownerId: session.user.id, isDelete: true }
-        }),
-    ]);
+    // 1. Get all deleted businesses for this user
+    const deletedBusinesses = await prisma.business.findMany({
+        where: {
+            ownerId: session.user.id,
+            isDelete: true
+        },
+        select: { id: true }
+    });
+    const deletedBusinessIds = deletedBusinesses.map(b => b.id);
+
+    // 2. If there are deleted businesses, clean up their child records first to respect FK constraints
+    if (deletedBusinessIds.length > 0) {
+        await prisma.$transaction([
+            prisma.transaction.deleteMany({
+                where: { businessId: { in: deletedBusinessIds } }
+            }),
+            prisma.financialAccount.deleteMany({
+                where: { businessId: { in: deletedBusinessIds } }
+            }),
+            prisma.party.deleteMany({
+                where: { businessId: { in: deletedBusinessIds } }
+            }),
+            prisma.business.deleteMany({
+                where: { id: { in: deletedBusinessIds }, ownerId: session.user.id }
+            })
+        ]);
+
+        // If the active business was deleted, switch to an active business or null
+        if (businessId && deletedBusinessIds.includes(businessId)) {
+            const nextBusiness = await prisma.business.findFirst({
+                where: { ownerId: session.user.id, isDelete: false }
+            });
+            await prisma.user.update({
+                where: { id: session.user.id },
+                data: { activeBusinessId: nextBusiness?.id || null }
+            });
+        }
+    }
+
+    // 3. For the active business (if present and not deleted)
+    const currentActiveBusinessId = (businessId && !deletedBusinessIds.includes(businessId))
+        ? businessId
+        : null;
+
+    if (currentActiveBusinessId) {
+        // Find deleted parties in active business
+        const deletedParties = await prisma.party.findMany({
+            where: { businessId: currentActiveBusinessId, isDelete: true },
+            select: { id: true }
+        });
+        const deletedPartyIds = deletedParties.map(p => p.id);
+
+        // Find deleted accounts (or accounts of deleted parties)
+        const deletedAccounts = await prisma.financialAccount.findMany({
+            where: {
+                businessId: currentActiveBusinessId,
+                OR: [
+                    { isDelete: true },
+                    ...(deletedPartyIds.length > 0 ? [{ partyId: { in: deletedPartyIds } }] : [])
+                ]
+            },
+            select: { id: true }
+        });
+        const deletedAccountIds = deletedAccounts.map(a => a.id);
+
+        const txConditions: any[] = [{ isDelete: true }];
+        if (deletedPartyIds.length > 0) {
+            txConditions.push({ partyId: { in: deletedPartyIds } });
+        }
+        if (deletedAccountIds.length > 0) {
+            txConditions.push({ fromAccountId: { in: deletedAccountIds } });
+            txConditions.push({ toAccountId: { in: deletedAccountIds } });
+        }
+
+        await prisma.$transaction([
+            prisma.transaction.deleteMany({
+                where: {
+                    businessId: currentActiveBusinessId,
+                    OR: txConditions
+                }
+            }),
+            prisma.financialAccount.deleteMany({
+                where: {
+                    businessId: currentActiveBusinessId,
+                    OR: [
+                        { isDelete: true },
+                        ...(deletedPartyIds.length > 0 ? [{ partyId: { in: deletedPartyIds } }] : [])
+                    ]
+                }
+            }),
+            prisma.party.deleteMany({
+                where: {
+                    businessId: currentActiveBusinessId,
+                    isDelete: true
+                }
+            })
+        ]);
+    }
 
     revalidatePath("/(app)/settings/recycle-bin");
+    revalidatePath("/dashboard");
+    revalidatePath("/accounts");
+    revalidatePath("/parties");
+    revalidatePath("/business");
     return { success: true };
 }

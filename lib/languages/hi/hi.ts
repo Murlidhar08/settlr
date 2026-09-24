@@ -45,6 +45,11 @@ export default {
         activate: "सक्रिय करें",
         dangerous_territory: "खतरनाक क्षेत्र!",
         no_keep_it: "नहीं, इसे रखें",
+        sort_by: "क्रमबद्ध करें",
+        group_by_date: "दिनांक अनुसार",
+        title: "शीर्षक",
+        price: "मूल्य",
+        search_account_transactions: "शीर्षक या राशि खोजें...",
     },
     auth: {
         msg: {
